@@ -1,59 +1,39 @@
 package database
 
 import (
-	"context"
-	"fmt"
+	dbutils "github.com/allinbits/navigator-utils/database"
 
 	navigator_cns "github.com/allinbits/navigator-cns"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbsqlx"
-
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/jmoiron/sqlx"
 )
 
 type Instance struct {
-	d *sqlx.DB
+	d          *dbutils.Instance
+	connString string
 }
 
 func New(connString string) (*Instance, error) {
-	db, err := sqlx.Connect("pgx", connString)
+	i, err := dbutils.New(connString)
 	if err != nil {
 		return nil, err
 	}
 
-	i := &Instance{
-		d: db,
+	ii := &Instance{
+		d:          i,
+		connString: connString,
 	}
 
-	i.runMigrations()
-	return i, nil
+	ii.runMigrations()
+	return ii, nil
 }
 
 func (i *Instance) AddChain(chain navigator_cns.Chain) error {
-	return crdbsqlx.ExecuteTx(context.Background(), i.d, nil, func(tx *sqlx.Tx) error {
-		res, err := tx.NamedExec(insertChain, chain)
-		if err != nil {
-			return fmt.Errorf("transaction named exec error, %w", err)
-		}
-
-		re, err := res.RowsAffected()
-		if err != nil {
-			return fmt.Errorf("transaction named exec error, %w", err)
-		}
-
-		if re == 0 {
-			return fmt.Errorf("affected rows are zero")
-		}
-
-		return nil
-	})
+	return i.d.Exec(insertChain, &chain, nil)
 }
 
 func (i *Instance) Chains() ([]navigator_cns.Chain, error) {
 	var c []navigator_cns.Chain
 
-	return c, crdbsqlx.ExecuteTx(context.Background(), i.d, nil, func(tx *sqlx.Tx) error {
-		return tx.Select(&c, getAllChains)
-	})
+	return c, i.d.Exec(getAllChains, nil, &c)
 }

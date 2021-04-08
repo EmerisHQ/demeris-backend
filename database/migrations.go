@@ -1,5 +1,7 @@
 package database
 
+import "github.com/allinbits/navigator-utils/database"
+
 const createDatabase = `
 CREATE DATABASE IF NOT EXISTS cns;
 `
@@ -32,7 +34,7 @@ var migrationList = []string{
 }
 
 func (i *Instance) runMigrations() {
-	for _, m := range migrationList {
-		i.d.MustExec(m)
+	if err := database.RunMigrations(i.connString, migrationList); err != nil {
+		panic(err)
 	}
 }

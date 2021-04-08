@@ -1,10 +1,9 @@
 package main
 
 import (
+	"github.com/allinbits/navigator-cns/database"
 	"github.com/allinbits/navigator-cns/rest"
 	"github.com/allinbits/navigator-utils/logging"
-
-	"github.com/allinbits/navigator-cns/database"
 )
 
 func main() {
