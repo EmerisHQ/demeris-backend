@@ -3,11 +3,11 @@ package rest
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/go-playground/validator/v10"
 
 	"github.com/allinbits/navigator-cns/database"
+	"github.com/allinbits/navigator-utils/logging"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -39,7 +39,7 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, debug bool) *Server {
 
 	r := &router{s: s}
 
-	g.Use(s.logReq())
+	g.Use(logging.LogRequest(l.Desugar()))
 	g.Use(ginzap.RecoveryWithZap(l.Desugar(), true))
 
 	g.GET(r.getChains())
@@ -54,39 +54,6 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, debug bool) *Server {
 
 func (s *Server) Serve(where string) error {
 	return s.g.Run(where)
-}
-
-// logReq is a middleware which logs each requests as they come.
-func (s *Server) logReq() gin.HandlerFunc {
-	if s.gl == nil {
-		s.gl = s.l.Desugar()
-	}
-
-	return func(c *gin.Context) {
-		start := time.Now()
-		// some evil middlewares modify this values
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
-
-		s.gl.Info(path,
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
-			zap.String("path", path),
-			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
-			zap.String("time", start.Format(time.RFC3339)),
-		)
-
-		c.Next()
-
-		if len(c.Errors) > 0 {
-			// Append error field if this is an erroneous request.
-			for _, e := range c.Errors.Errors() {
-				s.gl.Error(e)
-			}
-		}
-	}
 }
 
 type restError struct {
