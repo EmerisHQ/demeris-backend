@@ -3,6 +3,7 @@ module github.com/allinbits/navigator-cns
 go 1.16
 
 require (
+	github.com/allinbits/navigator-utils v0.0.0-20210408125700-568cc9d35a4b // indirect
 	github.com/cockroachdb/cockroach-go/v2 v2.1.0
 	github.com/gin-contrib/zap v0.0.1 // indirect
 	github.com/gin-gonic/gin v1.7.0
