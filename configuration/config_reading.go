@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -24,6 +25,7 @@ func ReadConfig(v Validator, configName string, defaultValues map[string]string)
 	viper.AddConfigPath(fmt.Sprintf("/etc/%s", configName))
 	viper.AddConfigPath(fmt.Sprintf("$HOME/.%s", configName))
 	viper.AddConfigPath(".")
+	viper.SetEnvPrefix(strings.ToLower(configName))
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
