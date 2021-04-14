@@ -9,19 +9,40 @@ CREATE DATABASE IF NOT EXISTS cns;
 const createTableChains = `
 CREATE TABLE IF NOT EXISTS cns.chains (
 	id serial not null,
-	client_id string not null,
 	chain_name string not null,
-	chain_id string not null,
-	native_token string not null,
-	unique(client_id)
+	counterparty_names jsonb not null,
+	native_denoms jsonb not null,
+	fee_tokens jsonb not null,
+	price_modifier decimal not null,
+	base_ibc_fee decimal not null,
+	genesis_hash string not null,
+	unique(id)
 )
 `
 
 const insertChain = `
-UPSERT INTO cns.chains 
-	(client_id, chain_name, chain_id, native_token) 
+UPSERT INTO cns.chains
+	(
+		id,
+		chain_name,
+		counterparty_names,
+		native_denoms,
+		fee_tokens,
+		price_modifier,
+		base_ibc_fee,
+		genesis_hash
+	)
 VALUES
-	(:client_id, :chain_name, :chain_id, :native_token)
+	(
+		:id,
+		:chain_name,
+		:counterparty_names,
+		:native_denoms,
+		:fee_tokens,
+		:price_modifier,
+		:base_ibc_fee,
+		:genesis_hash
+	)
 `
 
 const getAllChains = `
