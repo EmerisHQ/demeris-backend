@@ -30,6 +30,8 @@ github.com/allinbits/navigator-utils v0.0.0-20210408133543-a13dcfc16083 h1:klvZ7
 github.com/allinbits/navigator-utils v0.0.0-20210408133543-a13dcfc16083/go.mod h1:HXFGtnINBdu4A0LYNIm1GZQnOdJRB5/gJzgLgSc3vbY=
 github.com/allinbits/navigator-utils v0.0.0-20210408141122-4a04d7fa6ee8 h1:gQ19wC4YCF9CY8fLchvFY+xMs/nis2u/HYQM1fCbfug=
 github.com/allinbits/navigator-utils v0.0.0-20210408141122-4a04d7fa6ee8/go.mod h1:T5qpZ+tQV5UJcSi2imKrOlISU9SAUDvjX04JXfuS2Ro=
+github.com/allinbits/navigator-utils v0.0.0-20210414132536-93d878231418 h1:ot1RiA+dB1RW1ac3l/68cIw+py3+cNOV7n6tsnYomqw=
+github.com/allinbits/navigator-utils v0.0.0-20210414132536-93d878231418/go.mod h1:T5qpZ+tQV5UJcSi2imKrOlISU9SAUDvjX04JXfuS2Ro=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.13.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
