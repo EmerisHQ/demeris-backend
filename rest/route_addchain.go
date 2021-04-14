@@ -14,11 +14,13 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&newChain); err != nil {
 		e(ctx, http.StatusBadRequest, err)
+		r.s.l.Error("cannot bind input data to Chain struct", err)
 		return
 	}
 
 	if err := r.s.d.AddChain(newChain); err != nil {
 		e(ctx, http.StatusInternalServerError, err)
+		r.s.l.Error("cannot add chain", err)
 		return
 	}
 
