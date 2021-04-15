@@ -142,10 +142,10 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Log
 		return fmt.Errorf("fetch coinmarketcap: %w", err)
 	}
 	q := url.Values{}
-	q.Add("symbol", "atom")
+	q.Add("symbol", "ATOM")
 	q.Add("convert", "USDT")
 	req.Header.Set("Accepts", "application/json")
-	req.Header.Add("X-CMC_PRO_API_KEY", config.Config.CoinmarketcapAPIKey)
+	req.Header.Add("X-CMC_PRO_API_KEY", config.Config.CoinmarketcapapiKey)
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)

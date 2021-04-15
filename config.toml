@@ -1,26 +1,24 @@
-# TOML Document
-
-title = "TOML Document"
-
-
 # http ,https
-ssl_mode = "false"
+sslmode = false
 
 # if mode dev null
-ssl_crt = "./server.crt"
-ssl_key = "./server.key"
-
-# 127.0.0.1:8000
-rest_ip_port = "127.0.0.1:9999"
-
-# Api Subscription Interval
-Interval = 10
+sslcrt = ""
+sslkey = ""
 
 #"postgres://{username}:{password}@{hostname}:{port}/bank?sslmode=require"
 db = "postgres://testuser:qwer1234@127.0.0.1:26257/oracle?sslmode=require"
-coinmarketcap_key =""
-whitelist_tokens = ["ATOMUSDT","LUNAUSDT","ETHUSDT"]
-whitelist_fiats = ["",]
+
+# 127.0.0.1:8000
+laddr = "127.0.0.1:9999"
+
+# Api Subscription Interval
+interval = 10
+
+whitelisttokens = ["ATOMUSDT","LUNAUSDT","ETHUSDT"]
+whitelistfiats = ["USDEUR","USDKRW"]
+
+coinmarketcapapikey =""
+
 [APIs]
         [APIs.Atom.Usd]
         binance = "https://api.binance.com/api/v3/ticker/price"

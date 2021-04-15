@@ -29,8 +29,8 @@ func StartServer(wg *sync.WaitGroup, ctx context.Context, logger *zap.Logger) {
 	router.POST("/tokens", TokensPrices)
 	router.POST("/fiat", FiatsPrices)
 
-	server := &http.Server{
-		Addr:    config.Config.RestIpPort,
+	client := &http.Server{
+		Addr:    config.Config.Laddr,
 		Handler: router,
 	}
 
@@ -49,7 +49,7 @@ func StartServer(wg *sync.WaitGroup, ctx context.Context, logger *zap.Logger) {
 				zap.Duration("Duration", time.Second),
 			)
 		}
-		if err := server.Close(); err != nil {
+		if err := client.Close(); err != nil {
 			logger.Fatal("Fatal",
 				zap.String("Server", err.Error()),
 				zap.Duration("Duration", time.Second),
@@ -58,7 +58,7 @@ func StartServer(wg *sync.WaitGroup, ctx context.Context, logger *zap.Logger) {
 	}()
 
 	if config.Config.SSLMode == true {
-		if err := server.ListenAndServeTLS(config.Config.SSLCrt, config.Config.SSLKey); err != nil {
+		if err := client.ListenAndServeTLS(config.Config.SSLCrt, config.Config.SSLKey); err != nil {
 			if err == http.ErrServerClosed {
 				logger.Info("INFO",
 					zap.String("Server", "Server closed under request"),
@@ -72,7 +72,7 @@ func StartServer(wg *sync.WaitGroup, ctx context.Context, logger *zap.Logger) {
 			}
 		}
 	} else if config.Config.SSLMode == false {
-		if err := server.ListenAndServe(); err != nil {
+		if err := client.ListenAndServe(); err != nil {
 			if err == http.ErrServerClosed {
 				logger.Info("INFO",
 					zap.String("Server", "Server closed under request"),

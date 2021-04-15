@@ -12,16 +12,15 @@ var (
 )
 
 type configType struct {
-	Title               string        `json:"title"`
-	SSLMode             bool          `json:"mode"`
+	SSLMode             bool          `json:"sslmode"`
 	SSLCrt              string        `json:"sslcrt"`
 	SSLKey              string        `json:"sslkey"`
 	DB                  string        `json:"db"`
-	RestIpPort          string        `json:"rest_ip_port"`
+	Laddr               string        `json:"laddr"`
 	Interval            time.Duration `json:"interval"`
-	WhitelistTokens     []string      `json:"whitelist_tokens"`
-	WhitelistFiats      []string      `json:"whitelist_fiats"`
-	CoinmarketcapAPIKey string        `json:"coinmarketcap_key"`
+	Whitelisttokens     []string      `json:"whitelisttokens"`
+	Whitelistfiats      []string      `json:"whitelistfiats"`
+	CoinmarketcapapiKey string        `json:"coinmarketcapapikey"`
 
 	APIs struct {
 		Atom struct {
@@ -47,11 +46,7 @@ type configType struct {
 }
 
 func ReadConfig(logger *zap.Logger) {
-	var config configType
-
-	path := "config.toml"
-
-	if _, err := toml.DecodeFile(path, &config); err != nil {
+	if _, err := toml.DecodeFile("config.toml", &Config); err != nil {
 		logger.Fatal("Fatal",
 			zap.String("Config", err.Error()),
 			zap.Duration("Duration", time.Second),

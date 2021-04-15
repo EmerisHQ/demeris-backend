@@ -39,7 +39,7 @@ func AllPriceQuery() []Prices {
 	var symbolToken Prices
 	var symbolFiat Prices
 
-	rowsToken, err := db.Queryx("SELECT * FROM aggregate.tokens")
+	rowsToken, err := db.Queryx("SELECT * FROM oracle.tokens")
 	if err != nil {
 		Logger.Error("Error",
 			zap.String("DB", err.Error()),
@@ -57,7 +57,7 @@ func AllPriceQuery() []Prices {
 		symbols = append(symbols, symbolToken)
 	}
 
-	rowsFiat, err := db.Queryx("SELECT * FROM aggregate.fiats")
+	rowsFiat, err := db.Queryx("SELECT * FROM oracle.fiats")
 	if err != nil {
 		Logger.Fatal("Error",
 			zap.String("DB", err.Error()),
@@ -84,7 +84,7 @@ func SelectPriceQuery(selectToken SelectToken) []Prices {
 
 	symbolNum := len(selectToken.Tokens)
 
-	query := "SELECT * FROM aggregate.tokens WHERE symbol=$1"
+	query := "SELECT * FROM oracle.tokens WHERE symbol=$1"
 
 	for i := 2; i <= symbolNum; i++ {
 		query += " OR" + " symbol=$" + strconv.Itoa(i)
@@ -121,7 +121,7 @@ func SelectFiatQuery(selectFiat SelectFiat) []Prices {
 
 	symbolNum := len(selectFiat.Fiat)
 
-	query := "SELECT * FROM aggregate.fiats WHERE symbol=$1"
+	query := "SELECT * FROM oracle.fiats WHERE symbol=$1"
 
 	for i := 2; i <= symbolNum; i++ {
 		query += " OR" + " symbol=$" + strconv.Itoa(i)
@@ -224,7 +224,7 @@ func TokensPrices(c *gin.Context) {
 		})
 		return
 	}
-	if diffpair(selectToken.Tokens, config.Config.WhitelistTokens) == false {
+	if diffpair(selectToken.Tokens, config.Config.Whitelisttokens) == false {
 		c.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
 			"data":    "",
@@ -276,7 +276,7 @@ func FiatsPrices(c *gin.Context) {
 		})
 		return
 	}
-	if diffpair(selectFiat.Fiat, config.Config.WhitelistFiats) == false {
+	if diffpair(selectFiat.Fiat, config.Config.Whitelistfiats) == false {
 		c.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
 			"data":    "",
