@@ -6,6 +6,7 @@ require (
 	github.com/cockroachdb/cockroach-go/v2 v2.1.0
 	github.com/gin-gonic/gin v1.7.0
 	github.com/go-playground/validator/v10 v10.5.0
+	github.com/iamolegga/enviper v1.2.1 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/jmoiron/sqlx v1.3.3
 	github.com/natefinch/lumberjack v2.0.0+incompatible
