@@ -1,6 +1,4 @@
 CREATE DATABASE oracle;
-CREATE DATABASE aggregate;
-
 
 CREATE USER testuser WITH PASSWORD 'qwer1234';
 GRANT ALL ON DATABASE oracle TO testuser;
@@ -22,14 +20,12 @@ GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.currencylayer TO testuser;
 INSERT INTO oracle.currencylayer VALUES ('USDEUR','10');
 SELECT * FROM oracle.currencylayer;
 
+CREATE TABLE oracle.tokens (symbol STRING PRIMARY KEY, price STRING);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.tokens TO testuser;
+INSERT INTO oracle.tokens VALUES ('ATOMUSDT','10');
+SELECT * FROM oracle.tokens;
 
-
-CREATE TABLE aggregate.tokens (symbol STRING PRIMARY KEY, price STRING);
-GRANT INSERT, DELETE, UPDATE, SELECT ON aggregate.tokens TO testuser;
-INSERT INTO aggregate.tokens VALUES ('ATOMUSDT','10');
-SELECT * FROM aggregate.tokens;
-
-CREATE TABLE aggregate.fiats (symbol STRING PRIMARY KEY, price STRING);
-GRANT INSERT, DELETE, UPDATE, SELECT ON aggregate.fiats TO testuser;
-INSERT INTO aggregate.fiats VALUES ('USDEUR','10');
-SELECT * FROM aggregate.fiats;
+CREATE TABLE oracle.fiats (symbol STRING PRIMARY KEY, price STRING);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.fiats TO testuser;
+INSERT INTO oracle.fiats VALUES ('USDEUR','10');
+SELECT * FROM oracle.fiats;

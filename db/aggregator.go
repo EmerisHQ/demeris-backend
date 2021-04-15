@@ -92,7 +92,7 @@ func PricetokenAggregator(ctx context.Context, db *sqlx.DB, logger *zap.Logger) 
 		Prices := PriceQuery(db, logger, q)
 		var Pricelist []float64
 		for _, apitokenList := range Prices {
-			for _, whitelistTokenList := range config.Config.WhitelistTokens {
+			for _, whitelistTokenList := range config.Config.Whitelisttokens {
 				//if Exclude if insert timemp is greater than 15 seconds
 				if apitokenList.Symbol == whitelistTokenList {
 					strtofloat, err := strconv.ParseFloat(apitokenList.Prirce, 64)
@@ -105,19 +105,26 @@ func PricetokenAggregator(ctx context.Context, db *sqlx.DB, logger *zap.Logger) 
 			}
 		}
 	}
-	for _, whitelistTokenList := range config.Config.WhitelistTokens {
+	for _, whitelistTokenList := range config.Config.Whitelisttokens {
 		var total float64 = 0
 		for _, value := range symbolkv[whitelistTokenList] {
 			total += value
 		}
+		if len(symbolkv[whitelistTokenList]) == 0 {
+			return nil
+		}
 		median := total / float64(len(symbolkv[whitelistTokenList]))
+
 		tx := db.MustBegin()
 		s := fmt.Sprintf("%f", median)
-		tx.MustExec("UPDATE aggregate.tokens SET price = ($1) WHERE symbol = ($2)", s, whitelistTokenList)
+		tx.MustExec("UPDATE oracle.tokens SET price = ($1) WHERE symbol = ($2)", s, whitelistTokenList)
 		err := tx.Commit()
 		if err != nil {
 			return fmt.Errorf("DB commit: %w", err)
 		}
+		logger.Info("Insert to median Price",
+			zap.String(whitelistTokenList, s),
+		)
 	}
 	return nil
 }
@@ -132,7 +139,7 @@ func PricefiatAggregator(ctx context.Context, db *sqlx.DB, logger *zap.Logger) e
 		Prices := PriceQuery(db, logger, q)
 		var Pricelist []float64
 		for _, apiTokenList := range Prices {
-			for _, whiteListTokenList := range config.Config.WhitelistFiats {
+			for _, whiteListTokenList := range config.Config.Whitelistfiats {
 				//if Exclude if insert timemp is greater than 15 seconds
 				if apiTokenList.Symbol == whiteListTokenList {
 					strToFloat, err := strconv.ParseFloat(apiTokenList.Prirce, 64)
@@ -145,19 +152,26 @@ func PricefiatAggregator(ctx context.Context, db *sqlx.DB, logger *zap.Logger) e
 			}
 		}
 	}
-	for _, whitelistTokenList := range config.Config.WhitelistFiats {
+	for _, whitelistTokenList := range config.Config.Whitelistfiats {
 		var total float64 = 0
 		for _, value := range symbolkv[whitelistTokenList] {
 			total += value
 		}
+		if len(symbolkv[whitelistTokenList]) == 0 {
+			return nil
+		}
 		median := total / float64(len(symbolkv[whitelistTokenList]))
+
 		tx := db.MustBegin()
 		s := fmt.Sprintf("%f", median)
-		tx.MustExec("UPDATE aggregate.fiats SET price = ($1) WHERE symbol = ($2)", s, whitelistTokenList)
+		tx.MustExec("UPDATE oracle.fiats SET price = ($1) WHERE symbol = ($2)", s, whitelistTokenList)
 		err := tx.Commit()
 		if err != nil {
 			return fmt.Errorf("DB commit: %w", err)
 		}
+		logger.Info("Insert to median Price",
+			zap.String(whitelistTokenList, s),
+		)
 	}
 	return nil
 }
