@@ -1,62 +1,34 @@
 package database
 
 import (
-	"fmt"
-	"net"
-
 	"github.com/allinbits/navigator-backend/config"
-	"github.com/jackc/pgx"
-	"golang.org/x/crypto/ssh"
+	"github.com/allinbits/navigator-utils/database"
 )
 
 type Database struct {
-	pool      *pgx.ConnPool
-	sshClient *ssh.Client
+	dbi           *database.Instance
+	connectionURL string
 }
 
-var DB *Database
-
-// Initializes a connection pool with an ssh connection
-func Init(c *config.Config) error {
-	// TODO: toggle ssh with UseSsh var in config
-	if sshcon, err := NewSshConnection(c); err == nil {
-		fmt.Println("Connected to server")
-		connPoolConfig := pgx.ConnPoolConfig{
-			ConnConfig: pgx.ConnConfig{
-				Host: "localhost",
-				Port: uint16(26257),
-				User: "root",
-				Dial: func(network, addr string) (net.Conn, error) {
-					return sshcon.Dial(network, addr)
-				},
-			},
-			MaxConnections: 20,
-		}
-		pool, err := pgx.NewConnPool(connPoolConfig)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("Connected to the db\n")
-		db := &Database{
-			pool:      pool,
-			sshClient: sshcon,
-		}
-
-		DB = db
-
-		return nil
-	} else {
-		panic(err)
+// Init initializes a connection to the database.
+func Init(c *config.Config) (*Database, error) {
+	i, err := database.New(c.DatabaseConnectionURL)
+	if err != nil {
+		return nil, err
 	}
+
+	return &Database{
+		dbi:           i,
+		connectionURL: c.DatabaseConnectionURL,
+	}, nil
 }
 
-// Closes the connections
-func Close() {
-	DB.pool.Close()
-	DB.sshClient.Close()
+// Close closes the connections to the database.
+func (d *Database) Close() error {
+	return d.dbi.Close()
 }
 
-// Queries the DB
-func Q(sql string, args ...interface{}) (*pgx.Rows, error) {
-	return DB.pool.Query(sql, args...)
+// Q queries the DB.
+func (d *Database) Q(sql string, dest interface{}, args ...interface{}) error {
+	return d.dbi.Exec(sql, args, dest)
 }
