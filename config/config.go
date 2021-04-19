@@ -9,15 +9,9 @@ import (
 )
 
 type Config struct {
-	SshUser string
-	SshHost string
-	SshPort string
-	KeyFile string
-	DbHost  string
-	DbPort  uint16
-	DbUser  string
-	DbPass  string
-	UseSsh  bool
+	DatabaseConnectionURL string `validate:"required"`
+	ListenAddr            string `validate:"required"`
+	Debug                 bool
 }
 
 func (c Config) Validate() error {
@@ -32,5 +26,7 @@ func (c Config) Validate() error {
 func Read() (*Config, error) {
 	var c Config
 
-	return &c, configuration.ReadConfig(&c, "navigator-api", map[string]string{})
+	return &c, configuration.ReadConfig(&c, "navigator-api", map[string]string{
+		"ListenAddr": ":9090",
+	})
 }
