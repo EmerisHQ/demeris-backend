@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/allinbits/navigator-utils v0.0.0-20210415125637-589c53e56fce
+	github.com/btcsuite/btcutil v1.0.2
 	github.com/gin-gonic/gin v1.7.1
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
