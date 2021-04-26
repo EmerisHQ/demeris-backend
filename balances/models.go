@@ -5,7 +5,7 @@ type Balance struct {
 	BaseDenom string  `json:"base_denom,omitempty"`
 	Verified  bool    `json:"verified,omitempty"`
 	Native    bool    `json:"native,omitempty"`
-	Amount    uint64  `json:"amount,omitempty"`
+	Amount    string  `json:"amount,omitempty"`
 	OnChain   string  `json:"on_chain,omitempty"`
 	FeeToken  bool    `json:"fee_token,omitempty"`
 	Ibc       IbcInfo `json:"ibc,omitempty"`
