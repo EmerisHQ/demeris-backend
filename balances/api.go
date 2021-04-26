@@ -29,7 +29,9 @@ func GetBalancesByAddresses(c *gin.Context) {
 	balances, err := d.Database.Balances(addresses)
 
 	if err != nil {
-		panic(err)
+		d.Logger.Errorw("cannot query database balance for addresses", "addresses", addresses, "error", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	// TODO: get unique chains
