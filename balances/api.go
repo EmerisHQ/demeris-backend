@@ -36,14 +36,18 @@ func GetBalancesByAddresses(c *gin.Context) {
 	balances, err := d.Database.Balances(addresses)
 
 	if err != nil {
-		c.Error(deps.NewError(
+		e := deps.NewError(
 			"balances",
 			fmt.Errorf("cannot retrieve balances for addresses %v", addresses),
 			http.StatusBadRequest,
-		))
+		)
+
+		c.Error(e)
 
 		d.Logger.Errorw(
 			"cannot query database balance for addresses",
+			"id",
+			e.ID,
 			"addresses",
 			addresses,
 			"error",

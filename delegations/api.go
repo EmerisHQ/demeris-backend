@@ -19,7 +19,7 @@ func GetDelegationsByAddress(c *gin.Context) {
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
-			"balances",
+			"delegations",
 			fmt.Errorf("internal error"),
 			http.StatusInternalServerError,
 		))
@@ -33,14 +33,18 @@ func GetDelegationsByAddress(c *gin.Context) {
 	dl, err := d.Database.Delegations(address)
 
 	if err != nil {
-		c.Error(deps.NewError(
-			"balances",
+		e := deps.NewError(
+			"delegations",
 			fmt.Errorf("cannot retrieve delegations for address %v", address),
 			http.StatusBadRequest,
-		))
+		)
+
+		c.Error(e)
 
 		d.Logger.Errorw(
 			"cannot query database delegations for addresses",
+			"id",
+			e.ID,
 			"address",
 			address,
 			"error",
