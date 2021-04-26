@@ -23,5 +23,5 @@ func (d *Database) Balances(addresses []string) ([]Balance, error) {
 
 	q = d.dbi.DB.Rebind(q)
 
-	return balances, d.dbi.DB.Select(&balances, q, args)
+	return balances, d.dbi.DB.Select(&balances, q, args...)
 }
