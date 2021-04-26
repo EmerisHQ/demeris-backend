@@ -3,11 +3,12 @@ module github.com/allinbits/navigator-backend
 go 1.16
 
 require (
-	github.com/allinbits/navigator-utils v0.0.0-20210415125637-589c53e56fce
+	github.com/allinbits/navigator-utils v0.0.0-20210426130605-2c38afe30c01
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/gin-gonic/gin v1.7.1
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
+	github.com/jmoiron/sqlx v1.3.3 // indirect
 	github.com/lib/pq v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect

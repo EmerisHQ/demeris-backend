@@ -29,6 +29,8 @@ github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRF
 github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/allinbits/navigator-utils v0.0.0-20210415125637-589c53e56fce h1:ioKUfRP98/wDgZEdTvZ51/TvAX1wSrwCW/+h8FGOTPk=
 github.com/allinbits/navigator-utils v0.0.0-20210415125637-589c53e56fce/go.mod h1:1fxphEO7WufxZkk13uGO8sSKAK/oXujF1mhdCErb7rE=
+github.com/allinbits/navigator-utils v0.0.0-20210426130605-2c38afe30c01 h1:r4DdCF4rDrBaY7Re7MC1luz3b25m01fRiHwpH0Al+aE=
+github.com/allinbits/navigator-utils v0.0.0-20210426130605-2c38afe30c01/go.mod h1:1fxphEO7WufxZkk13uGO8sSKAK/oXujF1mhdCErb7rE=
 github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/apache/thrift v0.13.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb+bacwQ=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
