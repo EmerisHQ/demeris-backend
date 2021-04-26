@@ -9,10 +9,10 @@ import (
 )
 
 func Register(router *gin.Engine) {
-	router.GET("/delegations/:address", GetDelegationsByAddress)
+	router.GET("/staking_balances/:address", GetDelegationsByAddress)
 }
 
-// GetStakingBalanceByAddress - Find balances by addresses
+// GetDelegationsByAddress returns staking balances of an address.
 func GetDelegationsByAddress(c *gin.Context) {
 	var res Delegations
 
