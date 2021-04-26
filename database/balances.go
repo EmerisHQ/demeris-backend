@@ -4,8 +4,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// TODO: move this stuff to the database package
-
 type Balance struct {
 	Id        uint64 `db:"id"`
 	ChainName string `db:"chain_name"`
@@ -25,5 +23,5 @@ func (d *Database) Balances(addresses []string) ([]Balance, error) {
 
 	q = d.dbi.DB.Rebind(q)
 
-	return balances, d.dbi.DB.Select(&balances, q, args...)
+	return balances, d.dbi.DB.Select(&balances, q, args)
 }

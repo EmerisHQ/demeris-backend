@@ -10,6 +10,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jmoiron/sqlx v1.3.3 // indirect
 	github.com/lib/pq v1.10.0 // indirect
+	github.com/sony/sonyflake v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
 	go.uber.org/zap v1.13.0

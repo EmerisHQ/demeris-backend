@@ -1,6 +1,7 @@
 package balances
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -18,7 +19,13 @@ func GetBalancesByAddresses(c *gin.Context) {
 	res := []Balance{}
 	d, err := deps.GetDeps(c)
 	if err != nil {
-		c.Error(err)
+		c.Error(deps.NewError(
+			"balances",
+			fmt.Errorf("internal error"),
+			http.StatusInternalServerError,
+		))
+
+		panic("cannot retrieve context deps")
 		return
 	}
 
@@ -29,8 +36,20 @@ func GetBalancesByAddresses(c *gin.Context) {
 	balances, err := d.Database.Balances(addresses)
 
 	if err != nil {
-		d.Logger.Errorw("cannot query database balance for addresses", "addresses", addresses, "error", err)
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.Error(deps.NewError(
+			"balances",
+			fmt.Errorf("cannot retrieve balances for addresses %v", addresses),
+			http.StatusBadRequest,
+		))
+
+		d.Logger.Errorw(
+			"cannot query database balance for addresses",
+			"addresses",
+			addresses,
+			"error",
+			err,
+		)
+
 		return
 	}
 

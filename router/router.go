@@ -1,7 +1,7 @@
 package router
 
 import (
-	"net/http"
+	"errors"
 
 	"github.com/allinbits/navigator-backend/balances"
 	"github.com/allinbits/navigator-backend/database"
@@ -53,9 +53,17 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
-		if len(c.Errors) != 0 {
-			c.JSON(http.StatusBadRequest, c.Errors.JSON())
+		l := c.Errors.Last()
+		if l == nil {
+			c.Next()
 		}
+
+		rerr := deps.Error{}
+		if !errors.As(l, &rerr) {
+			panic(l)
+		}
+
+		c.JSON(rerr.StatusCode, rerr)
 	}
 }
 
