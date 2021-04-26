@@ -3,6 +3,8 @@ package router
 import (
 	"errors"
 
+	"github.com/allinbits/navigator-backend/delegations"
+
 	"github.com/allinbits/navigator-backend/balances"
 	"github.com/allinbits/navigator-backend/database"
 	"github.com/allinbits/navigator-backend/router/deps"
@@ -56,6 +58,7 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 		l := c.Errors.Last()
 		if l == nil {
 			c.Next()
+			return
 		}
 
 		rerr := deps.Error{}
@@ -70,4 +73,5 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 func registerRoutes(engine *gin.Engine) {
 	balances.Register(engine)
 	trace.Register(engine)
+	delegations.Register(engine)
 }
