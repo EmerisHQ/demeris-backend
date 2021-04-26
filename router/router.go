@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/allinbits/navigator-backend/balances"
 	"github.com/allinbits/navigator-backend/database"
 	"github.com/allinbits/navigator-backend/router/deps"
@@ -27,6 +29,7 @@ func New(db *database.Database, l *zap.SugaredLogger) *Router {
 
 	engine.Use(logging.LogRequest(l.Desugar()))
 	engine.Use(r.decorateCtxWithDeps())
+	engine.Use(r.handleErrors())
 
 	registerRoutes(engine)
 
@@ -43,6 +46,16 @@ func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
 			Logger:   r.l,
 			Database: r.db,
 		})
+	}
+}
+
+func (r *Router) handleErrors() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		if len(c.Errors) != 0 {
+			c.JSON(http.StatusBadRequest, c.Errors.JSON())
+		}
 	}
 }
 
