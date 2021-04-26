@@ -1,9 +1,6 @@
 package config
 
 import (
-	"fmt"
-	"net/url"
-
 	"github.com/allinbits/navigator-utils/validation"
 
 	"github.com/allinbits/navigator-utils/configuration"
@@ -14,7 +11,7 @@ import (
 type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
 	ListenAddr            string `validate:"required"`
-	CNSAddr               string `validate:"required"`
+	CNSAddr               string `validate:"required,url"`
 	Debug                 bool
 }
 
@@ -22,18 +19,6 @@ func (c Config) Validate() error {
 	err := validator.New().Struct(c)
 	if err != nil {
 		return validation.MissingFieldsErr(err, false)
-	}
-
-	u, err := url.ParseRequestURI(c.CNSAddr)
-	if err != nil {
-		return fmt.Errorf("invalid url, %w", err)
-	}
-
-	switch {
-	case u.Scheme == "":
-		return fmt.Errorf("missing scheme")
-	case u.Host == "":
-		return fmt.Errorf("missing hostname")
 	}
 
 	return nil
