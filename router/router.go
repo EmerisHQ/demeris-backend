@@ -15,18 +15,20 @@ import (
 )
 
 type Router struct {
-	g  *gin.Engine
-	db *database.Database
-	l  *zap.SugaredLogger
+	g      *gin.Engine
+	db     *database.Database
+	l      *zap.SugaredLogger
+	cnsURL string
 }
 
-func New(db *database.Database, l *zap.SugaredLogger) *Router {
+func New(db *database.Database, l *zap.SugaredLogger, cnsURL string) *Router {
 	engine := gin.Default()
 
 	r := &Router{
-		g:  engine,
-		db: db,
-		l:  l,
+		g:      engine,
+		db:     db,
+		l:      l,
+		cnsURL: cnsURL,
 	}
 
 	engine.Use(logging.LogRequest(l.Desugar()))
@@ -47,6 +49,7 @@ func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
 		c.Set("deps", &deps.Deps{
 			Logger:   r.l,
 			Database: r.db,
+			CNSURL:   r.cnsURL,
 		})
 	}
 }

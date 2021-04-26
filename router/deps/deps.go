@@ -12,6 +12,7 @@ import (
 type Deps struct {
 	Logger   *zap.SugaredLogger
 	Database *database.Database
+	CNSURL   string
 }
 
 func GetDeps(c *gin.Context) (*Deps, error) {
