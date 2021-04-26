@@ -10,11 +10,11 @@ func RunMigrations(dbConnString string, migrations []string) error {
 	}
 
 	for i, m := range migrations {
-		_, err := c.d.Exec(m)
+		_, err := c.DB.Exec(m)
 		if err != nil {
-			return fmt.Errorf("error while running migration #%d, %w", i, err)
+			return fmt.Errorf("error while running migration #%DB, %w", i, err)
 		}
 	}
 
-	return c.d.Close()
+	return c.DB.Close()
 }

@@ -12,7 +12,7 @@ import (
 
 // Instance contains a database connection instance.
 type Instance struct {
-	d *sqlx.DB
+	DB *sqlx.DB
 }
 
 // New returns an Instance connected to the database pointed by connString.
@@ -23,7 +23,7 @@ func New(connString string) (*Instance, error) {
 	}
 
 	i := &Instance{
-		d: db,
+		DB: db,
 	}
 
 	return i, nil
@@ -31,13 +31,13 @@ func New(connString string) (*Instance, error) {
 
 // Close closes the connection held by i.
 func (i *Instance) Close() error {
-	return i.d.Close()
+	return i.DB.Close()
 }
 
 // Exec executes query with the given params.
 // If params is nil, query is assumed to be of the `SELECT` kind, and the resulting data will be written in dest.
 func (i *Instance) Exec(query string, params interface{}, dest interface{}) error {
-	return crdbsqlx.ExecuteTx(context.Background(), i.d, nil, func(tx *sqlx.Tx) error {
+	return crdbsqlx.ExecuteTx(context.Background(), i.DB, nil, func(tx *sqlx.Tx) error {
 		if dest != nil {
 			if params != nil {
 				return tx.Select(dest, query, params)
