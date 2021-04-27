@@ -14,3 +14,8 @@ func (d *Database) Chain(name string) (models.Chain, error) {
 		"name": name,
 	})
 }
+
+func (d *Database) Chains() ([]models.Chain, error) {
+	var c []models.Chain
+	return c, d.dbi.Exec("select * from cns.chains", nil, &c)
+}
