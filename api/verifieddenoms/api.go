@@ -19,7 +19,7 @@ func GetVerifiedDenoms(c *gin.Context) {
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
-			"feetoken",
+			"verified_denoms",
 			fmt.Errorf("internal error"),
 			http.StatusInternalServerError,
 		))
@@ -32,7 +32,7 @@ func GetVerifiedDenoms(c *gin.Context) {
 
 	if err != nil {
 		e := deps.NewError(
-			"feetoken",
+			"verified_denoms",
 			fmt.Errorf("cannot retrieve chains"),
 			http.StatusBadRequest,
 		)
