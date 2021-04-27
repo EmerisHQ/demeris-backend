@@ -22,7 +22,7 @@ type Chain struct {
 func (c Chain) VerifiedFeeTokens() DenomList {
 	var ret DenomList
 	for _, ft := range c.FeeTokens {
-		if !ft.IsVerified {
+		if !ft.Verified {
 			continue
 		}
 
@@ -36,7 +36,7 @@ func (c Chain) VerifiedFeeTokens() DenomList {
 func (c Chain) VerifiedNativeDenoms() DenomList {
 	var ret DenomList
 	for _, ft := range c.NativeDenoms {
-		if !ft.IsVerified {
+		if !ft.Verified {
 			continue
 		}
 
@@ -48,8 +48,8 @@ func (c Chain) VerifiedNativeDenoms() DenomList {
 
 // Denom holds a token denomination and its verification status.
 type Denom struct {
-	Name       string `db:"name" binding:"required" json:"name"`
-	IsVerified bool   `db:"is_verified" binding:"required" json:"is_verified"`
+	Name     string `db:"name" binding:"required" json:"name"`
+	Verified bool   `db:"verified" binding:"required" json:"verified"`
 }
 
 // DenomList represents a slice of Denom.

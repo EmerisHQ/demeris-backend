@@ -57,7 +57,7 @@ func GetFeeToken(c *gin.Context) {
 	for _, cc := range chain.VerifiedFeeTokens() {
 		res.FeeTokens = append(res.FeeTokens, FeeToken{
 			Name:     cc.Name,
-			Verified: cc.IsVerified,
+			Verified: cc.Verified,
 		})
 	}
 
