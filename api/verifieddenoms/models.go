@@ -1,4 +1,4 @@
-package verifieddenom
+package verifieddenoms
 
 type VerifiedDenom struct {
 	Name     string `json:"name"`

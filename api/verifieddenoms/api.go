@@ -1,4 +1,4 @@
-package verifieddenom
+package verifieddenoms
 
 import (
 	"fmt"
