@@ -3,7 +3,7 @@ package gaia_processor
 import (
 	"bytes"
 
-	"github.com/allinbits/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener"
 	liquiditytypes "github.com/tendermint/liquidity/x/liquidity/types"
 	"go.uber.org/zap"
 )

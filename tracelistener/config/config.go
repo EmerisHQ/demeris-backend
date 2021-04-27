@@ -1,9 +1,9 @@
 package config
 
 import (
-	"github.com/allinbits/navigator-utils/validation"
+	"github.com/allinbits/demeris-backend/utils/validation"
 
-	"github.com/allinbits/navigator-utils/configuration"
+	"github.com/allinbits/demeris-backend/utils/configuration"
 
 	"github.com/go-playground/validator/v10"
 )

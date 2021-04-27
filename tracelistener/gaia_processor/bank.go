@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/allinbits/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

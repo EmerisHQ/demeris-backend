@@ -2,6 +2,10 @@ package database
 
 import (
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
+
+	navigator_cns "github.com/allinbits/demeris-backend/cns"
+
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type Instance struct {
@@ -10,9 +14,7 @@ type Instance struct {
 }
 
 func New(connString string) (*Instance, error) {
-
 	i, err := dbutils.New(connString)
-
 	if err != nil {
 		return nil, err
 	}
@@ -23,10 +25,15 @@ func New(connString string) (*Instance, error) {
 	}
 
 	ii.runMigrations()
-
 	return ii, nil
 }
 
-func (i *Instance) Add(query string, data []interface{}) error {
-	return i.d.Exec(query, data, nil)
+func (i *Instance) AddChain(chain navigator_cns.Chain) error {
+	return i.d.Exec(insertChain, &chain, nil)
+}
+
+func (i *Instance) Chains() ([]navigator_cns.Chain, error) {
+	var c []navigator_cns.Chain
+
+	return c, i.d.Exec(getAllChains, nil, &c)
 }

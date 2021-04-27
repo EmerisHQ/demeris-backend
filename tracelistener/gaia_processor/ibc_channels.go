@@ -8,7 +8,7 @@ import (
 	host "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
 	"go.uber.org/zap"
 
-	"github.com/allinbits/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener"
 )
 
 type channelWritebackPacket struct {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 
-	"github.com/allinbits/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener"
 	transferTypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"go.uber.org/zap"
 )

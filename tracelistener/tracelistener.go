@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/allinbits/tracelistener/config"
+	"github.com/allinbits/demeris-backend/tracelistener/config"
 
 	"go.uber.org/zap"
 )
