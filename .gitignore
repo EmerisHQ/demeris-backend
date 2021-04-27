@@ -102,3 +102,9 @@ docs/swagger.*
 docs/docs.go
 
 .idea/
+# air config https://github.com/cosmtrek/air
+.air.toml
+.air
+
+# demeris config
+demeris-api.toml
