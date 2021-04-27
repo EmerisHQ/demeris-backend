@@ -1,0 +1,31 @@
+CREATE DATABASE oracle;
+
+CREATE USER testuser WITH PASSWORD 'qwer1234';
+GRANT ALL ON DATABASE oracle TO testuser;
+GRANT SELECT ON TABLE oracle.public.* TO testuser;
+
+CREATE TABLE oracle.binance (symbol STRING PRIMARY KEY, price STRING);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.binance TO testuser;
+INSERT INTO oracle.binance VALUES ('ATOMUSDT','10');
+SELECT * FROM oracle.binance;
+
+
+CREATE TABLE oracle.coinmarketcap (symbol STRING PRIMARY KEY, price STRING);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.coinmarketcap TO testuser;
+INSERT INTO oracle.coinmarketcap VALUES ('ATOMUSDT','10');
+SELECT * FROM oracle.coinmarketcap;
+
+CREATE TABLE oracle.currencylayer (symbol STRING PRIMARY KEY, price STRING);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.currencylayer TO testuser;
+INSERT INTO oracle.currencylayer VALUES ('USDEUR','10');
+SELECT * FROM oracle.currencylayer;
+
+CREATE TABLE oracle.tokens (symbol STRING PRIMARY KEY, price STRING);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.tokens TO testuser;
+INSERT INTO oracle.tokens VALUES ('ATOMUSDT','10');
+SELECT * FROM oracle.tokens;
+
+CREATE TABLE oracle.fiats (symbol STRING PRIMARY KEY, price STRING);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.fiats TO testuser;
+INSERT INTO oracle.fiats VALUES ('USDEUR','10');
+SELECT * FROM oracle.fiats;
