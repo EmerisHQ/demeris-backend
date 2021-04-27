@@ -14,7 +14,7 @@ func Register(router *gin.Engine) {
 
 // GetFeeToken returns the fee token for a given chain, looked up by the chain name attribute.
 func GetFeeToken(c *gin.Context) {
-	var res []FeeToken
+	var res feeTokenResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -55,7 +55,7 @@ func GetFeeToken(c *gin.Context) {
 	}
 
 	for _, cc := range chain.FeeTokens {
-		res = append(res, FeeToken{
+		res.FeeTokens = append(res.FeeTokens, FeeToken{
 			Name:     cc.Name,
 			Verified: cc.IsVerified,
 		})
