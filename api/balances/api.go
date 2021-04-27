@@ -3,18 +3,17 @@ package balances
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/gin-gonic/gin"
 )
 
 func Register(router *gin.Engine) {
-	router.GET("/balances/:addresses", GetBalancesByAddresses)
+	router.GET("/balances/:address", GetBalancesByAddress)
 }
 
-// GetBalancesByAddresses - Find balances by addresses
-func GetBalancesByAddresses(c *gin.Context) {
+// GetBalancesByAddress - Find balances by address
+func GetBalancesByAddress(c *gin.Context) {
 
 	res := []Balance{}
 	d, err := deps.GetDeps(c)
@@ -29,16 +28,16 @@ func GetBalancesByAddresses(c *gin.Context) {
 		return
 	}
 
-	addresses := strings.Split(c.Param("addresses"), ",")
+	address := c.Param("address")
 
-	d.Logger.Info("Searching for addresses, ", addresses)
+	d.Logger.Info("Searching for addresses, ", address)
 
-	balances, err := d.Database.Balances(addresses)
+	balances, err := d.Database.Balances(address)
 
 	if err != nil {
 		e := deps.NewError(
 			"balances",
-			fmt.Errorf("cannot retrieve balances for addresses %v", addresses),
+			fmt.Errorf("cannot retrieve balances for addresses %v", address),
 			http.StatusBadRequest,
 		)
 
@@ -49,7 +48,7 @@ func GetBalancesByAddresses(c *gin.Context) {
 			"id",
 			e.ID,
 			"addresses",
-			addresses,
+			address,
 			"error",
 			err,
 		)
