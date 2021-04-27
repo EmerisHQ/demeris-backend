@@ -3,6 +3,8 @@ package router
 import (
 	"errors"
 
+	"github.com/allinbits/navigator-backend/feetoken"
+
 	"github.com/allinbits/navigator-backend/delegations"
 
 	"github.com/allinbits/navigator-backend/balances"
@@ -77,4 +79,5 @@ func registerRoutes(engine *gin.Engine) {
 	balances.Register(engine)
 	trace.Register(engine)
 	delegations.Register(engine)
+	feetoken.Register(engine)
 }
