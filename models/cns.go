@@ -1,11 +1,11 @@
-package demeris_cns
+package models
 
 import (
 	"encoding/json"
 	"errors"
 )
 
-// Chain represents chain metadata row on the database.
+// Chain represents CNS chain metadata row on the database.
 type Chain struct {
 	ID                uint64              `db:"id" json:"-"`
 	ChainName         string              `db:"chain_name" binding:"required" json:"chain_name"`                 // the unique name of the chain
