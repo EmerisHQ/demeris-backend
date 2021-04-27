@@ -3,14 +3,14 @@ package rest
 import (
 	"net/http"
 
-	navigator_cns "github.com/allinbits/demeris-backend/cns"
+	demeris_cns "github.com/allinbits/demeris-backend/cns"
 	"github.com/gin-gonic/gin"
 )
 
 const getChainsRoute = "/chains"
 
 type getChainsResp struct {
-	Chains []navigator_cns.Chain `json:"chains"`
+	Chains []demeris_cns.Chain `json:"chains"`
 }
 
 func (r *router) getChainsHandler(ctx *gin.Context) {

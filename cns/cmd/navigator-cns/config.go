@@ -30,8 +30,8 @@ func (c Config) Validate() error {
 func readConfig() (*Config, error) {
 	var c Config
 
-	return &c, configuration.ReadConfig(&c, "navigator-cns", map[string]string{
-		"LogPath":     "./navigator-cns.log",
+	return &c, configuration.ReadConfig(&c, "demeris-cns", map[string]string{
+		"LogPath":     "./demeris-cns.log",
 		"RESTAddress": ":9999",
 	})
 }

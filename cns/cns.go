@@ -1,4 +1,4 @@
-package navigator_cns
+package demeris_cns
 
 import (
 	"encoding/json"

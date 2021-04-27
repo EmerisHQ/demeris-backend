@@ -3,14 +3,14 @@ package rest
 import (
 	"net/http"
 
-	navigator_cns "github.com/allinbits/demeris-backend/cns"
+	demeris_cns "github.com/allinbits/demeris-backend/cns"
 	"github.com/gin-gonic/gin"
 )
 
 const addChainRoute = "/add"
 
 func (r *router) addChainHandler(ctx *gin.Context) {
-	newChain := navigator_cns.Chain{}
+	newChain := demeris_cns.Chain{}
 
 	if err := ctx.ShouldBindJSON(&newChain); err != nil {
 		e(ctx, http.StatusBadRequest, err)

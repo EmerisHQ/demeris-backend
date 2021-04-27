@@ -27,7 +27,7 @@ func (c Config) Validate() error {
 func Read() (*Config, error) {
 	var c Config
 
-	return &c, configuration.ReadConfig(&c, "navigator-api", map[string]string{
+	return &c, configuration.ReadConfig(&c, "demeris-api", map[string]string{
 		"ListenAddr": ":9090",
 	})
 }

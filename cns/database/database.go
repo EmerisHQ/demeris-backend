@@ -3,7 +3,7 @@ package database
 import (
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
 
-	navigator_cns "github.com/allinbits/demeris-backend/cns"
+	demeris_cns "github.com/allinbits/demeris-backend/cns"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
@@ -28,12 +28,12 @@ func New(connString string) (*Instance, error) {
 	return ii, nil
 }
 
-func (i *Instance) AddChain(chain navigator_cns.Chain) error {
+func (i *Instance) AddChain(chain demeris_cns.Chain) error {
 	return i.d.Exec(insertChain, &chain, nil)
 }
 
-func (i *Instance) Chains() ([]navigator_cns.Chain, error) {
-	var c []navigator_cns.Chain
+func (i *Instance) Chains() ([]demeris_cns.Chain, error) {
+	var c []demeris_cns.Chain
 
 	return c, i.d.Exec(getAllChains, nil, &c)
 }
