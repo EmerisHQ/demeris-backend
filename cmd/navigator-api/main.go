@@ -26,6 +26,7 @@ func main() {
 	r := router.New(
 		dbi,
 		l,
+		cfg.CNSAddr,
 	)
 
 	if err := r.Serve(cfg.ListenAddr); err != nil {
