@@ -18,6 +18,34 @@ type Chain struct {
 	//nodeInfo nodeInfo // info required to query full-node (e.g. to submit tx)
 }
 
+// VerifiedFeeTokens returns a DenomList of fee tokens that are verified.
+func (c Chain) VerifiedFeeTokens() DenomList {
+	var ret DenomList
+	for _, ft := range c.FeeTokens {
+		if !ft.IsVerified {
+			continue
+		}
+
+		ret = append(ret, ft)
+	}
+
+	return ret
+}
+
+// VerifiedNativeDenoms returns a DenomList of native denoms that are verified.
+func (c Chain) VerifiedNativeDenoms() DenomList {
+	var ret DenomList
+	for _, ft := range c.NativeDenoms {
+		if !ft.IsVerified {
+			continue
+		}
+
+		ret = append(ret, ft)
+	}
+
+	return ret
+}
+
 // Denom holds a token denomination and its verification status.
 type Denom struct {
 	Name       string `db:"name" binding:"required" json:"name"`
