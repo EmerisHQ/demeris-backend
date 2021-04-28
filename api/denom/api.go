@@ -82,7 +82,7 @@ func VerifyTrace(c *gin.Context) {
 	var chainInfo models.Chain
 	var trace Trace
 
-	for idx, channel := range channels {
+	for _, channel := range channels {
 
 		client, _ = d.Database.QueryIBCClientTrace(chain, channel)
 
@@ -121,8 +121,39 @@ func VerifyTrace(c *gin.Context) {
 			trace.CounterpartyName = counterparty
 
 			// query counterparty chain name
-			client, _ = d.Database.QueryIBCClientTrace(chain, channel)
+			client, _ = d.Database.Connection(chain, client.CounterConnectionID)
 
+			if client.CounterClientID != trace.ClientId {
+				err = errors.New("Client ids do not match")
+
+				e := deps.NewError(
+					"denom/verify-trace",
+					fmt.Errorf("Client ids do not match"),
+					http.StatusBadRequest,
+				)
+
+				c.Error(e)
+
+				d.Logger.Errorw(
+					"invalid client id",
+					"id",
+					e.ID,
+					"hash",
+					hash,
+					"path",
+					res.Path,
+					"client_id",
+					client.ClientId,
+					"chain",
+					chain,
+					"counter_client_id",
+					client.CounterClientID,
+					"counter_chain",
+					counterparty,
+					"err",
+					err,
+				)
+			}
 		}
 
 		res.Trace = append(res.Trace, trace)
