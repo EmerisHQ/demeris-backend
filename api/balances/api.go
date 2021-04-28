@@ -37,17 +37,17 @@ func GetBalancesByAddress(c *gin.Context) {
 	if err != nil {
 		e := deps.NewError(
 			"balances",
-			fmt.Errorf("cannot retrieve balances for addresses %v", address),
+			fmt.Errorf("cannot retrieve balances for address %v", address),
 			http.StatusBadRequest,
 		)
 
 		c.Error(e)
 
 		d.Logger.Errorw(
-			"cannot query database balance for addresses",
+			"cannot query database balance for address",
 			"id",
 			e.ID,
-			"addresses",
+			"address",
 			address,
 			"error",
 			err,
@@ -70,15 +70,38 @@ func GetBalancesByAddress(c *gin.Context) {
 		if b.Denom[:4] == "ibc/" {
 			// is ibc token
 			balance.Ibc = IbcInfo{
-				IbcDenom: b.Denom,
+				Hash: b.Denom[4:],
 			}
-			balance.Native = false
 
-			// TODO: verify trace
-			balance.BaseDenom = "" // check trace
+			denomTrace, err := d.Database.DenomTrace(b.ChainName, b.Denom[4:])
+
+			if err != nil {
+				e := deps.NewError(
+					"balances",
+					fmt.Errorf("cannot query denom trace for token %v on chain %v", b.Denom, b.ChainName),
+					http.StatusBadRequest,
+				)
+
+				c.Error(e)
+
+				d.Logger.Errorw(
+					"cannot query database balance for address",
+					"id",
+					e.ID,
+					"token",
+					b.Denom,
+					"chain",
+					b.ChainName,
+					"error",
+					err,
+				)
+
+				return
+			}
+			balance.BaseDenom = denomTrace.BaseDenom
+			balance.Ibc.Path = denomTrace.Path
 
 		} else {
-			balance.Native = true
 			balance.Verified = true
 			balance.BaseDenom = b.Denom
 		}
