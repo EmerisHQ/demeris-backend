@@ -11,7 +11,7 @@ import (
 
 type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
-	LogPath               string `validate:"required"`
+	LogPath               string
 	RESTAddress           string `validate:"required"`
 	Debug                 bool
 }
@@ -31,7 +31,6 @@ func readConfig() (*Config, error) {
 	var c Config
 
 	return &c, configuration.ReadConfig(&c, "demeris-cns", map[string]string{
-		"LogPath":     "./demeris-cns.log",
 		"RESTAddress": ":9999",
 	})
 }
