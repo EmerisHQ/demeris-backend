@@ -98,3 +98,5 @@ $RECYCLE.BIN/
 *.log
 
 build/
+docs/swagger.*
+docs/docs.go

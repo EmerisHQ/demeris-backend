@@ -1,5 +1,13 @@
 # Demeris Backend
 
+## Generating API documentation
+
+To generate the OpenAPI specification document (`swagger.yml`), run:
+
+```shell
+make generate-swagger
+```
+
 ## Compiling
 
 Each compilation target resides under a directory living in `cmd`, for example to build `tracelistener` one would execute:
@@ -24,3 +32,11 @@ make DEBUG=true
 
 Build targets are automatically updated as soon as you create a new directory under `cmd`, no need to modify the
 `Makefile` to include them.
+
+## Cleaning
+
+To clean the generated OpenAPI specification and build artifacts, run:
+
+```shell
+make clean
+```

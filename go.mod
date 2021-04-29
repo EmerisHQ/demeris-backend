@@ -29,6 +29,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.7.1
+	github.com/swaggo/swag v1.7.0
 	github.com/tendermint/liquidity v1.2.4
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
