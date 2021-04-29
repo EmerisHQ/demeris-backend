@@ -100,3 +100,5 @@ $RECYCLE.BIN/
 build/
 docs/swagger.*
 docs/docs.go
+
+.idea/
