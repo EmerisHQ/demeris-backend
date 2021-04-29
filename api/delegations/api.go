@@ -13,6 +13,13 @@ func Register(router *gin.Engine) {
 }
 
 // GetDelegationsByAddress returns staking balances of an address.
+// @Summary Gets staking balance
+// @Description gets staking balance
+// @Produce json
+// Param address query string true "staking balance search by q"
+// @Success 200 {object} delegations.Delegations
+// @Failure 500,403 {object} deps.Error
+// @Router /staking_balances [get]
 func GetDelegationsByAddress(c *gin.Context) {
 	var res Delegations
 
