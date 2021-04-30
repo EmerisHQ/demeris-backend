@@ -34,7 +34,8 @@ UPSERT INTO cns.chains
 		genesis_hash,
 		fee_address,
 		primary_channel,
-		node_info
+		node_info,
+		base_fee
 	)
 VALUES
 	(
@@ -47,7 +48,8 @@ VALUES
 		:genesis_hash,
 		:fee_address,
 		:primary_channel,
-		:node_info
+		:node_info,
+		:base_fee
 	)
 `
 

@@ -16,6 +16,7 @@ type Chain struct {
 	FeeAddress        string      `db:"fee_address" binding:"required" json:"fee_address"`               // the address on which we accept fee payments
 	PriceModifier     float64     `db:"price_modifier" binding:"required" json:"price_modifier"`         // modifier (between 0 and 1) applied when estimating the price of a token hopping through the chain
 	BaseIBCFee        float64     `db:"base_ibc_fee" binding:"required" json:"base_ibc_fee"`             // average cost (in dollar) to submit an IBC transaction to the chain
+	BaseFee           float64     `db:"base_fee" binding:"required" json:"base_fee"`                     // average cost (in dollar) to submit a transaction to the chain
 	GenesisHash       string      `db:"genesis_hash" binding:"required" json:"genesis_hash"`             // hash of the chain's genesis file
 	NodeInfo          NodeInfo    `db:"node_info" binding:"required" json:"node_info"`                   // info required to query full-node (e.g. to submit tx)
 }
