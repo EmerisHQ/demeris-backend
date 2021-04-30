@@ -19,3 +19,30 @@ func (d *Database) Chains() ([]models.Chain, error) {
 	var c []models.Chain
 	return c, d.dbi.Exec("select * from cns.chains", nil, &c)
 }
+
+func (d *Database) PrimaryChannelCounterparty(chainName, counterparty string) (models.ChannelQuery, error) {
+	var c models.ChannelQuery
+
+	n, err := d.dbi.DB.PrepareNamed("select chain_name, mapping.* from cns.chains c, jsonb_each_text(primary_channel) mapping where key=:counterparty AND chain_name=:chain_name")
+	if err != nil {
+		return models.ChannelQuery{}, err
+	}
+
+	return c, n.Get(&c, map[string]interface{}{
+		"chain_name":   chainName,
+		"counterparty": counterparty,
+	})
+}
+
+func (d *Database) PrimaryChannels(chainName string) ([]models.ChannelQuery, error) {
+	var c []models.ChannelQuery
+
+	n, err := d.dbi.DB.PrepareNamed("select chain_name, mapping.* from cns.chains c, jsonb_each_text(primary_channel) mapping where chain_name=:chain_name")
+	if err != nil {
+		return nil, err
+	}
+
+	return c, n.Select(&c, map[string]interface{}{
+		"chain_name": chainName,
+	})
+}

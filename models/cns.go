@@ -96,3 +96,10 @@ func (a *DbStringMap) Scan(value interface{}) error {
 
 	return json.Unmarshal(b, &a)
 }
+
+// ChannelQuery represents a query to get a specified channel or counterparty data.
+type ChannelQuery struct {
+	ChainName    string `db:"chain_name" json:"chain_name"`
+	Counterparty string `db:"key" json:"counterparty"`
+	ChannelName  string `db:"value" json:"channel_name"`
+}

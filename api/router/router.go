@@ -3,6 +3,8 @@ package router
 import (
 	"errors"
 
+	"github.com/allinbits/demeris-backend/api/primarychannel"
+
 	"github.com/allinbits/demeris-backend/api/fee"
 
 	"github.com/allinbits/demeris-backend/api/feeaddress"
@@ -90,4 +92,5 @@ func registerRoutes(engine *gin.Engine) {
 	chains.Register(engine)
 	feeaddress.Register(engine)
 	fee.Register(engine)
+	primarychannel.Register(engine)
 }
