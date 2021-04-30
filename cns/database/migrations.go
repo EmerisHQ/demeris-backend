@@ -31,7 +31,10 @@ UPSERT INTO cns.chains
 		fee_tokens,
 		price_modifier,
 		base_ibc_fee,
-		genesis_hash
+		genesis_hash,
+		fee_address,
+		primary_channel,
+		node_info
 	)
 VALUES
 	(
@@ -41,7 +44,10 @@ VALUES
 		:fee_tokens,
 		:price_modifier,
 		:base_ibc_fee,
-		:genesis_hash
+		:genesis_hash,
+		:fee_address,
+		:primary_channel,
+		:node_info
 	)
 `
 
