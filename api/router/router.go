@@ -3,6 +3,8 @@ package router
 import (
 	"errors"
 
+	"github.com/allinbits/demeris-backend/api/feeaddress"
+
 	"github.com/allinbits/demeris-backend/api/chains"
 	"github.com/allinbits/demeris-backend/api/feetoken"
 	"github.com/allinbits/demeris-backend/api/verifieddenoms"
@@ -84,4 +86,5 @@ func registerRoutes(engine *gin.Engine) {
 	feetoken.Register(engine)
 	verifieddenoms.Register(engine)
 	chains.Register(engine)
+	feeaddress.Register(engine)
 }
