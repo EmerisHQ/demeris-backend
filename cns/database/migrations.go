@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 	fee_address text not null,
 	price_modifier decimal not null,
 	base_ibc_fee decimal not null,
+	base_fee decimal not null,
 	genesis_hash string not null,
 	node_info jsonb not null
 )
