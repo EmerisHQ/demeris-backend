@@ -17,7 +17,7 @@ type Chain struct {
 	PriceModifier     float64     `db:"price_modifier" binding:"required" json:"price_modifier"`         // modifier (between 0 and 1) applied when estimating the price of a token hopping through the chain
 	BaseIBCFee        float64     `db:"base_ibc_fee" binding:"required" json:"base_ibc_fee"`             // average cost (in dollar) to submit an IBC transaction to the chain
 	GenesisHash       string      `db:"genesis_hash" binding:"required" json:"genesis_hash"`             // hash of the chain's genesis file
-	//nodeInfo nodeInfo // info required to query full-node (e.g. to submit tx)
+	NodeInfo          NodeInfo    `db:"node_info" binding:"required" json:"node_info"`                   // info required to query full-node (e.g. to submit tx)
 }
 
 // VerifiedFeeTokens returns a DenomList of fee tokens that are verified.
@@ -46,6 +46,12 @@ func (c Chain) VerifiedNativeDenoms() DenomList {
 	}
 
 	return ret
+}
+
+// NodeInfo holds information useful to connect to a full node and broadcast transactions.
+type NodeInfo struct {
+	Endpoint string `json:"endpoint"`
+	ChainID  string `json:"chain_id"`
 }
 
 // Denom holds a token denomination and its verification status.
