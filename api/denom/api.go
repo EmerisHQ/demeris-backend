@@ -36,7 +36,29 @@ func VerifyTrace(c *gin.Context) {
 	denomTrace, err := d.Database.DenomTrace(chain, hash)
 
 	if err != nil {
-		handleFailedQuery(c, d, err, hash, chain)
+
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("cannot query token hash %v on chain %v", hash, chain),
+			http.StatusBadRequest,
+		)
+
+		c.Error(e)
+
+		d.Logger.Errorw(
+			"cannot query database for denom",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"chain",
+			chain,
+			"error",
+			err,
+		)
+
+		return
+
 	}
 
 	res.IbcDenom = fmt.Sprintf("ibc/%s", hash)
@@ -78,7 +100,7 @@ func VerifyTrace(c *gin.Context) {
 		channels[idx] = ch
 	}
 
-	var client models.Client
+	var client models.IbcClientInfo
 	var chainInfo models.Chain
 	var trace Trace
 
@@ -121,9 +143,9 @@ func VerifyTrace(c *gin.Context) {
 			trace.CounterpartyName = counterparty
 
 			// query counterparty chain name
-			client, _ = d.Database.Connection(chain, client.CounterConnectionID)
+			counterpartyConn, _ := d.Database.Connection(chain, client.CounterConnectionID)
 
-			if client.CounterClientID != trace.ClientId {
+			if counterpartyConn.CounterClientID != trace.ClientId {
 				err = errors.New("Client ids do not match")
 
 				e := deps.NewError(
@@ -147,7 +169,7 @@ func VerifyTrace(c *gin.Context) {
 					"chain",
 					chain,
 					"counter_client_id",
-					client.CounterClientID,
+					counterpartyConn.CounterClientID,
 					"counter_chain",
 					counterparty,
 					"err",
@@ -162,28 +184,4 @@ func VerifyTrace(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"trace": res,
 	})
-}
-
-func handleFailedQuery(c *gin.Context, d *deps.Deps, err error, hash string, chain string) {
-	e := deps.NewError(
-		"denom/verify-trace",
-		fmt.Errorf("cannot query token hash %v on chain %v", hash, chain),
-		http.StatusBadRequest,
-	)
-
-	c.Error(e)
-
-	d.Logger.Errorw(
-		"cannot query database for denom",
-		"id",
-		e.ID,
-		"hash",
-		hash,
-		"chain",
-		chain,
-		"error",
-		err,
-	)
-
-	return
 }

@@ -2,8 +2,8 @@ package database
 
 import "github.com/allinbits/demeris-backend/models"
 
-func (d *Database) Connection(chain string, connection_id string) (models.Client, error) {
-	var client models.Client
+func (d *Database) Connection(chain string, connection_id string) (models.IBCConnectionRow, error) {
+	var connection models.IBCConnectionRow
 
 	q := `
 	SELECT *
@@ -13,5 +13,5 @@ func (d *Database) Connection(chain string, connection_id string) (models.Client
 
 	q = d.dbi.DB.Rebind(q)
 
-	return client, d.dbi.DB.Select(&client, q, chain, connection_id)
+	return connection, d.dbi.DB.Select(&connection, q, chain, connection_id)
 }

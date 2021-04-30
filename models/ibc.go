@@ -1,6 +1,6 @@
 package models
 
-type Client struct {
+type IbcClientInfo struct {
 	ChainName           string   `db:"chain_name"`
 	ConnectionId        string   `db:"connection_id"`
 	ClientId            string   `db:"client_id"`

@@ -4,8 +4,8 @@ import (
 	"github.com/allinbits/demeris-backend/models"
 )
 
-func (d *Database) Balances(address string) ([]models.Balance, error) {
-	var balances []models.Balance
+func (d *Database) Balances(address string) ([]models.BalanceRow, error) {
+	var balances []models.BalanceRow
 
 	q := "SELECT * FROM tracelistener.balances WHERE address=?;"
 

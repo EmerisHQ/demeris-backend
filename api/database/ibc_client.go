@@ -2,8 +2,8 @@ package database
 
 import "github.com/allinbits/demeris-backend/models"
 
-func (d *Database) QueryIBCClientTrace(chain string, channel string) (models.Client, error) {
-	var client models.Client
+func (d *Database) QueryIBCClientTrace(chain string, channel string) (models.IbcClientInfo, error) {
+	var client models.IbcClientInfo
 
 	q := `
 	SELECT 
