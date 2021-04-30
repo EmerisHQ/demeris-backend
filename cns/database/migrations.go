@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 	id serial unique primary key,
 	chain_name string not null,
 	counterparty_names jsonb not null,
+	primary_channel jsonb not null,
 	native_denoms jsonb not null,
 	fee_tokens jsonb not null,
 	price_modifier decimal not null,

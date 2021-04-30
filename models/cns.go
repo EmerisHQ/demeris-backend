@@ -10,6 +10,7 @@ type Chain struct {
 	ID                uint64      `db:"id" json:"-"`
 	ChainName         string      `db:"chain_name" binding:"required" json:"chain_name"`                 // the unique name of the chain
 	CounterpartyNames DbStringMap `db:"counterparty_names" binding:"required" json:"counterparty_names"` // a mapping of client_id to chain names used to identify which chain a given client_id corresponds to
+	PrimaryChannel    DbStringMap `db:"primary_channel" binding:"required" json:"primary_channel"`       // a mapping of chain name to primary channel
 	NativeDenoms      DenomList   `db:"native_denoms" binding:"required" json:"native_denoms"`           // a list of denoms native to the chain
 	FeeTokens         DenomList   `db:"fee_tokens" binding:"required" json:"fee_tokens"`                 // a list of denoms accepted as fee on the chain, fee tokens must be verified
 	FeeAddress        string      `db:"fee_address" binding:"required" json:"fee_address"`               // the address on which we accept fee payments
