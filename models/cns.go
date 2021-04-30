@@ -51,8 +51,9 @@ func (c Chain) VerifiedNativeDenoms() DenomList {
 
 // NodeInfo holds information useful to connect to a full node and broadcast transactions.
 type NodeInfo struct {
-	Endpoint string `binding:"required" json:"endpoint"`
-	ChainID  string `binding:"required" json:"chain_id"`
+	Endpoint     string       `binding:"required" json:"endpoint"`
+	ChainID      string       `binding:"required" json:"chain_id"`
+	Bech32Config Bech32Config `binding:"required" json:"bech32_config"`
 }
 
 // Scan is the sql.Scanner implementation for DbStringMap.
@@ -63,6 +64,81 @@ func (a *NodeInfo) Scan(value interface{}) error {
 	}
 
 	return json.Unmarshal(b, &a)
+}
+
+// Bech32Config represents the chain's bech32 configuration
+type Bech32Config struct {
+	MainPrefix      string `json:"main_prefix" binding:"required"`
+	PrefixAccount   string `json:"prefix_account" binding:"required"`
+	PrefixValidator string `json:"prefix_validator" binding:"required"`
+	PrefixConsensus string `json:"prefix_consensus" binding:"required"`
+	PrefixPublic    string `json:"prefix_public" binding:"required"`
+	PrefixOperator  string `json:"prefix_operator" binding:"required"`
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+// Returns the json representation of Bech32Config with prefixes methods as fields.
+func (b Bech32Config) MarshalJSON() ([]byte, error) {
+	var ret bech32ConfigMarshaled
+
+	ret = bech32ConfigMarshaled{
+		MainPrefix:      b.MainPrefix,
+		PrefixAccount:   b.PrefixAccount,
+		PrefixValidator: b.PrefixValidator,
+		PrefixConsensus: b.PrefixConsensus,
+		PrefixPublic:    b.PrefixPublic,
+		PrefixOperator:  b.PrefixOperator,
+		AccAddr:         b.Bech32PrefixAccAddr(),
+		ValAddr:         b.Bech32PrefixAccAddr(),
+		ValPub:          b.Bech32PrefixValPub(),
+		ConsAddr:        b.Bech32PrefixConsAddr(),
+		ConsPub:         b.Bech32PrefixConsPub(),
+	}
+
+	return json.Marshal(ret)
+}
+
+// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address
+func (b Bech32Config) Bech32PrefixAccAddr() string {
+	return b.MainPrefix
+}
+
+// Bech32PrefixAccPub defines the Bech32 prefix of an account's public key
+func (b Bech32Config) Bech32PrefixAccPub() string { return b.MainPrefix + b.PrefixPublic }
+
+// Bech32PrefixValAddr defines the Bech32 prefix of a validator's operator address
+func (b Bech32Config) Bech32PrefixValAddr() string {
+	return b.MainPrefix + b.PrefixValidator + b.PrefixOperator
+}
+
+// Bech32PrefixValPub defines the Bech32 prefix of a validator's operator public key
+func (b Bech32Config) Bech32PrefixValPub() string {
+	return b.MainPrefix + b.PrefixValidator + b.PrefixOperator + b.PrefixPublic
+}
+
+// Bech32PrefixConsAddr defines the Bech32 prefix of a consensus node address
+func (b Bech32Config) Bech32PrefixConsAddr() string {
+	return b.MainPrefix + b.PrefixValidator + b.PrefixConsensus
+}
+
+// Bech32PrefixConsPub defines the Bech32 prefix of a consensus node public key
+func (b Bech32Config) Bech32PrefixConsPub() string {
+	return b.MainPrefix + b.PrefixValidator + b.PrefixConsensus + b.PrefixPublic
+}
+
+type bech32ConfigMarshaled struct {
+	MainPrefix      string `json:"main_prefix" binding:"required"`
+	PrefixAccount   string `json:"prefix_account" binding:"required"`
+	PrefixValidator string `json:"prefix_validator" binding:"required"`
+	PrefixConsensus string `json:"prefix_consensus" binding:"required"`
+	PrefixPublic    string `json:"prefix_public" binding:"required"`
+	PrefixOperator  string `json:"prefix_operator" binding:"required"`
+	AccAddr         string `json:"acc_addr,omitempty" db:"-"`
+	AccPub          string `json:"acc_pub,omitempty" db:"-"`
+	ValAddr         string `json:"val_addr,omitempty" db:"-"`
+	ValPub          string `json:"val_pub,omitempty" db:"-"`
+	ConsAddr        string `json:"cons_addr,omitempty" db:"-"`
+	ConsPub         string `json:"cons_pub,omitempty" db:"-"`
 }
 
 // Denom holds a token denomination and its verification status.
