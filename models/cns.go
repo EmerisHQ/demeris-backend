@@ -50,8 +50,18 @@ func (c Chain) VerifiedNativeDenoms() DenomList {
 
 // NodeInfo holds information useful to connect to a full node and broadcast transactions.
 type NodeInfo struct {
-	Endpoint string `json:"endpoint"`
-	ChainID  string `json:"chain_id"`
+	Endpoint string `binding:"required" json:"endpoint"`
+	ChainID  string `binding:"required" json:"chain_id"`
+}
+
+// Scan is the sql.Scanner implementation for DbStringMap.
+func (a *NodeInfo) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+
+	return json.Unmarshal(b, &a)
 }
 
 // Denom holds a token denomination and its verification status.
