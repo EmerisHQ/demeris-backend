@@ -3,18 +3,17 @@ package balances
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/gin-gonic/gin"
 )
 
 func Register(router *gin.Engine) {
-	router.GET("/balances/:addresses", GetBalancesByAddresses)
+	router.GET("/balances/:address", GetBalancesByAddress)
 }
 
-// GetBalancesByAddresses - Find balances by addresses
-func GetBalancesByAddresses(c *gin.Context) {
+// GetBalancesByAddress - Find balances by address
+func GetBalancesByAddress(c *gin.Context) {
 
 	res := []Balance{}
 	d, err := deps.GetDeps(c)
@@ -29,27 +28,27 @@ func GetBalancesByAddresses(c *gin.Context) {
 		return
 	}
 
-	addresses := strings.Split(c.Param("addresses"), ",")
+	address := c.Param("address")
 
-	d.Logger.Info("Searching for addresses, ", addresses)
+	d.Logger.Info("Searching for addresses, ", address)
 
-	balances, err := d.Database.Balances(addresses)
+	balances, err := d.Database.Balances(address)
 
 	if err != nil {
 		e := deps.NewError(
 			"balances",
-			fmt.Errorf("cannot retrieve balances for addresses %v", addresses),
+			fmt.Errorf("cannot retrieve balances for address %v", address),
 			http.StatusBadRequest,
 		)
 
 		c.Error(e)
 
 		d.Logger.Errorw(
-			"cannot query database balance for addresses",
+			"cannot query database balance for address",
 			"id",
 			e.ID,
-			"addresses",
-			addresses,
+			"address",
+			address,
 			"error",
 			err,
 		)
@@ -71,15 +70,38 @@ func GetBalancesByAddresses(c *gin.Context) {
 		if b.Denom[:4] == "ibc/" {
 			// is ibc token
 			balance.Ibc = IbcInfo{
-				IbcDenom: b.Denom,
+				Hash: b.Denom[4:],
 			}
-			balance.Native = false
 
-			// TODO: verify trace
-			balance.BaseDenom = "" // check trace
+			denomTrace, err := d.Database.DenomTrace(b.ChainName, b.Denom[4:])
+
+			if err != nil {
+				e := deps.NewError(
+					"balances",
+					fmt.Errorf("cannot query denom trace for token %v on chain %v", b.Denom, b.ChainName),
+					http.StatusBadRequest,
+				)
+
+				c.Error(e)
+
+				d.Logger.Errorw(
+					"cannot query database balance for address",
+					"id",
+					e.ID,
+					"token",
+					b.Denom,
+					"chain",
+					b.ChainName,
+					"error",
+					err,
+				)
+
+				return
+			}
+			balance.BaseDenom = denomTrace.BaseDenom
+			balance.Ibc.Path = denomTrace.Path
 
 		} else {
-			balance.Native = true
 			balance.Verified = true
 			balance.BaseDenom = b.Denom
 		}

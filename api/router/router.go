@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+
 	"github.com/allinbits/demeris-backend/api/chains"
 	"github.com/allinbits/demeris-backend/api/feetoken"
 	"github.com/allinbits/demeris-backend/api/verifieddenoms"
@@ -10,8 +11,8 @@ import (
 
 	"github.com/allinbits/demeris-backend/api/balances"
 	"github.com/allinbits/demeris-backend/api/database"
+	"github.com/allinbits/demeris-backend/api/denom"
 	"github.com/allinbits/demeris-backend/api/router/deps"
-	"github.com/allinbits/demeris-backend/api/trace"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -78,7 +79,7 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 
 func registerRoutes(engine *gin.Engine) {
 	balances.Register(engine)
-	trace.Register(engine)
+	denom.Register(engine)
 	delegations.Register(engine)
 	feetoken.Register(engine)
 	verifieddenoms.Register(engine)

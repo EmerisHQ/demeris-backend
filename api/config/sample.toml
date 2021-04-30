@@ -1,9 +1,0 @@
-SshHost = "0.0.0.0"
-SshPort = 22
-SshUser = "user"
-UseSsh = true
-KeyFile = "path/to/keyfile"
-DbHost = "dbhost"
-DbPort = 1234567890
-DbUser = "dbuser"
-DbPass = "dbpass"
