@@ -40,3 +40,11 @@ To clean the generated OpenAPI specification and build artifacts, run:
 ```shell
 make clean
 ```
+
+## Docker
+
+To build Docker images for `cmd` binaries, run from the root of this repository:
+
+```shell
+docker build -t [yourbinary]:latest --build-arg GIT_TOKEN=[your GitHub token] -f cmd/[yourbinary]/Dockerfile .^
+```
