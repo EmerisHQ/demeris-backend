@@ -14,10 +14,13 @@ require (
 	github.com/containerd/fifo v1.0.0
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/cosmos/gaia/v4 v4.2.1
+	github.com/cssivision/reverseproxy v0.0.1
 	github.com/gin-contrib/zap v0.0.1
 	github.com/gin-gonic/gin v1.7.1
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/iamolegga/enviper v1.2.1
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
@@ -31,6 +34,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/swaggo/swag v1.7.0
 	github.com/tendermint/liquidity v1.2.4
+	github.com/tendermint/tendermint v0.34.9
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
