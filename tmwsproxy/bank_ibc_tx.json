@@ -1,0 +1,58 @@
+{
+  "body": {
+    "messages": [
+      {
+        "@type": "/cosmos.bank.v1beta1.MsgSend",
+        "from_address": "cosmos1a344nd64cawf2gmynxwx6uer74z2nq9gjwjusp",
+        "to_address": "cosmos14xeflxchuk2ehf9f9p7lqn282xfpa4zcy38gx0",
+        "amount": [
+          {
+            "denom": "stake",
+            "amount": "42"
+          }
+        ]
+      },
+      {
+        "@type": "/cosmos.bank.v1beta1.MsgSend",
+        "from_address": "cosmos1a344nd64cawf2gmynxwx6uer74z2nq9gjwjusp",
+        "to_address": "cosmos14xeflxchuk2ehf9f9p7lqn282xfpa4zcy38gx0",
+        "amount": [
+          {
+            "denom": "stake",
+            "amount": "42"
+          }
+        ]
+      },
+      {
+        "@type": "/ibc.applications.transfer.v1.MsgTransfer",
+        "source_port": "transfer",
+        "source_channel": "channel-0",
+        "token": {
+          "denom": "stake",
+          "amount": "42"
+        },
+        "sender": "cosmos1a344nd64cawf2gmynxwx6uer74z2nq9gjwjusp",
+        "receiver": "cosmos150y96age9u4vsdt5lr355mxqjr4628hnxf82un",
+        "timeout_height": {
+          "revision_number": "1",
+          "revision_height": "1120"
+        },
+        "timeout_timestamp": "1920053376848798000"
+      }
+    ],
+    "memo": "",
+    "timeout_height": "0",
+    "extension_options": [],
+    "non_critical_extension_options": []
+  },
+  "auth_info": {
+    "signer_infos": [],
+    "fee": {
+      "amount": [],
+      "gas_limit": "200000",
+      "payer": "",
+      "granter": ""
+    }
+  },
+  "signatures": []
+}

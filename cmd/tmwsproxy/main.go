@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/allinbits/demeris-backend/utils/database"
+
 	"github.com/allinbits/demeris-backend/tmwsproxy"
 
 	"github.com/allinbits/demeris-backend/utils/logging"
@@ -14,7 +16,7 @@ import (
 )
 
 func main() {
-	c, err := readConfig()
+	c, err := tmwsproxy.ReadConfig()
 	if err != nil {
 		panic(err)
 	}
@@ -22,6 +24,11 @@ func main() {
 	l := logging.New(logging.LoggingConfig{
 		Debug: c.Debug,
 	})
+
+	db, err := database.New(c.DatabaseConnectionURL)
+	if err != nil {
+		panic(err)
+	}
 
 	lnu, err := url.Parse(c.TendermintNode)
 	if err != nil {
@@ -53,7 +60,7 @@ func main() {
 		l.Panicw("http server panic-ed", "error", http.ListenAndServe(c.ListenAddr, router))
 	}()
 
-	tm, err := tmwsproxy.NewTendermintClient(c.TendermintNode, l)
+	tm, err := tmwsproxy.NewTendermintClient(c.TendermintNode, l, db)
 	if err != nil {
 		l.Panicw("real node connection error", "error", err)
 	}
