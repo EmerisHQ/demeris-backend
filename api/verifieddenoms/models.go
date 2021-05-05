@@ -2,7 +2,7 @@ package verifieddenoms
 
 import "github.com/allinbits/demeris-backend/models"
 
-type VerifiedDenoms struct {
+type VerifiedDenomsResponse struct {
 	VerifiedDenoms []VerifiedDenom `json:"verified_denoms"`
 }
 
