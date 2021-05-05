@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/models"
+
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/gin-gonic/gin"
 )
@@ -52,9 +54,12 @@ func GetVerifiedDenoms(c *gin.Context) {
 
 	for _, cc := range chains {
 		for _, vd := range cc.VerifiedNativeDenoms() {
-			res.VerifiedDenoms = append(res.VerifiedDenoms, VerifiedDenom{
-				Name:     vd.Name,
-				Verified: vd.Verified,
+			res.VerifiedDenoms = append(res.VerifiedDenoms, vdEntry{
+				Denom: models.Denom{
+					Name:     vd.Name,
+					Verified: vd.Verified,
+				},
+				ChainName: cc.ChainName,
 			})
 		}
 	}
