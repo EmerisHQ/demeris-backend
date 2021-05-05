@@ -34,7 +34,7 @@ func Register(router *gin.Engine) {
 
 // GetChains returns the list of all the chains supported by demeris.
 func GetChains(c *gin.Context) {
-	var res ChainsResponse
+	var res chainsResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -71,7 +71,7 @@ func GetChains(c *gin.Context) {
 	}
 
 	for _, cc := range chains {
-		res.Chains = append(res.Chains, SupportedChain{
+		res.Chains = append(res.Chains, supportedChain{
 			ChainName:   cc.ChainName,
 			DisplayName: cc.DisplayName,
 			Logo:        cc.Logo,
@@ -83,7 +83,7 @@ func GetChains(c *gin.Context) {
 
 // GetChain returns chain information by specifying its name.
 func GetChain(c *gin.Context) {
-	var res ChainResponse
+	var res chainResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -130,7 +130,7 @@ func GetChain(c *gin.Context) {
 
 // GetChainBech32Config returns bech32 configuration for a chain by specifying its name.
 func GetChainBech32Config(c *gin.Context) {
-	var res Bech32ConfigResponse
+	var res bech32ConfigResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -177,7 +177,7 @@ func GetChainBech32Config(c *gin.Context) {
 
 // GetFee returns the fee average in dollar for the specified chain..
 func GetFee(c *gin.Context) {
-	var res FeeResponse
+	var res feeResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -217,7 +217,7 @@ func GetFee(c *gin.Context) {
 		return
 	}
 
-	res = FeeResponse{
+	res = feeResponse{
 		Fee: chain.BaseFee,
 	}
 
@@ -226,7 +226,7 @@ func GetFee(c *gin.Context) {
 
 // GetFeeAddress returns the fee address for a given chain, looked up by the chain name attribute.
 func GetFeeAddress(c *gin.Context) {
-	var res FeeAddressResponse
+	var res feeAddressResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -266,7 +266,7 @@ func GetFeeAddress(c *gin.Context) {
 		return
 	}
 
-	res = FeeAddressResponse{
+	res = feeAddressResponse{
 		FeeAddress: chain.FeeAddress,
 	}
 
@@ -275,7 +275,7 @@ func GetFeeAddress(c *gin.Context) {
 
 // GetFeeAddresses returns the fee address for all chains.
 func GetFeeAddresses(c *gin.Context) {
-	var res FeeAddressesResponse
+	var res feeAddressesResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -314,7 +314,7 @@ func GetFeeAddresses(c *gin.Context) {
 	for _, c := range chains {
 		res.FeeAddresses = append(
 			res.FeeAddresses,
-			FeeAddress{
+			feeAddress{
 				ChainName:  c.ChainName,
 				FeeAddress: c.FeeAddress,
 			},
@@ -326,7 +326,7 @@ func GetFeeAddresses(c *gin.Context) {
 
 // GetFeeToken returns the fee token for a given chain, looked up by the chain name attribute.
 func GetFeeToken(c *gin.Context) {
-	var res FeeTokenResponse
+	var res feeTokenResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -375,7 +375,7 @@ func GetFeeToken(c *gin.Context) {
 
 // GetPrimaryChannelWithCounterparty returns the primary channel of a chain by specifying the counterparty.
 func GetPrimaryChannelWithCounterparty(c *gin.Context) {
-	var res PrimaryChannelResponse
+	var res primaryChannelResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -418,7 +418,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 		return
 	}
 
-	res.Channel = PrimaryChannel{
+	res.Channel = primaryChannel{
 		Counterparty: counterparty,
 		ChannelName:  chain.ChannelName,
 	}
@@ -469,7 +469,7 @@ func GetPrimaryChannels(c *gin.Context) {
 	}
 
 	for _, cc := range chain {
-		res.Channels = append(res.Channels, PrimaryChannel{
+		res.Channels = append(res.Channels, primaryChannel{
 			Counterparty: cc.Counterparty,
 			ChannelName:  cc.ChannelName,
 		})
@@ -479,8 +479,8 @@ func GetPrimaryChannels(c *gin.Context) {
 }
 
 func VerifyTrace(c *gin.Context) {
-	var res VerifiedTraceResponse
-	var verifiedTrace VerifiedTrace
+	var res verifiedTraceResponse
+	var verifiedTrace verifiedTrace
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
@@ -565,7 +565,7 @@ func VerifyTrace(c *gin.Context) {
 
 	var client models.IbcClientInfo
 	var chainInfo models.Chain
-	var trace Trace
+	var trace trace
 
 	for _, channel := range channels {
 
