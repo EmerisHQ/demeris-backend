@@ -28,13 +28,9 @@ type feeAddressesResponse struct {
 	FeeAddresses []feeAddressResponse `json:"fee_addresses"`
 }
 
-type FeeToken struct {
-	Name     string `json:"name"`
-	Verified bool   `json:"verified"`
-}
-
 type feeTokenResponse struct {
-	FeeTokens []FeeToken `json:"fee_tokens"`
+	ChainName string         `json:"chain_name"`
+	FeeTokens []models.Denom `json:"fee_tokens"`
 }
 
 type counterpartyResponse struct {
