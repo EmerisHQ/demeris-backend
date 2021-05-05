@@ -1,18 +1,12 @@
 package database
 
 import (
+	"github.com/allinbits/demeris-backend/models"
 	"github.com/jmoiron/sqlx"
 )
 
-type Delegation struct {
-	Id               uint64 `db:"id"`
-	DelegatorAddress string `db:"delegator_address"`
-	ValidatorAddress string `db:"validator_address"`
-	Amount           string `db:"amount"`
-}
-
-func (d *Database) Delegations(address string) ([]Delegation, error) {
-	var delegations []Delegation
+func (d *Database) Delegations(address string) ([]models.DelegationRow, error) {
+	var delegations []models.DelegationRow
 
 	q, args, err := sqlx.In("SELECT * FROM tracelistener.delegations WHERE delegator_address IN (?);", []string{address})
 	if err != nil {
