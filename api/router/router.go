@@ -3,21 +3,13 @@ package router
 import (
 	"errors"
 
-	"github.com/allinbits/demeris-backend/api/primarychannel"
-
-	"github.com/allinbits/demeris-backend/api/fee"
-
-	"github.com/allinbits/demeris-backend/api/feeaddress"
-
 	"github.com/allinbits/demeris-backend/api/chains"
-	"github.com/allinbits/demeris-backend/api/feetoken"
 	"github.com/allinbits/demeris-backend/api/verifieddenoms"
 
 	"github.com/allinbits/demeris-backend/api/delegations"
 
 	"github.com/allinbits/demeris-backend/api/balances"
 	"github.com/allinbits/demeris-backend/api/database"
-	"github.com/allinbits/demeris-backend/api/denom"
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/gin-gonic/gin"
@@ -44,6 +36,8 @@ func New(db *database.Database, l *zap.SugaredLogger, cnsURL string) *Router {
 	engine.Use(logging.LogRequest(l.Desugar()))
 	engine.Use(r.decorateCtxWithDeps())
 	engine.Use(r.handleErrors())
+	engine.RedirectTrailingSlash = false
+	engine.RedirectFixedPath = false
 
 	registerRoutes(engine)
 
@@ -85,12 +79,7 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 
 func registerRoutes(engine *gin.Engine) {
 	balances.Register(engine)
-	denom.Register(engine)
 	delegations.Register(engine)
-	feetoken.Register(engine)
 	verifieddenoms.Register(engine)
 	chains.Register(engine)
-	feeaddress.Register(engine)
-	fee.Register(engine)
-	primarychannel.Register(engine)
 }
