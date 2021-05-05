@@ -1,11 +1,10 @@
 package delegations
 
-type Delegations struct {
-	Delegator   string       `json:"delegator"`
-	Delegations []Delegation `json:"delegations"`
+type StakingBalances struct {
+	StakingBalances []StakingBalance `json:"staking_balances"`
 }
 
-type Delegation struct {
+type StakingBalance struct {
 	ValidatorAddress string `json:"validator_address"`
 	Amount           string `json:"amount"`
 	ChainName        string `json:"chain_name"`

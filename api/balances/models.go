@@ -1,5 +1,8 @@
 package balances
 
+type Balances struct {
+	Balances []Balance `json:"balances"`
+}
 type Balance struct {
 	Address   string  `json:"address,omitempty"`
 	BaseDenom string  `json:"base_denom,omitempty"`

@@ -15,7 +15,7 @@ func Register(router *gin.Engine) {
 // GetBalancesByAddress - Find balances by address
 func GetBalancesByAddress(c *gin.Context) {
 
-	res := []Balance{}
+	var res Balances
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
@@ -106,7 +106,7 @@ func GetBalancesByAddress(c *gin.Context) {
 			balance.BaseDenom = b.Denom
 		}
 
-		res = append(res, balance)
+		res.Balances = append(res.Balances, balance)
 	}
 	// d.Logger.Info(d.Database.Balances(addresses))
 	d.Logger.Info(balances)

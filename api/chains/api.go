@@ -34,7 +34,7 @@ func Register(router *gin.Engine) {
 
 // GetChains returns the list of all the chains supported by demeris.
 func GetChains(c *gin.Context) {
-	var res chainsResponse
+	var res Chains
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -71,7 +71,11 @@ func GetChains(c *gin.Context) {
 	}
 
 	for _, cc := range chains {
-		res.SupportedChains = append(res.SupportedChains, cc.ChainName)
+		res.Chains = append(res.Chains, SupportedChain{
+			ChainName:   cc.ChainName,
+			DisplayName: cc.DisplayName,
+			Logo:        cc.Logo,
+		})
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -79,7 +83,7 @@ func GetChains(c *gin.Context) {
 
 // GetChain returns chain information by specifying its name.
 func GetChain(c *gin.Context) {
-	var res chainResponse
+	var res Chain
 
 	d, err := deps.GetDeps(c)
 	if err != nil {

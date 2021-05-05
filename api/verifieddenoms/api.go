@@ -16,7 +16,7 @@ func Register(router *gin.Engine) {
 
 // GetVerifiedDenoms returns the fee token for a given chain, looked up by the chain name attribute.
 func GetVerifiedDenoms(c *gin.Context) {
-	var res verifiedDenomsResponse
+	var res VerifiedDenoms
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -54,10 +54,13 @@ func GetVerifiedDenoms(c *gin.Context) {
 
 	for _, cc := range chains {
 		for _, vd := range cc.VerifiedNativeDenoms() {
-			res.VerifiedDenoms = append(res.VerifiedDenoms, vdEntry{
+			res.VerifiedDenoms = append(res.VerifiedDenoms, VerifiedDenom{
 				Denom: models.Denom{
-					Name:     vd.Name,
-					Verified: vd.Verified,
+					DisplayName: vd.DisplayName,
+					Logo:        vd.Logo,
+					Precision:   vd.Precision,
+					Name:        vd.Name,
+					Verified:    vd.Verified,
 				},
 				ChainName: cc.ChainName,
 			})

@@ -2,11 +2,15 @@ package chains
 
 import "github.com/allinbits/demeris-backend/models"
 
-type chainsResponse struct {
-	SupportedChains []string `json:"supported_chains"`
+type Chains struct {
+	Chains []SupportedChain `json:"chains"`
 }
-
-type chainResponse struct {
+type SupportedChain struct {
+	ChainName   string `json:"chain_name"`
+	DisplayName string `json:"display_name"`
+	Logo        string `json:"logo"`
+}
+type Chain struct {
 	Chain models.Chain `json:"chain"`
 }
 
