@@ -30,6 +30,6 @@ func main() {
 	)
 
 	if err := r.Serve(cfg.ListenAddr); err != nil {
-		l.Panicw("http server panic", err)
+		l.Panicw("http server panic", "error", err)
 	}
 }
