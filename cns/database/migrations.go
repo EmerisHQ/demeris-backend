@@ -10,6 +10,8 @@ const createTableChains = `
 CREATE TABLE IF NOT EXISTS cns.chains (
 	id serial unique primary key,
 	chain_name string not null,
+	logo string not null,
+	display_name string not null,
 	counterparty_names jsonb not null,
 	primary_channel jsonb not null,
 	native_denoms jsonb not null,

@@ -9,6 +9,8 @@ import (
 type Chain struct {
 	ID                uint64      `db:"id" json:"-"`
 	ChainName         string      `db:"chain_name" binding:"required" json:"chain_name"`                 // the unique name of the chain
+	Logo              string      `db:"logo" binding:"required" json:"logo"`                             // logo of the chain
+	DisplayName       string      `db:"display_name" binding:"required" json:"display_name"`             // user-friendly chain name
 	CounterpartyNames DbStringMap `db:"counterparty_names" binding:"required" json:"counterparty_names"` // a mapping of client_id to chain names used to identify which chain a given client_id corresponds to
 	PrimaryChannel    DbStringMap `db:"primary_channel" binding:"required" json:"primary_channel"`       // a mapping of chain name to primary channel
 	NativeDenoms      DenomList   `db:"native_denoms" binding:"required" json:"native_denoms"`           // a list of denoms native to the chain
@@ -143,8 +145,10 @@ type bech32ConfigMarshaled struct {
 
 // Denom holds a token denomination and its verification status.
 type Denom struct {
-	Name     string `db:"name" binding:"required" json:"name"`
-	Verified bool   `db:"verified" binding:"required" json:"verified"`
+	Logo      string `db:"logo" json:"logo,omitempty"`
+	Precision int64  `db:"precision" binding:"required" json:"precision"`
+	Name      string `db:"name" binding:"required" json:"name"`
+	Verified  bool   `db:"verified" binding:"required" json:"verified"`
 }
 
 // DenomList represents a slice of Denom.
