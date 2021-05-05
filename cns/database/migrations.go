@@ -29,6 +29,8 @@ const insertChain = `
 UPSERT INTO cns.chains
 	(
 		chain_name,
+		logo,
+		display_name,
 		counterparty_names,
 		native_denoms,
 		fee_tokens,
@@ -43,6 +45,8 @@ UPSERT INTO cns.chains
 VALUES
 	(
 		:chain_name,
+		:logo,
+		:display_name,
 		:counterparty_names,
 		:native_denoms,
 		:fee_tokens,
