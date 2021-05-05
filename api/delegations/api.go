@@ -65,6 +65,7 @@ func GetDelegationsByAddress(c *gin.Context) {
 		res.Delegations = append(res.Delegations, Delegation{
 			ValidatorAddress: del.Validator,
 			Amount:           del.Amount,
+			ChainName:        del.ChainName,
 		})
 	}
 
