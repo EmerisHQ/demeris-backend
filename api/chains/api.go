@@ -19,7 +19,7 @@ func Register(router *gin.Engine) {
 	chain := router.Group("/chain/:chain")
 
 	chain.GET("", GetChain)
-	chain.GET("/denom/verify-trace/:hash", VerifyTrace)
+	chain.GET("/denom/verify_trace/:hash", VerifyTrace)
 	chain.GET("/bech32", GetChainBech32Config)
 	chain.GET("/primary_channels", GetPrimaryChannels)
 	chain.GET("/primary_channel/:counterparty", GetPrimaryChannels)
@@ -480,7 +480,7 @@ func GetPrimaryChannels(c *gin.Context) {
 
 func VerifyTrace(c *gin.Context) {
 	var res VerifiedTraceResponse
-
+	var verifiedTrace VerifiedTrace
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
@@ -524,12 +524,12 @@ func VerifyTrace(c *gin.Context) {
 
 	}
 
-	res.IbcDenom = fmt.Sprintf("ibc/%s", hash)
-	res.Path = denomTrace.Path
+	verifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
+	verifiedTrace.Path = denomTrace.Path
 
 	// check if the path uses only the supported `transfer` port.
 
-	channels := strings.Split(res.Path, "/transfer")
+	channels := strings.Split(verifiedTrace.Path, "/transfer")
 
 	for idx, channel := range channels {
 		ch := strings.Trim(channel, "/")
@@ -537,11 +537,11 @@ func VerifyTrace(c *gin.Context) {
 		// port other than transfer being used
 		if strings.Contains(ch, "/") {
 
-			err = errors.New(fmt.Sprintf("Unsupported path %s", res.Path))
+			err = errors.New(fmt.Sprintf("Unsupported path %s", verifiedTrace.Path))
 
 			e := deps.NewError(
 				"denom/verify-trace",
-				fmt.Errorf("invalid denom %v with path %v", hash, res.Path),
+				fmt.Errorf("invalid denom %v with path %v", hash, verifiedTrace.Path),
 				http.StatusBadRequest,
 			)
 
@@ -554,7 +554,7 @@ func VerifyTrace(c *gin.Context) {
 				"hash",
 				hash,
 				"path",
-				res.Path,
+				verifiedTrace.Path,
 				"err",
 				err,
 			)
@@ -591,7 +591,7 @@ func VerifyTrace(c *gin.Context) {
 				"hash",
 				hash,
 				"path",
-				res.Path,
+				verifiedTrace.Path,
 				"client_id",
 				client.ClientId,
 				"chain",
@@ -626,7 +626,7 @@ func VerifyTrace(c *gin.Context) {
 					"hash",
 					hash,
 					"path",
-					res.Path,
+					verifiedTrace.Path,
 					"client_id",
 					client.ClientId,
 					"chain",
@@ -641,10 +641,9 @@ func VerifyTrace(c *gin.Context) {
 			}
 		}
 
-		res.Trace = append(res.Trace, trace)
+		verifiedTrace.Trace = append(verifiedTrace.Trace, trace)
+		res.VerifiedTrace = verifiedTrace
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"trace": res,
-	})
+	c.JSON(http.StatusOK, res)
 }

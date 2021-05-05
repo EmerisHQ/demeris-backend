@@ -57,10 +57,13 @@ type Trace struct {
 	CounterpartyName string `json:"counterparty_name,omitempty"`
 }
 
-type VerifiedTraceResponse struct {
+type VerifiedTrace struct {
 	IbcDenom  string  `json:"ibc_denom,omitempty"`
 	BaseDenom string  `json:"base_denom,omitempty"`
 	Verified  bool    `json:"verified,omitempty"`
 	Path      string  `json:"path,omitempty"`
 	Trace     []Trace `json:"trace,omitempty"`
+}
+type VerifiedTraceResponse struct {
+	VerifiedTrace VerifiedTrace `json:"verify_trace"`
 }

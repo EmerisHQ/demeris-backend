@@ -111,7 +111,5 @@ func GetBalancesByAddress(c *gin.Context) {
 	// d.Logger.Info(d.Database.Balances(addresses))
 	d.Logger.Info(balances)
 
-	c.JSON(http.StatusOK, gin.H{
-		"balances": res,
-	})
+	c.JSON(http.StatusOK, res)
 }
