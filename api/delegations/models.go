@@ -1,6 +1,6 @@
 package delegations
 
-type StakingBalances struct {
+type StakingBalancesResponse struct {
 	StakingBalances []StakingBalance `json:"staking_balances"`
 }
 

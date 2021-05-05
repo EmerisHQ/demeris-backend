@@ -1,6 +1,6 @@
 package balances
 
-type Balances struct {
+type BalancesResponse struct {
 	Balances []Balance `json:"balances"`
 }
 type Balance struct {

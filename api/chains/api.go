@@ -34,7 +34,7 @@ func Register(router *gin.Engine) {
 
 // GetChains returns the list of all the chains supported by demeris.
 func GetChains(c *gin.Context) {
-	var res Chains
+	var res ChainsResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -83,7 +83,7 @@ func GetChains(c *gin.Context) {
 
 // GetChain returns chain information by specifying its name.
 func GetChain(c *gin.Context) {
-	var res Chain
+	var res ChainResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -130,7 +130,7 @@ func GetChain(c *gin.Context) {
 
 // GetChainBech32Config returns bech32 configuration for a chain by specifying its name.
 func GetChainBech32Config(c *gin.Context) {
-	var res bech32ConfigResponse
+	var res Bech32ConfigResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -170,7 +170,6 @@ func GetChainBech32Config(c *gin.Context) {
 		return
 	}
 
-	res.ChainName = chain.ChainName
 	res.Bech32Config = chain.NodeInfo.Bech32Config
 
 	c.JSON(http.StatusOK, res)
@@ -178,7 +177,7 @@ func GetChainBech32Config(c *gin.Context) {
 
 // GetFee returns the fee average in dollar for the specified chain..
 func GetFee(c *gin.Context) {
-	var res feeResponse
+	var res FeeResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -218,9 +217,8 @@ func GetFee(c *gin.Context) {
 		return
 	}
 
-	res = feeResponse{
-		ChainName: chain.ChainName,
-		Fee:       chain.BaseFee,
+	res = FeeResponse{
+		Fee: chain.BaseFee,
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -228,7 +226,7 @@ func GetFee(c *gin.Context) {
 
 // GetFeeAddress returns the fee address for a given chain, looked up by the chain name attribute.
 func GetFeeAddress(c *gin.Context) {
-	var res feeAddressResponse
+	var res FeeAddressResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -268,8 +266,7 @@ func GetFeeAddress(c *gin.Context) {
 		return
 	}
 
-	res = feeAddressResponse{
-		ChainName:  chain.ChainName,
+	res = FeeAddressResponse{
 		FeeAddress: chain.FeeAddress,
 	}
 
@@ -278,7 +275,7 @@ func GetFeeAddress(c *gin.Context) {
 
 // GetFeeAddresses returns the fee address for all chains.
 func GetFeeAddresses(c *gin.Context) {
-	var res feeAddressesResponse
+	var res FeeAddressesResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -317,7 +314,7 @@ func GetFeeAddresses(c *gin.Context) {
 	for _, c := range chains {
 		res.FeeAddresses = append(
 			res.FeeAddresses,
-			feeAddressResponse{
+			FeeAddress{
 				ChainName:  c.ChainName,
 				FeeAddress: c.FeeAddress,
 			},
@@ -329,7 +326,7 @@ func GetFeeAddresses(c *gin.Context) {
 
 // GetFeeToken returns the fee token for a given chain, looked up by the chain name attribute.
 func GetFeeToken(c *gin.Context) {
-	var res feeTokenResponse
+	var res FeeTokenResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -373,14 +370,12 @@ func GetFeeToken(c *gin.Context) {
 		res.FeeTokens = append(res.FeeTokens, cc)
 	}
 
-	res.ChainName = chainName
-
 	c.JSON(http.StatusOK, res)
 }
 
 // GetPrimaryChannelWithCounterparty returns the primary channel of a chain by specifying the counterparty.
 func GetPrimaryChannelWithCounterparty(c *gin.Context) {
-	var res counterpartyResponse
+	var res PrimaryChannelResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -423,8 +418,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 		return
 	}
 
-	res = counterpartyResponse{
-		ChainName:    chainName,
+	res.Channel = PrimaryChannel{
 		Counterparty: counterparty,
 		ChannelName:  chain.ChannelName,
 	}
@@ -434,7 +428,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 
 // GetPrimaryChannels returns the primary channels of a chain.
 func GetPrimaryChannels(c *gin.Context) {
-	var res channelsResponse
+	var res PrimaryChannelsResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -475,8 +469,7 @@ func GetPrimaryChannels(c *gin.Context) {
 	}
 
 	for _, cc := range chain {
-		res.Channels = append(res.Channels, counterpartyResponse{
-			ChainName:    chainName,
+		res.Channels = append(res.Channels, PrimaryChannel{
 			Counterparty: cc.Counterparty,
 			ChannelName:  cc.ChannelName,
 		})

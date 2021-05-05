@@ -21,7 +21,7 @@ func Register(router *gin.Engine) {
 // @Failure 500,403 {object} deps.Error
 // @Router /staking_balances [get]
 func GetDelegationsByAddress(c *gin.Context) {
-	var res StakingBalances
+	var res StakingBalancesResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {

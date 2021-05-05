@@ -15,7 +15,7 @@ func Register(router *gin.Engine) {
 // GetBalancesByAddress - Find balances by address
 func GetBalancesByAddress(c *gin.Context) {
 
-	var res Balances
+	var res BalancesResponse
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
