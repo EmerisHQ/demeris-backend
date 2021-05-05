@@ -8,4 +8,5 @@ type Delegations struct {
 type Delegation struct {
 	ValidatorAddress string `json:"validator_address"`
 	Amount           string `json:"amount"`
+	ChainName        string `json:"chain_name"`
 }
