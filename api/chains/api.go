@@ -22,7 +22,7 @@ func Register(router *gin.Engine) {
 	chain.GET("/denom/verify_trace/:hash", VerifyTrace)
 	chain.GET("/bech32", GetChainBech32Config)
 	chain.GET("/primary_channels", GetPrimaryChannels)
-	chain.GET("/primary_channel/:counterparty", GetPrimaryChannels)
+	chain.GET("/primary_channel/:counterparty", GetPrimaryChannelWithCounterparty)
 
 	fee := chain.Group("/fee")
 
