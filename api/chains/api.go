@@ -36,17 +36,7 @@ func Register(router *gin.Engine) {
 func GetChains(c *gin.Context) {
 	var res chainsResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"chains",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chains, err := d.Database.Chains()
 
@@ -85,17 +75,7 @@ func GetChains(c *gin.Context) {
 func GetChain(c *gin.Context) {
 	var res chainResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"chains",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 
@@ -132,17 +112,7 @@ func GetChain(c *gin.Context) {
 func GetChainBech32Config(c *gin.Context) {
 	var res bech32ConfigResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"chains",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 
@@ -179,17 +149,7 @@ func GetChainBech32Config(c *gin.Context) {
 func GetFee(c *gin.Context) {
 	var res feeResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"fee",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 
@@ -228,17 +188,7 @@ func GetFee(c *gin.Context) {
 func GetFeeAddress(c *gin.Context) {
 	var res feeAddressResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"feeaddress",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 
@@ -277,17 +227,7 @@ func GetFeeAddress(c *gin.Context) {
 func GetFeeAddresses(c *gin.Context) {
 	var res feeAddressesResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"feeaddress",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chains, err := d.Database.Chains()
 
@@ -328,17 +268,7 @@ func GetFeeAddresses(c *gin.Context) {
 func GetFeeToken(c *gin.Context) {
 	var res feeTokenResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"feetoken",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 
@@ -377,17 +307,7 @@ func GetFeeToken(c *gin.Context) {
 func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 	var res primaryChannelResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"primarychannel",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 	counterparty := c.Param("counterparty")
@@ -430,17 +350,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 func GetPrimaryChannels(c *gin.Context) {
 	var res primaryChannelsResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"primarychannel",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 
@@ -481,17 +391,7 @@ func GetPrimaryChannels(c *gin.Context) {
 func VerifyTrace(c *gin.Context) {
 	var res verifiedTraceResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chain := c.Param("chain")
 	hash := c.Param("hash")

@@ -16,17 +16,7 @@ func Register(router *gin.Engine) {
 func GetBalancesByAddress(c *gin.Context) {
 
 	var res balancesResponse
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"balances",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	address := c.Param("address")
 

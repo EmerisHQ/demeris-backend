@@ -23,17 +23,7 @@ func Register(router *gin.Engine) {
 func GetDelegationsByAddress(c *gin.Context) {
 	var res stakingBalancesResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"delegations",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	address := c.Param("address")
 

@@ -16,17 +16,7 @@ func Register(router *gin.Engine) {
 func GetVerifiedDenoms(c *gin.Context) {
 	var res verifiedDenomsResponse
 
-	d, err := deps.GetDeps(c)
-	if err != nil {
-		c.Error(deps.NewError(
-			"verified_denoms",
-			fmt.Errorf("internal error"),
-			http.StatusInternalServerError,
-		))
-
-		panic("cannot retrieve context deps")
-		return
-	}
+	d := deps.GetDeps(c)
 
 	chains, err := d.Database.Chains()
 
