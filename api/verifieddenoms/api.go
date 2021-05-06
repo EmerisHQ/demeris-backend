@@ -12,7 +12,15 @@ func Register(router *gin.Engine) {
 	router.GET("/verified_denoms", GetVerifiedDenoms)
 }
 
-// GetVerifiedDenoms returns the fee token for a given chain, looked up by the chain name attribute.
+// GetVerifiedDenoms returns the list of verified denoms.
+// @Summary Gets verified denoms
+// @Tags Denoms
+// @ID verified-denoms
+// @Description gets verified denoms
+// @Produce json
+// @Success 200 {object} verifiedDenomsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /verified_denoms [get]
 func GetVerifiedDenoms(c *gin.Context) {
 	var res verifiedDenomsResponse
 
