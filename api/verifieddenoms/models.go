@@ -2,11 +2,10 @@ package verifieddenoms
 
 import "github.com/allinbits/demeris-backend/models"
 
-type VerifiedDenomsResponse struct {
-	VerifiedDenoms []VerifiedDenom `json:"verified_denoms"`
-}
-
-type VerifiedDenom struct {
+type verifiedDenom struct {
 	models.Denom
 	ChainName string `json:"chain_name"`
+}
+type verifiedDenomsResponse struct {
+	VerifiedDenoms []verifiedDenom `json:"verified_denoms"`
 }

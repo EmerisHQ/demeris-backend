@@ -480,7 +480,7 @@ func GetPrimaryChannels(c *gin.Context) {
 
 func VerifyTrace(c *gin.Context) {
 	var res verifiedTraceResponse
-	var verifiedTrace verifiedTrace
+
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
@@ -524,12 +524,12 @@ func VerifyTrace(c *gin.Context) {
 
 	}
 
-	verifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
-	verifiedTrace.Path = denomTrace.Path
+	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
+	res.VerifiedTrace.Path = denomTrace.Path
 
 	// check if the path uses only the supported `transfer` port.
 
-	channels := strings.Split(verifiedTrace.Path, "/transfer")
+	channels := strings.Split(res.VerifiedTrace.Path, "/transfer")
 
 	for idx, channel := range channels {
 		ch := strings.Trim(channel, "/")
@@ -537,11 +537,11 @@ func VerifyTrace(c *gin.Context) {
 		// port other than transfer being used
 		if strings.Contains(ch, "/") {
 
-			err = errors.New(fmt.Sprintf("Unsupported path %s", verifiedTrace.Path))
+			err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
 			e := deps.NewError(
 				"denom/verify-trace",
-				fmt.Errorf("invalid denom %v with path %v", hash, verifiedTrace.Path),
+				fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
 				http.StatusBadRequest,
 			)
 
@@ -554,7 +554,7 @@ func VerifyTrace(c *gin.Context) {
 				"hash",
 				hash,
 				"path",
-				verifiedTrace.Path,
+				res.VerifiedTrace.Path,
 				"err",
 				err,
 			)
@@ -591,7 +591,7 @@ func VerifyTrace(c *gin.Context) {
 				"hash",
 				hash,
 				"path",
-				verifiedTrace.Path,
+				res.VerifiedTrace.Path,
 				"client_id",
 				client.ClientId,
 				"chain",
@@ -626,7 +626,7 @@ func VerifyTrace(c *gin.Context) {
 					"hash",
 					hash,
 					"path",
-					verifiedTrace.Path,
+					res.VerifiedTrace.Path,
 					"client_id",
 					client.ClientId,
 					"chain",
@@ -641,8 +641,8 @@ func VerifyTrace(c *gin.Context) {
 			}
 		}
 
-		verifiedTrace.Trace = append(verifiedTrace.Trace, trace)
-		res.VerifiedTrace = verifiedTrace
+		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
+
 	}
 
 	c.JSON(http.StatusOK, res)
