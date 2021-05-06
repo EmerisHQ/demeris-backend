@@ -110,8 +110,16 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 }
 
 func registerRoutes(engine *gin.Engine) {
+	// @tag.name Balances
+	// @tag.description Balances-querying endpoints
 	balances.Register(engine)
 	delegations.Register(engine)
+
+	// @tag.name Denoms
+	// @tag.description Denoms-related endpoints
 	verifieddenoms.Register(engine)
+
+	// @tag.name Chain
+	// @tag.description Chain-related endpoints
 	chains.Register(engine)
 }
