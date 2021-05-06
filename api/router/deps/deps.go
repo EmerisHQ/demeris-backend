@@ -15,16 +15,27 @@ type Deps struct {
 	CNSURL   string
 }
 
-func GetDeps(c *gin.Context) (*Deps, error) {
+func GetDeps(c *gin.Context) *Deps {
 	d, ok := c.Get("deps")
 	if !ok {
-		return nil, fmt.Errorf("deps not set in context")
+		panic("deps not set in context")
 	}
 
 	deps, ok := d.(*Deps)
 	if !ok {
-		return nil, fmt.Errorf("deps not of the expected type")
+		panic(fmt.Sprintf("deps not of the expected type, found %T", deps))
 	}
 
-	return deps, nil
+	return deps
+}
+
+func (d *Deps) WriteError(c *gin.Context, err Error, logMessage string, keyAndValues ...interface{}) {
+	_ = c.Error(err)
+
+	if keyAndValues != nil {
+		d.Logger.Errorw(
+			logMessage,
+			keyAndValues...,
+		)
+	}
 }

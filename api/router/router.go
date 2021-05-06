@@ -2,6 +2,8 @@ package router
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 
 	"github.com/allinbits/demeris-backend/api/chains"
 	"github.com/allinbits/demeris-backend/api/verifieddenoms"
@@ -33,6 +35,7 @@ func New(db *database.Database, l *zap.SugaredLogger, cnsURL string) *Router {
 		cnsURL: cnsURL,
 	}
 
+	engine.Use(r.catchPanics())
 	engine.Use(logging.LogRequest(l.Desugar()))
 	engine.Use(r.decorateCtxWithDeps())
 	engine.Use(r.handleErrors())
@@ -46,6 +49,35 @@ func New(db *database.Database, l *zap.SugaredLogger, cnsURL string) *Router {
 
 func (r *Router) Serve(address string) error {
 	return r.g.Run(address)
+}
+
+func (r *Router) catchPanics() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if rval := recover(); rval != nil {
+				// okay we panic-ed, log it through r's logger and write back internal server error
+				err := deps.NewError(
+					"fatal_error",
+					errors.New("internal server error"),
+					http.StatusInternalServerError)
+
+				r.l.Errorw(
+					"panic handler triggered while handling call",
+					"endpoint", c.Request.RequestURI,
+					"error", fmt.Sprint(rval),
+					"error_id", err.ID,
+				)
+
+				c.AbortWithStatusJSON(
+					http.StatusInternalServerError,
+					err,
+				)
+
+				return
+			}
+		}()
+		c.Next()
+	}
 }
 
 func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
