@@ -36,9 +36,7 @@ func GetDelegationsByAddress(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot query database delegations for addresses",
 			"id",
 			e.ID,

@@ -27,9 +27,7 @@ func GetVerifiedDenoms(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chains",
 			"id",
 			e.ID,

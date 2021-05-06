@@ -31,9 +31,7 @@ func GetBalancesByAddress(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot query database balance for address",
 			"id",
 			e.ID,
@@ -42,7 +40,6 @@ func GetBalancesByAddress(c *gin.Context) {
 			"error",
 			err,
 		)
-
 		return
 	}
 
@@ -72,9 +69,7 @@ func GetBalancesByAddress(c *gin.Context) {
 					http.StatusBadRequest,
 				)
 
-				c.Error(e)
-
-				d.Logger.Errorw(
+				d.WriteError(c, e,
 					"cannot query database balance for address",
 					"id",
 					e.ID,

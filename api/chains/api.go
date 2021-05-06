@@ -47,9 +47,7 @@ func GetChains(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chains",
 			"id",
 			e.ID,
@@ -88,9 +86,7 @@ func GetChain(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chain",
 			"id",
 			e.ID,
@@ -125,9 +121,7 @@ func GetChainBech32Config(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chain",
 			"id",
 			e.ID,
@@ -162,9 +156,7 @@ func GetFee(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chain",
 			"id",
 			e.ID,
@@ -201,9 +193,7 @@ func GetFeeAddress(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chain",
 			"id",
 			e.ID,
@@ -238,9 +228,7 @@ func GetFeeAddresses(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chains",
 			"id",
 			e.ID,
@@ -281,9 +269,7 @@ func GetFeeToken(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chain",
 			"id",
 			e.ID,
@@ -321,9 +307,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chain",
 			"id",
 			e.ID,
@@ -363,9 +347,7 @@ func GetPrimaryChannels(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot retrieve chain",
 			"id",
 			e.ID,
@@ -406,9 +388,7 @@ func VerifyTrace(c *gin.Context) {
 			http.StatusBadRequest,
 		)
 
-		c.Error(e)
-
-		d.Logger.Errorw(
+		d.WriteError(c, e,
 			"cannot query database for denom",
 			"id",
 			e.ID,
@@ -445,9 +425,7 @@ func VerifyTrace(c *gin.Context) {
 				http.StatusBadRequest,
 			)
 
-			c.Error(e)
-
-			d.Logger.Errorw(
+			d.WriteError(c, e,
 				"invalid denom",
 				"id",
 				e.ID,
@@ -482,9 +460,7 @@ func VerifyTrace(c *gin.Context) {
 				http.StatusBadRequest,
 			)
 
-			c.Error(e)
-
-			d.Logger.Errorw(
+			d.WriteError(c, e,
 				"invalid client id",
 				"id",
 				e.ID,
@@ -517,9 +493,7 @@ func VerifyTrace(c *gin.Context) {
 					http.StatusBadRequest,
 				)
 
-				c.Error(e)
-
-				d.Logger.Errorw(
+				d.WriteError(c, e,
 					"invalid client id",
 					"id",
 					e.ID,
