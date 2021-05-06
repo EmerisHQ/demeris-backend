@@ -45,7 +45,7 @@ type primaryChannel struct {
 type primaryChannelResponse struct {
 	Channel primaryChannel `json:"primary_channel"`
 }
-type PrimaryChannelsResponse struct {
+type primaryChannelsResponse struct {
 	Channels []primaryChannel `json:"primary_channels"`
 }
 

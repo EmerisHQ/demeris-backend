@@ -428,7 +428,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 
 // GetPrimaryChannels returns the primary channels of a chain.
 func GetPrimaryChannels(c *gin.Context) {
-	var res PrimaryChannelsResponse
+	var res primaryChannelsResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
