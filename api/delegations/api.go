@@ -21,7 +21,7 @@ func Register(router *gin.Engine) {
 // @Failure 500,403 {object} deps.Error
 // @Router /staking_balances [get]
 func GetDelegationsByAddress(c *gin.Context) {
-	var res Delegations
+	var res stakingBalancesResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -62,14 +62,12 @@ func GetDelegationsByAddress(c *gin.Context) {
 	}
 
 	for _, del := range dl {
-		res.Delegations = append(res.Delegations, Delegation{
+		res.StakingBalances = append(res.StakingBalances, stakingBalance{
 			ValidatorAddress: del.Validator,
 			Amount:           del.Amount,
 			ChainName:        del.ChainName,
 		})
 	}
-
-	res.Delegator = address
 
 	c.JSON(http.StatusOK, res)
 }

@@ -15,7 +15,7 @@ func Register(router *gin.Engine) {
 // GetBalancesByAddress - Find balances by address
 func GetBalancesByAddress(c *gin.Context) {
 
-	res := []Balance{}
+	var res balancesResponse
 	d, err := deps.GetDeps(c)
 	if err != nil {
 		c.Error(deps.NewError(
@@ -60,7 +60,7 @@ func GetBalancesByAddress(c *gin.Context) {
 	// perhaps we can remove this since there will be another endpoint specifically for fee tokens
 
 	for _, b := range balances {
-		balance := Balance{
+		balance := balance{
 			Address:  b.Address,
 			Amount:   b.Amount,
 			Verified: true,
@@ -69,7 +69,7 @@ func GetBalancesByAddress(c *gin.Context) {
 
 		if b.Denom[:4] == "ibc/" {
 			// is ibc token
-			balance.Ibc = IbcInfo{
+			balance.Ibc = ibcInfo{
 				Hash: b.Denom[4:],
 			}
 
@@ -106,12 +106,10 @@ func GetBalancesByAddress(c *gin.Context) {
 			balance.BaseDenom = b.Denom
 		}
 
-		res = append(res, balance)
+		res.Balances = append(res.Balances, balance)
 	}
 	// d.Logger.Info(d.Database.Balances(addresses))
 	d.Logger.Info(balances)
 
-	c.JSON(http.StatusOK, gin.H{
-		"balances": res,
-	})
+	c.JSON(http.StatusOK, res)
 }

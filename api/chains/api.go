@@ -19,7 +19,7 @@ func Register(router *gin.Engine) {
 	chain := router.Group("/chain/:chain")
 
 	chain.GET("", GetChain)
-	chain.GET("/denom/verify-trace/:hash", VerifyTrace)
+	chain.GET("/denom/verify_trace/:hash", VerifyTrace)
 	chain.GET("/bech32", GetChainBech32Config)
 	chain.GET("/primary_channels", GetPrimaryChannels)
 	chain.GET("/primary_channel/:counterparty", GetPrimaryChannels)
@@ -71,7 +71,11 @@ func GetChains(c *gin.Context) {
 	}
 
 	for _, cc := range chains {
-		res.SupportedChains = append(res.SupportedChains, cc.ChainName)
+		res.Chains = append(res.Chains, supportedChain{
+			ChainName:   cc.ChainName,
+			DisplayName: cc.DisplayName,
+			Logo:        cc.Logo,
+		})
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -166,7 +170,6 @@ func GetChainBech32Config(c *gin.Context) {
 		return
 	}
 
-	res.ChainName = chain.ChainName
 	res.Bech32Config = chain.NodeInfo.Bech32Config
 
 	c.JSON(http.StatusOK, res)
@@ -215,8 +218,7 @@ func GetFee(c *gin.Context) {
 	}
 
 	res = feeResponse{
-		ChainName: chain.ChainName,
-		Fee:       chain.BaseFee,
+		Fee: chain.BaseFee,
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -265,7 +267,6 @@ func GetFeeAddress(c *gin.Context) {
 	}
 
 	res = feeAddressResponse{
-		ChainName:  chain.ChainName,
 		FeeAddress: chain.FeeAddress,
 	}
 
@@ -313,7 +314,7 @@ func GetFeeAddresses(c *gin.Context) {
 	for _, c := range chains {
 		res.FeeAddresses = append(
 			res.FeeAddresses,
-			feeAddressResponse{
+			feeAddress{
 				ChainName:  c.ChainName,
 				FeeAddress: c.FeeAddress,
 			},
@@ -369,14 +370,12 @@ func GetFeeToken(c *gin.Context) {
 		res.FeeTokens = append(res.FeeTokens, cc)
 	}
 
-	res.ChainName = chainName
-
 	c.JSON(http.StatusOK, res)
 }
 
 // GetPrimaryChannelWithCounterparty returns the primary channel of a chain by specifying the counterparty.
 func GetPrimaryChannelWithCounterparty(c *gin.Context) {
-	var res counterpartyResponse
+	var res primaryChannelResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -419,8 +418,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 		return
 	}
 
-	res = counterpartyResponse{
-		ChainName:    chainName,
+	res.Channel = primaryChannel{
 		Counterparty: counterparty,
 		ChannelName:  chain.ChannelName,
 	}
@@ -430,7 +428,7 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 
 // GetPrimaryChannels returns the primary channels of a chain.
 func GetPrimaryChannels(c *gin.Context) {
-	var res channelsResponse
+	var res primaryChannelsResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -471,8 +469,7 @@ func GetPrimaryChannels(c *gin.Context) {
 	}
 
 	for _, cc := range chain {
-		res.Channels = append(res.Channels, counterpartyResponse{
-			ChainName:    chainName,
+		res.Channels = append(res.Channels, primaryChannel{
 			Counterparty: cc.Counterparty,
 			ChannelName:  cc.ChannelName,
 		})
@@ -482,7 +479,7 @@ func GetPrimaryChannels(c *gin.Context) {
 }
 
 func VerifyTrace(c *gin.Context) {
-	var res VerifiedTraceResponse
+	var res verifiedTraceResponse
 
 	d, err := deps.GetDeps(c)
 	if err != nil {
@@ -527,12 +524,12 @@ func VerifyTrace(c *gin.Context) {
 
 	}
 
-	res.IbcDenom = fmt.Sprintf("ibc/%s", hash)
-	res.Path = denomTrace.Path
+	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
+	res.VerifiedTrace.Path = denomTrace.Path
 
 	// check if the path uses only the supported `transfer` port.
 
-	channels := strings.Split(res.Path, "/transfer")
+	channels := strings.Split(res.VerifiedTrace.Path, "/transfer")
 
 	for idx, channel := range channels {
 		ch := strings.Trim(channel, "/")
@@ -540,11 +537,11 @@ func VerifyTrace(c *gin.Context) {
 		// port other than transfer being used
 		if strings.Contains(ch, "/") {
 
-			err = errors.New(fmt.Sprintf("Unsupported path %s", res.Path))
+			err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
 			e := deps.NewError(
 				"denom/verify-trace",
-				fmt.Errorf("invalid denom %v with path %v", hash, res.Path),
+				fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
 				http.StatusBadRequest,
 			)
 
@@ -557,7 +554,7 @@ func VerifyTrace(c *gin.Context) {
 				"hash",
 				hash,
 				"path",
-				res.Path,
+				res.VerifiedTrace.Path,
 				"err",
 				err,
 			)
@@ -568,7 +565,7 @@ func VerifyTrace(c *gin.Context) {
 
 	var client models.IbcClientInfo
 	var chainInfo models.Chain
-	var trace Trace
+	var trace trace
 
 	for _, channel := range channels {
 
@@ -594,7 +591,7 @@ func VerifyTrace(c *gin.Context) {
 				"hash",
 				hash,
 				"path",
-				res.Path,
+				res.VerifiedTrace.Path,
 				"client_id",
 				client.ClientId,
 				"chain",
@@ -629,7 +626,7 @@ func VerifyTrace(c *gin.Context) {
 					"hash",
 					hash,
 					"path",
-					res.Path,
+					res.VerifiedTrace.Path,
 					"client_id",
 					client.ClientId,
 					"chain",
@@ -644,10 +641,9 @@ func VerifyTrace(c *gin.Context) {
 			}
 		}
 
-		res.Trace = append(res.Trace, trace)
+		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
+
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"trace": res,
-	})
+	c.JSON(http.StatusOK, res)
 }
