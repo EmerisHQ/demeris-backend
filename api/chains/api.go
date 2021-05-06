@@ -33,6 +33,14 @@ func Register(router *gin.Engine) {
 }
 
 // GetChains returns the list of all the chains supported by demeris.
+// @Summary Gets list of supported chains.
+// @Tags Chain
+// @ID chains
+// @Description Gets list of supported chains.
+// @Produce json
+// @Success 200 {object} chainsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chains [get]
 func GetChains(c *gin.Context) {
 	var res chainsResponse
 
@@ -70,6 +78,15 @@ func GetChains(c *gin.Context) {
 }
 
 // GetChain returns chain information by specifying its name.
+// @Summary Gets chain by name.
+// @Tags Chain
+// @ID chain
+// @Description Gets chain by name.
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} chainResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName} [get]
 func GetChain(c *gin.Context) {
 	var res chainResponse
 
@@ -105,6 +122,15 @@ func GetChain(c *gin.Context) {
 }
 
 // GetChainBech32Config returns bech32 configuration for a chain by specifying its name.
+// @Summary Gets chain bech32 configuration by chain name.
+// @Tags Chain
+// @ID bech32config
+// @Description Gets chain bech32 configuration by chain name..
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} bech32ConfigResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/bech32 [get]
 func GetChainBech32Config(c *gin.Context) {
 	var res bech32ConfigResponse
 
@@ -139,7 +165,16 @@ func GetChainBech32Config(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-// GetFee returns the fee average in dollar for the specified chain..
+// GetFee returns the fee average in dollar for the specified chain.
+// @Summary Gets average fee in dollar by chain name.
+// @Tags Chain
+// @ID fee
+// @Description Gets average fee in dollar by chain name.
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} feeResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/fee [get]
 func GetFee(c *gin.Context) {
 	var res feeResponse
 
@@ -177,6 +212,15 @@ func GetFee(c *gin.Context) {
 }
 
 // GetFeeAddress returns the fee address for a given chain, looked up by the chain name attribute.
+// @Summary Gets address to pay fee for by chain name.
+// @Tags Chain
+// @ID feeaddress
+// @Description Gets address to pay fee for by chain name.
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} feeAddressResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/address [get]
 func GetFeeAddress(c *gin.Context) {
 	var res feeAddressResponse
 
@@ -214,6 +258,14 @@ func GetFeeAddress(c *gin.Context) {
 }
 
 // GetFeeAddresses returns the fee address for all chains.
+// @Summary Gets all addresses to pay fee for.
+// @Tags Chain
+// @ID feeaddresses
+// @Description Gets all addresses to pay fee for.
+// @Produce json
+// @Success 200 {object} feeAddressesResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chains/fee/addresses [get]
 func GetFeeAddresses(c *gin.Context) {
 	var res feeAddressesResponse
 
@@ -253,6 +305,15 @@ func GetFeeAddresses(c *gin.Context) {
 }
 
 // GetFeeToken returns the fee token for a given chain, looked up by the chain name attribute.
+// @Summary Gets token used to pay fees by chain name.
+// @Tags Chain
+// @ID feetoken
+// @Description Gets token used to pay fees by chain name.
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} feeTokenResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/token [get]
 func GetFeeToken(c *gin.Context) {
 	var res feeTokenResponse
 
@@ -290,6 +351,16 @@ func GetFeeToken(c *gin.Context) {
 }
 
 // GetPrimaryChannelWithCounterparty returns the primary channel of a chain by specifying the counterparty.
+// @Summary Gets the channel name that connects two chains.
+// @Tags Chain
+// @ID counterparty
+// @Description Gets the channel name that connects two chains.
+// @Param chainName path string true "chain name"
+// @Param counterparty path string true "counterparty chain name"
+// @Produce json
+// @Success 200 {object} primaryChannelResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/primary_channel/{counterparty} [get]
 func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 	var res primaryChannelResponse
 
@@ -331,6 +402,15 @@ func GetPrimaryChannelWithCounterparty(c *gin.Context) {
 }
 
 // GetPrimaryChannels returns the primary channels of a chain.
+// @Summary Gets the channel mapping of a chain with all the other chains it is connected to.
+// @Tags Chain
+// @ID channels
+// @Description Gets the channel mapping of a chain with all the other chains it is connected to.
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} primaryChannelsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/primary_channel [get]
 func GetPrimaryChannels(c *gin.Context) {
 	var res primaryChannelsResponse
 
@@ -370,6 +450,17 @@ func GetPrimaryChannels(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// VerifyTrace verifies that a trace hash is valid against a chain name.
+// @Summary Verifies that a trace hash is valid against a chain name.
+// @Tags Chain
+// @ID verifyTrace
+// @Description Verifies that a trace hash is valid against a chain name.
+// @Param chainName path string true "chain name"
+// @Param hash path string true "trace hash"
+// @Produce json
+// @Success 200 {object} verifiedTraceResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/denom/verify_trace/{hash} [get]
 func VerifyTrace(c *gin.Context) {
 	var res verifiedTraceResponse
 

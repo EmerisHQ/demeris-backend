@@ -12,7 +12,16 @@ func Register(router *gin.Engine) {
 	router.GET("/balances/:address", GetBalancesByAddress)
 }
 
-// GetBalancesByAddress - Find balances by address
+// GetBalancesByAddress returns balances of an address.
+// @Summary Gets address balance
+// @Tags Balances
+// @ID get-balances
+// @Description gets address balance
+// @Produce json
+// @Param address path string true "address to query staking balances for"
+// @Success 200 {object} balancesResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /balances/{address} [get]
 func GetBalancesByAddress(c *gin.Context) {
 
 	var res balancesResponse
