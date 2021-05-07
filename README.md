@@ -60,3 +60,23 @@ docker build -t [yourbinary]:latest -f Dockerfile.<yourbinary> .^
 
 ### Usage
 
+Run the script to check how to use it.
+
+```shell
+$ ./local-env.sh
+Manage demeris local environment
+
+Usage:
+  ./local-env.sh [command]
+
+Available Commands:
+  up 	 Setup the development environment
+  down 	 Tear down the development environment
+  connect-sql 	 Connect to database using cockroach built-in SQL Client
+
+Flags:
+  -n, --cluster-name 	 Kind cluster name
+  -b, --build 		 Whether to (re)build docker images
+  -h, --help 		 Show this menu
+
+```
