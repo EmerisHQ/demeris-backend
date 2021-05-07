@@ -70,11 +70,12 @@ Usage:
   ./local-env.sh [command]
 
 Available Commands:
-  up 	 Setup the development environment
-  down 	 Tear down the development environment
+  up 		 Setup the development environment
+  down 		 Tear down the development environment
   connect-sql 	 Connect to database using cockroach built-in SQL Client
 
 Flags:
+  -p, --port 	 The local port at which the api will be served
   -n, --cluster-name 	 Kind cluster name
   -b, --build 		 Whether to (re)build docker images
   -h, --help 		 Show this menu

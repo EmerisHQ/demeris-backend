@@ -3,6 +3,7 @@
 CLUSTER_NAME=demeris
 BUILD=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
+PORT=8000
 
 usage()
 {
@@ -13,6 +14,7 @@ usage()
     echo -e "  down \t\t Tear down the development environment"
     echo -e "  connect-sql \t Connect to database using cockroach built-in SQL Client"
     echo -e "\nFlags:"
+    echo -e "  -p, --port \t The local port at which the api will be served"
     echo -e "  -n, --cluster-name \t Kind cluster name"
     echo -e "  -b, --build \t\t Whether to (re)build docker images"
     echo -e "  -h, --help \t\t Show this menu\n"
@@ -40,6 +42,11 @@ key="$1"
 case $key in
     -n|--cluster-name)
     CLUSTER_NAME="$2"
+    shift
+    shift
+    ;;
+    -p|--port)
+    PORT="$2"
     shift
     shift
     ;;
@@ -98,14 +105,14 @@ then
         -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml \
         &> /dev/null
 
-    ### Setup container for proxying localhost:8000 to nginx
+    ### Setup container for proxying localhost:$PORT to nginx
     if [ ! "$(docker ps | grep $CLUSTER_NAME-local-proxy)" ]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying traffic to cluster"
         node_port=$(kubectl get service -n ingress-nginx ingress-nginx-controller -o=jsonpath="{.spec.ports[?(@.port == 80)].nodePort}")
         docker run -d --rm \
             --name $CLUSTER_NAME-local-proxy \
-            -p 127.0.0.1:8000:80 \
+            -p 127.0.0.1:$PORT:80 \
             --network kind \
             --link $CLUSTER_NAME-control-plane:target \
             alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
