@@ -4,6 +4,7 @@ CLUSTER_NAME=demeris
 BUILD=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 PORT=8000
+CNS_PORT=9999
 
 usage()
 {
@@ -108,7 +109,7 @@ then
     ### Setup container for proxying localhost:$PORT to nginx
     if [ ! "$(docker ps | grep $CLUSTER_NAME-local-proxy)" ]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying traffic to cluster"
+        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying api traffic to cluster"
         node_port=$(kubectl get service -n ingress-nginx ingress-nginx-controller -o=jsonpath="{.spec.ports[?(@.port == 80)].nodePort}")
         docker run -d --rm \
             --name $CLUSTER_NAME-local-proxy \
@@ -202,6 +203,19 @@ then
         helm/demeris-cns-server \
         &> /dev/null
 
+    ### Setup container for proxying localhost:$CNS_PORT to cns-server
+    if [ ! "$(docker ps | grep $CLUSTER_NAME-local-cns-proxy)" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying cns"
+        node_port=$(kubectl get service cns-server -o=jsonpath="{.spec.ports[?(@.port == 8000)].nodePort}")
+        docker run -d --rm \
+            --name $CLUSTER_NAME-local-cns-proxy \
+            -p 127.0.0.1:$CNS_PORT:80 \
+            --network kind \
+            --link $CLUSTER_NAME-control-plane:target \
+            alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
+    fi
+
     ### Ensure api-server image
     if [[ "$(docker images -q demeris/api-server 2> /dev/null)" == "" ]]
     then
@@ -271,8 +285,14 @@ if [ "$COMMAND" = "down" ]
 then
     if [ "$(docker ps | grep $CLUSTER_NAME-local-proxy)" ]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Deleting local proxy container"
+        echo -e "${green}\xE2\x9C\x94${reset} Deleting local api proxy"
         docker stop $CLUSTER_NAME-local-proxy &> /dev/null
+    fi
+
+    if [ "$(docker ps | grep $CLUSTER_NAME-local-cns-proxy)" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Deleting local cns proxy"
+        docker stop $CLUSTER_NAME-local-cns-proxy &> /dev/null
     fi
 
     if kind get clusters | grep $CLUSTER_NAME &> /dev/null
