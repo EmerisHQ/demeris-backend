@@ -111,3 +111,5 @@ demeris-api.toml
 
 bin
 .envrc
+
+.starport-operator

@@ -46,5 +46,17 @@ make clean
 To build Docker images for `cmd` binaries, run from the root of this repository:
 
 ```shell
-docker build -t [yourbinary]:latest --build-arg GIT_TOKEN=[your GitHub token] -f cmd/[yourbinary]/Dockerfile .^
+docker build -t [yourbinary]:latest -f Dockerfile.<yourbinary> .^
 ```
+
+## Local Kubernetes environment
+
+### Requirements
+
+* kubectl
+* docker (docker desktop will probably install kubectl)
+* helm
+* kind
+
+### Usage
+

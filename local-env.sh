@@ -2,7 +2,7 @@
 
 CLUSTER_NAME=demeris
 BUILD=false
-OPERATOR_PATH=../starport-operator
+STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 
 usage()
 {
@@ -14,7 +14,6 @@ usage()
     echo -e "  connect-sql \t Connect to database using cockroach built-in SQL Client"
     echo -e "\nFlags:"
     echo -e "  -n, --cluster-name \t Kind cluster name"
-    echo -e "  -o, --operator-path \t Path to the starport-operator"
     echo -e "  -b, --build \t\t Whether to (re)build docker images"
     echo -e "  -h, --help \t\t Show this menu\n"
     exit 1
@@ -41,11 +40,6 @@ key="$1"
 case $key in
     -n|--cluster-name)
     CLUSTER_NAME="$2"
-    shift
-    shift
-    ;;
-    -o|--operator-path)
-    OPERATOR_PATH="$2"
     shift
     shift
     ;;
@@ -119,6 +113,17 @@ then
 
     ### Ensure starport-operator is deployed
 
+    if [ ! -d .starport-operator/.git ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Cloning starport-operator repo"
+        git clone $STARPORT_OPERATOR_REPO .starport-operator &> /dev/null
+    else
+        echo -e "${green}\xE2\x9C\x94${reset} Fetching starport-operator latest changes"
+        cd .starport-operator
+        git pull $STARPORT_OPERATOR_REPO &> /dev/null
+        cd ..
+    fi
+
     echo -e "${green}\xE2\x9C\x94${reset} Ensure starport-operator is installed"
     helm upgrade starport-operator \
         --install \
@@ -127,7 +132,7 @@ then
         --namespace starport-system \
         --set webHooksEnabled=false \
         --set enableAntiAffinity=false \
-        $OPERATOR_PATH/helm/starport-operator \
+        .starport-operator/helm/starport-operator \
         &> /dev/null
 
     ### Ensure cockroach db is installed
