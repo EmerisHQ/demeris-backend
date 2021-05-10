@@ -36,6 +36,20 @@ func (c Chain) VerifiedTokens() DenomList {
 	return ret
 }
 
+// FeeTokens returns a DenomList of denoms that are usable as fee.
+func (c Chain) FeeTokens() DenomList {
+	var ret DenomList
+	for _, ft := range c.Denoms {
+		if !ft.FeeToken {
+			continue
+		}
+
+		ret = append(ret, ft)
+	}
+
+	return ret
+}
+
 // NodeInfo holds information useful to connect to a full node and broadcast transactions.
 type NodeInfo struct {
 	Endpoint     string       `binding:"required" json:"endpoint"`
