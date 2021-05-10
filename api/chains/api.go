@@ -205,7 +205,7 @@ func GetFee(c *gin.Context) {
 	}
 
 	res = feeResponse{
-		Fee: chain.BaseFee,
+		Fee: chain.BaseTxFee,
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -251,7 +251,7 @@ func GetFeeAddress(c *gin.Context) {
 	}
 
 	res = feeAddressResponse{
-		FeeAddress: chain.FeeAddress,
+		FeeAddress: chain.DemerisAddresses,
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -296,7 +296,7 @@ func GetFeeAddresses(c *gin.Context) {
 			res.FeeAddresses,
 			feeAddress{
 				ChainName:  c.ChainName,
-				FeeAddress: c.FeeAddress,
+				FeeAddress: c.DemerisAddresses,
 			},
 		)
 	}
@@ -343,7 +343,7 @@ func GetFeeToken(c *gin.Context) {
 		return
 	}
 
-	for _, cc := range chain.VerifiedFeeTokens() {
+	for _, cc := range chain.FeeTokens() {
 		res.FeeTokens = append(res.FeeTokens, cc)
 	}
 

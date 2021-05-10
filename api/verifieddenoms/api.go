@@ -47,7 +47,7 @@ func GetVerifiedDenoms(c *gin.Context) {
 	}
 
 	for _, cc := range chains {
-		for _, vd := range cc.VerifiedNativeDenoms() {
+		for _, vd := range cc.VerifiedTokens() {
 			res.VerifiedDenoms = append(res.VerifiedDenoms, verifiedDenom{
 				Denom:     vd,
 				ChainName: cc.ChainName,

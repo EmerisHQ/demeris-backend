@@ -19,15 +19,15 @@ type bech32ConfigResponse struct {
 }
 
 type feeResponse struct {
-	Fee float64 `json:"fee"`
+	Fee models.TxFee `json:"fee"`
 }
 
 type feeAddressResponse struct {
-	FeeAddress string `json:"fee_address"`
+	FeeAddress []string `json:"fee_address"`
 }
 type feeAddress struct {
-	ChainName  string `json:"chain_name"`
-	FeeAddress string `json:"fee_address"`
+	ChainName  string   `json:"chain_name"`
+	FeeAddress []string `json:"fee_address"`
 }
 type feeAddressesResponse struct {
 	FeeAddresses []feeAddress `json:"fee_addresses"`
