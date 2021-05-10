@@ -28,6 +28,7 @@ require (
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/jmoiron/sqlx v1.3.3
 	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/lib/pq v1.10.1 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/sony/sonyflake v1.0.0
