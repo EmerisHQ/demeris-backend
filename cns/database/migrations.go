@@ -14,12 +14,9 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 	display_name string not null,
 	counterparty_names jsonb not null,
 	primary_channel jsonb not null,
-	native_denoms jsonb not null,
-	fee_tokens jsonb not null,
-	fee_address text not null,
-	price_modifier decimal not null,
-	base_ibc_fee decimal not null,
-	base_fee decimal not null,
+	denoms jsonb not null,
+	demeris_addresses text[] not null,
+	base_tx_fee jsonb not null,
 	genesis_hash string not null,
 	node_info jsonb not null
 )
@@ -32,15 +29,12 @@ UPSERT INTO cns.chains
 		logo,
 		display_name,
 		counterparty_names,
-		native_denoms,
-		fee_tokens,
-		price_modifier,
-		base_ibc_fee,
-		genesis_hash,
-		fee_address,
 		primary_channel,
-		node_info,
-		base_fee
+		denoms,
+		demeris_addresses,
+		base_tx_fee,
+		genesis_hash,
+		node_info
 	)
 VALUES
 	(
@@ -48,15 +42,12 @@ VALUES
 		:logo,
 		:display_name,
 		:counterparty_names,
-		:native_denoms,
-		:fee_tokens,
-		:price_modifier,
-		:base_ibc_fee,
-		:genesis_hash,
-		:fee_address,
 		:primary_channel,
-		:node_info,
-		:base_fee
+		:denoms,
+		:demeris_addresses,
+		:base_tx_fee,
+		:genesis_hash,
+		:node_info
 	)
 `
 

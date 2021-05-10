@@ -13,34 +13,17 @@ type Chain struct {
 	DisplayName       string      `db:"display_name" binding:"required" json:"display_name"`             // user-friendly chain name
 	CounterpartyNames DbStringMap `db:"counterparty_names" binding:"required" json:"counterparty_names"` // a mapping of client_id to chain names used to identify which chain a given client_id corresponds to
 	PrimaryChannel    DbStringMap `db:"primary_channel" binding:"required" json:"primary_channel"`       // a mapping of chain name to primary channel
-	NativeDenoms      DenomList   `db:"native_denoms" binding:"required,dive" json:"native_denoms"`      // a list of denoms native to the chain
-	FeeTokens         DenomList   `db:"fee_tokens" binding:"required,dive" json:"fee_tokens"`            // a list of denoms accepted as fee on the chain, fee tokens must be verified
-	FeeAddress        string      `db:"fee_address" binding:"required" json:"fee_address"`               // the address on which we accept fee payments
-	PriceModifier     float64     `db:"price_modifier" binding:"required" json:"price_modifier"`         // modifier (between 0 and 1) applied when estimating the price of a token hopping through the chain
-	BaseIBCFee        float64     `db:"base_ibc_fee" binding:"required" json:"base_ibc_fee"`             // average cost (in dollar) to submit an IBC transaction to the chain
-	BaseFee           float64     `db:"base_fee" binding:"required" json:"base_fee"`                     // average cost (in dollar) to submit a transaction to the chain
+	Denoms            DenomList   `db:"denoms" binding:"required,dive" json:"denoms"`                    // a list of denoms native to the chain
+	DemerisAddresses  []string    `db:"demeris_addresses" binding:"required" json:"demeris_addresses"`   // the addresses on which we accept fee payments
+	BaseTxFee         TxFee       `db:"base_tx_fee" binding:"required,dive" json:"base_tx_fee"`          // average cost (in dollar) to submit a transaction to the chain
 	GenesisHash       string      `db:"genesis_hash" binding:"required" json:"genesis_hash"`             // hash of the chain's genesis file
 	NodeInfo          NodeInfo    `db:"node_info" binding:"required,dive" json:"node_info"`              // info required to query full-node (e.g. to submit tx)
 }
 
-// VerifiedFeeTokens returns a DenomList of fee tokens that are verified.
-func (c Chain) VerifiedFeeTokens() DenomList {
+// VerifiedTokens returns a DenomList of native denoms that are verified.
+func (c Chain) VerifiedTokens() DenomList {
 	var ret DenomList
-	for _, ft := range c.FeeTokens {
-		if !ft.Verified {
-			continue
-		}
-
-		ret = append(ret, ft)
-	}
-
-	return ret
-}
-
-// VerifiedNativeDenoms returns a DenomList of native denoms that are verified.
-func (c Chain) VerifiedNativeDenoms() DenomList {
-	var ret DenomList
-	for _, ft := range c.NativeDenoms {
+	for _, ft := range c.Denoms {
 		if !ft.Verified {
 			continue
 		}
@@ -60,6 +43,23 @@ type NodeInfo struct {
 
 // Scan is the sql.Scanner implementation for DbStringMap.
 func (a *NodeInfo) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+
+	return json.Unmarshal(b, &a)
+}
+
+// TxFee holds levels of payment for fees.
+type TxFee struct {
+	Low     uint64 `binding:"required" json:"low"`
+	Average uint64 `binding:"required" json:"average"`
+	High    uint64 `binding:"required" json:"high"`
+}
+
+// Scan is the sql.Scanner implementation for DbStringMap.
+func (a *TxFee) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
@@ -149,7 +149,8 @@ type Denom struct {
 	Logo        string `db:"logo" json:"logo,omitempty"`
 	Precision   int64  `db:"precision" binding:"required" json:"precision,omitempty"`
 	Name        string `db:"name" binding:"required" json:"name,omitempty"`
-	Verified    bool   `db:"verified" binding:"required" json:"verified,omitempty"`
+	Verified    bool   `db:"verified" json:"verified,omitempty"`
+	FeeToken    bool   `db:"fee_token" json:"fee_token,omitempty"`
 }
 
 // DenomList represents a slice of Denom.
