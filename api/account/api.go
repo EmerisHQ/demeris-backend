@@ -20,7 +20,7 @@ func Register(router *gin.Engine) {
 // @ID get-account
 // @Description gets address balance
 // @Produce json
-// @Param address path string true "address to query staking account for"
+// @Param address path string true "address to query balance for"
 // @Success 200 {object} balancesResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /account/{address}/balance [get]
@@ -115,7 +115,7 @@ func GetBalancesByAddress(c *gin.Context) {
 // @Tags Account
 // @ID get-staking-account
 // @Produce json
-// @Param address path string true "address to query staking account for"
+// @Param address path string true "address to query staking for"
 // @Success 200 {object} stakingBalancesResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /account/{address}/stakingbalance [get]
