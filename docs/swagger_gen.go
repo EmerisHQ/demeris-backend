@@ -1,4 +1,4 @@
-//go:generate go run github.com/swaggo/swag/cmd/swag i -g ../docs/swagger_gen.go -d ../api --parseDepth 1 --parseDependency -o ./
+//go:generate go run github.com/swaggo/swag/cmd/swag i -g ../docs/swagger_gen.go -d ../api --parseDepth 2 --parseDependency -o ./
 
 // @title Demeris API
 // @version 1.0
