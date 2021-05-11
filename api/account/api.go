@@ -12,6 +12,7 @@ func Register(router *gin.Engine) {
 	group := router.Group("/account/:address")
 	group.GET("/balance", GetBalancesByAddress)
 	group.GET("/stakingbalances", GetDelegationsByAddress)
+	group.GET("/numbers", GetNumbersByAddress)
 }
 
 // GetBalancesByAddress returns account of an address.
@@ -155,6 +156,50 @@ func GetDelegationsByAddress(c *gin.Context) {
 			ChainName:        del.ChainName,
 		})
 	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+// GetNumbersByAddress returns sequence and account number of an address.
+// @Summary Gets sequence and account number
+// @Description Gets sequence and account number
+// @Tags Account
+// @ID get-numbers-account
+// @Produce json
+// @Param address path string true "address to query numbers for"
+// @Success 200 {object} numbersResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /account/{address}/numbers [get]
+func GetNumbersByAddress(c *gin.Context) {
+	var res numbersResponse
+
+	d := deps.GetDeps(c)
+
+	address := c.Param("address")
+
+	dl, err := d.Database.Numbers(address)
+
+	if err != nil {
+		e := deps.NewError(
+			"numbers",
+			fmt.Errorf("cannot retrieve account/sequence numbers for address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query database auth for addresses",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	res.Numbers = dl
 
 	c.JSON(http.StatusOK, res)
 }
