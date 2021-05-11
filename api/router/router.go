@@ -35,6 +35,8 @@ func New(db *database.Database, l *zap.SugaredLogger, cnsURL string) *Router {
 		cnsURL: cnsURL,
 	}
 
+	r.metrics()
+
 	engine.Use(r.catchPanics())
 	engine.Use(logging.LogRequest(l.Desugar()))
 	engine.Use(r.decorateCtxWithDeps())
