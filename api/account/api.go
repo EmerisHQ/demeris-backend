@@ -1,4 +1,4 @@
-package balances
+package account
 
 import (
 	"fmt"
@@ -9,21 +9,22 @@ import (
 )
 
 func Register(router *gin.Engine) {
-	router.GET("/balances/:address", GetBalancesByAddress)
+	group := router.Group("/account/:address")
+	group.GET("/balance", GetBalancesByAddress)
+	group.GET("/stakingbalances", GetDelegationsByAddress)
 }
 
-// GetBalancesByAddress returns balances of an address.
+// GetBalancesByAddress returns account of an address.
 // @Summary Gets address balance
-// @Tags Balances
-// @ID get-balances
+// @Tags Account
+// @ID get-account
 // @Description gets address balance
 // @Produce json
-// @Param address path string true "address to query staking balances for"
+// @Param address path string true "address to query staking account for"
 // @Success 200 {object} balancesResponse
 // @Failure 500,403 {object} deps.Error
-// @Router /balances/{address} [get]
+// @Router /account/{address}/balance [get]
 func GetBalancesByAddress(c *gin.Context) {
-
 	var res balancesResponse
 	d := deps.GetDeps(c)
 
@@ -35,8 +36,8 @@ func GetBalancesByAddress(c *gin.Context) {
 
 	if err != nil {
 		e := deps.NewError(
-			"balances",
-			fmt.Errorf("cannot retrieve balances for address %v", address),
+			"account",
+			fmt.Errorf("cannot retrieve account for address %v", address),
 			http.StatusBadRequest,
 		)
 
@@ -73,7 +74,7 @@ func GetBalancesByAddress(c *gin.Context) {
 
 			if err != nil {
 				e := deps.NewError(
-					"balances",
+					"account",
 					fmt.Errorf("cannot query denom trace for token %v on chain %v", b.Denom, b.ChainName),
 					http.StatusBadRequest,
 				)
@@ -104,6 +105,56 @@ func GetBalancesByAddress(c *gin.Context) {
 	}
 	// d.Logger.Info(d.Database.Balances(addresses))
 	d.Logger.Info(balances)
+
+	c.JSON(http.StatusOK, res)
+}
+
+// GetDelegationsByAddress returns staking account of an address.
+// @Summary Gets staking balance
+// @Description gets staking balance
+// @Tags Account
+// @ID get-staking-account
+// @Produce json
+// @Param address path string true "address to query staking account for"
+// @Success 200 {object} stakingBalancesResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /account/{address}/stakingbalance [get]
+func GetDelegationsByAddress(c *gin.Context) {
+	var res stakingBalancesResponse
+
+	d := deps.GetDeps(c)
+
+	address := c.Param("address")
+
+	dl, err := d.Database.Delegations(address)
+
+	if err != nil {
+		e := deps.NewError(
+			"delegations",
+			fmt.Errorf("cannot retrieve delegations for address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query database delegations for addresses",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	for _, del := range dl {
+		res.StakingBalances = append(res.StakingBalances, stakingBalance{
+			ValidatorAddress: del.Validator,
+			Amount:           del.Amount,
+			ChainName:        del.ChainName,
+		})
+	}
 
 	c.JSON(http.StatusOK, res)
 }
