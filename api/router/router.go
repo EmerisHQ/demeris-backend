@@ -8,9 +8,7 @@ import (
 	"github.com/allinbits/demeris-backend/api/chains"
 	"github.com/allinbits/demeris-backend/api/verifieddenoms"
 
-	"github.com/allinbits/demeris-backend/api/delegations"
-
-	"github.com/allinbits/demeris-backend/api/balances"
+	"github.com/allinbits/demeris-backend/api/account"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/utils/logging"
@@ -110,10 +108,9 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 }
 
 func registerRoutes(engine *gin.Engine) {
-	// @tag.name Balances
-	// @tag.description Balances-querying endpoints
-	balances.Register(engine)
-	delegations.Register(engine)
+	// @tag.name Account
+	// @tag.description Account-querying endpoints
+	account.Register(engine)
 
 	// @tag.name Denoms
 	// @tag.description Denoms-related endpoints
