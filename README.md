@@ -46,5 +46,38 @@ make clean
 To build Docker images for `cmd` binaries, run from the root of this repository:
 
 ```shell
-docker build -t [yourbinary]:latest --build-arg GIT_TOKEN=[your GitHub token] -f cmd/[yourbinary]/Dockerfile .^
+docker build -t [yourbinary]:latest -f Dockerfile.<yourbinary> .^
+```
+
+## Local Kubernetes environment
+
+### Requirements
+
+* kubectl
+* docker (docker desktop will probably install kubectl)
+* helm
+* kind
+
+### Usage
+
+Run the script to check how to use it.
+
+```shell
+$ ./local-env.sh
+Manage demeris local environment
+
+Usage:
+  ./local-env.sh [command]
+
+Available Commands:
+  up 		 Setup the development environment
+  down 		 Tear down the development environment
+  connect-sql 	 Connect to database using cockroach built-in SQL Client
+
+Flags:
+  -p, --port 	 The local port at which the api will be served
+  -n, --cluster-name 	 Kind cluster name
+  -b, --build 		 Whether to (re)build docker images
+  -h, --help 		 Show this menu
+
 ```

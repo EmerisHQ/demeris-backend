@@ -108,3 +108,8 @@ docs/docs.go
 
 # demeris config
 demeris-api.toml
+
+bin
+.envrc
+
+.starport-operator

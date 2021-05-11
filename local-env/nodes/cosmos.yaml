@@ -1,0 +1,44 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: cosmos-hub
+  namespace: default
+spec:
+  replicas: 1
+
+  app:
+    name: gaia
+
+  moniker: demeris
+
+  init:
+    chainID: demeris-test
+    assets:
+      - 100000000000000000stake
+      - 100000000000000000uatom
+
+  image:
+    name: gcr.io/tendermint-dev/gaia
+    version: v4.2.1
+
+  config:
+    nodes:
+      startupTimeout: 30m
+      traceStoreContainer:
+        image: demeris/tracelistener
+        imagePullPolicy: Never
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: gaia
+    additionalEgressRules:
+      - to:
+          - namespaceSelector: {}
+        ports:
+          - protocol: TCP
+            port: 26257
