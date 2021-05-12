@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/allinbits/demeris-backend/api/chains"
+	"github.com/allinbits/demeris-backend/api/tx"
 	"github.com/allinbits/demeris-backend/api/verifieddenoms"
 
 	"github.com/allinbits/demeris-backend/api/delegations"
@@ -124,4 +125,8 @@ func registerRoutes(engine *gin.Engine) {
 	// @tag.name Chain
 	// @tag.description Chain-related endpoints
 	chains.Register(engine)
+
+	// @tag.name Transactions
+	// @tag.description Transaction-related endpoints
+	tx.Register(engine)
 }
