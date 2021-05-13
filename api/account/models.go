@@ -30,5 +30,5 @@ type stakingBalance struct {
 }
 
 type numbersResponse struct {
-	Numbers models.AuthRow `json:"numbers"`
+	Numbers []models.AuthRow `json:"numbers"`
 }
