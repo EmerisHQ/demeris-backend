@@ -1,4 +1,6 @@
-package balances
+package account
+
+import "github.com/allinbits/demeris-backend/models"
 
 type balancesResponse struct {
 	Balances []balance `json:"balances"`
@@ -15,4 +17,18 @@ type balance struct {
 type ibcInfo struct {
 	Path string `json:"path,omitempty"`
 	Hash string `json:"hash,omitempty"`
+}
+
+type stakingBalancesResponse struct {
+	StakingBalances []stakingBalance `json:"staking_balances"`
+}
+
+type stakingBalance struct {
+	ValidatorAddress string `json:"validator_address"`
+	Amount           string `json:"amount"`
+	ChainName        string `json:"chain_name"`
+}
+
+type numbersResponse struct {
+	Numbers models.AuthRow `json:"numbers"`
 }
