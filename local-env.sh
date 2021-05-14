@@ -87,6 +87,12 @@ assert_executable_exists docker
 
 if [ "$COMMAND" = "up" ]
 then
+    if [ "$BUILD" = "true" ]; then
+        if [ -z "$GITHUB_TOKEN" ]; then
+          echo -e "${red}Error:${reset} you should export GITHUB_TOKEN with a valid GitHub token to build images.\n"
+          usage
+        fi
+    fi
     ### Create the cluster
 
     if kind get clusters | grep $CLUSTER_NAME &> /dev/null
@@ -159,12 +165,12 @@ then
     if [[ "$(docker images -q demeris/tracelistener 2> /dev/null)" == "" ]]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Building demeris/tracelistener image"
-        docker build -t demeris/tracelistener -f Dockerfile.tracelistener .
+        docker build -t demeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
     else
         if [ "$BUILD" = "true" ]
         then
             echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/tracelistener image"
-            docker build -t demeris/tracelistener -f Dockerfile.tracelistener .
+            docker build -t demeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
         else
             echo -e "${green}\xE2\x9C\x94${reset} Image demeris/tracelistener already exists"
         fi
@@ -182,12 +188,12 @@ then
     if [[ "$(docker images -q demeris/cns-server 2> /dev/null)" == "" ]]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Building demeris/cns-server image"
-        docker build -t demeris/cns-server -f Dockerfile.cns-server .
+        docker build -t demeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
     else
         if [ "$BUILD" = "true" ]
         then
             echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/cns-server image"
-            docker build -t demeris/cns-server -f Dockerfile.cns-server .
+            docker build -t demeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
         else
             echo -e "${green}\xE2\x9C\x94${reset} Image demeris/cns-server already exists"
         fi
@@ -220,12 +226,12 @@ then
     if [[ "$(docker images -q demeris/api-server 2> /dev/null)" == "" ]]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Building demeris/api-server image"
-        docker build -t demeris/api-server -f Dockerfile.api-server .
+        docker build -t demeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
     else
         if [ "$BUILD" = "true" ]
         then
             echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/api-server image"
-            docker build -t demeris/api-server -f Dockerfile.api-server .
+            docker build -t demeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
         else
             echo -e "${green}\xE2\x9C\x94${reset} Image demeris/api-server already exists"
         fi
