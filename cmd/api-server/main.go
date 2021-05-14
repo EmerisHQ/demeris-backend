@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 
 	"github.com/allinbits/demeris-backend/api/config"
@@ -20,12 +21,18 @@ func main() {
 
 	dbi, err := database.Init(cfg)
 	if err != nil {
-		l.Panicw("cannot initialize database", err)
+		l.Panicw("cannot initialize database", "error", err)
+	}
+
+	kubeClient, err := k8s.New()
+	if err != nil {
+		l.Panicw("cannot initialize k8s", "error", err)
 	}
 
 	r := router.New(
 		dbi,
 		l,
+		kubeClient,
 		cfg.CNSAddr,
 	)
 
