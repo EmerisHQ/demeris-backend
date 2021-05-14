@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/allinbits/demeris-backend/api/k8s"
+
 	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
@@ -23,6 +25,7 @@ func Register(router *gin.Engine) {
 	chain.GET("/bech32", GetChainBech32Config)
 	chain.GET("/primary_channels", GetPrimaryChannels)
 	chain.GET("/primary_channel/:counterparty", GetPrimaryChannelWithCounterparty)
+	chain.GET("/status", GetChainStatus)
 
 	fee := chain.Group("/fee")
 
@@ -609,6 +612,50 @@ func VerifyTrace(c *gin.Context) {
 		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
 
 	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+// GetChainStatus returns the status of a given chain.
+// @Summary Gets status of a given chain.
+// @Tags Chain
+// @ID status
+// @Description Gets status of a given chain.
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} statusResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/status [get]
+func GetChainStatus(c *gin.Context) {
+	var res statusResponse
+
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	running, err := k8s.Querier{Client: *d.K8S}.ChainRunning(chainName)
+
+	if err != nil {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot retrieve chain status for %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve chain status",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	res.Online = running
 
 	c.JSON(http.StatusOK, res)
 }

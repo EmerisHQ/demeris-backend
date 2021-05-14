@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	kube "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/allinbits/demeris-backend/api/chains"
 	"github.com/allinbits/demeris-backend/api/tx"
 	"github.com/allinbits/demeris-backend/api/verifieddenoms"
@@ -21,16 +23,18 @@ type Router struct {
 	g      *gin.Engine
 	db     *database.Database
 	l      *zap.SugaredLogger
+	k8s    kube.Client
 	cnsURL string
 }
 
-func New(db *database.Database, l *zap.SugaredLogger, cnsURL string) *Router {
+func New(db *database.Database, l *zap.SugaredLogger, kubeClient kube.Client, cnsURL string) *Router {
 	engine := gin.Default()
 
 	r := &Router{
 		g:      engine,
 		db:     db,
 		l:      l,
+		k8s:    kubeClient,
 		cnsURL: cnsURL,
 	}
 
@@ -87,6 +91,7 @@ func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
 			Logger:   r.l,
 			Database: r.db,
 			CNSURL:   r.cnsURL,
+			K8S:      &r.k8s,
 		})
 	}
 }

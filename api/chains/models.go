@@ -67,3 +67,7 @@ type verifiedTrace struct {
 type verifiedTraceResponse struct {
 	VerifiedTrace verifiedTrace `json:"verify_trace"`
 }
+
+type statusResponse struct {
+	Online bool `json:"online"`
+}
