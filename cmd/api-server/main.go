@@ -24,7 +24,7 @@ func main() {
 		l.Panicw("cannot initialize database", "error", err)
 	}
 
-	kubeClient, err := k8s.New()
+	kubeClient, err := k8s.NewInCluster()
 	if err != nil {
 		l.Panicw("cannot initialize k8s", "error", err)
 	}
