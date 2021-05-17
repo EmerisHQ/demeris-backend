@@ -35,12 +35,12 @@ var (
 )
 
 type NodeConfiguration struct {
-	Name               string
-	CLIName            string
-	JoinConfig         *v1.JoinConfig
-	TestnetConfig      *v1.ValidatorInitConfig
-	DockerImage        string
-	DockerImageVersion string
+	Name               string                  `json:"name"`
+	CLIName            string                  `json:"cli_name"`
+	JoinConfig         *v1.JoinConfig          `json:"join_config"`
+	TestnetConfig      *v1.ValidatorInitConfig `json:"testnet_config"`
+	DockerImage        string                  `json:"docker_image"`
+	DockerImageVersion string                  `json:"docker_image_version"`
 }
 
 func (n NodeConfiguration) Validate() error {
@@ -80,7 +80,7 @@ var DefaultNodeConfig = v1.NodeSet{
 				StartupTimeout: &defaultStartupTimeout,
 				TraceStoreContainer: &v1.TraceStoreContainerConfig{
 					Image:           tracelistenerImage,
-					ImagePullPolicy: corev1.PullNever,
+					ImagePullPolicy: corev1.PullIfNotPresent,
 					Env: []corev1.EnvVar{
 						{
 							Name:  trFifoPathVar,
