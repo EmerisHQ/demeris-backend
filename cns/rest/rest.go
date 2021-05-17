@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	kube "sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/go-playground/validator/v10"
 
 	"github.com/allinbits/demeris-backend/cns/database"
@@ -18,13 +20,14 @@ type Server struct {
 	gl *zap.Logger
 	d  *database.Instance
 	g  *gin.Engine
+	k  *kube.Client
 }
 
 type router struct {
 	s *Server
 }
 
-func NewServer(l *zap.SugaredLogger, d *database.Instance, debug bool) *Server {
+func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, debug bool) *Server {
 	if !debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -35,6 +38,7 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, debug bool) *Server {
 		l: l,
 		d: d,
 		g: g,
+		k: kube,
 	}
 
 	r := &router{s: s}

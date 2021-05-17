@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/allinbits/demeris-backend/cns/database"
 	"github.com/allinbits/demeris-backend/cns/rest"
+	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 )
 
@@ -22,9 +23,15 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	kube, err := k8s.NewInCluster()
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	restServer := rest.NewServer(
 		logger,
 		di,
+		&kube,
 		config.Debug,
 	)
 
