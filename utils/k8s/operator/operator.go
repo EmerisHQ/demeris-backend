@@ -74,7 +74,11 @@ var DefaultNodeConfig = v1.NodeSet{
 			// Users must provide "Name,DaemonName,CliName" field, they should probably all be
 			// the same.
 		},
-		Moniker: defaultMoniker,
+		Persistence: v1.NodesPersistenceSpec{
+			Size: "5G",
+		},
+		SdkVersion: v1.Stargate,
+		Moniker:    defaultMoniker,
 		Config: &v1.NodeSetConfig{
 			Nodes: &v1.NodeSetConfigNodes{
 				StartupTimeout: &defaultStartupTimeout,
@@ -122,6 +126,8 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 
 	ns := &node.Spec
 	ns.App.Name = c.Name
+	ns.App.CliName = c.Name
+	ns.App.DaemonName = c.Name
 	if c.CLIName != "" {
 		ns.App.CliName = c.CLIName
 		ns.App.DaemonName = c.CLIName
