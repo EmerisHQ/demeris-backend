@@ -1,0 +1,22 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: act-on-nodes
+rules:
+  - apiGroups: ["apps.starport.cloud"]
+    resources: ["nodesets"]
+    verbs: ["*"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: api-server-act-on-nodes
+subjects:
+  - apiGroup: ""
+    kind: User
+    name: system:serviceaccount:default:default
+roleRef:
+  apiGroup: ""
+  kind: ClusterRole
+  name: act-on-nodes

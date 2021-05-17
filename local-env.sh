@@ -285,6 +285,11 @@ then
     kubectl apply \
         --context kind-$CLUSTER_NAME \
         -f local-env/ingress.yaml
+
+    echo -e "${green}\xE2\x9C\x94${reset} Deploy RBAC rules"
+    kubectl apply \
+        --context kind-$CLUSTER_NAME \
+        -f local-env/rbac.yaml
 fi
 
 if [ "$COMMAND" = "down" ]
