@@ -133,6 +133,11 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 		ns.App.DaemonName = c.CLIName
 	}
 
+	ns.Image = v1.Image{
+		Name:    c.DockerImage,
+		Version: c.DockerImageVersion,
+	}
+
 	switch {
 	case c.TestnetConfig != nil:
 		ns.Init = c.TestnetConfig
