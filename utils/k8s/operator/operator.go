@@ -64,11 +64,6 @@ func (n NodeConfiguration) Validate() error {
 }
 
 var DefaultNodeConfig = v1.NodeSet{
-	TypeMeta: metav1.TypeMeta{
-		Kind:       "NodeSet",
-		APIVersion: "apps.starport.cloud/v1",
-	},
-
 	ObjectMeta: metav1.ObjectMeta{
 		// Users must provide "Name" field
 		Namespace: defaultNamespace,
@@ -114,7 +109,6 @@ var DefaultNodeConfig = v1.NodeSet{
 			},
 		},
 	},
-	Status: v1.NodeSetStatus{},
 }
 
 func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
@@ -128,10 +122,9 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 
 	ns := &node.Spec
 	ns.App.Name = c.Name
-	ns.App.DaemonName = c.Name
-	ns.App.CliName = c.Name
 	if c.CLIName != "" {
 		ns.App.CliName = c.CLIName
+		ns.App.DaemonName = c.CLIName
 	}
 
 	switch {
