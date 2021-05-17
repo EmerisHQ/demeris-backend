@@ -106,10 +106,26 @@ then
 
     ### Ensure nginx ingress controller is deployed
 
-    echo -e "${green}\xE2\x9C\x94${reset} Ensure nginx ingress controller is installed"
+    echo -e "${green}\xE2\x9C\x94${reset} Ensure nginx ingress controller is installed and running"
     kubectl apply \
         --context kind-$CLUSTER_NAME \
         -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml \
+        &> /dev/null
+
+    ### Wait for nginx to be up and running
+    while : ; do
+        kubectl get pod \
+            --context kind-$CLUSTER_NAME \
+            --namespace ingress-nginx \
+            --selector=app.kubernetes.io/component=controller 2>&1 | grep -q controller && break
+        sleep 2
+    done
+    kubectl wait pod \
+        --context kind-$CLUSTER_NAME \
+        --namespace ingress-nginx \
+        --for=condition=ready \
+        --selector=app.kubernetes.io/component=controller \
+        --timeout=90s \
         &> /dev/null
 
     ### Setup container for proxying localhost:$PORT to nginx
@@ -152,6 +168,7 @@ then
     ### Ensure cockroach db is installed
     echo -e "${green}\xE2\x9C\x94${reset} Ensure cockroach db is installed and running"
     helm repo add cockroachdb https://charts.cockroachdb.com/ &> /dev/null
+    helm repo update &> /dev/null
     helm upgrade cockroachdb \
         --install \
         --kube-context kind-$CLUSTER_NAME \
