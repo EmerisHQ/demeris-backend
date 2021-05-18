@@ -22,6 +22,13 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 )
 `
 
+const deleteChain = `
+DELETE FROM 
+	cns.chains
+WHERE
+	chain_name=:chain_name; 
+`
+
 const insertChain = `
 UPSERT INTO cns.chains
 	(

@@ -31,6 +31,10 @@ func (i *Instance) AddChain(chain models.Chain) error {
 	return i.d.Exec(insertChain, &chain, nil)
 }
 
+func (i *Instance) DeleteChain(chain string) error {
+	return i.d.Exec(deleteChain, &chain, nil)
+}
+
 func (i *Instance) Chains() ([]models.Chain, error) {
 	var c []models.Chain
 
