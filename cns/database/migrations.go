@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 	demeris_addresses text[] not null,
 	base_tx_fee jsonb not null,
 	genesis_hash string not null,
-	node_info jsonb not null
+	node_info jsonb not null,
+	unique(chain_name)
 )
 `
 
@@ -30,7 +31,7 @@ WHERE
 `
 
 const insertChain = `
-UPSERT INTO cns.chains
+INSERT INTO cns.chains
 	(
 		chain_name,
 		logo,
@@ -56,6 +57,19 @@ VALUES
 		:genesis_hash,
 		:node_info
 	)
+ON CONFLICT
+	(chain_name)
+DO UPDATE SET 
+		chain_name=EXCLUDED.chain_name, 
+		logo=EXCLUDED.logo, 
+		display_name=EXCLUDED.display_name, 
+		counterparty_names=EXCLUDED.counterparty_names, 
+		primary_channel=EXCLUDED.primary_channel, 
+		denoms=EXCLUDED.denoms, 
+		demeris_addresses=EXCLUDED.demeris_addresses, 
+		base_tx_fee=EXCLUDED.base_tx_fee,
+		genesis_hash=EXCLUDED.genesis_hash,
+		node_info=EXCLUDED.node_info;
 `
 
 const getAllChains = `

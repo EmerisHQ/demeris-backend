@@ -30,7 +30,24 @@ func New(connString string) (*Instance, error) {
 }
 
 func (i *Instance) AddChain(chain models.Chain) error {
-	return i.d.Exec(insertChain, &chain, nil)
+	n, err := i.d.DB.PrepareNamed(insertChain)
+	if err != nil {
+		return err
+	}
+
+	res, err := n.Exec(chain)
+
+	if err != nil {
+		return err
+	}
+
+	rows, _ := res.RowsAffected()
+
+	if rows == 0 {
+		return fmt.Errorf("database delete statement had no effect")
+	}
+
+	return nil
 }
 
 func (i *Instance) DeleteChain(chain string) error {
