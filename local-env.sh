@@ -2,6 +2,7 @@
 
 CLUSTER_NAME=demeris
 BUILD=false
+NO_CHAINS=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 PORT=8000
 CNS_PORT=9999
@@ -15,9 +16,10 @@ usage()
     echo -e "  down \t\t Tear down the development environment"
     echo -e "  connect-sql \t Connect to database using cockroach built-in SQL Client"
     echo -e "\nFlags:"
-    echo -e "  -p, --port \t The local port at which the api will be served"
+    echo -e "  -p, --port \t\t The local port at which the api will be served"
     echo -e "  -n, --cluster-name \t Kind cluster name"
     echo -e "  -b, --build \t\t Whether to (re)build docker images"
+    echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
     echo -e "  -h, --help \t\t Show this menu\n"
     exit 1
 }
@@ -53,6 +55,10 @@ case $key in
     ;;
     -b|--build)
     BUILD=true
+    shift
+    ;;
+    -nc|--no-chains)
+    NO_CHAINS=true
     shift
     ;;
     -h|--help)
@@ -196,10 +202,12 @@ then
     kind load docker-image demeris/tracelistener --name $CLUSTER_NAME &> /dev/null
 
     ### Setup chains
-    echo -e "${green}\xE2\x9C\x94${reset} Create/update chains"
-    kubectl apply \
-        --context kind-$CLUSTER_NAME \
-        -f local-env/nodes
+    if [ "$NO_CHAINS" = "false" ]; then
+      echo -e "${green}\xE2\x9C\x94${reset} Create/update chains"
+      kubectl apply \
+          --context kind-$CLUSTER_NAME \
+          -f local-env/nodes
+    fi
 
     ### Ensure cns-server image
     if [[ "$(docker images -q demeris/cns-server 2> /dev/null)" == "" ]]
