@@ -1,6 +1,8 @@
 package database
 
 import (
+	"fmt"
+
 	"github.com/allinbits/demeris-backend/models"
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
 
@@ -32,7 +34,26 @@ func (i *Instance) AddChain(chain models.Chain) error {
 }
 
 func (i *Instance) DeleteChain(chain string) error {
-	return i.d.Exec(deleteChain, &chain, nil)
+	n, err := i.d.DB.PrepareNamed(deleteChain)
+	if err != nil {
+		return err
+	}
+
+	res, err := n.Exec(map[string]interface{}{
+		"chain_name": chain,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	rows, _ := res.RowsAffected()
+
+	if rows == 0 {
+		return fmt.Errorf("database delete statement had no effect")
+	}
+
+	return nil
 }
 
 func (i *Instance) Chains() ([]models.Chain, error) {
