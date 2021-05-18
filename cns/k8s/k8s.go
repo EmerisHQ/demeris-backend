@@ -8,6 +8,8 @@ import (
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+var ErrNotFound = fmt.Errorf("not found")
+
 type Querier struct {
 	Client kube.Client
 }
@@ -29,7 +31,7 @@ func (q Querier) DeleteNode(nodeName string) error {
 	}
 
 	if len(objs.Items) == 0 {
-		return fmt.Errorf("node with name %s not found", nodeName)
+		return fmt.Errorf("%w: %s", ErrNotFound, nodeName)
 	}
 
 	if err := q.Client.Delete(context.TODO(), &objs.Items[0]); err != nil {

@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/allinbits/demeris-backend/cns/k8s"
@@ -26,9 +27,12 @@ func (r *router) deleteChainHandler(ctx *gin.Context) {
 	k := k8s.Querier{Client: *r.s.k}
 
 	if err := k.DeleteNode(chain.Chain); err != nil {
-		e(ctx, http.StatusInternalServerError, err)
-		r.s.l.Error("cannot delete chain", err)
-		return
+		// there isn't always a k8s nodeset for a given chain
+		if !errors.Is(err, k8s.ErrNotFound) {
+			e(ctx, http.StatusInternalServerError, err)
+			r.s.l.Error("cannot delete chain", err)
+			return
+		}
 	}
 
 	if err := r.s.d.DeleteChain(chain.Chain); err != nil {
