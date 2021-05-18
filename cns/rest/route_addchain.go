@@ -27,12 +27,6 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := r.s.d.AddChain(newChain.Chain); err != nil {
-		e(ctx, http.StatusInternalServerError, err)
-		r.s.l.Error("cannot add chain", err)
-		return
-	}
-
 	k := k8s.Querier{Client: *r.s.k}
 
 	node, err := operator.NewNode(newChain.NodeConfig)
@@ -43,6 +37,12 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	}
 
 	if err := k.AddNode(*node); err != nil {
+		e(ctx, http.StatusInternalServerError, err)
+		r.s.l.Error("cannot add chain", err)
+		return
+	}
+
+	if err := r.s.d.AddChain(newChain.Chain); err != nil {
 		e(ctx, http.StatusInternalServerError, err)
 		r.s.l.Error("cannot add chain", err)
 		return
