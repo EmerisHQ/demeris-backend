@@ -191,8 +191,8 @@ then
     helm upgrade redis \
         --install \
         --kube-context kind-$CLUSTER_NAME \
-        --set tls.enabled=false \
-        --set auth.sentinel=true \
+        --set auth.enabled=false \
+        --set auth.sentinel=false \
         --set architecture=standalone \
         bitnami/redis \
         &> /dev/null
