@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    prometheus: starport-monitoring
+  name: cosmos-hub
+  namespace: default
+spec:
+  endpoints:
+  - path: /metrics
+    port: prometheus
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app: gaia
+      index: "0"
+      nodeset: cosmos-hub
