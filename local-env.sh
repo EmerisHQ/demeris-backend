@@ -184,6 +184,19 @@ then
         cockroachdb/cockroachdb \
         &> /dev/null
 
+    ### Ensure redis is installed
+    echo -e "${green}\xE2\x9C\x94${reset} Ensure redis is installed and running"
+    helm repo add bitnami https://charts.bitnami.com/bitnami &> /dev/null
+    helm repo update &> /dev/null
+    helm upgrade redis \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --set tls.enabled=false \
+        --set auth.sentinel=true \
+        --set architecture=standalone \
+        bitnami/redis \
+        &> /dev/null
+
     ### Ensure tracelistener image
     if [[ "$(docker images -q demeris/tracelistener 2> /dev/null)" == "" ]]
     then
