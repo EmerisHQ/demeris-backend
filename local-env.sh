@@ -331,6 +331,14 @@ then
           -f local-env/monitoring-values.yaml \
           prometheus-community/kube-prometheus-stack --version 15.4.6 \
           &> /dev/null
+
+      kubectl apply \
+        --context kind-$CLUSTER_NAME \
+        -f local-env/nodes/akash-service-monitor.yaml
+
+      kubectl apply \
+        --context kind-$CLUSTER_NAME \
+        -f local-env/nodes/comos-service-monitor.yaml
     fi
 
 fi
