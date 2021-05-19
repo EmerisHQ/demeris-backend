@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/allinbits/demeris-backend/api/k8s"
+	"github.com/allinbits/demeris-backend/utils/k8s"
 
 	"github.com/allinbits/demeris-backend/models"
 

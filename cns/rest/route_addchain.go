@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/allinbits/demeris-backend/cns/k8s"
+	"github.com/allinbits/demeris-backend/utils/k8s"
 
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/k8s/operator"
@@ -28,6 +28,12 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	}
 
 	if newChain.NodeConfig != nil {
+		if err := r.s.rc.AddChain(newChain.ChainName); err != nil {
+			e(ctx, http.StatusInternalServerError, err)
+			r.s.l.Error("cannot add chain name to cache", err)
+			return
+		}
+
 		k := k8s.Querier{Client: *r.s.k}
 
 		node, err := operator.NewNode(*newChain.NodeConfig)

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/allinbits/demeris-backend/cns/k8s"
+	"github.com/allinbits/demeris-backend/utils/k8s"
 
 	"github.com/gin-gonic/gin"
 )
