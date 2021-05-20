@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/utils/k8s"
+
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"google.golang.org/grpc"
@@ -24,6 +26,17 @@ type denomsDataResponse struct {
 
 func (r *router) denomsDataHandler(ctx *gin.Context) {
 	chainName := ctx.Param("chain")
+
+	q := k8s.Querier{
+		Client: *r.s.k,
+	}
+
+	ready, err := q.ChainRunning(chainName)
+	if err != nil || !ready {
+		e(ctx, http.StatusInternalServerError, fmt.Errorf("chain %s not ready", chainName))
+		r.s.l.Error("chain not ready", "error", err, "ready value", ready)
+		return
+	}
 
 	resp, err := queryDenomData(chainName)
 	if err != nil {
