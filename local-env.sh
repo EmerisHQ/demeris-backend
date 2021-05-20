@@ -5,7 +5,9 @@ BUILD=false
 NO_CHAINS=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 PORT=8000
+KIND_CONFIG=""
 CNS_PORT=9999
+ADDRESS=127.0.0.1
 
 usage()
 {
@@ -17,9 +19,11 @@ usage()
     echo -e "  connect-sql \t Connect to database using cockroach built-in SQL Client"
     echo -e "\nFlags:"
     echo -e "  -p, --port \t\t The local port at which the api will be served"
+    echo -e "  -a, --address \t\t The address at which the api will be served, defaults to 127.0.0.1"
     echo -e "  -n, --cluster-name \t Kind cluster name"
     echo -e "  -b, --build \t\t Whether to (re)build docker images"
     echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
+    echo -e "  -kc, --kind-config \t Kind cluster configuration file, optional"
     echo -e "  -h, --help \t\t Show this menu\n"
     exit 1
 }
@@ -50,6 +54,16 @@ case $key in
     ;;
     -p|--port)
     PORT="$2"
+    shift
+    shift
+    ;;
+    -kc|--kinc-config)
+    KIND_CONFIG="--config $2"
+    shift
+    shift
+    ;;
+    -a|--address)
+    ADDRESS="$2"
     shift
     shift
     ;;
@@ -106,7 +120,7 @@ then
         echo -e "${green}\xE2\x9C\x94${reset} Cluster $CLUSTER_NAME already exists"
     else
         echo -e "${green}\xE2\x9C\x94${reset} Creating cluster $CLUSTER_NAME"
-        kind create cluster --name $CLUSTER_NAME
+        kind create cluster --name $CLUSTER_NAME $KIND_CONFIG
         kubectl label nodes $CLUSTER_NAME-control-plane ingress-ready=true --context kind-$CLUSTER_NAME
     fi
 
@@ -141,7 +155,7 @@ then
         node_port=$(kubectl get service -n ingress-nginx ingress-nginx-controller -o=jsonpath="{.spec.ports[?(@.port == 80)].nodePort}")
         docker run -d --rm \
             --name $CLUSTER_NAME-local-proxy \
-            -p 127.0.0.1:$PORT:80 \
+            -p $ADDRESS:$PORT:80 \
             --network kind \
             --link $CLUSTER_NAME-control-plane:target \
             alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
@@ -254,7 +268,7 @@ then
         node_port=$(kubectl get service cns-server -o=jsonpath="{.spec.ports[?(@.port == 8000)].nodePort}")
         docker run -d --rm \
             --name $CLUSTER_NAME-local-cns-proxy \
-            -p 127.0.0.1:$CNS_PORT:80 \
+            -p $ADDRESS:$CNS_PORT:80 \
             --network kind \
             --link $CLUSTER_NAME-control-plane:target \
             alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
