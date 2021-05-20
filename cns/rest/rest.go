@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/cns/chainwatch"
+
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/go-playground/validator/v10"
@@ -21,13 +23,14 @@ type Server struct {
 	d  *database.Instance
 	g  *gin.Engine
 	k  *kube.Client
+	rc *chainwatch.Connection
 }
 
 type router struct {
 	s *Server
 }
 
-func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, debug bool) *Server {
+func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc *chainwatch.Connection, debug bool) *Server {
 	if !debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -35,10 +38,11 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, de
 	g := gin.New()
 
 	s := &Server{
-		l: l,
-		d: d,
-		g: g,
-		k: kube,
+		l:  l,
+		d:  d,
+		g:  g,
+		k:  kube,
+		rc: rc,
 	}
 
 	r := &router{s: s}
@@ -47,6 +51,7 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, de
 	g.Use(ginzap.RecoveryWithZap(l.Desugar(), true))
 
 	g.GET(r.getChains())
+	g.GET(r.denomsData())
 	g.POST(r.addChain())
 	g.DELETE(r.deleteChain())
 

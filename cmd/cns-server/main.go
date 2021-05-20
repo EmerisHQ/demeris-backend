@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/allinbits/demeris-backend/cns/chainwatch"
 	"github.com/allinbits/demeris-backend/cns/database"
 	"github.com/allinbits/demeris-backend/cns/rest"
 	"github.com/allinbits/demeris-backend/utils/k8s"
@@ -28,10 +29,24 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	rc, err := chainwatch.NewConnection(config.Redis)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	ci := chainwatch.New(
+		logger,
+		kube,
+		rc,
+	)
+
+	go ci.Run()
+
 	restServer := rest.NewServer(
 		logger,
 		di,
 		&kube,
+		rc,
 		config.Debug,
 	)
 

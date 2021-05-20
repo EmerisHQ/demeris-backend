@@ -30,6 +30,10 @@ spec:
               value: 0.0.0.0:{{ .Values.ports.http }}
             - name: DEMERIS-CNS_DATABASECONNECTIONURL
               value: "{{ .Values.databaseConnectionURL }}"
+            - name: DEMERIS-CNS_DEBUG
+              value: "{{ .Values.debug }}"
+            - name: DEMERIS-CNS_REDIS
+              value: "{{ .Values.redisUrl }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       terminationGracePeriodSeconds: 10

@@ -11,6 +11,7 @@ import (
 
 type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
+	Redis                 string `validate:"required"`
 	LogPath               string
 	RESTAddress           string `validate:"required"`
 	Debug                 bool

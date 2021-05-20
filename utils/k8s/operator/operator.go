@@ -79,36 +79,38 @@ var DefaultNodeConfig = v1.NodeSet{
 		},
 		SdkVersion: v1.Stargate,
 		Moniker:    defaultMoniker,
-		Config: &v1.NodeSetConfig{
-			Nodes: &v1.NodeSetConfigNodes{
-				StartupTimeout: &defaultStartupTimeout,
-				TraceStoreContainer: &v1.TraceStoreContainerConfig{
-					Image:           tracelistenerImage,
-					ImagePullPolicy: corev1.PullIfNotPresent,
-					Env: []corev1.EnvVar{
-						{
-							Name:  trFifoPathVar,
-							Value: trFifoPath,
-						},
-						{
-							Name:  trDbURLVar,
-							Value: trDbURL,
-						},
-						{
-							Name:  trTypeVar,
-							Value: trType,
-						},
-					},
-				},
-			},
-			AdditionalEgressRules: []netv1.NetworkPolicyEgressRule{
+	},
+}
+
+var defaultTracelistenerConfig = v1.TraceStoreContainerConfig{
+	Image:           tracelistenerImage,
+	ImagePullPolicy: corev1.PullIfNotPresent,
+	Env: []corev1.EnvVar{
+		{
+			Name:  trFifoPathVar,
+			Value: trFifoPath,
+		},
+		{
+			Name:  trDbURLVar,
+			Value: trDbURL,
+		},
+		{
+			Name:  trTypeVar,
+			Value: trType,
+		},
+	},
+}
+
+var defaultConfig = v1.NodeSetConfig{
+	Nodes: &v1.NodeSetConfigNodes{
+		StartupTimeout: &defaultStartupTimeout,
+	},
+	AdditionalEgressRules: []netv1.NetworkPolicyEgressRule{
+		{
+			Ports: []netv1.NetworkPolicyPort{
 				{
-					Ports: []netv1.NetworkPolicyPort{
-						{
-							Protocol: &defaultProtocol,
-							Port:     &defaultPort,
-						},
-					},
+					Protocol: &defaultProtocol,
+					Port:     &defaultPort,
 				},
 			},
 		},
@@ -145,10 +147,17 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 		ns.Join = c.JoinConfig
 	}
 
-	ns.Config.Nodes.TraceStoreContainer.Env = append(ns.Config.Nodes.TraceStoreContainer.Env, corev1.EnvVar{
+	tracelistenerConfig := defaultTracelistenerConfig
+
+	tracelistenerConfig.Env = append(tracelistenerConfig.Env, corev1.EnvVar{
 		Name:  trChainNameVar,
 		Value: c.Name,
 	})
+
+	nodeConfig := defaultConfig
+	nodeConfig.Nodes.TraceStoreContainer = &tracelistenerConfig
+
+	node.Spec.Config = &nodeConfig
 
 	return &node, nil
 }
