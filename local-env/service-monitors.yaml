@@ -37,3 +37,22 @@ spec:
       app: gaia
       index: "0"
       nodeset: cosmos-hub
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    prometheus: starport-monitoring
+  name: api-server
+  namespace: default
+spec:
+  endpoints:
+  - path: /metrics
+    port: http
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: api-server
+      app.kubernetes.io/name: demeris-api-server
