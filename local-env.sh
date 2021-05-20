@@ -111,8 +111,25 @@ then
         echo -e "${green}\xE2\x9C\x94${reset} Cluster $CLUSTER_NAME already exists"
     else
         echo -e "${green}\xE2\x9C\x94${reset} Creating cluster $CLUSTER_NAME"
-        kind create cluster --name $CLUSTER_NAME
-        kubectl label nodes $CLUSTER_NAME-control-plane ingress-ready=true --context kind-$CLUSTER_NAME
+        cat <<EOF | kind create cluster --name $CLUSTER_NAME --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+  extraPortMappings:
+  - containerPort: 30090
+    hostPort: 9090
+    protocol: TCP
+  - containerPort: 30080
+    hostPort: 8080
+    protocol: TCP
+EOF
     fi
 
     ### Ensure nginx ingress controller is deployed
@@ -140,17 +157,17 @@ then
         &> /dev/null
 
     ### Setup container for proxying localhost:$PORT to nginx
-    if [ ! "$(docker ps | grep $CLUSTER_NAME-local-proxy)" ]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying api traffic to cluster"
-        node_port=$(kubectl get service -n ingress-nginx ingress-nginx-controller -o=jsonpath="{.spec.ports[?(@.port == 80)].nodePort}")
-        docker run -d --rm \
-            --name $CLUSTER_NAME-local-proxy \
-            -p 127.0.0.1:$PORT:80 \
-            --network kind \
-            --link $CLUSTER_NAME-control-plane:target \
-            alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
-    fi
+#    if [ ! "$(docker ps | grep $CLUSTER_NAME-local-proxy)" ]
+#    then
+#        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying api traffic to cluster"
+#        node_port=$(kubectl get service -n ingress-nginx ingress-nginx-controller -o=jsonpath="{.spec.ports[?(@.port == 80)].nodePort}")
+#        docker run -d --rm \
+#            --name $CLUSTER_NAME-local-proxy \
+#            -p 127.0.0.1:$PORT:80 \
+#            --network kind \
+#            --link $CLUSTER_NAME-control-plane:target \
+#            alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
+#    fi
 
     ### Ensure starport-operator is deployed
 
@@ -240,17 +257,17 @@ then
         &> /dev/null
 
     ### Setup container for proxying localhost:$CNS_PORT to cns-server
-    if [ ! "$(docker ps | grep $CLUSTER_NAME-local-cns-proxy)" ]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying cns"
-        node_port=$(kubectl get service cns-server -o=jsonpath="{.spec.ports[?(@.port == 8000)].nodePort}")
-        docker run -d --rm \
-            --name $CLUSTER_NAME-local-cns-proxy \
-            -p 127.0.0.1:$CNS_PORT:80 \
-            --network kind \
-            --link $CLUSTER_NAME-control-plane:target \
-            alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
-    fi
+#    if [ ! "$(docker ps | grep $CLUSTER_NAME-local-cns-proxy)" ]
+#    then
+#        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying cns"
+#        node_port=$(kubectl get service cns-server -o=jsonpath="{.spec.ports[?(@.port == 8000)].nodePort}")
+#        docker run -d --rm \
+#            --name $CLUSTER_NAME-local-cns-proxy \
+#            -p 127.0.0.1:$CNS_PORT:80 \
+#            --network kind \
+#            --link $CLUSTER_NAME-control-plane:target \
+#            alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
+#    fi
 
     ### Ensure api-server image
     if [[ "$(docker images -q demeris/api-server 2> /dev/null)" == "" ]]
@@ -334,11 +351,7 @@ then
 
       kubectl apply \
         --context kind-$CLUSTER_NAME \
-        -f local-env/nodes/akash-service-monitor.yaml
-
-      kubectl apply \
-        --context kind-$CLUSTER_NAME \
-        -f local-env/nodes/comos-service-monitor.yaml
+        -f local-env/service-monitors.yaml
     fi
 
 fi

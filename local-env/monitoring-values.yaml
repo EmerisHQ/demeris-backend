@@ -22,7 +22,15 @@ kubeStateMetrics:
   enabled: false
 nodeExporter:
   enabled: false
+grafana:
+  adminUser: admin
+  adminPassword: admin
+  service:
+    type: NodePort
+    nodePort: 30080
 prometheus:
+  service:
+    type: NodePort
   prometheusSpec:
     serviceMonitorSelector:
      matchLabels:
