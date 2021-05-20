@@ -51,6 +51,7 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc
 	g.Use(ginzap.RecoveryWithZap(l.Desugar(), true))
 
 	g.GET(r.getChains())
+	g.GET(r.denomsData())
 	g.POST(r.addChain())
 	g.DELETE(r.deleteChain())
 
