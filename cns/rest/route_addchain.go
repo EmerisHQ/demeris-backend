@@ -43,6 +43,8 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			return
 		}
 
+		r.s.l.Debugw("node config", "config", node)
+
 		if err := k.AddNode(*node); err != nil {
 			e(ctx, http.StatusInternalServerError, err)
 			r.s.l.Error("cannot add chain", err)
