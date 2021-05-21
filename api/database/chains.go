@@ -5,7 +5,7 @@ import "github.com/allinbits/demeris-backend/models"
 func (d *Database) Chain(name string) (models.Chain, error) {
 	var c models.Chain
 
-	n, err := d.dbi.DB.PrepareNamed("select * from cns.chains where chain_name=:name limit 1")
+	n, err := d.dbi.DB.PrepareNamed("select * from cns.chains where chain_name=:name and enabled=TRUE limit 1")
 	if err != nil {
 		return models.Chain{}, err
 	}
@@ -17,7 +17,7 @@ func (d *Database) Chain(name string) (models.Chain, error) {
 
 func (d *Database) Chains() ([]models.Chain, error) {
 	var c []models.Chain
-	return c, d.dbi.Exec("select * from cns.chains", nil, &c)
+	return c, d.dbi.Exec("select * from cns.chains where enabled=TRUE", nil, &c)
 }
 
 func (d *Database) PrimaryChannelCounterparty(chainName, counterparty string) (models.ChannelQuery, error) {

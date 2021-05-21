@@ -8,7 +8,7 @@ import (
 func (d *Database) Numbers(address string) ([]models.AuthRow, error) {
 	var numbers []models.AuthRow
 
-	q, args, err := sqlx.In("SELECT * FROM tracelistener.auth WHERE address IN (?);", []string{address})
+	q, args, err := sqlx.In("SELECT * FROM tracelistener.auth WHERE address IN (?) and chain_name in (select chain_name from cns.chains where enabled=true);", []string{address})
 	if err != nil {
 		return nil, err
 	}
