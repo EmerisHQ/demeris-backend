@@ -23,7 +23,6 @@ usage()
     echo -e "  -n, --cluster-name \t Kind cluster name"
     echo -e "  -b, --build \t\t Whether to (re)build docker images"
     echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
-    echo -e "  -kc, --kind-config \t Kind cluster configuration file, optional"
     echo -e "  -m, --monitoring \t Setup monitoring infrastructure"
     echo -e "  -h, --help \t\t Show this menu\n"
     exit 1
@@ -55,11 +54,6 @@ case $key in
     ;;
     -p|--port)
     PORT="$2"
-    shift
-    shift
-    ;;
-    -kc|--kinc-config)
-    KIND_CONFIG="--config $2"
     shift
     shift
     ;;
