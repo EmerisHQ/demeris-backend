@@ -64,6 +64,7 @@ ON CONFLICT
 	(chain_name)
 DO UPDATE SET 
 		chain_name=EXCLUDED.chain_name, 
+		enabled=EXCLUDED.enabled,
 		logo=EXCLUDED.logo, 
 		display_name=EXCLUDED.display_name, 
 		counterparty_names=EXCLUDED.counterparty_names, 
