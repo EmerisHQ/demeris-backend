@@ -9,6 +9,7 @@ CREATE DATABASE IF NOT EXISTS cns;
 const createTableChains = `
 CREATE TABLE IF NOT EXISTS cns.chains (
 	id serial unique primary key,
+	enabled boolean default false,
 	chain_name string not null,
 	logo string not null,
 	display_name string not null,
@@ -34,6 +35,7 @@ const insertChain = `
 INSERT INTO cns.chains
 	(
 		chain_name,
+		enabled,
 		logo,
 		display_name,
 		counterparty_names,
@@ -47,6 +49,7 @@ INSERT INTO cns.chains
 VALUES
 	(
 		:chain_name,
+		:enabled,
 		:logo,
 		:display_name,
 		:counterparty_names,
