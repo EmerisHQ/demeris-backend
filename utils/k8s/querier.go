@@ -40,7 +40,7 @@ func (q Querier) ChainByName(name string) (v1.NodeSet, error) {
 	}
 
 	if len(chainList.Items) == 0 {
-		return v1.NodeSet{}, fmt.Errorf("no chain with name %s found", name)
+		return v1.NodeSet{}, fmt.Errorf("%w: %s", ErrNotFound, name)
 	}
 
 	return chainList.Items[0], nil
