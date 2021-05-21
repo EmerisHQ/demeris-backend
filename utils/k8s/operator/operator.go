@@ -35,7 +35,7 @@ var (
 )
 
 type NodeConfiguration struct {
-	Name               string                  `json:"name"`
+	Name               string                  // we don't export this since the REST server will fill this for us
 	CLIName            string                  `json:"cli_name"`
 	JoinConfig         *v1.JoinConfig          `json:"join_config"`
 	TestnetConfig      *v1.ValidatorInitConfig `json:"testnet_config"`
