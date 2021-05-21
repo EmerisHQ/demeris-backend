@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/allinbits/demeris-backend/utils/k8s"
@@ -27,14 +28,21 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		return
 	}
 
+	k := k8s.Querier{Client: *r.s.k}
+
+	if _, err := k.ChainByName(newChain.ChainName); !errors.Is(err, k8s.ErrNotFound) {
+		r.s.l.Infow("trying to add a kubernetes nodeset which is already there, ignoring", "error", err)
+		newChain.NodeConfig = nil
+	}
+
 	if newChain.NodeConfig != nil {
+		newChain.NodeConfig.Name = newChain.ChainName
+
 		if err := r.s.rc.AddChain(newChain.ChainName); err != nil {
 			e(ctx, http.StatusInternalServerError, err)
 			r.s.l.Error("cannot add chain name to cache", err)
 			return
 		}
-
-		k := k8s.Querier{Client: *r.s.k}
 
 		node, err := operator.NewNode(*newChain.NodeConfig)
 		if err != nil {
