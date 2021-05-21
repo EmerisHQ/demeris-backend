@@ -79,5 +79,13 @@ Flags:
   -n, --cluster-name 	 Kind cluster name
   -b, --build 		 Whether to (re)build docker images
   -h, --help 		 Show this menu
-
+  -m, --monitoring   Setup monitoring infrastructure
 ```
+
+### Grafana credentials
+
+When monitoring is enabled, Grafana is installed with default credentials and will ask for a password change on first setup. Find below the default credentials
+
+Username: admin
+
+Password: admin

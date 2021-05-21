@@ -23,7 +23,7 @@ usage()
     echo -e "  -n, --cluster-name \t Kind cluster name"
     echo -e "  -b, --build \t\t Whether to (re)build docker images"
     echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
-    echo -e "  -kc, --kind-config \t Kind cluster configuration file, optional"
+    echo -e "  -m, --monitoring \t Setup monitoring infrastructure"
     echo -e "  -h, --help \t\t Show this menu\n"
     exit 1
 }
@@ -57,11 +57,6 @@ case $key in
     shift
     shift
     ;;
-    -kc|--kinc-config)
-    KIND_CONFIG="--config $2"
-    shift
-    shift
-    ;;
     -a|--address)
     ADDRESS="$2"
     shift
@@ -69,6 +64,10 @@ case $key in
     ;;
     -b|--build)
     BUILD=true
+    shift
+    ;;
+    -m|--monitoring)
+    MONITORING=true
     shift
     ;;
     -nc|--no-chains)
@@ -120,8 +119,25 @@ then
         echo -e "${green}\xE2\x9C\x94${reset} Cluster $CLUSTER_NAME already exists"
     else
         echo -e "${green}\xE2\x9C\x94${reset} Creating cluster $CLUSTER_NAME"
-        kind create cluster --name $CLUSTER_NAME $KIND_CONFIG
-        kubectl label nodes $CLUSTER_NAME-control-plane ingress-ready=true --context kind-$CLUSTER_NAME
+        cat <<EOF | kind create cluster --name $CLUSTER_NAME --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+  extraPortMappings:
+  - containerPort: 30090
+    hostPort: 9090
+    protocol: TCP
+  - containerPort: 30080
+    hostPort: 8080
+    protocol: TCP
+EOF
     fi
 
     ### Ensure nginx ingress controller is deployed
@@ -342,6 +358,23 @@ then
     kubectl apply \
         --context kind-$CLUSTER_NAME \
         -f local-env/rbac.yaml
+
+    ## Setup monitoring infrastructure
+    if [ "$MONITORING" = "true" ]; then
+      echo -e "${green}\xE2\x9C\x94${reset} Deploying monitoring"
+      helm upgrade monitoring-stack \
+          --install \
+          --kube-context kind-$CLUSTER_NAME \
+          --set imagePullPolicy=Never \
+          -f local-env/monitoring-values.yaml \
+          prometheus-community/kube-prometheus-stack --version 15.4.6 \
+          &> /dev/null
+
+      kubectl apply \
+        --context kind-$CLUSTER_NAME \
+        -f local-env/service-monitors.yaml
+    fi
+
 fi
 
 if [ "$COMMAND" = "down" ]
