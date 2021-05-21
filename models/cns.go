@@ -161,11 +161,13 @@ type bech32ConfigMarshaled struct {
 
 // Denom holds a token denomination and its verification status.
 type Denom struct {
-	DisplayName string `db:"display_name" binding:"required" json:"display_name"`
-	Logo        string `db:"logo" json:"logo,omitempty"`
-	Precision   int64  `db:"precision" binding:"required" json:"precision,omitempty"`
 	Name        string `db:"name" binding:"required" json:"name,omitempty"`
+	DisplayName string `db:"display_name" json:"display_name"`
+	Logo        string `db:"logo" json:"logo,omitempty"`
+	Precision   int64  `db:"precision" json:"precision,omitempty"`
 	Verified    bool   `db:"verified" json:"verified,omitempty"`
+	Stakable    bool   `db:"stakable" json:"stakable,omitempty"`
+	Ticker      string `db:"ticker" json:"ticker,omitempty"`
 	FeeToken    bool   `db:"fee_token" json:"fee_token,omitempty"`
 }
 
