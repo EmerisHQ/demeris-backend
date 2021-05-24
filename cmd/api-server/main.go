@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
+	"github.com/allinbits/demeris-backend/utils/store"
 
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
@@ -24,6 +25,8 @@ func main() {
 		l.Panicw("cannot initialize database", "error", err)
 	}
 
+	s := store.NewClient(cfg.RedisAddr)
+
 	kubeClient, err := k8s.NewInCluster()
 	if err != nil {
 		l.Panicw("cannot initialize k8s", "error", err)
@@ -32,6 +35,7 @@ func main() {
 	r := router.New(
 		dbi,
 		l,
+		s,
 		kubeClient,
 		cfg.CNSAddr,
 	)

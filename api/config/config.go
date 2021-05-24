@@ -12,6 +12,7 @@ type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
 	ListenAddr            string `validate:"required"`
 	CNSAddr               string `validate:"required,url"`
+	RedisAddr             string `validate:"required"`
 	Debug                 bool
 }
 

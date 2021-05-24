@@ -6,6 +6,7 @@ import (
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/allinbits/demeris-backend/api/database"
+	"github.com/allinbits/demeris-backend/utils/store"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -14,6 +15,7 @@ import (
 type Deps struct {
 	Logger   *zap.SugaredLogger
 	Database *database.Database
+	Store    *store.Store
 	K8S      *kube.Client
 	CNSURL   string
 }
