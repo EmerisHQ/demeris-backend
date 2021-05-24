@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/allinbits/demeris-backend/utils/k8s"
 
@@ -632,6 +633,57 @@ func GetChainStatus(c *gin.Context) {
 	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
+
+	cbt, err := d.Database.ChainLastBlock(chainName)
+	if err != nil {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot retrieve chain status for %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve chain last block time",
+			"cannot retrieve chain last block time",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	chain, err := d.Database.Chain(chainName)
+	if err != nil {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot retrieve chain status for %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve chain",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	d.Logger.Debugw("last block time", "chain", chainName, "time", cbt, "threshold_for_chain", chain.ValidBlockThresh.Duration())
+
+	if time.Now().Sub(cbt.BlockTime) > chain.ValidBlockThresh.Duration() {
+		res.Online = false
+		c.JSON(http.StatusOK, res)
+		return
+	}
 
 	running, err := k8s.Querier{Client: *d.K8S}.ChainRunning(chainName)
 
