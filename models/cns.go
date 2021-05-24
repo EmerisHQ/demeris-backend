@@ -1,8 +1,11 @@
 package models
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -21,6 +24,7 @@ type Chain struct {
 	BaseTxFee         TxFee          `db:"base_tx_fee" binding:"required,dive" json:"base_tx_fee"`          // average cost (in dollar) to submit a transaction to the chain
 	GenesisHash       string         `db:"genesis_hash" binding:"required" json:"genesis_hash"`             // hash of the chain's genesis file
 	NodeInfo          NodeInfo       `db:"node_info" binding:"required,dive" json:"node_info"`              // info required to query full-node (e.g. to submit tx)
+	ValidBlockThresh  Threshold      `db:"valid_block_thresh" binding:"required" json:"valid_block_thresh"` // valid block time expressed in time.Duration format
 }
 
 // VerifiedTokens returns a DenomList of native denoms that are verified.
@@ -49,6 +53,58 @@ func (c Chain) FeeTokens() DenomList {
 	}
 
 	return ret
+}
+
+// Threshold is a database-friendly time.Duration.
+type Threshold time.Duration
+
+func (t *Threshold) UnmarshalJSON(bytes []byte) error {
+	str := ""
+
+	if err := json.Unmarshal(bytes, &str); err != nil {
+		return err
+	}
+
+	d, err := time.ParseDuration(str)
+	if err != nil {
+		return err
+	}
+
+	*t = Threshold(d)
+
+	return nil
+}
+
+func (t Threshold) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.Duration().String())
+}
+
+// Duration returns t as time.Duration.
+func (t Threshold) Duration() time.Duration {
+	return time.Duration(t)
+}
+
+// Scan is the sql.Scanner implementation for Threshold.
+func (t *Threshold) Scan(value interface{}) error {
+	vs, ok := value.(string)
+	if !ok {
+		return fmt.Errorf("threshold value is of type %T, not string", value)
+	}
+
+	vsd, err := time.ParseDuration(vs)
+	if err != nil {
+		return fmt.Errorf("cannot parse value as duration, %w", err)
+	}
+
+	*t = Threshold(vsd)
+
+	return nil
+}
+
+// Value is the driver.Value implementation for Threshold.
+func (t Threshold) Value() (driver.Value, error) {
+	td := time.Duration(t)
+	return driver.Value(td.String()), nil
 }
 
 // NodeInfo holds information useful to connect to a full node and broadcast transactions.
