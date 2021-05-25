@@ -19,6 +19,7 @@ require (
 	github.com/cssivision/reverseproxy v0.0.1
 	github.com/gin-contrib/zap v0.0.1
 	github.com/gin-gonic/gin v1.7.1
+	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/go-redis/redis/v8 v8.8.3
 	github.com/golang/protobuf v1.5.2 // indirect
