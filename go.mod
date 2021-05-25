@@ -37,6 +37,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.7.1
+	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/swaggo/swag v1.7.0
 	github.com/tendermint/liquidity v1.2.4
 	github.com/tendermint/tendermint v0.34.9
