@@ -16,6 +16,8 @@ assignees: ''
 - [ ] Manually verify denoms that need to be verified
 - [ ] Make sure at least one verified denom has a `fee` field set up with all three value  
 - [ ] Make sure the primary channels are correctly set up 
+- [ ] Make sure price API is set up with newly added verified denoms 
+- [ ] Set relayer account alerting limit 
 
 ### Only check this if all the box above have been checked
 
