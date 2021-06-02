@@ -38,7 +38,17 @@ func NewClient(connUrl string) *Store {
 }
 
 func (s *Store) CreateTicket(chain, txHash string) error {
-	return s.Set(fmt.Sprintf("%s-%s", chain, txHash), `{"status":"pending"}`)
+	data := map[string]interface{}{
+		"status": "pending",
+	}
+
+	b, err := json.Marshal(data)
+
+	if err != nil {
+		return err
+	}
+
+	return s.Set(fmt.Sprintf("%s-%s", chain, txHash), string(b))
 }
 
 func (s *Store) SetComplete(key string) error {
@@ -47,17 +57,12 @@ func (s *Store) SetComplete(key string) error {
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
-	_, err := s.Get(key)
-
-	if err != nil {
-		return err
+	if s.Exists(key) == true {
+		return fmt.Errorf("key already exists")
 	}
 
-	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
-
 	data := map[string]interface{}{
-		"status":    "transit",
-		"newTicket": newKey,
+		"status": "transit",
 	}
 
 	b, err := json.Marshal(data)
@@ -70,7 +75,9 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 		return err
 	}
 
-	if s.Set(string(b), key) != nil {
+	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
+
+	if s.Set(newKey, key) != nil {
 		return err
 	}
 
