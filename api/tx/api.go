@@ -86,7 +86,7 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	txhash, err := RelayTx(d, tx, meta)
+	txhash, err := relayTx(d, tx, meta)
 
 	if err != nil {
 		e := deps.NewError("tx", fmt.Errorf("relaying tx failed"), http.StatusBadRequest)
@@ -188,7 +188,7 @@ func validateSignatures(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 // RelayTx relays the tx to the specifc endpoint
 // RelayTx will also perform the ticketing mechanism
 // Always expect broadcast mode to be `async`
-func RelayTx(d *deps.Deps, tx TxData, meta TxMeta) (string, error) {
+func relayTx(d *deps.Deps, tx TxData, meta TxMeta) (string, error) {
 
 	var hash string
 
@@ -215,8 +215,6 @@ func RelayTx(d *deps.Deps, tx TxData, meta TxMeta) (string, error) {
 		return hash, err
 	}
 
-	// TODO: add server
-
 	val, ok := resdata["txhash"]
 
 	hash = val.(string)
@@ -225,7 +223,11 @@ func RelayTx(d *deps.Deps, tx TxData, meta TxMeta) (string, error) {
 		return hash, fmt.Errorf("failed to read txhash in response")
 	}
 
-	d.Store.CreateTicket(meta.Chain.ChainName, hash)
+	err = d.Store.CreateTicket(meta.Chain.ChainName, hash)
+
+	if err != nil {
+		return hash, err
+	}
 
 	return hash, nil
 }
