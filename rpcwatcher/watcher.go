@@ -48,7 +48,7 @@ type IbcReceiveData struct {
 type Events map[string][]string
 
 func NewWatcher(endpoint string, logger *zap.SugaredLogger, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
-	// TODO: handle immediate resubscription, see newWSEvents() in tendermint codebase
+
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
 		return nil, err
@@ -76,6 +76,16 @@ func NewWatcher(endpoint string, logger *zap.SugaredLogger, db *database.Instanc
 	return w, nil
 }
 
+func Start(watchers []*Watcher) context.CancelFunc {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+
+	for _, watcher := range watchers {
+		go watcher.startChain(ctx)
+	}
+
+	return cancelFunc
+}
+
 func (w *Watcher) readChannel() {
 	for data := range w.client.ResponsesCh {
 		e := coretypes.ResultEvent{}
@@ -91,7 +101,7 @@ func (w *Watcher) readChannel() {
 	}
 }
 
-func (w *Watcher) HandleMessage(data coretypes.ResultEvent) {
+func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	txHash, exists := data.Events["tx.hash"]
 	_, isIBC := data.Events["ibc_transfer.sender"]
@@ -104,6 +114,19 @@ func (w *Watcher) HandleMessage(data coretypes.ResultEvent) {
 
 	// Handle case where an IBC transfer is sent from the origin chain.
 	if isIBC {
+
+		sendPacketSourcePort, ok := data.Events["send_packet.packet_src_port"]
+
+		if !ok {
+			w.l.Errorf("send_packet.packet_src_port not found")
+			return
+		}
+
+		if sendPacketSourcePort[0] != "transfer" {
+			w.l.Errorf("port is not 'transfer', ignoring")
+			return
+		}
+
 		sendPacketSourceChannel, ok := data.Events["send_packet.packet_src_channel"]
 
 		if !ok {
@@ -135,6 +158,19 @@ func (w *Watcher) HandleMessage(data coretypes.ResultEvent) {
 
 	// Handle case where IBC transfer is received by the receiving chain.
 	if isIBCRecv {
+
+		recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
+
+		if !ok {
+			w.l.Errorf("recv_packet.packet_src_port not found")
+			return
+		}
+
+		if recvPacketSourcePort[0] != "transfer" {
+			w.l.Errorf("port is not 'transfer', ignoring")
+			return
+		}
+
 		recvPacketSourceChannel, ok := data.Events["recv_packet.packet_src_channel"]
 
 		if !ok {
@@ -155,4 +191,16 @@ func (w *Watcher) HandleMessage(data coretypes.ResultEvent) {
 
 	}
 
+}
+
+func (w *Watcher) startChain(ctx context.Context) {
+	for data := range w.DataChannel {
+		select {
+		case <-ctx.Done():
+			w.l.Infof("watcher %s has been canceled", w.Name)
+			return
+		default:
+			w.handleMessage(data)
+		}
+	}
 }

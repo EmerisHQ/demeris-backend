@@ -1,6 +1,10 @@
 package main
 
 import (
+	"context"
+	"time"
+
+	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/rpcwatcher"
 	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/logging"
@@ -24,9 +28,59 @@ func main() {
 
 	s := store.NewClient(c.RedisURL)
 
-	watcher, err := rpcwatcher.NewWatcher(c.TendermintNode, l, db, s, []string{"tm.event='Tx'"})
+	var chains []models.Chain
 
-	for data := range watcher.DataChannel {
-		watcher.HandleMessage(data)
+	var cancelFunc context.CancelFunc
+
+	var watchers []*rpcwatcher.Watcher
+
+	err = db.Exec("select * from chains", map[string]interface{}{}, &chains)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, c := range chains {
+		watcher, err := rpcwatcher.NewWatcher(c.NodeInfo.Endpoint, l, db, s, []string{"tm.event='Tx'"})
+
+		if err != nil {
+			panic(err)
+		}
+
+		watchers = append(watchers, watcher)
+	}
+
+	cancelFunc = rpcwatcher.Start(watchers)
+
+	for {
+		var ch []models.Chain
+		err = db.Exec("select * from chains", map[string]interface{}{}, &ch)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if len(ch) != len(chains) {
+
+			l.Infow("Chains modified. Restarting watchers")
+
+			cancelFunc()
+
+			chains = ch
+
+			for _, c := range chains {
+				watcher, err := rpcwatcher.NewWatcher(c.NodeInfo.Endpoint, l, db, s, []string{"tm.event='Tx'"})
+
+				if err != nil {
+					panic(err)
+				}
+
+				watchers = append(watchers, watcher)
+			}
+
+			cancelFunc = rpcwatcher.Start(watchers)
+
+			time.Sleep(1 * time.Second)
+		}
 	}
 }
