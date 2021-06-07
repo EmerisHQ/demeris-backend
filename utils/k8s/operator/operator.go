@@ -134,7 +134,7 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 
 	var node = DefaultNodeConfig
 
-	node.ObjectMeta.Name = c.Namespace
+	node.ObjectMeta.Namespace = c.Namespace
 
 	node.ObjectMeta.Name = c.Name
 
