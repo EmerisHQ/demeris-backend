@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/utils/validation"
+
 	"github.com/allinbits/demeris-backend/utils/k8s"
 
 	"github.com/allinbits/demeris-backend/models"
@@ -23,7 +25,7 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	newChain := addChainRequest{}
 
 	if err := ctx.ShouldBindJSON(&newChain); err != nil {
-		e(ctx, http.StatusBadRequest, err)
+		e(ctx, http.StatusBadRequest, validation.MissingFieldsErr(err, false))
 		r.s.l.Error("cannot bind input data to Chain struct", err)
 		return
 	}
