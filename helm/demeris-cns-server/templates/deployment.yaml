@@ -17,6 +17,7 @@ spec:
       labels:
         {{- include "chart.labels" . | indent 8 }}
     spec:
+      serviceAccountName: {{ .Release.Name }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       containers:
