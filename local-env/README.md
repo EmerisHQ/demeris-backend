@@ -24,6 +24,7 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
     "logo": "logo url",
     "enabled": true,
     "valid_block_thresh": "10s",
+    "minimum_thresh_relayer_balance": "42",
     "display_name": "Cosmos Hub",
     "counterparty_names":{
         "cn1": "cn1",
@@ -102,6 +103,7 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
     "logo": "logo url",
     "enabled": true,
     "valid_block_thresh": "10s",
+    "minimum_thresh_relayer_balance": "42",
     "display_name": "Akash",
     "counterparty_names":{
         "cn1": "cn1",
