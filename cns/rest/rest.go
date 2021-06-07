@@ -50,9 +50,27 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc
 	g.Use(logging.LogRequest(l.Desugar()))
 	g.Use(ginzap.RecoveryWithZap(l.Desugar(), true))
 
+	g.Use(func(c *gin.Context) {
+
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
+
+	g.GET(r.getChain())
 	g.GET(r.getChains())
 	g.GET(r.denomsData())
 	g.POST(r.addChain())
+	g.POST(r.updatePrimaryChannel())
+	g.POST(r.updateDenoms())
 	g.DELETE(r.deleteChain())
 
 	g.NoRoute(func(context *gin.Context) {
