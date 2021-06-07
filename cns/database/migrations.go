@@ -88,6 +88,10 @@ const getAllChains = `
 SELECT * FROM cns.chains
 `
 
+const getChain = `
+SELECT * FROM cns.chains WHERE chain_name='?' limit 1;
+`
+
 var migrationList = []string{
 	createDatabase,
 	createTableChains,

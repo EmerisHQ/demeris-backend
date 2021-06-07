@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/allinbits/demeris-backend/models"
@@ -73,8 +74,73 @@ func (i *Instance) DeleteChain(chain string) error {
 	return nil
 }
 
+func (i *Instance) Chain(chain string) (models.Chain, error) {
+	var c models.Chain
+
+	err := i.d.DB.Get(&c, fmt.Sprintf("SELECT * FROM cns.chains WHERE chain_name='%s' limit 1;", chain))
+
+	return c, err
+}
+
 func (i *Instance) Chains() ([]models.Chain, error) {
 	var c []models.Chain
 
 	return c, i.d.Exec(getAllChains, nil, &c)
+}
+
+func (i *Instance) UpdatePrimaryChannel(sourceChain, destChain, channel string) error {
+
+	res, err := i.d.DB.Exec(fmt.Sprintf(`
+	UPDATE cns.chains
+	SET primary_channel = primary_channel || jsonb_build_object('%s' , '%s')
+	WHERE chain_name='%s'
+	`, destChain, channel, sourceChain))
+
+	if err != nil {
+		return err
+	}
+
+	rows, _ := res.RowsAffected()
+
+	if rows == 0 {
+		return fmt.Errorf("update failed")
+	}
+
+	return nil
+}
+
+func (i *Instance) GetDenoms(chain string) (models.DenomList, error) {
+
+	var l models.DenomList
+
+	return l, i.d.Exec("select json_array_elements(denoms) from cns.chains where chain_name=:chain;", map[string]interface{}{
+		"chain": chain,
+	}, &l)
+}
+
+func (i *Instance) UpdateDenoms(chain string, denoms models.DenomList) error {
+
+	b, err := json.Marshal(denoms)
+
+	if err != nil {
+		return err
+	}
+
+	res, err := i.d.DB.Exec(fmt.Sprintf(`
+	UPDATE cns.chains
+	SET denoms = '%s'::jsonb
+	WHERE chain_name='%s'
+	`, string(b), chain))
+
+	if err != nil {
+		return err
+	}
+
+	rows, _ := res.RowsAffected()
+
+	if rows == 0 {
+		return fmt.Errorf("update failed")
+	}
+
+	return nil
 }
