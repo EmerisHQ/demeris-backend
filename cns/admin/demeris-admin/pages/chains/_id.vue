@@ -12,13 +12,15 @@
         :name="ch"
         :id="ch"
         v-model="chain.primary_channel[ch]"
-      /><br />
+      />
       <button v-on:click="updatePrimaryChannel(ch)">Update</button>
 
     </div>
 
     <h3>Denoms</h3>
-    <div v-for="denom in chain.denoms">
+    <div class="denoms" v-for="denom in chain.denoms">
+
+      <div class="denom">
       {{ denom.name }}
 
       <label :for="'denomDisplayName' + denom.name">Display Name</label>
@@ -36,13 +38,14 @@
         :id="'verified' + denom.name"
         v-model="denom.verified"
       />
+      </div>
     </div>
     <button v-on:click="updateDenoms()">Update</button>
 
-    <h3>Raw data</h3>
+    <!-- <h3>Raw data</h3>
     <p>
       {{ JSON.stringify(chain, "\n", 4) }}
-    </p>
+    </p> -->
   </div>
 </template>
 
@@ -50,7 +53,6 @@
 export default {
   data() {
     return {
-      // chains: []
       chain: {
         chain_id: "",
         primary_channel: {},
@@ -62,26 +64,15 @@ export default {
     console.log("loaded!");
 
     await this.loadData()
-    // let chain = await this.$axios.get(
-    //   "http://localhost:9999/chains/" + this.$route.params.id
-    // );
-    // console.log(chain);
-    // this.chain = chain;
   },
     async mounted() {
     console.log("loaded!");
 
     await this.loadData()
-    // let chain = await this.$axios.get(
-    //   "http://localhost:9999/chains/" + this.$route.params.id
-    // );
-    // console.log(chain);
-    // this.chain = chain;
   },
 
   methods: {
     async updatePrimaryChannel(dest_chain) {
-      // console.log(JSON.stringify(this.chain.primary_channel, "\n", 2));
       let request = {
         "chain_name": this.$route.params.id,
         "dest_chain": dest_chain,
@@ -92,7 +83,6 @@ export default {
       this.$nuxt.refresh()
     },
     async updateDenoms() {
-      // console.log(JSON.stringify(this.chain.denoms, "\n", 2));
       let request = {
         "chain_name": this.$route.params.id,
         "denoms": this.chain.denoms
@@ -109,14 +99,16 @@ export default {
       this.chain = res.data.chain;
     }
   }
-  //   async asyncData({ $axios }) {
-  //     let { data } = await $axios.get("/card_sets/170");
-  //     return { incidents: data.data.incidents };
-  //   }
-  // mounted() {
-  //   this.getIncidents();
-  // },
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+.denoms {
+  width: 100%
+}
+.denom {
+  width: 100%;
+  margin: 10px;
+  align-items: left;
+}
+</style>

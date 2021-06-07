@@ -1,26 +1,17 @@
 <template>
   <div class="container">
     <div>
-      <Logo />
       <h1 class="title">
         demeris-admin
       </h1>
       <div class="links">
         <a
-          href="https://nuxtjs.org/"
+          href="/chains"
           target="_blank"
           rel="noopener noreferrer"
           class="button--green"
         >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="button--grey"
-        >
-          GitHub
+          Chains
         </a>
       </div>
     </div>
@@ -28,7 +19,11 @@
 </template>
 
 <script>
-export default {}
+export default {
+  mounted() {
+    this.$router.push('/chains')
+  }
+}
 </script>
 
 <style>
