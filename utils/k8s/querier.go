@@ -87,3 +87,33 @@ func (q Querier) DeleteNode(nodeName string) error {
 
 	return nil
 }
+
+func (q Querier) Relayer() (v1.Relayer, error) {
+	var e v1.RelayerList
+
+	if err := q.Client.List(context.TODO(), &e); err != nil {
+		return v1.Relayer{}, err
+	}
+
+	if len(e.Items) == 0 {
+		return v1.Relayer{}, ErrNotFound
+	}
+
+	return e.Items[0], nil
+}
+
+func (q Querier) AddRelayer(r v1.Relayer) error {
+	if err := q.Client.Create(context.TODO(), &r); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (q Querier) UpdateRelayer(r v1.Relayer) error {
+	if err := q.Client.Update(context.TODO(), &r); err != nil {
+		return err
+	}
+
+	return nil
+}
