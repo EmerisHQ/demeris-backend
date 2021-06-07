@@ -97,6 +97,6 @@ func e(c *gin.Context, status int, err error) {
 		jsonErr = rve
 	}
 
-	c.Error(err)
+	_ = c.Error(err)
 	c.AbortWithStatusJSON(status, jsonErr)
 }
