@@ -41,6 +41,8 @@ type NodeConfiguration struct {
 	TestnetConfig      *v1.ValidatorInitConfig `json:"testnet_config"`
 	DockerImage        string                  `json:"docker_image"`
 	DockerImageVersion string                  `json:"docker_image_version"`
+	Namespace          string                  `json:"namespace"`
+	TracelistenerImage string                  `json:"tracelistener_image"`
 }
 
 func (n NodeConfiguration) Validate() error {
@@ -58,6 +60,14 @@ func (n NodeConfiguration) Validate() error {
 
 	if n.DockerImageVersion == "" {
 		return fmt.Errorf("missing docker image version")
+	}
+
+	if n.Namespace == "" {
+		n.Namespace = defaultNamespace
+	}
+
+	if n.TracelistenerImage == "" {
+		n.TracelistenerImage = tracelistenerImage
 	}
 
 	return nil
@@ -124,6 +134,8 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 
 	var node = DefaultNodeConfig
 
+	node.ObjectMeta.Name = c.Namespace
+
 	node.ObjectMeta.Name = c.Name
 
 	ns := &node.Spec
@@ -148,6 +160,8 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 	}
 
 	tracelistenerConfig := defaultTracelistenerConfig
+
+	tracelistenerConfig.Image = c.TracelistenerImage
 
 	tracelistenerConfig.Env = append(tracelistenerConfig.Env, corev1.EnvVar{
 		Name:  trChainNameVar,
