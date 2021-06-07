@@ -12,16 +12,29 @@ replace (
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/allinbits/starport-operator v0.0.0-20210513161135-df3ace9f5815
+	github.com/cockroachdb/cockroach-go v2.0.1+incompatible // indirect
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/containerd/fifo v1.0.0
 	github.com/cosmos/cosmos-sdk v0.42.4
 	github.com/cosmos/gaia/v4 v4.2.1
 	github.com/cssivision/reverseproxy v0.0.1
+	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-contrib/zap v0.0.1
 	github.com/gin-gonic/gin v1.7.1
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/go-redis/redis/v8 v8.8.3
+	github.com/gobuffalo/attrs v1.0.0 // indirect
+	github.com/gobuffalo/envy v1.9.0 // indirect
+	github.com/gobuffalo/fizz v1.13.0 // indirect
+	github.com/gobuffalo/flect v0.2.2 // indirect
+	github.com/gobuffalo/genny v0.6.0 // indirect
+	github.com/gobuffalo/logger v1.0.4 // indirect
+	github.com/gobuffalo/nulls v0.4.0 // indirect
+	github.com/gobuffalo/packr/v2 v2.8.1 // indirect
+	github.com/gobuffalo/pop v4.13.1+incompatible // indirect
+	github.com/gobuffalo/pop/v5 v5.3.4 // indirect
+	github.com/gobuffalo/validate v2.0.4+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/mux v1.8.0
