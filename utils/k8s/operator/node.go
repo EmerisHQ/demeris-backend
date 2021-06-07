@@ -62,14 +62,6 @@ func (n NodeConfiguration) Validate() error {
 		return fmt.Errorf("missing docker image version")
 	}
 
-	if n.Namespace == "" {
-		n.Namespace = defaultNamespace
-	}
-
-	if n.TracelistenerImage == "" {
-		n.TracelistenerImage = tracelistenerImage
-	}
-
 	return nil
 }
 
@@ -130,6 +122,14 @@ var defaultConfig = v1.NodeSetConfig{
 func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 	if err := c.Validate(); err != nil {
 		return nil, err
+	}
+
+	if c.Namespace == "" {
+		c.Namespace = defaultNamespace
+	}
+
+	if c.TracelistenerImage == "" {
+		c.TracelistenerImage = tracelistenerImage
 	}
 
 	var node = DefaultNodeConfig
