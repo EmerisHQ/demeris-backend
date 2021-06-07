@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/utils/validation"
+	"github.com/gin-gonic/gin/binding"
+
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/allinbits/demeris-backend/api/chains"
@@ -39,6 +42,8 @@ func New(db *database.Database, l *zap.SugaredLogger, kubeClient kube.Client, cn
 	}
 
 	r.metrics()
+
+	validation.JSONFields(binding.Validator)
 
 	engine.Use(r.catchPanics())
 	engine.Use(logging.LogRequest(l.Desugar()))
