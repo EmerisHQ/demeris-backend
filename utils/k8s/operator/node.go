@@ -76,11 +76,7 @@ var DefaultNodeConfig = v1.NodeSet{
 			// Users must provide "Name,DaemonName,CliName" field, they should probably all be
 			// the same.
 		},
-		Persistence: v1.NodesPersistenceSpec{
-			Size: "5G",
-		},
-		SdkVersion: v1.Stargate,
-		Moniker:    defaultMoniker,
+		Moniker: defaultMoniker,
 	},
 }
 
@@ -140,16 +136,16 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 
 	ns := &node.Spec
 	ns.App.Name = c.Name
-	ns.App.CliName = c.Name
-	ns.App.DaemonName = c.Name
+	ns.App.CliName = &c.Name
+	ns.App.DaemonName = &c.Name
 	if c.CLIName != "" {
-		ns.App.CliName = c.CLIName
-		ns.App.DaemonName = c.CLIName
+		ns.App.CliName = &c.CLIName
+		ns.App.DaemonName = &c.CLIName
 	}
 
 	ns.Image = v1.Image{
 		Name:    c.DockerImage,
-		Version: c.DockerImageVersion,
+		Version: &c.DockerImageVersion,
 	}
 
 	switch {
