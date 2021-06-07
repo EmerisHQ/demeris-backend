@@ -2,6 +2,7 @@ package chainwatch
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	r "github.com/go-redis/redis/v8"
@@ -11,6 +12,24 @@ const setPrefix = "cns/waitingchains"
 
 type Connection struct {
 	conn *r.Client
+}
+
+type Chain struct {
+	Name          string
+	AddressPrefix string
+	HasFaucet     bool
+}
+
+func (cc Chain) Validate() error {
+	if cc.Name == "" {
+		return fmt.Errorf("empty name")
+	}
+
+	if cc.AddressPrefix == "" {
+		return fmt.Errorf("empty address prefix")
+	}
+
+	return nil
 }
 
 func NewConnection(host string) (*Connection, error) {
@@ -30,20 +49,30 @@ func NewConnection(host string) (*Connection, error) {
 	}, nil
 }
 
-func (c *Connection) AddChain(name string) error {
-	if name == "" {
-		return fmt.Errorf("empty name")
+func (c *Connection) AddChain(cc Chain) error {
+	if err := cc.Validate(); err != nil {
+		return err
 	}
 
-	return c.conn.SAdd(context.Background(), setPrefix, name).Err()
+	data, err := json.Marshal(cc)
+	if err != nil {
+		return err
+	}
+
+	return c.conn.SAdd(context.Background(), setPrefix, data).Err()
 }
 
-func (c *Connection) RemoveChain(name string) error {
-	if name == "" {
-		return fmt.Errorf("empty name")
+func (c *Connection) RemoveChain(cc Chain) error {
+	if err := cc.Validate(); err != nil {
+		return err
 	}
 
-	return c.conn.SRem(context.Background(), setPrefix, name).Err()
+	data, err := json.Marshal(cc)
+	if err != nil {
+		return err
+	}
+
+	return c.conn.SRem(context.Background(), setPrefix, data).Err()
 }
 
 func (c *Connection) HasChain(name string) (bool, error) {
@@ -54,6 +83,23 @@ func (c *Connection) HasChain(name string) (bool, error) {
 	return c.conn.SIsMember(context.Background(), setPrefix, name).Result()
 }
 
-func (c *Connection) Chains() ([]string, error) {
-	return c.conn.SMembers(context.Background(), setPrefix).Result()
+func (c *Connection) Chains() ([]Chain, error) {
+	var ret []Chain
+
+	result, err := c.conn.SMembers(context.Background(), setPrefix).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rr := range result {
+		d := Chain{}
+
+		if err := json.Unmarshal([]byte(rr), &d); err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, d)
+	}
+
+	return ret, nil
 }
