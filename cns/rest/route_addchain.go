@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/cns/chainwatch"
+
 	"github.com/allinbits/demeris-backend/utils/validation"
 
 	"github.com/allinbits/demeris-backend/utils/k8s"
@@ -40,16 +42,20 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	if newChain.NodeConfig != nil {
 		newChain.NodeConfig.Name = newChain.ChainName
 
-		if err := r.s.rc.AddChain(newChain.ChainName); err != nil {
-			e(ctx, http.StatusInternalServerError, err)
-			r.s.l.Error("cannot add chain name to cache", err)
-			return
-		}
-
 		node, err := operator.NewNode(*newChain.NodeConfig)
 		if err != nil {
 			e(ctx, http.StatusBadRequest, err)
 			r.s.l.Error("cannot add chain", err)
+			return
+		}
+
+		if err := r.s.rc.AddChain(chainwatch.Chain{
+			Name:          newChain.ChainName,
+			AddressPrefix: newChain.NodeInfo.Bech32Config.MainPrefix,
+			HasFaucet:     node.Spec.Init.Faucet != nil,
+		}); err != nil {
+			e(ctx, http.StatusInternalServerError, err)
+			r.s.l.Error("cannot add chain name to cache", err)
 			return
 		}
 
