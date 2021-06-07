@@ -13,7 +13,7 @@ import (
 // Chain represents CNS chain metadata row on the database.
 type Chain struct {
 	ID                          uint64         `db:"id" json:"-"`
-	Enabled                     bool           `db:"enabled" json:"enabled"`
+	Enabled                     bool           `db:"enabled" json:"enabled"`                                                                  // boolean that marks whether the given chain is enabled or not (when enabled, API endpoints will return data)
 	ChainName                   string         `db:"chain_name" binding:"required" json:"chain_name"`                                         // the unique name of the chain
 	Logo                        string         `db:"logo" binding:"required" json:"logo"`                                                     // logo of the chain
 	DisplayName                 string         `db:"display_name" binding:"required" json:"display_name"`                                     // user-friendly chain name
