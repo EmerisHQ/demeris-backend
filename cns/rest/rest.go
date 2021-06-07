@@ -4,6 +4,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/utils/validation"
+	"github.com/gin-gonic/gin/binding"
+
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
 
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,6 +49,8 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc
 	}
 
 	r := &router{s: s}
+
+	validation.JSONFields(binding.Validator)
 
 	g.Use(logging.LogRequest(l.Desugar()))
 	g.Use(ginzap.RecoveryWithZap(l.Desugar(), true))
