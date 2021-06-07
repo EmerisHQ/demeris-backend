@@ -11,7 +11,7 @@ replace (
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/allinbits/starport-operator v0.0.0-20210513161135-df3ace9f5815
+	github.com/allinbits/starport-operator v0.0.1-alpha.3
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/containerd/fifo v1.0.0
 	github.com/cosmos/cosmos-sdk v0.42.4
@@ -42,12 +42,11 @@ require (
 	github.com/swaggo/swag v1.7.0
 	github.com/tendermint/liquidity v1.2.4
 	github.com/tendermint/tendermint v0.34.9
+	github.com/yashbhutwala/kubectl-df-pv v0.0.0-20201001142740-983bd6b76e47 // indirect
 	github.com/zsais/go-gin-prometheus v0.1.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
-	golang.org/x/mod v0.3.1-0.20200828183125-ce943fd02449 // indirect
 	golang.org/x/sys v0.0.0-20210415045647-66c3f260301c // indirect
-	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/grpc v1.35.0
 	k8s.io/api v0.19.2
