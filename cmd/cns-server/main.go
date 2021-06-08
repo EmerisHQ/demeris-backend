@@ -38,6 +38,7 @@ func main() {
 		logger,
 		kube,
 		rc,
+		di,
 	)
 
 	go ci.Run()
