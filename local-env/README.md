@@ -24,7 +24,7 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
     "logo": "logo url",
     "enabled": true,
     "valid_block_thresh": "10s",
-    "minimum_thresh_relayer_balance": "42",
+    "minimum_thresh_relayer_balance": 42,
     "display_name": "Cosmos Hub",
     "counterparty_names":{
         "cn1": "cn1",
@@ -79,9 +79,10 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
                 "100000000000000000uatom"
             ],
             "faucet": {
-                "funds": "100000000000000000stake",
-                "denom": [
-                    "stake"
+                "funds": "100000000000000000stake,100000000000000000uatom",
+                "denoms": [
+                    "stake",
+                    "uatom"
                 ]
             }
         },
@@ -103,7 +104,7 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
     "logo": "logo url",
     "enabled": true,
     "valid_block_thresh": "10s",
-    "minimum_thresh_relayer_balance": "42",
+    "minimum_thresh_relayer_balance": 42,
     "display_name": "Akash",
     "counterparty_names":{
         "cn1": "cn1",
@@ -134,7 +135,7 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
         "endpoint": "endpoint",
         "chain_id": "chainid",
         "bech32_config": {
-            "main_prefix": "main_prefix",
+            "main_prefix": "akash",
             "prefix_account": "prefix_account",
             "prefix_validator": "prefix_validator",
             "prefix_consensus": "prefix_consensus",
@@ -157,9 +158,10 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
                 "100000000000000000uakt"
             ],
            "faucet": {
-             "funds": "100000000000000000stake",
-             "denom": [
-               "stake"
+             "funds": "100000000000000000stake,100000000000000000uakt",
+             "denoms": [
+               "stake",
+               "uakt"
              ]
            }          
         },
