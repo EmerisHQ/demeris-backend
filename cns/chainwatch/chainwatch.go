@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/allinbits/demeris-backend/cns/database"
+
 	"github.com/allinbits/demeris-backend/utils/k8s/operator"
 
 	v1 "github.com/allinbits/starport-operator/api/v1"
@@ -15,21 +17,36 @@ import (
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+//go:generate stringer -type=chainStatus
+type chainStatus uint
+
+const (
+	starting chainStatus = iota
+	running
+	relayerConnecting
+	done
+)
+
 type Instance struct {
-	l *zap.SugaredLogger
-	k kube.Client
-	c *Connection
+	l         *zap.SugaredLogger
+	k         kube.Client
+	c         *Connection
+	db        *database.Instance
+	statusMap map[string]chainStatus
 }
 
 func New(
 	l *zap.SugaredLogger,
 	k kube.Client,
 	c *Connection,
+	db *database.Instance,
 ) *Instance {
 	return &Instance{
-		l: l,
-		k: k,
-		c: c,
+		l:         l,
+		k:         k,
+		c:         c,
+		db:        db,
+		statusMap: map[string]chainStatus{},
 	}
 
 }
@@ -42,30 +59,68 @@ func (i *Instance) Run() {
 			continue
 		}
 
-		i.l.Debugw("chains in cache", "list", chains)
-
-		q := k8s.Querier{Client: i.k}
-
-		var chainsNames []string
-		for _, cc := range chains {
-			chainsNames = append(chainsNames, cc.Name)
+		if chains != nil {
+			i.l.Debugw("chains in cache", "list", chains)
 		}
 
-		ns, err := q.ChainsByName(chainsNames...)
-		if err != nil {
-			i.l.Errorw("cannot get chains from k8s", "error", err)
-			continue
-		}
+		for idx, chain := range chains {
+			chainStatus, found := i.statusMap[chain.Name]
+			if !found {
+				chainStatus = starting
+				i.statusMap[chain.Name] = chainStatus
+			}
 
-		for idx, n := range ns {
-			if n.Status.Phase != v1.PhaseRunning {
-				i.l.Debugw("chain not in running phase", "name", n.Name, "phase", n.Status.Phase)
+			q := k8s.Querier{Client: i.k}
+
+			n, err := q.ChainByName(chain.Name)
+			if err != nil {
+				i.l.Errorw("cannot get chains from k8s", "error", err)
 				continue
 			}
 
-			if err := i.chainFinished(chains[idx]); err != nil {
-				i.l.Errorw("cannot execute chain finished routine", "error", err)
+			i.l.Debugw("chain status", "name", chain.Name, "status", chainStatus.String())
+
+			switch chainStatus {
+			case starting:
+				if n.Status.Phase != v1.PhaseRunning {
+					i.l.Debugw("chain not in running phase", "name", n.Name, "phase", n.Status.Phase)
+					i.statusMap[chain.Name] = starting
+					continue
+				}
+
+				// chain is now in running phase
+				i.statusMap[chain.Name] = running
+				i.l.Debugw("chain status update", "name", chain.Name, "new_status", running.String())
+			case running:
+				if err := i.chainFinished(chains[idx]); err != nil {
+					i.l.Errorw("cannot execute chain finished routine", "error", err)
+				}
+
+			case relayerConnecting:
+				// TODO: query channels from db if any
+
+				relayer, err := q.Relayer()
+				if err != nil {
+					i.l.Errorw("cannot get relayer", "error", err)
+					continue
+				}
+
+				phase := relayer.Status.Phase
+				if phase != v1.RelayerPhaseRunning && phase != v1.RelayerPhaseStandby {
+					continue
+				}
+
+				// TODO: write primary channels to db
+
+				i.statusMap[chain.Name] = done
+			case done:
+				if err := i.c.RemoveChain(chain); err != nil {
+					i.l.Errorw("cannot remove chain from redis", "error", err)
+				}
+
+				delete(i.statusMap, chain.Name)
 			}
+
 		}
 	}
 }
@@ -114,8 +169,11 @@ func (i *Instance) createRelayer(chain Chain) error {
 		relayer.ObjectMeta.Name = "relayer"
 		execErr = q.AddRelayer(relayer)
 	} else {
+		i.l.Debugw("relayer configuration existing", "configuration", relayer)
 		execErr = q.UpdateRelayer(relayer)
 	}
+
+	i.statusMap[chain.Name] = relayerConnecting
 
 	return execErr
 }
