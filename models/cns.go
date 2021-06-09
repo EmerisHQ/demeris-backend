@@ -227,6 +227,7 @@ type Denom struct {
 	Stakable    bool   `db:"stakable" json:"stakable,omitempty"`
 	Ticker      string `db:"ticker" json:"ticker,omitempty"`
 	FeeToken    bool   `db:"fee_token" json:"fee_token,omitempty"`
+	FetchPrice  bool   `db:"fetch_price" json:"fetch_price"`
 }
 
 // DenomList represents a slice of Denom.
