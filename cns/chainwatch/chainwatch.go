@@ -59,9 +59,11 @@ func (i *Instance) Run() {
 			continue
 		}
 
-		if chains != nil {
-			i.l.Debugw("chains in cache", "list", chains)
+		if chains == nil {
+			continue
 		}
+
+		i.l.Debugw("chains in cache", "list", chains)
 
 		for idx, chain := range chains {
 			chainStatus, found := i.statusMap[chain.Name]
