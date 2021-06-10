@@ -110,7 +110,10 @@ func (i *Instance) Run() {
 				}
 
 				phase := relayer.Status.Phase
-				if phase != v1.RelayerPhaseRunning && phase != v1.RelayerPhaseStandby {
+				if phase != v1.RelayerPhaseRunning {
+					if len(chains) == 1 {
+						i.statusMap[chain.Name] = done
+					}
 					continue
 				}
 
