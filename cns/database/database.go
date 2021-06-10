@@ -144,3 +144,28 @@ func (i *Instance) UpdateDenoms(chain string, denoms models.DenomList) error {
 
 	return nil
 }
+
+func (i *Instance) ChannelsBetweenChains(source, destination string) (map[string]string, error) {
+
+	var c []models.IBCChannelRow
+
+	n, err := i.d.DB.PrepareNamed(channelsBetweenChains)
+	if err != nil {
+		return map[string]string{}, err
+	}
+
+	if err := n.Get(&c, map[string]interface{}{
+		"source":      source,
+		"destination": destination,
+	}); err != nil {
+		return map[string]string{}, err
+	}
+
+	ret := map[string]string{}
+
+	for _, cc := range c {
+		ret[cc.ChannelID] = cc.CounterChannelID
+	}
+
+	return ret, nil
+}
