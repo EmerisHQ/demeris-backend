@@ -137,12 +137,6 @@ func (i *Instance) chainFinished(chain Chain) error {
 	if err := i.createRelayer(chain); err != nil {
 		return err
 	}
-
-	i.l.Debugw("chain finished running", "name", chain.Name)
-	if err := i.c.RemoveChain(chain); err != nil {
-		return err
-	}
-
 	return nil
 }
 
