@@ -162,6 +162,12 @@ func (i *Instance) createRelayer(chain Chain) error {
 		return err
 	}
 
+	for _, existingChain := range relayer.Spec.Chains {
+		if existingChain.Nodeset == relayerConfig.Nodeset {
+			return nil // existing chain, somehow...
+		}
+	}
+
 	relayer.Spec.Chains = append(relayer.Spec.Chains, &relayerConfig)
 
 	var execErr error
