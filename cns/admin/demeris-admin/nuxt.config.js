@@ -43,9 +43,9 @@ export default {
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
   },
+
   axios: {
-    // extra config e.g
-    // BaseURL: "https://api.pikastocks.com/"
-    BaseURL: process.env.CNS_URL || "https://localhost:9999"
-  },
+    baseUrl: process.env.CNS_URL || "http://localhost:9999"
+  }
+
 };
