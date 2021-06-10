@@ -118,6 +118,11 @@ func (i *Instance) Run() {
 				}
 
 				// TODO: write primary channels to db
+				//res := map[string][]string{}
+				paths := relayer.Status.Paths
+				for idx, c := range paths {
+					i.l.Debugw("relayer path", "idx", idx, "path", c)
+				}
 
 				i.statusMap[chain.Name] = done
 			case done:
