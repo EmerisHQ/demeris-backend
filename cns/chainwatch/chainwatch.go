@@ -96,8 +96,10 @@ func (i *Instance) Run() {
 			case running:
 				if err := i.chainFinished(chains[idx]); err != nil {
 					i.l.Errorw("cannot execute chain finished routine", "error", err)
+					continue
 				}
 
+				i.statusMap[chain.Name] = relayerConnecting
 			case relayerConnecting:
 				// TODO: query channels from db if any
 
@@ -174,8 +176,6 @@ func (i *Instance) createRelayer(chain Chain) error {
 		i.l.Debugw("relayer configuration existing", "configuration", relayer)
 		execErr = q.UpdateRelayer(relayer)
 	}
-
-	i.statusMap[chain.Name] = relayerConnecting
 
 	return execErr
 }
