@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/allinbits/demeris-backend/models"
+
 	"github.com/allinbits/demeris-backend/cns/database"
 
 	"github.com/allinbits/demeris-backend/utils/k8s/operator"
@@ -123,11 +125,9 @@ func (i *Instance) Run() {
 					continue
 				}
 
-				// TODO: write primary channels to db
-				//res := map[string][]string{}
-				paths := relayer.Status.Paths
-				for idx, c := range paths {
-					i.l.Debugw("relayer path", "idx", idx, "path", c)
+				if err := i.relayerFinished(chain, relayer); err != nil {
+					i.l.Debugw("error while running relayerfinished", "error", err)
+					continue
 				}
 
 				i.statusMap[chain.Name] = done
@@ -192,4 +192,61 @@ func (i *Instance) createRelayer(chain Chain) error {
 	}
 
 	return execErr
+}
+
+func (i *Instance) relayerFinished(chain Chain, relayer v1.Relayer) error {
+	if err := i.setPrimaryChannel(chain, relayer); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
+	chainsMap := map[string]models.Chain{}
+
+	chains, err := i.db.Chains()
+	if err != nil {
+		return err
+	}
+
+	for _, chain := range chains {
+		i.l.Debugw("chain read", "name", chain.ChainName)
+		chainsMap[chain.NodeInfo.ChainID] = chain
+	}
+
+	paths := relayer.Status.Paths
+	for chainID := range chainsMap {
+		i.l.Debugw("iterating chainsmap", "chainID", chainID)
+		foundOurselves := false
+
+		for _, path := range paths {
+			i.l.Debugw("iterating path", "path", path)
+			for counterpartyChainID, value := range path {
+				if counterpartyChainID == chainID {
+					foundOurselves = true
+					continue
+				}
+
+				if !foundOurselves {
+					continue
+				}
+
+				counterparty, found := chainsMap[counterpartyChainID]
+
+				if !found {
+					i.l.Panicw("found counterparty chain which isn't in chainsMap", "chainsMap", chainsMap, "counterparty", counterpartyChainID)
+				}
+				chainsMap[chainID].PrimaryChannel[counterparty.ChainName] = value.ChannelID
+			}
+		}
+	}
+
+	for _, chain := range chainsMap {
+		if err := i.db.AddChain(chain); err != nil {
+			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
+		}
+	}
+
+	return nil
 }
