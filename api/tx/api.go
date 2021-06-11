@@ -8,11 +8,15 @@ import (
 	"strings"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
+	// typestx "github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/gin-gonic/gin"
+	// "google.golang.org/protobuf/proto"
+	// "google.golang.org/protobuf/types/known/anypb"
 )
 
 func Register(router *gin.Engine) {
 	router.POST("/tx/:chain", Tx)
+	router.GET("/tx/ticket/:ticket", GetTicket)
 }
 
 // Tx relays a transaction to an internal node for the specified chain.
@@ -26,6 +30,7 @@ func Register(router *gin.Engine) {
 // @Failure 500,403 {object} deps.Error
 // @Router /tx/{chainName} [post]
 func Tx(c *gin.Context) {
+	// var tx typestx.Tx
 	var tx TxData
 	var meta TxMeta
 
@@ -81,7 +86,7 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	res, err := RelayTx(tx, meta)
+	txhash, err := relayTx(d, tx, meta)
 
 	if err != nil {
 		e := deps.NewError("tx", fmt.Errorf("relaying tx failed"), http.StatusBadRequest)
@@ -97,7 +102,9 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, TxResponse{
+		Ticket: txhash,
+	})
 }
 
 // validateTx populates metadata and
@@ -125,18 +132,14 @@ func validateTx(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 	return nil
 }
 
-// validateBody validates the data inside auth_info and populates the relevant metadata
+// validateBody validates the data inside the body and populates the relevant metadata
 func validateBody(tx *TxData, meta *TxMeta, d *deps.Deps) error {
+	for _, m := range tx.TxBody.Messages {
+		if m.Type == "/ibc.applications.transfer.v1.MsgTransfer" {
+			sourcePort := m.SourcePort
+			sourceChannel := m.SourceChannel
 
-	// check the body of the message
-
-	for _, msg := range tx.TxBody["messages"].([]interface{}) {
-		m := msg.(map[string]interface{})
-		if msgType, _ := m["@type"]; msgType == "/ibc.applications.transfer.v1.MsgTransfer" {
-			sourcePort := m["source_port"].(string)
-			sourceChannel := m["source_channel"].(string)
-
-			tokenDenom := m["token"].(map[string]interface{})["denom"].(string)
+			tokenDenom := m.Token.Denom
 
 			if sourcePort != "transfer" {
 				return fmt.Errorf("Invalid IBC Port %s", sourcePort)
@@ -163,10 +166,9 @@ func validateBody(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 // validateAuthInfo validates the data inside auth_info and populates the relevant metadata
 func validateAuthInfo(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 
-	if infos := tx.AuthInfo["signer_infos"].([]interface{}); len(infos) == 1 {
+	if infos := tx.AuthInfo.SignerInfos; len(infos) == 1 {
 		// Fetch signer sequence
-		signerInfo := tx.AuthInfo["signer_infos"].([]interface{})[0].(map[string]interface{})
-		meta.SignerSequence = signerInfo["sequence"].(string)
+		meta.SignerSequence = tx.AuthInfo.SignerInfos[0].Sequence
 	} else {
 		return fmt.Errorf("Invalid number of signatures. Expected 1, got %d", len(infos))
 	}
@@ -185,29 +187,91 @@ func validateSignatures(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 
 // RelayTx relays the tx to the specifc endpoint
 // RelayTx will also perform the ticketing mechanism
-func RelayTx(tx TxData, meta TxMeta) (TxResponse, error) {
+// Always expect broadcast mode to be `async`
+func relayTx(d *deps.Deps, tx TxData, meta TxMeta) (string, error) {
 
-	var res TxResponse
+	var hash string
 
 	data, err := json.Marshal(tx)
 
 	if err != nil {
-		return res, err
+		return hash, err
 	}
 
 	b := bytes.NewReader(data)
 
-	_, err = http.Post(meta.Chain.NodeInfo.Endpoint, "application/json", b)
+	resp, err := http.Post(meta.Chain.NodeInfo.Endpoint, "application/json", b)
 
 	if err != nil {
-		return res, err
+		return hash, err
 	}
 
-	// todo: ticketing
+	decoder := json.NewDecoder(resp.Body)
+	var resdata map[string]interface{}
 
-	res.Key = ""
-	res.Sequence = meta.SignerSequence
-	res.Status = "ok"
+	err = decoder.Decode(&resdata)
 
-	return res, nil
+	if err != nil {
+		return hash, err
+	}
+
+	val, ok := resdata["txhash"]
+
+	hash = val.(string)
+
+	if !ok {
+		return hash, fmt.Errorf("failed to read txhash in response")
+	}
+
+	err = d.Store.CreateTicket(meta.Chain.ChainName, hash)
+
+	if err != nil {
+		return hash, err
+	}
+
+	return hash, nil
+}
+
+// GetTicket returns the transaction status n.
+// @Summary Gets ticket by id.
+// @Tags Chain
+// @ID chain
+// @Description Gets transaction status by ticket id.
+// @Param ticketId path string true "ticket id"
+// @Produce json
+// @Success 200 {object} TxStatus
+// @Failure 500,403 {object} deps.Error
+// @Router /tx/ticket/{ticketId} [get]
+func GetTicket(c *gin.Context) {
+	var res TxStatus
+
+	d := deps.GetDeps(c)
+
+	ticketId := c.Param("ticketId")
+
+	ticket, err := d.Store.Get(ticketId)
+
+	if err != nil {
+		e := deps.NewError(
+			"tx",
+			fmt.Errorf("cannot retrieve ticket with id %v", ticketId),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve ticket",
+			"id",
+			e.ID,
+			"name",
+			ticketId,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	json.Unmarshal([]byte(ticket), &res)
+
+	c.JSON(http.StatusOK, res)
 }
