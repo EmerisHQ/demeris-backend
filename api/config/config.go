@@ -30,5 +30,6 @@ func Read() (*Config, error) {
 
 	return &c, configuration.ReadConfig(&c, "demeris-api", map[string]string{
 		"ListenAddr": ":9090",
+		"RedisAddr":  ":6379",
 	})
 }
