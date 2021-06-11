@@ -111,7 +111,13 @@ func (i *Instance) Run() {
 
 				phase := relayer.Status.Phase
 				if phase != v1.RelayerPhaseRunning {
-					if len(chains) == 1 {
+					amt, err := i.db.ChainAmount()
+					if err != nil {
+						i.l.Errorw("cannot get amount of chains", "error", err)
+						continue
+					}
+
+					if amt == 1 {
 						i.statusMap[chain.Name] = done
 					}
 					continue
