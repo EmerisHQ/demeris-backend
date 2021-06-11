@@ -21,6 +21,7 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
 ```json
 {
     "chain_name":"cosmos-hub",
+    "derivation_path": "m/44'/118'/0'/0/0",
     "logo": "logo url",
     "enabled": true,
     "valid_block_thresh": "10s",
@@ -103,6 +104,7 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
     "chain_name":"akash",
     "logo": "logo url",
     "enabled": true,
+    "derivation_path": "m/44'/118'/0'/0/0",
     "valid_block_thresh": "10s",
     "minimum_thresh_relayer_balance": 42,
     "display_name": "Akash",
@@ -177,6 +179,7 @@ To deploy a Crypto.com node, `POST localhost:9999/add` this JSON:
 {
   "chain_name":"crypto-com",
   "logo": "logo url",
+  "derivation_path": "m/44'/394'/0'/0/0",
   "enabled": true,
   "valid_block_thresh": "10s",
   "minimum_thresh_relayer_balance": 42,
