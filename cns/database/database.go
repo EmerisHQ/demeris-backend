@@ -169,3 +169,8 @@ func (i *Instance) ChannelsBetweenChains(source, destination string) (map[string
 
 	return ret, nil
 }
+
+func (i *Instance) ChainAmount() (int, error) {
+	var ret int
+	return ret, i.d.DB.Get(&ret, "select count(id) from cns.chains")
+}
