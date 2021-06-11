@@ -204,7 +204,7 @@ To deploy a Crypto.com node, `POST localhost:9999/add` this JSON:
     "endpoint": "endpoint",
     "chain_id": "chainid",
     "bech32_config": {
-      "main_prefix": "main_prefix",
+      "main_prefix": "cro",
       "prefix_account": "prefix_account",
       "prefix_validator": "prefix_validator",
       "prefix_consensus": "prefix_consensus",
