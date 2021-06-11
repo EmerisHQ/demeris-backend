@@ -18,7 +18,7 @@ type Chain struct {
 	Logo                        string         `db:"logo" binding:"required" json:"logo"`                                                     // logo of the chain
 	DisplayName                 string         `db:"display_name" binding:"required" json:"display_name"`                                     // user-friendly chain name
 	CounterpartyNames           DbStringMap    `db:"counterparty_names" binding:"required" json:"counterparty_names"`                         // a mapping of client_id to chain names used to identify which chain a given client_id corresponds to
-	PrimaryChannel              DbStringMap    `db:"primary_channel" binding:"required" json:"primary_channel"`                               // a mapping of chain name to primary channel
+	PrimaryChannel              DbStringMap    `db:"primary_channel" json:"primary_channel"`                                                  // a mapping of chain name to primary channel
 	Denoms                      DenomList      `db:"denoms" binding:"dive" json:"denoms"`                                                     // a list of denoms native to the chain
 	DemerisAddresses            pq.StringArray `db:"demeris_addresses" binding:"required" json:"demeris_addresses"`                           // the addresses on which we accept fee payments
 	BaseTxFee                   TxFee          `db:"base_tx_fee" binding:"required,dive" json:"base_tx_fee"`                                  // average cost (in dollar) to submit a transaction to the chain
