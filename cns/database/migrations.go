@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 	base_tx_fee jsonb not null,
 	genesis_hash string not null,
 	node_info jsonb not null,
+	derivation_path string not null,
 	unique(chain_name)
 )
 `
@@ -48,7 +49,8 @@ INSERT INTO cns.chains
 		demeris_addresses,
 		base_tx_fee,
 		genesis_hash,
-		node_info
+		node_info,
+		derivation_path
 	)
 VALUES
 	(
@@ -64,7 +66,8 @@ VALUES
 		:demeris_addresses,
 		:base_tx_fee,
 		:genesis_hash,
-		:node_info
+		:node_info,
+		:derivation_path
 	)
 ON CONFLICT
 	(chain_name)
@@ -81,7 +84,8 @@ DO UPDATE SET
 		demeris_addresses=EXCLUDED.demeris_addresses, 
 		base_tx_fee=EXCLUDED.base_tx_fee,
 		genesis_hash=EXCLUDED.genesis_hash,
-		node_info=EXCLUDED.node_info;
+		node_info=EXCLUDED.node_info,
+		derivation_path=EXCLUDED.derivation_path;
 `
 
 const getAllChains = `

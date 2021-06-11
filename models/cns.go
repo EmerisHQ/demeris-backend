@@ -26,6 +26,7 @@ type Chain struct {
 	NodeInfo                    NodeInfo       `db:"node_info" binding:"required,dive" json:"node_info"`                                      // info required to query full-node (e.g. to submit tx)
 	ValidBlockThresh            Threshold      `db:"valid_block_thresh" binding:"required" json:"valid_block_thresh"`                         // valid block time expressed in time.Duration format
 	MinimumThreshRelayerBalance int64          `db:"minimum_thresh_relayer_balance" binding:"required" json:"minimum_thresh_relayer_balance"` // minimum relayer balance threshold that a relayer account must contains
+	DerivationPath              string         `db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                // chain derivation path
 }
 
 // VerifiedTokens returns a DenomList of native denoms that are verified.
