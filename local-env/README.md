@@ -220,7 +220,6 @@ To deploy a Crypto.com node, `POST localhost:9999/add` this JSON:
   "node_config": {
     "name": "crypto-com",
     "cli_name": "chain-maind",
-    "namespace": "demeris",
     "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener",
     "testnet_config": {
       "chainID": "crypto-com-demeris",
