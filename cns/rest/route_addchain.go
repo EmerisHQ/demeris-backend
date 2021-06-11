@@ -45,6 +45,12 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	if newChain.NodeConfig != nil {
 		newChain.NodeConfig.Name = newChain.ChainName
 
+		// we trust that TestnetConfig holds the real chain ID
+		if newChain.NodeConfig.TestnetConfig != nil &&
+			*newChain.NodeConfig.TestnetConfig.ChainId != newChain.NodeInfo.ChainID {
+			newChain.NodeInfo.ChainID = *newChain.NodeConfig.TestnetConfig.ChainId
+		}
+
 		node, err := operator.NewNode(*newChain.NodeConfig)
 		if err != nil {
 			e(ctx, http.StatusBadRequest, err)
