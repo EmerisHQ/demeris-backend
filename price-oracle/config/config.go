@@ -3,53 +3,44 @@ package config
 import (
 	"time"
 
-	"github.com/BurntSushi/toml"
-	"go.uber.org/zap"
+	"github.com/allinbits/demeris-backend/utils/configuration"
+	"github.com/allinbits/demeris-backend/utils/validation"
+	"github.com/go-playground/validator/v10"
 )
 
-var (
-	Config configType
-)
+type Config struct {
+	DatabaseConnectionURL string `validate:"required"`
+	ListenAddr            string `validate:"required"`
+	Debug                 bool
+	LogPath               string
+	Interval              time.Duration `validate:"required"`
+	Whitelistfiats        []string      `validate:"required"`
+	CoinmarketcapapiKey   string        `validate:"required"`
+	Fixerapikey           string        `validate:"required"`
 
-type configType struct {
-	SSLMode             bool          `json:"sslmode"`
-	SSLCrt              string        `json:"sslcrt"`
-	SSLKey              string        `json:"sslkey"`
-	DB                  string        `json:"db"`
-	Laddr               string        `json:"laddr"`
-	Interval            time.Duration `json:"interval"`
-	Whitelisttokens     []string      `json:"whitelisttokens"`
-	Whitelistfiats      []string      `json:"whitelistfiats"`
-	CoinmarketcapapiKey string        `json:"coinmarketcapapikey"`
-
-	APIs struct {
-		Atom struct {
-			Usd struct {
-				Binance       string `json:"binance"`
-				Coinmarketcap string `json:"coinmarketcap"`
-			}
+	Provider struct {
+		Token struct {
+			Binance       string `validate:"required"`
+			Coinmarketcap string `validate:"required"`
 		}
 
-		Stables struct {
-			Currencylayer string `json:"currencylayer"`
-		}
-
-		Sdr struct {
-			Imf string `json:"imf"`
-		}
-
-		Band struct {
-			Active bool   `json:"active"`
-			Band   string `json:"band"`
+		Fiat struct {
+			Fixer string `validate:"required"`
 		}
 	}
 }
 
-func ReadConfig(logger *zap.Logger) {
-	if _, err := toml.DecodeFile("config.toml", &Config); err != nil {
-		logger.Fatal("Fatal",
-			zap.String("Config", err.Error()),
-			zap.Duration("Duration", time.Second),
-		)
+func (c Config) Validate() error {
+	err := validator.New().Struct(c)
+	if err != nil {
+		return validation.MissingFieldsErr(err, false)
 	}
+
+	return nil
+}
+
+func Read() (*Config, error) {
+	var c Config
+
+	return &c, configuration.ReadConfig(&c, "demeris-price-oracle", map[string]string{})
 }

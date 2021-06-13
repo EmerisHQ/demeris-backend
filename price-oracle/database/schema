@@ -1,0 +1,41 @@
+CREATE DATABASE oracle;
+
+CREATE USER testuser WITH PASSWORD 'qwer1234';
+GRANT ALL ON DATABASE oracle TO testuser;
+GRANT SELECT ON TABLE oracle.public.* TO testuser;
+
+CREATE TABLE oracle.binance (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.binance TO testuser;
+INSERT INTO oracle.binance VALUES ('ATOMUSDT','10','1351700038');
+INSERT INTO oracle.binance VALUES ('LUNAUSDT','10','1351700038');
+INSERT INTO oracle.binance VALUES ('ETHUSDT','10','1351700038');
+SELECT * FROM oracle.binance;
+
+
+CREATE TABLE oracle.coinmarketcap (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.coinmarketcap TO testuser;
+INSERT INTO oracle.coinmarketcap VALUES ('ATOMUSDT','10','1351700038');
+INSERT INTO oracle.coinmarketcap VALUES ('LUNAUSDT','10','1351700038');
+INSERT INTO oracle.coinmarketcap VALUES ('ETHUSDT','10','1351700038');
+SELECT * FROM oracle.coinmarketcap;
+
+CREATE TABLE oracle.fixer (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.fixer TO testuser;
+INSERT INTO oracle.fixer VALUES ('USDEUR','10','1351700038');
+INSERT INTO oracle.fixer VALUES ('USDKRW','10','1351700038');
+INSERT INTO oracle.fixer VALUES ('USDCHF','10','1351700038');
+SELECT * FROM oracle.fixer;
+
+CREATE TABLE oracle.tokens (symbol STRING PRIMARY KEY, price FLOAT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.tokens TO testuser;
+INSERT INTO oracle.tokens VALUES ('ATOMUSDT','10');
+INSERT INTO oracle.tokens VALUES ('LUNAUSDT','10');
+INSERT INTO oracle.tokens VALUES ('ETHUSDT','10');
+SELECT * FROM oracle.tokens;
+
+CREATE TABLE oracle.fiats (symbol STRING PRIMARY KEY, price FLOAT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.fiats TO testuser;
+INSERT INTO oracle.fiats VALUES ('USDEUR','10');
+INSERT INTO oracle.fiats VALUES ('USDKRW','10');
+INSERT INTO oracle.fiats VALUES ('USDCHF','10');
+SELECT * FROM oracle.fiats;
