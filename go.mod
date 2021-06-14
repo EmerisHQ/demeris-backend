@@ -15,7 +15,6 @@ require (
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/containerd/fifo v1.0.0
 	github.com/cosmos/cosmos-sdk v0.42.5
-	github.com/cosmos/gaia v1.0.0 // indirect
 	github.com/cosmos/gaia/v4 v4.2.1
 	github.com/cssivision/reverseproxy v0.0.1
 	github.com/ethereum/go-ethereum v1.10.3
@@ -24,7 +23,6 @@ require (
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/go-redis/redis/v8 v8.8.3
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
