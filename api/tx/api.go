@@ -211,8 +211,8 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 	b := d.Codec.MustMarshalBinaryBare(&tx)
 
 	grpcConn, err := grpc.Dial(
-		meta.Chain.NodeInfo.Endpoint, // Or your gRPC server address.
-		grpc.WithInsecure(),          // The SDK doesn't support any transport security mechanism.
+		fmt.Sprintf("%s:%d", meta.Chain.ChainName, 9090), // Or your gRPC server address.
+		grpc.WithInsecure(), // The SDK doesn't support any transport security mechanism.
 	)
 
 	if err != nil {
