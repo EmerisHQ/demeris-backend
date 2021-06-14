@@ -5,7 +5,7 @@ import (
 )
 
 type TxRequest struct {
-	TxBytes string `json:"tx_bytes"`
+	TxBytes []byte `json:"tx_bytes"`
 }
 
 // type Amount interface {

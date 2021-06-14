@@ -2,7 +2,6 @@ package tx
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -60,23 +59,9 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	data, err := hex.DecodeString(txRequest.TxBytes)
-
-	if err != nil {
-		e := deps.NewError("tx", fmt.Errorf("failed to decode tx bytes"), http.StatusBadRequest)
-
-		d.WriteError(c, e,
-			"Failed to decode tx bytes",
-			"id",
-			e.ID,
-			"error",
-			err,
-		)
-	}
-
 	tx := sdktx.Tx{}
 
-	d.Codec.MustUnmarshalBinaryBare(data, &tx)
+	d.Codec.MustUnmarshalBinaryBare(txRequest.TxBytes, &tx)
 
 	meta.Chain, err = d.Database.Chain(chainName)
 
