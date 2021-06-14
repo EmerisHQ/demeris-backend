@@ -33,6 +33,8 @@ spec:
               value: "{{ .Values.databaseConnectionURL }}"
             - name: DEMERIS-API_CNSADDR
               value: "{{ .Values.cnsAddress }}"
+            - name: DEMERIS-API_REDISADDR
+              value: "{{ .Values.redisUrl }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       terminationGracePeriodSeconds: 10
