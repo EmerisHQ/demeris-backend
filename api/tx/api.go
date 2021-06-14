@@ -21,7 +21,7 @@ import (
 
 func Register(router *gin.Engine) {
 	router.POST("/tx/:chain", Tx)
-	router.GET("/tx/ticket/:ticket", GetTicket)
+	router.GET("/tx/ticket/:chain/:ticket", GetTicket)
 }
 
 // Tx relays a transaction to an internal node for the specified chain.
@@ -253,15 +253,16 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 // @Produce json
 // @Success 200 {object} TxStatus
 // @Failure 500,403 {object} deps.Error
-// @Router /tx/ticket/{ticketId} [get]
+// @Router /tx/ticket/{chain}/{ticketId} [get]
 func GetTicket(c *gin.Context) {
 	var res TxStatus
 
 	d := deps.GetDeps(c)
 
+	chainName := c.Param("chain")
 	ticketId := c.Param("ticket")
 
-	ticket, err := d.Store.Get(ticketId)
+	ticket, err := d.Store.Get(fmt.Sprintf("%s-%s", chainName, ticketId))
 
 	if err != nil {
 		e := deps.NewError(
