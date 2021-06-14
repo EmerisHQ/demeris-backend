@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
@@ -200,7 +201,7 @@ func validateAuthInfo(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 
 	if infos := tx.AuthInfo.SignerInfos; len(infos) == 1 {
 		// Fetch signer sequence
-		meta.SignerSequence = string(tx.AuthInfo.SignerInfos[0].Sequence)
+		meta.SignerSequence = strconv.FormatUint(tx.AuthInfo.SignerInfos[0].Sequence, 10)
 	} else {
 		return fmt.Errorf("Invalid number of signatures. Expected 1, got %d", len(infos))
 	}
