@@ -92,9 +92,7 @@ func (s *Store) SetIbcReceived(key string) error {
 		return err
 	}
 
-	s.SetComplete(prev)
-
-	return nil
+	return s.SetComplete(prev)
 }
 
 func (s *Store) Exists(key string) bool {
