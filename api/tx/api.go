@@ -244,8 +244,9 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 			TxBytes: b, // Proto-binary of the signed transaction, see previous step.
 		},
 	)
+
 	if err != nil {
-		return grpcRes.TxResponse.TxHash, err
+		return "", err
 	}
 
 	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash)
