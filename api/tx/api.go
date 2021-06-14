@@ -197,7 +197,7 @@ func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 }
 
 // validateAuthInfo validates the data inside auth_info and populates the relevant metadata
-func validateAuthInfo(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
+func validateAuthInfo(tx *sdktx.Tx, meta *TxMeta, _ *deps.Deps) error {
 
 	if infos := tx.AuthInfo.SignerInfos; len(infos) == 1 {
 		// Fetch signer sequence
@@ -210,7 +210,7 @@ func validateAuthInfo(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 }
 
 // validateSignatures ensures the signature exists
-func validateSignatures(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
+func validateSignatures(tx *sdktx.Tx, _ *TxMeta, _ *deps.Deps) error {
 	if len(tx.Signatures) != 1 {
 		return fmt.Errorf("Invalid number of signatures")
 	}
