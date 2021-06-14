@@ -4,80 +4,84 @@ import (
 	"github.com/allinbits/demeris-backend/models"
 )
 
-type Amount interface {
-	Foo() error
-}
-type AmountSingle struct {
-	Denom  string `json:"denom"`
-	Amount string `json:"amount"`
+type TxRequest struct {
+	TxBytes string `json:"tx_bytes"`
 }
 
-type AmountList []AmountSingle
+// type Amount interface {
+// 	Foo() error
+// }
+// type AmountSingle struct {
+// 	Denom  string `json:"denom"`
+// 	Amount string `json:"amount"`
+// }
 
-func (a *AmountList) Foo() error {
-	return nil
-}
+// type AmountList []AmountSingle
 
-func (a *AmountSingle) Foo() error {
-	return nil
-}
+// func (a *AmountList) Foo() error {
+// 	return nil
+// }
 
-type TxData struct {
-	TxBody struct {
-		Messages []struct {
-			Type        string `json:"@type"`
-			FromAddress string `json:"from_address,omitempty"`
-			ToAddress   string `json:"to_address,omitempty"`
-			Amount      []struct {
-				Denom  string `json:"denom"`
-				Amount string `json:"amount"`
-			} `json:"amount,omitempty"`
-			SourcePort    string `json:"source_port,omitempty"`
-			SourceChannel string `json:"source_channel,omitempty"`
-			Token         struct {
-				Denom  string `json:"denom"`
-				Amount string `json:"amount"`
-			} `json:"token,omitempty"`
-			Sender        string `json:"sender,omitempty"`
-			Receiver      string `json:"receiver,omitempty"`
-			TimeoutHeight struct {
-				RevisionNumber string `json:"revision_number"`
-				RevisionHeight string `json:"revision_height"`
-			} `json:"timeout_height,omitempty"`
-			TimeoutTimestamp string `json:"timeout_timestamp,omitempty"`
-			DelegatorAddress string `json:"delegator_address,omitempty"`
-			ValidatorAddress string `json:"validator_address,omitempty"`
-		} `json:"messages"`
-		Memo                        string        `json:"memo"`
-		TimeoutHeight               string        `json:"timeout_height"`
-		ExtensionOptions            []interface{} `json:"extension_options"`
-		NonCriticalExtensionOptions []interface{} `json:"non_critical_extension_options"`
-	} `json:"body"`
-	AuthInfo struct {
-		SignerInfos []struct {
-			PublicKey struct {
-				Type string `json:"@type"`
-				Key  string `json:"key"`
-			} `json:"public_key"`
-			ModeInfo struct {
-				Single struct {
-					Mode string `json:"mode"`
-				} `json:"single"`
-			} `json:"mode_info"`
-			Sequence string `json:"sequence"`
-		} `json:"signer_infos"`
-		Fee struct {
-			Amount []struct {
-				Denom  string `json:"denom"`
-				Amount string `json:"amount"`
-			} `json:"amount,omitempty"`
-			GasLimit string `json:"gas_limit"`
-			Payer    string `json:"payer"`
-			Granter  string `json:"granter"`
-		} `json:"fee"`
-	} `json:"auth_info"`
-	Signatures []string `json:"signatures"`
-}
+// func (a *AmountSingle) Foo() error {
+// 	return nil
+// }
+
+// type TxData struct {
+// 	TxBody struct {
+// 		Messages []struct {
+// 			Type        string `json:"@type"`
+// 			FromAddress string `json:"from_address,omitempty"`
+// 			ToAddress   string `json:"to_address,omitempty"`
+// 			Amount      []struct {
+// 				Denom  string `json:"denom"`
+// 				Amount string `json:"amount"`
+// 			} `json:"amount,omitempty"`
+// 			SourcePort    string `json:"source_port,omitempty"`
+// 			SourceChannel string `json:"source_channel,omitempty"`
+// 			Token         struct {
+// 				Denom  string `json:"denom"`
+// 				Amount string `json:"amount"`
+// 			} `json:"token,omitempty"`
+// 			Sender        string `json:"sender,omitempty"`
+// 			Receiver      string `json:"receiver,omitempty"`
+// 			TimeoutHeight struct {
+// 				RevisionNumber string `json:"revision_number"`
+// 				RevisionHeight string `json:"revision_height"`
+// 			} `json:"timeout_height,omitempty"`
+// 			TimeoutTimestamp string `json:"timeout_timestamp,omitempty"`
+// 			DelegatorAddress string `json:"delegator_address,omitempty"`
+// 			ValidatorAddress string `json:"validator_address,omitempty"`
+// 		} `json:"messages"`
+// 		Memo                        string        `json:"memo"`
+// 		TimeoutHeight               string        `json:"timeout_height"`
+// 		ExtensionOptions            []interface{} `json:"extension_options"`
+// 		NonCriticalExtensionOptions []interface{} `json:"non_critical_extension_options"`
+// 	} `json:"body"`
+// 	AuthInfo struct {
+// 		SignerInfos []struct {
+// 			PublicKey struct {
+// 				Type string `json:"@type"`
+// 				Key  string `json:"key"`
+// 			} `json:"public_key"`
+// 			ModeInfo struct {
+// 				Single struct {
+// 					Mode string `json:"mode"`
+// 				} `json:"single"`
+// 			} `json:"mode_info"`
+// 			Sequence string `json:"sequence"`
+// 		} `json:"signer_infos"`
+// 		Fee struct {
+// 			Amount []struct {
+// 				Denom  string `json:"denom"`
+// 				Amount string `json:"amount"`
+// 			} `json:"amount,omitempty"`
+// 			GasLimit string `json:"gas_limit"`
+// 			Payer    string `json:"payer"`
+// 			Granter  string `json:"granter"`
+// 		} `json:"fee"`
+// 	} `json:"auth_info"`
+// 	Signatures []string `json:"signatures"`
+// }
 
 // UnmarshalJSON implements json.Unmarshaler on TxData.
 // Signatures are canonically sent via JSON as base64-encoded strings.
@@ -104,11 +108,11 @@ type TxData struct {
 // 	return nil
 // }
 
-type rawTxData struct {
-	TxBody     map[string]interface{} `json:"body"`
-	AuthInfo   map[string]interface{} `json:"auth_info"`
-	Signatures []string               `json:"signatures"`
-}
+// type rawTxData struct {
+// 	TxBody     map[string]interface{} `json:"body"`
+// 	AuthInfo   map[string]interface{} `json:"auth_info"`
+// 	Signatures []string               `json:"signatures"`
+// }
 
 type TxMeta struct {
 	RelayOnly      bool

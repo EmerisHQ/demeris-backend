@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+
 	"github.com/allinbits/demeris-backend/utils/validation"
 	"github.com/gin-gonic/gin/binding"
 
@@ -29,10 +31,11 @@ type Router struct {
 	l      *zap.SugaredLogger
 	s      *store.Store
 	k8s    kube.Client
+	cdc    codec.Marshaler
 	cnsURL string
 }
 
-func New(db *database.Database, l *zap.SugaredLogger, s *store.Store, kubeClient kube.Client, cnsURL string) *Router {
+func New(db *database.Database, l *zap.SugaredLogger, s *store.Store, kubeClient kube.Client, cnsURL string, cdc codec.Marshaler) *Router {
 	engine := gin.Default()
 
 	r := &Router{
@@ -42,6 +45,7 @@ func New(db *database.Database, l *zap.SugaredLogger, s *store.Store, kubeClient
 		s:      s,
 		k8s:    kubeClient,
 		cnsURL: cnsURL,
+		cdc:    cdc,
 	}
 
 	r.metrics()
@@ -100,6 +104,7 @@ func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
 			Database: r.db,
 			Store:    r.s,
 			CNSURL:   r.cnsURL,
+			Codec:    r.cdc,
 			K8S:      &r.k8s,
 		})
 	}

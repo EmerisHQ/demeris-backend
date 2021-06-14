@@ -14,7 +14,8 @@ require (
 	github.com/allinbits/starport-operator v0.0.1-alpha.3
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/containerd/fifo v1.0.0
-	github.com/cosmos/cosmos-sdk v0.42.4
+	github.com/cosmos/cosmos-sdk v0.42.5
+	github.com/cosmos/gaia v1.0.0 // indirect
 	github.com/cosmos/gaia/v4 v4.2.1
 	github.com/cssivision/reverseproxy v0.0.1
 	github.com/ethereum/go-ethereum v1.10.3
@@ -42,12 +43,12 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/swaggo/swag v1.7.0
 	github.com/tendermint/liquidity v1.2.4
-	github.com/tendermint/tendermint v0.34.9
+	github.com/tendermint/tendermint v0.34.10
 	github.com/zsais/go-gin-prometheus v0.1.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
 	golang.org/x/text v0.3.6 // indirect
-	google.golang.org/grpc v1.35.0
+	google.golang.org/grpc v1.37.0
 	k8s.io/api v0.19.2
 	k8s.io/apimachinery v0.19.2
 	k8s.io/client-go v11.0.0+incompatible

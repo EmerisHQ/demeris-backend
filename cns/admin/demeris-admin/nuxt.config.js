@@ -1,6 +1,6 @@
 export default {
   // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
+  target: 'server',
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -14,7 +14,7 @@ export default {
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/admin/favicon.ico' }
     ]
   },
 
@@ -46,6 +46,9 @@ export default {
 
   axios: {
     baseUrl: process.env.CNS_URL || "http://localhost:9999"
-  }
+  },
 
+  router: {
+    base: process.env.BASE_URL || "/"
+  }
 };

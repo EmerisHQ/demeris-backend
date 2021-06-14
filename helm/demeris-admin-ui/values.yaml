@@ -1,0 +1,14 @@
+image: demeris/admin-ui:latest
+imagePullPolicy: Always
+
+replicas: 1
+
+nodeSelector: {}
+
+resources: {}
+
+ports:
+  http: 80
+
+cnsAddress: http://cns-server:8000
+baseURL: /admin/

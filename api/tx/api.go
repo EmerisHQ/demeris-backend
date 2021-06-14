@@ -1,11 +1,16 @@
 package tx
 
 import (
-	"bytes"
+	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+
+	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
+	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	"google.golang.org/grpc"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	// typestx "github.com/cosmos/cosmos-sdk/types/tx"
@@ -31,14 +36,14 @@ func Register(router *gin.Engine) {
 // @Router /tx/{chainName} [post]
 func Tx(c *gin.Context) {
 	// var tx typestx.Tx
-	var tx TxData
+	var txRequest TxRequest
 	var meta TxMeta
 
 	d := deps.GetDeps(c)
 
 	chainName := c.Param("chain")
 
-	err := c.BindJSON(&tx)
+	err := c.BindJSON(&txRequest)
 
 	if err != nil {
 		e := deps.NewError("tx", fmt.Errorf("failed to parse JSON"), http.StatusBadRequest)
@@ -53,6 +58,24 @@ func Tx(c *gin.Context) {
 
 		return
 	}
+
+	data, err := hex.DecodeString(txRequest.TxBytes)
+
+	if err != nil {
+		e := deps.NewError("tx", fmt.Errorf("failed to decode tx bytes"), http.StatusBadRequest)
+
+		d.WriteError(c, e,
+			"Failed to decode tx bytes",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)
+	}
+
+	tx := sdktx.Tx{}
+
+	d.Codec.MustUnmarshalBinaryBare(data, &tx)
 
 	meta.Chain, err = d.Database.Chain(chainName)
 
@@ -108,7 +131,7 @@ func Tx(c *gin.Context) {
 }
 
 // validateTx populates metadata and
-func validateTx(tx *TxData, meta *TxMeta, d *deps.Deps) error {
+func validateTx(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 
 	err := validateSignatures(tx, meta, d)
 
@@ -133,13 +156,22 @@ func validateTx(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 }
 
 // validateBody validates the data inside the body and populates the relevant metadata
-func validateBody(tx *TxData, meta *TxMeta, d *deps.Deps) error {
-	for _, m := range tx.TxBody.Messages {
-		if m.Type == "/ibc.applications.transfer.v1.MsgTransfer" {
-			sourcePort := m.SourcePort
-			sourceChannel := m.SourceChannel
+func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
+	for _, m := range tx.GetMsgs() {
+		if m.Type() == "transfer" {
 
-			tokenDenom := m.Token.Denom
+			msg, ok := m.(*types.MsgTransfer)
+
+			if !ok {
+				return fmt.Errorf("expected MsgTransfer, got %T", msg)
+			}
+
+			sourcePort := msg.SourcePort
+			sourceChannel := msg.SourceChannel
+
+			tokenDenom := msg.Token.Denom
+
+			fmt.Println(sourcePort, sourceChannel, tokenDenom)
 
 			if sourcePort != "transfer" {
 				return fmt.Errorf("Invalid IBC Port %s", sourcePort)
@@ -164,11 +196,11 @@ func validateBody(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 }
 
 // validateAuthInfo validates the data inside auth_info and populates the relevant metadata
-func validateAuthInfo(tx *TxData, meta *TxMeta, d *deps.Deps) error {
+func validateAuthInfo(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 
 	if infos := tx.AuthInfo.SignerInfos; len(infos) == 1 {
 		// Fetch signer sequence
-		meta.SignerSequence = tx.AuthInfo.SignerInfos[0].Sequence
+		meta.SignerSequence = string(tx.AuthInfo.SignerInfos[0].Sequence)
 	} else {
 		return fmt.Errorf("Invalid number of signatures. Expected 1, got %d", len(infos))
 	}
@@ -177,7 +209,7 @@ func validateAuthInfo(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 }
 
 // validateSignatures ensures the signature exists
-func validateSignatures(tx *TxData, meta *TxMeta, d *deps.Deps) error {
+func validateSignatures(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 	if len(tx.Signatures) != 1 {
 		return fmt.Errorf("Invalid number of signatures")
 	}
@@ -188,48 +220,37 @@ func validateSignatures(tx *TxData, meta *TxMeta, d *deps.Deps) error {
 // RelayTx relays the tx to the specifc endpoint
 // RelayTx will also perform the ticketing mechanism
 // Always expect broadcast mode to be `async`
-func relayTx(d *deps.Deps, tx TxData, meta TxMeta) (string, error) {
+func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 
-	var hash string
+	b := d.Codec.MustMarshalBinaryBare(&tx)
 
-	data, err := json.Marshal(tx)
+	grpcConn := grpc.Dial(
+		meta.Chain.NodeInfo.Endpoint, // Or your gRPC server address.
+		grpc.WithInsecure(),          // The SDK doesn't support any transport security mechanism.
+	)
+
+	defer grpcConn.Close()
+
+	txClient := sdktx.NewServiceClient(grpcConn)
+	// We then call the BroadcastTx method on this client.
+	grpcRes, err := txClient.BroadcastTx(
+		context.Background(),
+		&sdktx.BroadcastTxRequest{
+			Mode:    sdktx.BroadcastMode_BROADCAST_MODE_SYNC,
+			TxBytes: b, // Proto-binary of the signed transaction, see previous step.
+		},
+	)
+	if err != nil {
+		return grpcRes.TxResponse.TxHash, err
+	}
+
+	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash)
 
 	if err != nil {
-		return hash, err
+		return grpcRes.TxResponse.TxHash, err
 	}
 
-	b := bytes.NewReader(data)
-
-	resp, err := http.Post(meta.Chain.NodeInfo.Endpoint, "application/json", b)
-
-	if err != nil {
-		return hash, err
-	}
-
-	decoder := json.NewDecoder(resp.Body)
-	var resdata map[string]interface{}
-
-	err = decoder.Decode(&resdata)
-
-	if err != nil {
-		return hash, err
-	}
-
-	val, ok := resdata["txhash"]
-
-	hash = val.(string)
-
-	if !ok {
-		return hash, fmt.Errorf("failed to read txhash in response")
-	}
-
-	err = d.Store.CreateTicket(meta.Chain.ChainName, hash)
-
-	if err != nil {
-		return hash, err
-	}
-
-	return hash, nil
+	return grpcRes.TxResponse.TxHash, nil
 }
 
 // GetTicket returns the transaction status n.
