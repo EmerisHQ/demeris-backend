@@ -224,10 +224,14 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 
 	b := d.Codec.MustMarshalBinaryBare(&tx)
 
-	grpcConn := grpc.Dial(
+	grpcConn, err := grpc.Dial(
 		meta.Chain.NodeInfo.Endpoint, // Or your gRPC server address.
 		grpc.WithInsecure(),          // The SDK doesn't support any transport security mechanism.
 	)
+
+	if err != nil {
+		return "", fmt.Errorf("cannot create grpc dialer, %w", err)
+	}
 
 	defer grpcConn.Close()
 
