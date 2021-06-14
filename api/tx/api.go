@@ -247,13 +247,14 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 // GetTicket returns the transaction status n.
 // @Summary Gets ticket by id.
 // @Tags Chain
-// @ID chain
+// @ID txTicket
 // @Description Gets transaction status by ticket id.
 // @Param ticketId path string true "ticket id"
+// @Param chainName path string true "chain name"
 // @Produce json
 // @Success 200 {object} TxStatus
 // @Failure 500,403 {object} deps.Error
-// @Router /tx/ticket/{chain}/{ticketId} [get]
+// @Router /tx/ticket/{chainName}/{ticketId} [get]
 func GetTicket(c *gin.Context) {
 	var res TxStatus
 
