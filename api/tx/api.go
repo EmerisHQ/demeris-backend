@@ -296,7 +296,27 @@ func GetTicket(c *gin.Context) {
 		return
 	}
 
-	json.Unmarshal([]byte(ticket), &res)
+	if err := json.Unmarshal([]byte(ticket), &res); err != nil {
+		e := deps.NewError(
+			"tx",
+			fmt.Errorf("cannot retrieve ticket with id %v", ticketId),
+			http.StatusInternalServerError,
+		)
+
+		d.WriteError(c, e,
+			"cannot unmarshal ticket",
+			"id",
+			e.ID,
+			"name",
+			ticketId,
+			"ticket",
+			ticket,
+			"error",
+			err,
+		)
+
+		return
+	}
 
 	c.JSON(http.StatusOK, res)
 }
