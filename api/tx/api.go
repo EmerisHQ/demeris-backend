@@ -259,7 +259,7 @@ func GetTicket(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	ticketId := c.Param("ticketId")
+	ticketId := c.Param("ticket")
 
 	ticket, err := d.Store.Get(ticketId)
 
