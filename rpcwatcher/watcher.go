@@ -219,14 +219,18 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 }
 
 func (w *Watcher) startChain(ctx context.Context) {
-	for data := range w.DataChannel {
+	for {
 		select {
 		case <-ctx.Done():
 			w.stopReadChannel <- struct{}{}
 			w.l.Infof("watcher %s has been canceled", w.Name)
 			return
 		default:
-			w.handleMessage(data)
+			select {
+			case data := <-w.DataChannel:
+				w.handleMessage(data)
+			}
 		}
+
 	}
 }
