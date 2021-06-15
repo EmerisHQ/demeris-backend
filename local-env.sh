@@ -340,6 +340,31 @@ EOF
         helm/demeris-api-server \
         &> /dev/null
 
+    ### Ensure rpcwatcher image
+    if [[ "$(docker images -q demeris/rpcwatcher 2> /dev/null)" == "" ]]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/rpcwatcher image"
+        docker build -t demeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
+    else
+        if [ "$BUILD" = "true" ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/rpcwatcher image"
+            docker build -t demeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/rpcwatcher already exists"
+        fi
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/rpcwatcher image to cluster"
+    kind load docker-image demeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
+
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying demeris/rpcwatcher"
+    helm upgrade rpcwatcher \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --set imagePullPolicy=Never \
+        helm/demeris-rpcwatcher \
+        &> /dev/null
+
     # ### Ensure price-oracle-server image
     # if [[ "$(docker images -q demeris/price-oracle-server 2> /dev/null)" == "" ]]
     # then
