@@ -48,7 +48,7 @@ type IbcReceiveData struct {
 
 type Events map[string][]string
 
-func NewWatcher(endpoint string, logger *zap.SugaredLogger, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
 
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
@@ -63,6 +63,7 @@ func NewWatcher(endpoint string, logger *zap.SugaredLogger, db *database.Instanc
 		client:          ws,
 		l:               logger,
 		store:           s,
+		Name:            chainName,
 		stopReadChannel: make(chan struct{}),
 		DataChannel:     make(chan coretypes.ResultEvent),
 	}
