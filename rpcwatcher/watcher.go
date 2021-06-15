@@ -97,6 +97,11 @@ func (w *Watcher) readChannel() {
 		default:
 			select {
 			case data := <-w.client.ResponsesCh:
+				if data.Error != nil {
+					w.l.Errorw("error from tendermint rpc", "error", data.Error.Error())
+					continue
+				}
+
 				e := coretypes.ResultEvent{}
 				err := json.Unmarshal(data.Result, &e)
 				if err != nil {
