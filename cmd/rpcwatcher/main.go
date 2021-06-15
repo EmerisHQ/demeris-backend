@@ -2,7 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"net"
+	"strings"
 	"time"
+
+	"github.com/r3labs/diff"
 
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/rpcwatcher"
@@ -10,6 +16,11 @@ import (
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 )
+
+type watcherInstance struct {
+	watcher *rpcwatcher.Watcher
+	cancel  context.CancelFunc
+}
 
 func main() {
 	c, err := rpcwatcher.ReadConfig()
@@ -30,57 +41,106 @@ func main() {
 
 	var chains []models.Chain
 
-	var cancelFunc context.CancelFunc
+	watchers := map[string]watcherInstance{}
 
-	var watchers []*rpcwatcher.Watcher
-
-	err = db.Exec("select * from chains", map[string]interface{}{}, &chains)
+	err = db.Exec("select * from cns.chains", nil, &chains)
 
 	if err != nil {
 		panic(err)
 	}
 
-	for _, c := range chains {
-		watcher, err := rpcwatcher.NewWatcher(c.NodeInfo.Endpoint, l, db, s, []string{"tm.event='Tx'"})
+	chainsMap := mapChains(chains)
+
+	for cn := range chainsMap {
+		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), l, db, s, []string{"tm.event='Tx'"})
 
 		if err != nil {
-			panic(err)
+			l.Errorw("cannot create chain", "error", err)
 		}
 
-		watchers = append(watchers, watcher)
+		ctx, cancel := context.WithCancel(context.Background())
+		rpcwatcher.Start(watcher, ctx)
+
+		watchers[cn] = watcherInstance{
+			watcher: watcher,
+			cancel:  cancel,
+		}
 	}
 
-	cancelFunc = rpcwatcher.Start(watchers)
-
-	for {
+	for range time.Tick(1 * time.Second) {
 		var ch []models.Chain
-		err = db.Exec("select * from chains", map[string]interface{}{}, &ch)
+		err = db.Exec("select * from cns.chains", nil, &ch)
 
 		if err != nil {
 			panic(err)
 		}
 
-		if len(ch) != len(chains) {
+		newChainsMap := mapChains(ch)
 
-			l.Infow("Chains modified. Restarting watchers")
+		chainsDiff, err := diff.Diff(chainsMap, newChainsMap)
+		if err != nil {
+			l.Errorw("cannot diff maps", "error", err)
+			continue
+		}
 
-			cancelFunc()
+		if chainsDiff == nil {
+			continue
+		}
 
-			chains = ch
+		l.Infow("Chains modified. Restarting watchers")
 
-			for _, c := range chains {
-				watcher, err := rpcwatcher.NewWatcher(c.NodeInfo.Endpoint, l, db, s, []string{"tm.event='Tx'"})
+		l.Debugw("diff", "diff", chainsDiff)
+		for _, d := range chainsDiff {
+			switch d.Type {
+			case diff.DELETE:
+				name := d.Path[0]
+				wi, ok := watchers[name]
+				if !ok {
+					// we probably deleted this already somehow
+					continue
+				}
+				wi.cancel()
+
+				delete(watchers, name)
+				delete(chainsMap, name)
+			case diff.CREATE:
+				name := d.Path[0]
+				watcher, err := rpcwatcher.NewWatcher(endpoint(name), l, db, s, []string{"tm.event='Tx'"})
 
 				if err != nil {
-					panic(err)
+					var dnsErr *net.DNSError
+					if errors.As(err, &dnsErr) || strings.Contains(err.Error(), "connection refused") {
+						l.Infow("chain not yet available", "name", name)
+						continue
+					}
+
+					l.Errorw("cannot create chain", "error", err)
+					continue
 				}
 
-				watchers = append(watchers, watcher)
+				ctx, cancel := context.WithCancel(context.Background())
+				rpcwatcher.Start(watcher, ctx)
+
+				watchers[name] = watcherInstance{
+					watcher: watcher,
+					cancel:  cancel,
+				}
+
+				chainsMap[name] = newChainsMap[name]
 			}
-
-			cancelFunc = rpcwatcher.Start(watchers)
-
-			time.Sleep(1 * time.Second)
 		}
 	}
+}
+
+func mapChains(c []models.Chain) map[string]models.Chain {
+	ret := map[string]models.Chain{}
+	for _, cc := range c {
+		ret[cc.ChainName] = cc
+	}
+
+	return ret
+}
+
+func endpoint(chainName string) string {
+	return fmt.Sprintf("http://%s:26657", chainName)
 }
