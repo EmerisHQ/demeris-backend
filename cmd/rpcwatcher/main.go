@@ -52,7 +52,7 @@ func main() {
 	chainsMap := mapChains(chains)
 
 	for cn := range chainsMap {
-		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), l, db, s, []string{"tm.event='Tx'"})
+		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, db, s, []string{"tm.event='Tx'"})
 
 		if err != nil {
 			l.Errorw("cannot create chain", "error", err)
@@ -105,7 +105,7 @@ func main() {
 				delete(chainsMap, name)
 			case diff.CREATE:
 				name := d.Path[0]
-				watcher, err := rpcwatcher.NewWatcher(endpoint(name), l, db, s, []string{"tm.event='Tx'"})
+				watcher, err := rpcwatcher.NewWatcher(endpoint(name), name, l, db, s, []string{"tm.event='Tx'"})
 
 				if err != nil {
 					var dnsErr *net.DNSError
