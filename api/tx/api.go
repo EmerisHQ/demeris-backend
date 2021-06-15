@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	types2 "github.com/tendermint/tendermint/abci/types"
+
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	"google.golang.org/grpc"
@@ -98,7 +100,7 @@ func Tx(c *gin.Context) {
 	txhash, err := relayTx(d, tx, meta)
 
 	if err != nil {
-		e := deps.NewError("tx", fmt.Errorf("relaying tx failed"), http.StatusBadRequest)
+		e := deps.NewError("tx", fmt.Errorf("relaying tx failed, %w", err), http.StatusBadRequest)
 
 		d.WriteError(c, e,
 			"relaying tx failed",
@@ -239,6 +241,10 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 
 	if err != nil {
 		return grpcRes.TxResponse.TxHash, err
+	}
+
+	if grpcRes.TxResponse.Code != types2.CodeTypeOK {
+		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
 	}
 
 	return grpcRes.TxResponse.TxHash, nil
