@@ -19,12 +19,13 @@ const (
 )
 
 type Watcher struct {
-	Name        string
-	client      *client.WSClient
-	d           *database.Instance
-	l           *zap.SugaredLogger
-	store       *store.Store
-	DataChannel chan coretypes.ResultEvent
+	Name            string
+	client          *client.WSClient
+	d               *database.Instance
+	l               *zap.SugaredLogger
+	store           *store.Store
+	stopReadChannel chan struct{}
+	DataChannel     chan coretypes.ResultEvent
 }
 
 type WsResponse struct {
@@ -59,10 +60,11 @@ func NewWatcher(endpoint string, logger *zap.SugaredLogger, db *database.Instanc
 	}
 
 	w := &Watcher{
-		client:      ws,
-		l:           logger,
-		store:       s,
-		DataChannel: make(chan coretypes.ResultEvent),
+		client:          ws,
+		l:               logger,
+		store:           s,
+		stopReadChannel: make(chan struct{}),
+		DataChannel:     make(chan coretypes.ResultEvent),
 	}
 
 	for _, sub := range subscriptions {
@@ -76,28 +78,36 @@ func NewWatcher(endpoint string, logger *zap.SugaredLogger, db *database.Instanc
 	return w, nil
 }
 
-func Start(watchers []*Watcher) context.CancelFunc {
-	ctx, cancelFunc := context.WithCancel(context.Background())
-
-	for _, watcher := range watchers {
-		go watcher.startChain(ctx)
-	}
-
-	return cancelFunc
+func Start(watcher *Watcher, ctx context.Context) {
+	go watcher.startChain(ctx)
 }
 
 func (w *Watcher) readChannel() {
-	for data := range w.client.ResponsesCh {
-		e := coretypes.ResultEvent{}
-		err := json.Unmarshal(data.Result, &e)
-		if err != nil {
-			w.l.Errorw("cannot unmarshal data into resultevent", "error", err)
-			return
-		}
+	/*
+		This thing uses nested selects because when we read from tendermint data channel, we should check first if
+		the cancellation function has been called, and if yes we should return.
 
-		go func() {
-			w.DataChannel <- e
-		}()
+		Only after having done such check we can process the tendermint data.
+	*/
+	for {
+		select {
+		case <-w.stopReadChannel:
+			return
+		default:
+			select {
+			case data := <-w.client.ResponsesCh:
+				e := coretypes.ResultEvent{}
+				err := json.Unmarshal(data.Result, &e)
+				if err != nil {
+					w.l.Errorw("cannot unmarshal data into resultevent", "error", err)
+					continue
+				}
+
+				go func() {
+					w.DataChannel <- e
+				}()
+			}
+		}
 	}
 }
 
@@ -197,6 +207,7 @@ func (w *Watcher) startChain(ctx context.Context) {
 	for data := range w.DataChannel {
 		select {
 		case <-ctx.Done():
+			w.stopReadChannel <- struct{}{}
 			w.l.Infof("watcher %s has been canceled", w.Name)
 			return
 		default:
