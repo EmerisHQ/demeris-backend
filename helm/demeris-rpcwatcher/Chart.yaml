@@ -1,0 +1,5 @@
+apiVersion: v2
+name: demeris-rpcwatcher
+description: demeris rpcwatcher service
+version: 0.0.1
+appVersion: 0.0.1
