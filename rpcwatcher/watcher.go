@@ -120,7 +120,6 @@ func (w *Watcher) readChannel() {
 }
 
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
-
 	txHash, exists := data.Events["tx.hash"]
 	_, isIBC := data.Events["ibc_transfer.sender"]
 	_, isIBCRecv := data.Events["recv_packet.packet_sequence"]
@@ -131,8 +130,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if key := fmt.Sprintf("%s-%s", w.Name, txHash); exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
-		w.store.SetComplete(key)
+	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
+		if err := w.store.SetComplete(key); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+		}
+		return
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
