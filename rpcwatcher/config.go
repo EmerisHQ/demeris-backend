@@ -8,7 +8,6 @@ import (
 
 type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
-	TendermintNode        string `validate:"required"`
 	RedisURL              string `validate:"required"`
 	Debug                 bool
 }
@@ -25,7 +24,6 @@ func (c *Config) Validate() error {
 func ReadConfig() (*Config, error) {
 	var c Config
 	return &c, configuration.ReadConfig(&c, "rpcwatcher", map[string]string{
-		"TendermintNode": "http://localhost:26657",
-		"RedisURL":       "http://localhost:6379",
+		"RedisURL": "http://localhost:6379",
 	})
 }
