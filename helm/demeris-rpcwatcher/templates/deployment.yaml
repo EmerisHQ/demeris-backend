@@ -27,13 +27,11 @@ spec:
           ports:
 {{- include "ports.pod" . | indent 8 }}
           env:
-            - name: DEMERIS-API_LISTENADDR
-              value: 0.0.0.0:{{ .Values.ports.http }}
-            - name: DEMERIS-API_DATABASECONNECTIONURL
+            - name: RPCWATCHER_DATABASECONNECTIONURL
               value: "{{ .Values.databaseConnectionURL }}"
-            - name: DEMERIS-API_CNSADDR
-              value: "{{ .Values.cnsAddress }}"
-            - name: DEMERIS-API_REDISADDR
+            - name: RPCWATCHER_DEBUG
+              value: "{{ .Values.debug }}"
+            - name: RPCWATCHER_REDISURL
               value: "{{ .Values.redisUrl }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}

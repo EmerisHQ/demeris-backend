@@ -277,6 +277,31 @@ EOF
         helm/demeris-cns-server \
         &> /dev/null
 
+    ### Ensure admin-ui image
+    if [[ "$(docker images -q demeris/admin-ui 2> /dev/null)" == "" ]]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/admin-ui image"
+        docker build -t demeris/admin-ui ./cns/admin/demeris-admin
+    else
+        if [ "$BUILD" = "true" ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/admin-ui image"
+            docker build -t demeris/admin-ui ./cns/admin/demeris-admin
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/admin-ui already exists"
+        fi
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/admin-ui image to cluster"
+    kind load docker-image demeris/admin-ui --name $CLUSTER_NAME &> /dev/null
+
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying demeris/admin-ui"
+    helm upgrade admin-ui \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --set imagePullPolicy=Never \
+        helm/demeris-admin-ui \
+        &> /dev/null
+
     ### Setup container for proxying localhost:$CNS_PORT to cns-server
     if [ ! "$(docker ps | grep $CLUSTER_NAME-local-cns-proxy)" ]
     then
@@ -313,6 +338,31 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --set imagePullPolicy=Never \
         helm/demeris-api-server \
+        &> /dev/null
+
+    ### Ensure rpcwatcher image
+    if [[ "$(docker images -q demeris/rpcwatcher 2> /dev/null)" == "" ]]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/rpcwatcher image"
+        docker build -t demeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
+    else
+        if [ "$BUILD" = "true" ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/rpcwatcher image"
+            docker build -t demeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/rpcwatcher already exists"
+        fi
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/rpcwatcher image to cluster"
+    kind load docker-image demeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
+
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying demeris/rpcwatcher"
+    helm upgrade rpcwatcher \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --set imagePullPolicy=Never \
+        helm/demeris-rpcwatcher \
         &> /dev/null
 
     # ### Ensure price-oracle-server image

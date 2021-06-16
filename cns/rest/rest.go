@@ -51,6 +51,7 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc
 	r := &router{s: s}
 
 	validation.JSONFields(binding.Validator)
+	validation.DerivationPath(binding.Validator)
 
 	g.Use(logging.LogRequest(l.Desugar()))
 	g.Use(ginzap.RecoveryWithZap(l.Desugar(), true))

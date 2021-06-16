@@ -32,6 +32,9 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		return
 	}
 
+	// clean any primary channel that user might've added
+	newChain.PrimaryChannel = models.DbStringMap{}
+
 	k := k8s.Querier{Client: *r.s.k}
 
 	if _, err := k.ChainByName(newChain.ChainName); !errors.Is(err, k8s.ErrNotFound) {
@@ -41,6 +44,12 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 
 	if newChain.NodeConfig != nil {
 		newChain.NodeConfig.Name = newChain.ChainName
+
+		// we trust that TestnetConfig holds the real chain ID
+		if newChain.NodeConfig.TestnetConfig != nil &&
+			*newChain.NodeConfig.TestnetConfig.ChainId != newChain.NodeInfo.ChainID {
+			newChain.NodeInfo.ChainID = *newChain.NodeConfig.TestnetConfig.ChainId
+		}
 
 		node, err := operator.NewNode(*newChain.NodeConfig)
 		if err != nil {

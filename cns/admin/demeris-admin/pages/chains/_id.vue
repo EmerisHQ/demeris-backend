@@ -1,7 +1,15 @@
 <template>
   <div class="container">
     <h1>{{ chain.chain_name }}</h1>
-
+    <label for="display_name">Display Name</label>
+    <input
+      type="text"
+      name="display_name"
+      id="display_name"
+      v-model="chain.display_name"
+    />
+    <label for="logo">Chain Logo URL</label>
+    <input type="text" name="logo" id="logo" v-model="chain.logo" />
     <h3>Primary Channels</h3>
     <table>
       <thead>
@@ -32,6 +40,9 @@
           <th>Name</th>
           <th>Display Name</th>
           <th>Verified</th>
+          <th>Fee Token</th>
+          <th>Ticker</th>
+          <th>Logo</th>
         </tr>
       </thead>
       <tbody>
@@ -53,6 +64,30 @@
               v-model="denom.verified"
             />
           </td>
+          <td>
+            <input
+              type="checkbox"
+              :name="'isFeeToken' + denom.name"
+              :id="'isFeeToken' + denom.name"
+              v-model="denom.fee_token"
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              :name="'ticker' + denom.name"
+              :id="'ticker' + denom.name"
+              v-model="denom.ticker"
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              :name="'logo' + denom.name"
+              :id="'logo' + denom.name"
+              v-model="denom.logo"
+            />
+          </td>
         </tr>
       </tbody>
     </table>
@@ -66,11 +101,16 @@
 </template>
 
 <script>
+
+import axios from "~/plugins/axios"
+
 export default {
   data() {
     return {
       chain: {
         chain_id: "",
+        display_name: "",
+        logo: "",
         primary_channel: {},
         denoms: []
       },
@@ -86,15 +126,13 @@ export default {
 
   methods: {
     async loadData() {
-      let res = await this.$axios.get(
-        "http://localhost:9999/chain/" + this.$route.params.id
+      let res = await axios.get(
+        "/chain/" + this.$route.params.id
       );
-      console.log(res);
       this.chain = res.data.chain;
     },
     async update() {
-      let res = await this.$axios.post("http://localhost:9999/add", this.chain);
-      console.log(res);
+      let res = await axios.post("/add", this.chain);
       if (res.status != 200) {
         this.errorText = res.error;
       } else {

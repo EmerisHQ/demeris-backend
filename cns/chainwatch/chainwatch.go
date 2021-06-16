@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/allinbits/demeris-backend/models"
+
 	"github.com/allinbits/demeris-backend/cns/database"
 
 	"github.com/allinbits/demeris-backend/utils/k8s/operator"
@@ -96,8 +98,10 @@ func (i *Instance) Run() {
 			case running:
 				if err := i.chainFinished(chains[idx]); err != nil {
 					i.l.Errorw("cannot execute chain finished routine", "error", err)
+					continue
 				}
 
+				i.statusMap[chain.Name] = relayerConnecting
 			case relayerConnecting:
 				// TODO: query channels from db if any
 
@@ -108,11 +112,23 @@ func (i *Instance) Run() {
 				}
 
 				phase := relayer.Status.Phase
-				if phase != v1.RelayerPhaseRunning && phase != v1.RelayerPhaseStandby {
+				if phase != v1.RelayerPhaseRunning {
+					amt, err := i.db.ChainAmount()
+					if err != nil {
+						i.l.Errorw("cannot get amount of chains", "error", err)
+						continue
+					}
+
+					if amt == 1 {
+						i.statusMap[chain.Name] = done
+					}
 					continue
 				}
 
-				// TODO: write primary channels to db
+				if err := i.relayerFinished(chain, relayer); err != nil {
+					i.l.Debugw("error while running relayerfinished", "error", err)
+					continue
+				}
 
 				i.statusMap[chain.Name] = done
 			case done:
@@ -132,12 +148,6 @@ func (i *Instance) chainFinished(chain Chain) error {
 	if err := i.createRelayer(chain); err != nil {
 		return err
 	}
-
-	i.l.Debugw("chain finished running", "name", chain.Name)
-	if err := i.c.RemoveChain(chain); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -163,6 +173,12 @@ func (i *Instance) createRelayer(chain Chain) error {
 		return err
 	}
 
+	for _, existingChain := range relayer.Spec.Chains {
+		if existingChain.Nodeset == relayerConfig.Nodeset {
+			return nil // existing chain, somehow...
+		}
+	}
+
 	relayer.Spec.Chains = append(relayer.Spec.Chains, &relayerConfig)
 
 	var execErr error
@@ -175,7 +191,62 @@ func (i *Instance) createRelayer(chain Chain) error {
 		execErr = q.UpdateRelayer(relayer)
 	}
 
-	i.statusMap[chain.Name] = relayerConnecting
-
 	return execErr
+}
+
+func (i *Instance) relayerFinished(chain Chain, relayer v1.Relayer) error {
+	if err := i.setPrimaryChannel(chain, relayer); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
+	chainsMap := map[string]models.Chain{}
+
+	chains, err := i.db.Chains()
+	if err != nil {
+		return err
+	}
+
+	for _, chain := range chains {
+		i.l.Debugw("chain read", "name", chain.ChainName)
+		chainsMap[chain.NodeInfo.ChainID] = chain
+	}
+
+	paths := relayer.Status.Paths
+	for chainID := range chainsMap {
+		i.l.Debugw("iterating chainsmap", "chainID", chainID)
+		foundOurselves := false
+
+		for _, path := range paths {
+			i.l.Debugw("iterating path", "path", path)
+			for counterpartyChainID, value := range path {
+				if counterpartyChainID == chainID {
+					foundOurselves = true
+					continue
+				}
+
+				if !foundOurselves {
+					continue
+				}
+
+				counterparty, found := chainsMap[counterpartyChainID]
+
+				if !found {
+					i.l.Panicw("found counterparty chain which isn't in chainsMap", "chainsMap", chainsMap, "counterparty", counterpartyChainID)
+				}
+				chainsMap[chainID].PrimaryChannel[counterparty.ChainName] = value.ChannelID
+			}
+		}
+	}
+
+	for _, chain := range chainsMap {
+		if err := i.db.AddChain(chain); err != nil {
+			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
+		}
+	}
+
+	return nil
 }

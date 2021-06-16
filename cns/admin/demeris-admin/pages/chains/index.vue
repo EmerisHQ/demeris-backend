@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-      <h1>CNS Chains</h1>
+    <h1>CNS Chains</h1>
     <div v-for="chain in chains">
       {{ chain.chain_name || "no chains" }}
       <router-link :to="chainlink(chain)"> Edit </router-link>
@@ -15,23 +15,15 @@ export default {
       chains: []
     };
   },
-  async mounted() {
-    console.log("loaded!");
-    let res = await this.$axios.get("http://localhost:9999/chains");
-    this.chains = res.data.chains;
-  },
   methods: {
-      chainlink(chain) {
-          return "/chains/" + chain.chain_name
-      }
+    chainlink(chain) {
+      return "/chains/" + chain.chain_name;
+    }
+  },
+  async asyncData({ $axios, $config }) {
+    const { chains } = await $axios.$get("chains");
+    return { chains };
   }
-  //   async asyncData({ $axios }) {
-  //     let { data } = await $axios.get("/card_sets/170");
-  //     return { incidents: data.data.incidents };
-  //   }
-  // mounted() {
-  //   this.getIncidents();
-  // },
 };
 </script>
 

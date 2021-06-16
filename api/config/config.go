@@ -12,6 +12,7 @@ type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
 	ListenAddr            string `validate:"required"`
 	CNSAddr               string `validate:"required,url"`
+	RedisAddr             string `validate:"required"`
 	Debug                 bool
 }
 
@@ -29,5 +30,6 @@ func Read() (*Config, error) {
 
 	return &c, configuration.ReadConfig(&c, "demeris-api", map[string]string{
 		"ListenAddr": ":9090",
+		"RedisAddr":  ":6379",
 	})
 }

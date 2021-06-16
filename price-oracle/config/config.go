@@ -17,17 +17,6 @@ type Config struct {
 	Whitelistfiats        []string      `validate:"required"`
 	CoinmarketcapapiKey   string        `validate:"required"`
 	Fixerapikey           string        `validate:"required"`
-
-	Provider struct {
-		Token struct {
-			Binance       string `validate:"required"`
-			Coinmarketcap string `validate:"required"`
-		}
-
-		Fiat struct {
-			Fixer string `validate:"required"`
-		}
-	}
 }
 
 func (c Config) Validate() error {

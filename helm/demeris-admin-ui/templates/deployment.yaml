@@ -17,24 +17,19 @@ spec:
       labels:
         {{- include "chart.labels" . | indent 8 }}
     spec:
-      serviceAccountName: {{ .Release.Name }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       containers:
-        - name: api-server
+        - name: admin-ui
           image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
 {{- include "ports.pod" . | indent 8 }}
           env:
-            - name: DEMERIS-API_LISTENADDR
-              value: 0.0.0.0:{{ .Values.ports.http }}
-            - name: DEMERIS-API_DATABASECONNECTIONURL
-              value: "{{ .Values.databaseConnectionURL }}"
-            - name: DEMERIS-API_CNSADDR
+            - name: CNS_URL
               value: "{{ .Values.cnsAddress }}"
-            - name: DEMERIS-API_REDISADDR
-              value: "{{ .Values.redisUrl }}"
+            - name: BASE_URL
+              value: "{{ .Values.baseURL }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       terminationGracePeriodSeconds: 10

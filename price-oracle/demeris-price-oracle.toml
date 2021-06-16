@@ -7,9 +7,3 @@ interval = 10
 whitelistfiats = ["EUR","KRW","CHF"]
 coinmarketcapapikey =""
 fixerapikey = ""
-[Provider]
-        [Provider.Token]
-        binance = "https://api.binance.com/api/v3/ticker/price"
-        coinmarketcap = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
-        [Provider.Fiat]
-        fixer = "https://data.fixer.io/api/latest"
