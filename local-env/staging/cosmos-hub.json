@@ -1,0 +1,71 @@
+{
+  "chain_name": "cosmos-hub",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "logo url",
+  "enabled": true,
+  "valid_block_thresh": "10s",
+  "minimum_thresh_relayer_balance": 42,
+  "display_name": "Cosmos Hub Emeris",
+  "counterparty_names": {
+    "cn1": "cn1",
+    "cn2": "cn2"
+  },
+  "primary_channel": {
+    "cn1": "cn1",
+    "cn2": "cn2"
+  },
+  "demeris_addresses": [
+    "feeaddress"
+  ],
+  "denoms": [
+    {
+      "display_name": "ATOM",
+      "stakable": true,
+      "fee_token": true,
+      "name": "uatom",
+      "verified": true,
+      "precision": 6
+    }
+  ],
+  "base_ibc_fee": 1,
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "cosmos-hub",
+    "chain_id": "cosmos-hub-testnet",
+    "bech32_config": {
+      "main_prefix": "cosmos",
+      "prefix_account": "cosmos",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "base_tx_fee": {
+    "low": 1,
+    "average": 22,
+    "high": 42
+  },
+  "node_config": {
+    "name": "cosmos-hub",
+    "cli_name": "gaiad",
+    "namespace": "demeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener",
+    "testnet_config": {
+      "chainID": "cosmos-hub-testnet",
+      "stake_amount": "10000000000uatom",
+      "bondDenom": "uatom",
+      "assets": [
+        "10000000000000000000000uatom"
+      ],
+      "faucet": {
+        "funds": "10000000000000000000000uatom",
+        "denoms": [
+          "uatom"
+        ]
+      }
+    },
+    "docker_image": "gcr.io/tendermint-dev/gaia-liquidity",
+    "docker_image_version": "v1.0.1"
+  }
+}
