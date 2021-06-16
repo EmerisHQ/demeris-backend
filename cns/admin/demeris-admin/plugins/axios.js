@@ -1,5 +1,6 @@
 import axios from 'axios'
+import config from '../nuxt.config'
 
 export default axios.create({
-  baseURL: process.env.CNS_URL || "http://localhost:9999"
+  baseURL: config.axios.baseUrl
 })
