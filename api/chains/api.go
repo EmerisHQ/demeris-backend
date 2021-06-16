@@ -536,81 +536,44 @@ func VerifyTrace(c *gin.Context) {
 		channels[idx] = ch
 	}
 
-	var client models.IbcClientInfo
-	var chainInfo models.Chain
+	var channelInfo models.IbcChannelsInfo
 	var trace trace
+	nextChain := chain
 
 	for _, channel := range channels {
+		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel)
 
-		client, _ = d.Database.QueryIBCClientTrace(chain, channel)
-
-		chainInfo, _ = d.Database.Chain(chain)
-
-		if counterparty := chainInfo.CounterpartyNames[client.ChannelId]; counterparty == "" {
-			err = errors.New(fmt.Sprintf("Unsupported client id %s on chain %s", client.ChannelId, chain))
+		if l := len(channelInfo); l != 1 {
+			err = errors.New(fmt.Sprintf(`Got too many channels in the response when querying %s channel %s: %d`, nextChain, channel, l))
 
 			e := deps.NewError(
 				"denom/verify-trace",
-				fmt.Errorf("Unsupported client id when resolving path for %s", hash),
+				fmt.Errorf("Failed querying for %s", hash),
 				http.StatusBadRequest,
 			)
 
 			d.WriteError(c, e,
-				"invalid client id",
+				"invalid number of query responses",
 				"id",
 				e.ID,
 				"hash",
 				hash,
 				"path",
 				res.VerifiedTrace.Path,
-				"client_id",
-				client.ClientId,
 				"chain",
 				chain,
 				"err",
 				err,
 			)
-		} else {
-			trace.ChainName = chain
-			trace.Channel = client.ChannelId
-			trace.ClientId = client.ClientId
-			trace.CounterpartyName = counterparty
-
-			// query counterparty chain name
-			counterpartyConn, _ := d.Database.Connection(chain, client.CounterConnectionID)
-
-			if counterpartyConn.CounterClientID != trace.ClientId {
-				err = errors.New("Client ids do not match")
-
-				e := deps.NewError(
-					"denom/verify-trace",
-					fmt.Errorf("Client ids do not match"),
-					http.StatusBadRequest,
-				)
-
-				d.WriteError(c, e,
-					"invalid client id",
-					"id",
-					e.ID,
-					"hash",
-					hash,
-					"path",
-					res.VerifiedTrace.Path,
-					"client_id",
-					client.ClientId,
-					"chain",
-					chain,
-					"counter_client_id",
-					counterpartyConn.CounterClientID,
-					"counter_chain",
-					counterparty,
-					"err",
-					err,
-				)
-			}
 		}
+		trace.ChainName = channelInfo[0].ChainAName
+		trace.CounterpartyName = channelInfo[0].ChainBName
+		trace.Channel = channelInfo[0].ChainAChannelID
+		trace.Port = "transfer"
 
 		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
+
+		nextChain = trace.CounterpartyName
 
 	}
 
