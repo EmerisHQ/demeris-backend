@@ -20,6 +20,12 @@ import (
 	"github.com/allinbits/demeris-backend/price-oracle/types"
 )
 
+const (
+	BinanceURL       = "https://api.binance.com/api/v3/ticker/price"
+	CoinmarketcapURL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+	FixerURL         = "https://data.fixer.io/api/latest"
+)
+
 func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config) {
 
 	d, err := New(cfg.DatabaseConnectionURL)
@@ -71,10 +77,13 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 	if err != nil {
 		return fmt.Errorf("CnsTokenQuery: %w", err)
 	}
+	if len(Whitelisttokens) == 0 {
+		return fmt.Errorf("CnsTokenQuery: The token does not exist.")
+	}
 	for _, token := range Whitelisttokens {
 		tokensum := token + types.TokenBasecurrency
 
-		req, err := http.NewRequest("GET", cfg.Provider.Token.Binance, nil)
+		req, err := http.NewRequest("GET", BinanceURL, nil)
 		if err != nil {
 			return fmt.Errorf("fetch binance: %w", err)
 		}
@@ -137,7 +146,10 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	if err != nil {
 		return fmt.Errorf("CnsTokenQuery: %w", err)
 	}
-	req, err := http.NewRequest("GET", cfg.Provider.Token.Coinmarketcap, nil)
+	if len(Whitelisttokens) == 0 {
+		return fmt.Errorf("CnsTokenQuery: The token does not exist.")
+	}
+	req, err := http.NewRequest("GET", CoinmarketcapURL, nil)
 	if err != nil {
 		return fmt.Errorf("fetch coinmarketcap: %w", err)
 	}
@@ -210,7 +222,7 @@ func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogg
 	client := &http.Client{
 		Timeout: 2 * time.Second,
 	}
-	req, err := http.NewRequest("GET", cfg.Provider.Fiat.Fixer, nil)
+	req, err := http.NewRequest("GET", FixerURL, nil)
 	if err != nil {
 		return fmt.Errorf("fetch Fixer: %w", err)
 	}
