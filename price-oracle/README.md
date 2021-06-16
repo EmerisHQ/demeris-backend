@@ -20,16 +20,10 @@ DatabaseConnectionURL = "postgres://root@127.0.0.1:26257?sslmode=disable"
 ListenAddr = "127.0.0.1:9898"
 Debug = true
 LogPath = "/home/ubuntu/log"
-interval = 10
+interval = "10s"
 whitelistfiats = ["EUR","KRW","CHF"]
 coinmarketcapapikey =""
 fixerapikey = ""
-[Provider]
-        [Provider.Token]
-        binance = "https://api.binance.com/api/v3/ticker/price"
-        coinmarketcap = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
-        [Provider.Fiat]
-        fixer = "https://data.fixer.io/api/latest"
 ```
 
 ### Local exec DB
