@@ -1,8 +1,6 @@
 package config
 
 import (
-	"time"
-
 	"github.com/allinbits/demeris-backend/utils/configuration"
 	"github.com/allinbits/demeris-backend/utils/validation"
 	"github.com/go-playground/validator/v10"
@@ -13,10 +11,10 @@ type Config struct {
 	ListenAddr            string `validate:"required"`
 	Debug                 bool
 	LogPath               string
-	Interval              time.Duration `validate:"required"`
-	Whitelistfiats        []string      `validate:"required"`
-	CoinmarketcapapiKey   string        `validate:"required"`
-	Fixerapikey           string        `validate:"required"`
+	Interval              string   `validate:"required"`
+	Whitelistfiats        []string `validate:"required"`
+	CoinmarketcapapiKey   string   `validate:"required"`
+	Fixerapikey           string   `validate:"required"`
 }
 
 func (c Config) Validate() error {

@@ -37,7 +37,7 @@ func StartAggregate(ctx context.Context, logger *zap.SugaredLogger, cfg *config.
 }
 
 func AggregateWokers(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config, fn func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error) {
-	logger.Infow("INFO", "DB", "WORK Start")
+	logger.Infow("INFO", "DB", "Aggregate WORK Start")
 	for {
 		select {
 		case <-ctx.Done():
@@ -46,10 +46,15 @@ func AggregateWokers(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger
 		}
 
 		if err := fn(ctx, db, logger, cfg); err != nil {
-			logger.Errorw("DB", "WORK err", err)
+			logger.Errorw("DB", "Aggregate WORK err", err)
 		}
 
-		time.Sleep(cfg.Interval * time.Second)
+		interval, err := time.ParseDuration(cfg.Interval)
+		if err != nil {
+			logger.Errorw("DB", "Aggregate WORK err", err)
+			return
+		}
+		time.Sleep(interval)
 	}
 }
 
@@ -104,6 +109,8 @@ func PricetokenAggregator(ctx context.Context, db *sqlx.DB, logger *zap.SugaredL
 		if err != nil {
 			return fmt.Errorf("DB update: %w", err)
 		}
+		//If you perform an update without a token column, it does not respond as an error; it responds with zero.
+		//So you have to insert a new one in the column.
 		if updateresult == 0 {
 			tx.MustExec("INSERT INTO oracle.tokens VALUES (($1),($2));", token, median)
 		}
