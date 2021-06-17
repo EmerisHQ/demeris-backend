@@ -41,12 +41,16 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
             "display_name": "STAKE",
             "name": "stake",
             "verified": true,
+            "fee_token": true, 
+            "fee_levels": {"low": 1, "average": 22, "high": 42},
             "precision": 6
-        },
-                {
-                    "display_name": "UATOM",
+        }, 
+        {
+            "display_name": "UATOM",
             "name": "uatom",
             "verified": true,
+          "fee_token": true,
+          "fee_levels": {"low": 1, "average": 22, "high": 42},
             "precision": 6
         }
     ],
@@ -63,11 +67,6 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
             "prefix_public": "prefix_public",
             "prefix_operator": "prefix_operator"
         }
-    },
-    "base_tx_fee": {
-        "low": 1,
-        "average": 22,
-        "high": 42
     },
     "node_config": {
         "name": "cosmos-hub",
@@ -122,13 +121,17 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
             "display_name": "STAKE",
             "name": "stake",
             "verified": true,
-            "precision": 6
+            "precision": 6,
+          "fee_token": true,
+          "fee_levels": {"low": 1, "average": 22, "high": 42}
         },
                 {
                     "display_name": "UACK",
             "name": "uakt",
             "verified": true,
-            "precision": 6
+            "precision": 6,
+                  "fee_token": true,
+                  "fee_levels": {"low": 1, "average": 22, "high": 42}
         }
     ],
     "base_ibc_fee":1,
@@ -144,11 +147,6 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
             "prefix_public": "prefix_public",
             "prefix_operator": "prefix_operator"
         }
-    },
-    "base_tx_fee": {
-        "low": 1,
-        "average": 22,
-        "high": 42
     },
     "node_config": {
         "name": "akash",
@@ -198,7 +196,9 @@ To deploy a Crypto.com node, `POST localhost:9999/add` this JSON:
       "display_name": "BASECRO",
       "name": "basecro",
       "verified": true,
-      "precision": 6
+      "precision": 6,
+      "fee_token": true,
+      "fee_levels": {"low": 1, "average": 22, "high": 42}
     }
   ],
   "base_ibc_fee":1,
@@ -214,11 +214,6 @@ To deploy a Crypto.com node, `POST localhost:9999/add` this JSON:
       "prefix_public": "prefix_public",
       "prefix_operator": "prefix_operator"
     }
-  },
-  "base_tx_fee": {
-    "low": 1,
-    "average": 22,
-    "high": 42
   },
   "node_config": {
     "name": "crypto-com",

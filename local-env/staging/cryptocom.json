@@ -22,6 +22,7 @@
       "verified": true,
       "stakable": true,
       "fee_token": true,
+      "fee_levels": {"low": 1, "average": 22, "high": 42},
       "precision": 8
     }
   ],
@@ -38,11 +39,6 @@
       "prefix_public": "pub",
       "prefix_operator": "oper"
     }
-  },
-  "base_tx_fee": {
-    "low": 1,
-    "average": 22,
-    "high": 42
   },
   "node_config": {
     "name": "crypto-com",

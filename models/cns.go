@@ -21,7 +21,6 @@ type Chain struct {
 	PrimaryChannel              DbStringMap    `diff:"-" db:"primary_channel" json:"primary_channel"`                                                          // a mapping of chain name to primary channel
 	Denoms                      DenomList      `diff:"-" db:"denoms" binding:"dive" json:"denoms"`                                                             // a list of denoms native to the chain
 	DemerisAddresses            pq.StringArray `diff:"-" db:"demeris_addresses" binding:"required" json:"demeris_addresses"`                                   // the addresses on which we accept fee payments
-	BaseTxFee                   TxFee          `diff:"-" db:"base_tx_fee" binding:"required,dive" json:"base_tx_fee"`                                          // average cost (in dollar) to submit a transaction to the chain
 	GenesisHash                 string         `diff:"-" db:"genesis_hash" binding:"required" json:"genesis_hash"`                                             // hash of the chain's genesis file
 	NodeInfo                    NodeInfo       `diff:"-" db:"node_info" binding:"required,dive" json:"node_info"`                                              // info required to query full-node (e.g. to submit tx)
 	ValidBlockThresh            Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
@@ -133,6 +132,10 @@ type TxFee struct {
 	High    uint64 `binding:"required" json:"high"`
 }
 
+func (a TxFee) Empty() bool {
+	return a == TxFee{}
+}
+
 // Scan is the sql.Scanner implementation for DbStringMap.
 func (a *TxFee) Scan(value interface{}) error {
 	b, ok := value.([]byte)
@@ -229,6 +232,7 @@ type Denom struct {
 	Stakable    bool   `db:"stakable" json:"stakable,omitempty"`
 	Ticker      string `db:"ticker" json:"ticker,omitempty"`
 	FeeToken    bool   `db:"fee_token" json:"fee_token,omitempty"`
+	FeeLevels   TxFee  `db:"fee_levels" json:"fee_levels"`
 	FetchPrice  bool   `db:"fetch_price" json:"fetch_price"`
 }
 

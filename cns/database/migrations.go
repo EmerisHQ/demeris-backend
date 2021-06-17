@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 	primary_channel jsonb not null,
 	denoms jsonb not null,
 	demeris_addresses text[] not null,
-	base_tx_fee jsonb not null,
 	genesis_hash string not null,
 	node_info jsonb not null,
 	derivation_path string not null,
@@ -47,7 +46,6 @@ INSERT INTO cns.chains
 		primary_channel,
 		denoms,
 		demeris_addresses,
-		base_tx_fee,
 		genesis_hash,
 		node_info,
 		derivation_path
@@ -64,7 +62,6 @@ VALUES
 		:primary_channel,
 		:denoms,
 		:demeris_addresses,
-		:base_tx_fee,
 		:genesis_hash,
 		:node_info,
 		:derivation_path
@@ -82,7 +79,6 @@ DO UPDATE SET
 		primary_channel=EXCLUDED.primary_channel, 
 		denoms=EXCLUDED.denoms, 
 		demeris_addresses=EXCLUDED.demeris_addresses, 
-		base_tx_fee=EXCLUDED.base_tx_fee,
 		genesis_hash=EXCLUDED.genesis_hash,
 		node_info=EXCLUDED.node_info,
 		derivation_path=EXCLUDED.derivation_path;

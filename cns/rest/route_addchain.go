@@ -2,6 +2,7 @@ package rest
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
@@ -29,6 +30,12 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&newChain); err != nil {
 		e(ctx, http.StatusBadRequest, validation.MissingFieldsErr(err, false))
 		r.s.l.Error("cannot bind input data to Chain struct", err)
+		return
+	}
+
+	if err := validateFees(newChain.Chain); err != nil {
+		e(ctx, http.StatusBadRequest, err)
+		r.s.l.Error("fee validation failed", err)
 		return
 	}
 
@@ -89,4 +96,14 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 }
 func (r *router) addChain() (string, gin.HandlerFunc) {
 	return addChainRoute, r.addChainHandler
+}
+
+func validateFees(c models.Chain) error {
+	for _, denom := range c.FeeTokens() {
+		if denom.FeeLevels.Empty() {
+			return fmt.Errorf("fee levels for %s are not defined", denom.Name)
+		}
+	}
+
+	return nil
 }
