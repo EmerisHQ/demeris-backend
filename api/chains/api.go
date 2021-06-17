@@ -209,7 +209,7 @@ func GetFee(c *gin.Context) {
 	}
 
 	res = feeResponse{
-		Fee: chain.BaseTxFee,
+		Denoms: chain.FeeTokens(),
 	}
 
 	c.JSON(http.StatusOK, res)
