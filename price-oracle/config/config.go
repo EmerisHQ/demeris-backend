@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/allinbits/demeris-backend/utils/configuration"
 	"github.com/allinbits/demeris-backend/utils/validation"
 	"github.com/go-playground/validator/v10"
@@ -19,6 +21,10 @@ type Config struct {
 
 func (c Config) Validate() error {
 	err := validator.New().Struct(c)
+	if err != nil {
+		return validation.MissingFieldsErr(err, false)
+	}
+	_, err = time.ParseDuration(c.Interval)
 	if err != nil {
 		return validation.MissingFieldsErr(err, false)
 	}
