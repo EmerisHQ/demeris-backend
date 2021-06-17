@@ -26,7 +26,7 @@ func (c Config) Validate() error {
 	}
 	_, err = time.ParseDuration(c.Interval)
 	if err != nil {
-		return validation.MissingFieldsErr(err, false)
+		return err
 	}
 
 	return nil
