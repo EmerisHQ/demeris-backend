@@ -37,6 +37,7 @@ func main() {
 	ci := chainwatch.New(
 		logger,
 		kube,
+		config.KubernetesNamespace,
 		rc,
 		di,
 	)
@@ -48,6 +49,7 @@ func main() {
 		di,
 		&kube,
 		rc,
+		config.KubernetesNamespace,
 		config.Debug,
 	)
 
