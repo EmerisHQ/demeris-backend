@@ -30,25 +30,28 @@ const (
 )
 
 type Instance struct {
-	l         *zap.SugaredLogger
-	k         kube.Client
-	c         *Connection
-	db        *database.Instance
-	statusMap map[string]chainStatus
+	l                *zap.SugaredLogger
+	k                kube.Client
+	defaultNamespace string
+	c                *Connection
+	db               *database.Instance
+	statusMap        map[string]chainStatus
 }
 
 func New(
 	l *zap.SugaredLogger,
 	k kube.Client,
+	defaultNamespace string,
 	c *Connection,
 	db *database.Instance,
 ) *Instance {
 	return &Instance{
-		l:         l,
-		k:         k,
-		c:         c,
-		db:        db,
-		statusMap: map[string]chainStatus{},
+		l:                l,
+		k:                k,
+		defaultNamespace: defaultNamespace,
+		c:                c,
+		db:               db,
+		statusMap:        map[string]chainStatus{},
 	}
 
 }
@@ -183,7 +186,7 @@ func (i *Instance) createRelayer(chain Chain) error {
 
 	var execErr error
 	if errors.Is(err, k8s.ErrNotFound) {
-		relayer.Namespace = "default"
+		relayer.Namespace = i.defaultNamespace
 		relayer.ObjectMeta.Name = "relayer"
 		execErr = q.AddRelayer(relayer)
 	} else {

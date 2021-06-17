@@ -21,19 +21,20 @@ import (
 )
 
 type Server struct {
-	l  *zap.SugaredLogger
-	gl *zap.Logger
-	d  *database.Instance
-	g  *gin.Engine
-	k  *kube.Client
-	rc *chainwatch.Connection
+	l                   *zap.SugaredLogger
+	gl                  *zap.Logger
+	d                   *database.Instance
+	g                   *gin.Engine
+	k                   *kube.Client
+	rc                  *chainwatch.Connection
+	defaultK8SNamespace string
 }
 
 type router struct {
 	s *Server
 }
 
-func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc *chainwatch.Connection, debug bool) *Server {
+func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc *chainwatch.Connection, defaultK8SNamespace string, debug bool) *Server {
 	if !debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -41,11 +42,12 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc
 	g := gin.New()
 
 	s := &Server{
-		l:  l,
-		d:  d,
-		g:  g,
-		k:  kube,
-		rc: rc,
+		l:                   l,
+		d:                   d,
+		g:                   g,
+		k:                   kube,
+		rc:                  rc,
+		defaultK8SNamespace: defaultK8SNamespace,
 	}
 
 	r := &router{s: s}

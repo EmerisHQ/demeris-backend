@@ -43,6 +43,8 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	}
 
 	if newChain.NodeConfig != nil {
+		newChain.NodeConfig.Namespace = r.s.defaultK8SNamespace
+
 		newChain.NodeConfig.Name = newChain.ChainName
 
 		// we trust that TestnetConfig holds the real chain ID
