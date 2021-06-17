@@ -41,7 +41,7 @@ type NodeConfiguration struct {
 	TestnetConfig      *v1.ValidatorInitConfig `json:"testnet_config"`
 	DockerImage        string                  `json:"docker_image"`
 	DockerImageVersion string                  `json:"docker_image_version"`
-	Namespace          string                  `json:"namespace"`
+	Namespace          string                  `json:"-"`
 	TracelistenerImage string                  `json:"tracelistener_image"`
 }
 
@@ -60,6 +60,10 @@ func (n NodeConfiguration) Validate() error {
 
 	if n.DockerImageVersion == "" {
 		return fmt.Errorf("missing docker image version")
+	}
+
+	if n.Namespace == "" {
+		return fmt.Errorf("missing namespace")
 	}
 
 	return nil
