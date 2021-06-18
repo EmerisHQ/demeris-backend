@@ -110,7 +110,7 @@ func (w *Watcher) readChannel() {
 					continue
 				}
 
-				w.l.Debugw("got message to handle", "chain name", w.Name, "data", data.String())
+				w.l.Debugw("got message to handle", "chain name", w.Name)
 
 				go func() {
 					w.DataChannel <- e
@@ -133,7 +133,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key)
+	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", isIBC, "is ibc recv", isIBCRecv)
 
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
@@ -195,6 +195,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		w.store.SetInTransit(fmt.Sprintf("%s-%s", w.Name, txHash), c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0])
+		return
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
@@ -229,6 +230,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		key := fmt.Sprintf(w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
 
 		w.store.SetIbcReceived(key)
+		return
 	}
 
 }
