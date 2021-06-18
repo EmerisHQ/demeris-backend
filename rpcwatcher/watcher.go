@@ -60,6 +60,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 	}
 
 	w := &Watcher{
+		d:               db,
 		client:          ws,
 		l:               logger,
 		store:           s,
