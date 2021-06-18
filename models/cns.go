@@ -12,18 +12,18 @@ import (
 
 // Chain represents CNS chain metadata row on the database.
 type Chain struct {
-	ID               uint64         `diff:"-"db:"id" json:"-"`
-	Enabled          bool           `diff:"-" db:"enabled" json:"enabled"`                                                                          // boolean that marks whether the given chain is enabled or not (when enabled, API endpoints will return data)
-	ChainName        string         `db:"chain_name" binding:"required" json:"chain_name"`                 // the unique name of the chain
-	Logo             string         `diff:"-"db:"logo" binding:"required" json:"logo"`                             // logo of the chain
-	DisplayName      string         `diff:"-" db:"display_name" binding:"required" json:"display_name"`                                             // user-friendly chain name
-	PrimaryChannel   DbStringMap    `diff:"-" db:"primary_channel"  json:"primary_channel"`       // a mapping of chain name to primary channel
-	Denoms           DenomList      `diff:"-"db:"denoms" binding:"dive" json:"denoms"`                             // a list of denoms native to the chain
-	DemerisAddresses pq.StringArray `diff:"-"db:"demeris_addresses" binding:"required" json:"demeris_addresses"`   // the addresses on which we accept fee payments
-	BaseTxFee        TxFee          `diff:"-"db:"base_tx_fee" binding:"required,dive" json:"base_tx_fee"`          // average cost (in dollar) to submit a transaction to the chain
-	GenesisHash      string         `diff:"-"db:"genesis_hash" binding:"required" json:"genesis_hash"`             // hash of the chain's genesis file
-	NodeInfo         NodeInfo       `diff:"-"db:"node_info" binding:"required,dive" json:"node_info"`              // info required to query full-node (e.g. to submit tx)
-	ValidBlockThresh Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
+	ID                          uint64         `diff:"-" db:"id" json:"-"`
+	Enabled                     bool           `diff:"-" db:"enabled" json:"enabled"`                                                                          // boolean that marks whether the given chain is enabled or not (when enabled, API endpoints will return data)
+	ChainName                   string         `db:"chain_name" binding:"required" json:"chain_name"`                                                          // the unique name of the chain
+	Logo                        string         `diff:"-" db:"logo" binding:"required" json:"logo"`                                                             // logo of the chain
+	DisplayName                 string         `diff:"-" db:"display_name" binding:"required" json:"display_name"`                                             // user-friendly chain name
+	PrimaryChannel              DbStringMap    `diff:"-" db:"primary_channel"  json:"primary_channel"`                                                         // a mapping of chain name to primary channel
+	Denoms                      DenomList      `diff:"-" db:"denoms" binding:"dive" json:"denoms"`                                                             // a list of denoms native to the chain
+	DemerisAddresses            pq.StringArray `diff:"-" db:"demeris_addresses" binding:"required" json:"demeris_addresses"`                                   // the addresses on which we accept fee payments
+	BaseTxFee                   TxFee          `diff:"-" db:"base_tx_fee" binding:"required,dive" json:"base_tx_fee"`                                          // average cost (in dollar) to submit a transaction to the chain
+	GenesisHash                 string         `diff:"-" db:"genesis_hash" binding:"required" json:"genesis_hash"`                                             // hash of the chain's genesis file
+	NodeInfo                    NodeInfo       `diff:"-" db:"node_info" binding:"required,dive" json:"node_info"`                                              // info required to query full-node (e.g. to submit tx)
+	ValidBlockThresh            Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
 	MinimumThreshRelayerBalance int64          `diff:"-" db:"minimum_thresh_relayer_balance" binding:"required" json:"minimum_thresh_relayer_balance"`         // minimum relayer balance threshold that a relayer account must contains
 	DerivationPath              string         `diff:"-" db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                        // chain derivation path
 }
