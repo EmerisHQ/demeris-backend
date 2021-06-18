@@ -17,8 +17,7 @@ type Chain struct {
 	ChainName                   string         `db:"chain_name" binding:"required" json:"chain_name"`                                                          // the unique name of the chain
 	Logo                        string         `diff:"-" db:"logo" binding:"required" json:"logo"`                                                             // logo of the chain
 	DisplayName                 string         `diff:"-" db:"display_name" binding:"required" json:"display_name"`                                             // user-friendly chain name
-	CounterpartyNames           DbStringMap    `diff:"-" db:"counterparty_names" binding:"required" json:"counterparty_names"`                                 // a mapping of client_id to chain names used to identify which chain a given client_id corresponds to
-	PrimaryChannel              DbStringMap    `diff:"-" db:"primary_channel" json:"primary_channel"`                                                          // a mapping of chain name to primary channel
+	PrimaryChannel              DbStringMap    `diff:"-" db:"primary_channel"  json:"primary_channel"`                                                         // a mapping of chain name to primary channel
 	Denoms                      DenomList      `diff:"-" db:"denoms" binding:"dive" json:"denoms"`                                                             // a list of denoms native to the chain
 	DemerisAddresses            pq.StringArray `diff:"-" db:"demeris_addresses" binding:"required" json:"demeris_addresses"`                                   // the addresses on which we accept fee payments
 	GenesisHash                 string         `diff:"-" db:"genesis_hash" binding:"required" json:"genesis_hash"`                                             // hash of the chain's genesis file
