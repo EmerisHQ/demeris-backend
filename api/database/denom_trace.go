@@ -2,11 +2,13 @@ package database
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/allinbits/demeris-backend/models"
 )
 
 func (d *Database) DenomTrace(chain string, hash string) (models.IBCDenomTraceRow, error) {
+	hash = strings.ToLower(hash)
 	var denomTraces []models.IBCDenomTraceRow
 
 	q := "SELECT * FROM tracelistener.denom_traces WHERE chain_name=? and hash=? limit 1;"
