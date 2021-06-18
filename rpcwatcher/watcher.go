@@ -173,15 +173,19 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		var c models.ChannelQuery
 
-		q, err := w.d.DB.PrepareNamed("select chain_name, mapping.* from cns.chains c, jsonb_each_text(primary_channel) mapping where chain_name=:chain_name and mapping.channel_name=:channel limit 1")
+		q, err := w.d.DB.PrepareNamed("select chain_name, json_data.* from cns.chains, jsonb_each_text(primary_channel) as json_data where chain_name=:chain_name and value=:channel limit 1;")
 		if err != nil {
-			w.l.Errorf(err.Error())
+			w.l.Errorw("cannot prepare statement", "error", err)
+			return
 		}
 
-		q.Select(&c, map[string]interface{}{
+		if err := q.Select(&c, map[string]interface{}{
 			"chain_name": w.Name,
 			"channel":    sendPacketSourceChannel,
-		})
+		}); err != nil {
+			w.l.Errorw("cannot query chain", "error", err)
+			return
+		}
 
 		w.store.SetInTransit(fmt.Sprintf("%s-%s", w.Name, txHash), c.Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0])
 	}
