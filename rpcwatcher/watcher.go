@@ -124,6 +124,10 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	_, isIBC := data.Events["ibc_transfer.sender"]
 	_, isIBCRecv := data.Events["recv_packet.packet_sequence"]
 
+	if len(txHash) == 0 {
+		return
+	}
+
 	key := fmt.Sprintf("%s-%s", w.Name, txHash[0])
 
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key)
