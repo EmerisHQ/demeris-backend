@@ -40,9 +40,12 @@
           <th>Name</th>
           <th>Display Name</th>
           <th>Verified</th>
-          <th>Fee Token</th>
           <th>Ticker</th>
           <th>Logo</th>
+          <th>Fee Token</th>
+          <th>Low Fee</th>
+          <th>Average Fee</th>
+          <th>High Fee</th>
         </tr>
       </thead>
       <tbody>
@@ -66,14 +69,6 @@
           </td>
           <td>
             <input
-              type="checkbox"
-              :name="'isFeeToken' + denom.name"
-              :id="'isFeeToken' + denom.name"
-              v-model="denom.fee_token"
-            />
-          </td>
-          <td>
-            <input
               type="text"
               :name="'ticker' + denom.name"
               :id="'ticker' + denom.name"
@@ -86,6 +81,40 @@
               :name="'logo' + denom.name"
               :id="'logo' + denom.name"
               v-model="denom.logo"
+            />
+          </td>
+
+          <td>
+            <input
+              type="checkbox"
+              :name="'isFeeToken' + denom.name"
+              :id="'isFeeToken' + denom.name"
+              v-model="denom.fee_token"
+            />
+          </td>
+
+          <td>
+            <input
+              type="text"
+              :name="'LowTxFee' + denom.name"
+              :id="'LowTxFee' + denom.name"
+              v-model="denom.fee_levels.low"
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              :name="'AvgTxFee' + denom.name"
+              :id="'AvgTxFee' + denom.name"
+              v-model="denom.fee_levels.average"
+            />
+          </td>
+          <td>
+            <input
+              type="text"
+              :name="'HighTxFee' + denom.name"
+              :id="'HighTxFee' + denom.name"
+              v-model="denom.fee_levels.high"
             />
           </td>
         </tr>
@@ -101,8 +130,7 @@
 </template>
 
 <script>
-
-import axios from "~/plugins/axios"
+import axios from "~/plugins/axios";
 
 export default {
   data() {
@@ -112,7 +140,7 @@ export default {
         display_name: "",
         logo: "",
         primary_channel: {},
-        denoms: []
+        denoms: [{fee_levels:{}}]
       },
       errorText: ""
     };
@@ -126,9 +154,7 @@ export default {
 
   methods: {
     async loadData() {
-      let res = await axios.get(
-        "/chain/" + this.$route.params.id
-      );
+      let res = await axios.get("/chain/" + this.$route.params.id);
       this.chain = res.data.chain;
     },
     async update() {
