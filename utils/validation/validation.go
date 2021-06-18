@@ -1,11 +1,16 @@
 package validation
 
 import (
-"errors"
-"fmt"
-"strings"
+	"errors"
+	"fmt"
+	"reflect"
+	"strings"
 
-"github.com/go-playground/validator/v10"
+	"github.com/ethereum/go-ethereum/accounts"
+
+	"github.com/gin-gonic/gin/binding"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // MissingFields returns a slice of strings containing the names of the fields marked as required and not provided,
@@ -45,3 +50,47 @@ func MissingFieldsErr(err error, fieldName bool) error {
 	return fmt.Errorf("missing fields: %v", strings.Join(f, ","))
 }
 
+func jsonTag(fld reflect.StructField) string {
+	name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+
+	if name == "-" {
+		return ""
+	}
+
+	return name
+}
+
+// JSONFields adds a function to retrieve JSON tag names on StructValidator
+// errors.
+// It is mostly used alongside gin.
+func JSONFields(structValidator binding.StructValidator) {
+	if v, ok := structValidator.Engine().(*validator.Validate); ok {
+		v.RegisterTagNameFunc(jsonTag)
+	}
+}
+
+func DerivationPath(structValidator binding.StructValidator) {
+	if v, ok := structValidator.Engine().(*validator.Validate); ok {
+		if err := v.RegisterValidation("derivationpath", func(fl validator.FieldLevel) bool {
+			path, ok := fl.Field().Interface().(string)
+			if !ok {
+				return false
+			}
+
+			if err := validateDerivationPath(path); err != nil {
+				return false
+			}
+
+			return true
+		}); err != nil {
+			panic(err)
+		}
+	}
+}
+func validateDerivationPath(dp string) error {
+	if _, err := accounts.ParseDerivationPath(dp); err != nil {
+		return err
+	}
+
+	return nil
+}

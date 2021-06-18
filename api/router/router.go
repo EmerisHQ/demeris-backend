@@ -5,6 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+
+	"github.com/allinbits/demeris-backend/utils/validation"
+	"github.com/gin-gonic/gin/binding"
+
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/allinbits/demeris-backend/api/chains"
@@ -15,6 +20,7 @@ import (
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/utils/logging"
+	"github.com/allinbits/demeris-backend/utils/store"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -23,22 +29,28 @@ type Router struct {
 	g      *gin.Engine
 	db     *database.Database
 	l      *zap.SugaredLogger
+	s      *store.Store
 	k8s    kube.Client
+	cdc    codec.Marshaler
 	cnsURL string
 }
 
-func New(db *database.Database, l *zap.SugaredLogger, kubeClient kube.Client, cnsURL string) *Router {
+func New(db *database.Database, l *zap.SugaredLogger, s *store.Store, kubeClient kube.Client, cnsURL string, cdc codec.Marshaler) *Router {
 	engine := gin.Default()
 
 	r := &Router{
 		g:      engine,
 		db:     db,
 		l:      l,
+		s:      s,
 		k8s:    kubeClient,
 		cnsURL: cnsURL,
+		cdc:    cdc,
 	}
 
 	r.metrics()
+
+	validation.JSONFields(binding.Validator)
 
 	engine.Use(r.catchPanics())
 	engine.Use(logging.LogRequest(l.Desugar()))
@@ -90,7 +102,9 @@ func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
 		c.Set("deps", &deps.Deps{
 			Logger:   r.l,
 			Database: r.db,
+			Store:    r.s,
 			CNSURL:   r.cnsURL,
+			Codec:    r.cdc,
 			K8S:      &r.k8s,
 		})
 	}

@@ -18,3 +18,23 @@ spec:
               number: 8000
         path: /v1(/|$)(.*)
         pathType: ImplementationSpecific
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demeris
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: admin-ui
+            port:
+              number: 80
+        path: /admin
+        pathType: ImplementationSpecific
+      

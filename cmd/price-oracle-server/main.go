@@ -2,58 +2,64 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
 	"sync"
-	"time"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"syscall"
 
 	"github.com/allinbits/demeris-backend/price-oracle/config"
-	"github.com/allinbits/demeris-backend/price-oracle/db"
-	"github.com/allinbits/demeris-backend/price-oracle/server"
+	"github.com/allinbits/demeris-backend/price-oracle/database"
+	"github.com/allinbits/demeris-backend/price-oracle/rest"
+	"github.com/allinbits/demeris-backend/utils/logging"
 )
 
-func InitZapLog() *zap.Logger {
-	config := zap.NewDevelopmentConfig()
-	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	config.EncoderConfig.TimeKey = "timestamp"
-	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	var err error
-	logger, err := config.Build()
-	if err != nil {
-		logger.Panic("Panic",
-			zap.String("Zap Logger", err.Error()),
-			zap.Duration("Duration", time.Second),
-		)
-	}
-	return logger
-}
-
 func main() {
-	logger := InitZapLog()
-	defer logger.Sync()
+	config, err := config.Read()
+	if err != nil {
+		panic(err)
+	}
 
-	config.ReadConfig(logger)
+	logger := logging.New(logging.LoggingConfig{
+		LogPath: config.LogPath,
+		Debug:   config.Debug,
+	})
 
-	logger.Info("INFO",
-		zap.String("Oracle", "Start oracle"),
-		zap.Duration("Duration", time.Second),
-	)
+	di, err := database.New(config.DatabaseConnectionURL)
+	if err != nil {
+		logger.Fatal(err)
+	}
 
+	logger.Infow("INFO", "Oracle", "Start oracle")
 	var wg sync.WaitGroup
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	wg.Add(1)
-	go db.StartAggregate(&wg, ctx, logger)
-	wg.Add(1)
-	go db.StartSubscription(&wg, ctx, logger)
-	wg.Add(1)
-	go server.StartServer(&wg, ctx, logger)
 
-	wg.Wait()
-	logger.Fatal("Fatal",
-		zap.String("Oracle", "Stop oracle"),
-		zap.Duration("Duration", time.Second),
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		database.StartAggregate(ctx, logger, config)
+	}()
+	go func() {
+		defer wg.Done()
+		database.StartSubscription(ctx, logger, config)
+	}()
+
+	restServer := rest.NewServer(
+		logger,
+		di,
+		config,
 	)
+	go func() {
+		if err := restServer.Serve(config.ListenAddr); err != nil {
+			logger.Panicw("rest http server error", "error", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	cancel()
+	wg.Wait()
+	logger.Info("Shutting down server...")
 }

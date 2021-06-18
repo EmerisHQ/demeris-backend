@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/utils/validation"
+
 	"github.com/allinbits/demeris-backend/utils/k8s"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +21,7 @@ func (r *router) deleteChainHandler(ctx *gin.Context) {
 	chain := deleteChainRequest{}
 
 	if err := ctx.ShouldBindJSON(&chain); err != nil {
-		e(ctx, http.StatusBadRequest, err)
+		e(ctx, http.StatusBadRequest, validation.MissingFieldsErr(err, false))
 		r.s.l.Error("cannot bind input data to Chain struct", err)
 		return
 	}

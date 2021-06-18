@@ -4,6 +4,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/cns/chainwatch"
+
+	"github.com/allinbits/demeris-backend/utils/validation"
+
 	"github.com/allinbits/demeris-backend/utils/k8s"
 
 	"github.com/allinbits/demeris-backend/models"
@@ -23,10 +27,13 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	newChain := addChainRequest{}
 
 	if err := ctx.ShouldBindJSON(&newChain); err != nil {
-		e(ctx, http.StatusBadRequest, err)
+		e(ctx, http.StatusBadRequest, validation.MissingFieldsErr(err, false))
 		r.s.l.Error("cannot bind input data to Chain struct", err)
 		return
 	}
+
+	// clean any primary channel that user might've added
+	newChain.PrimaryChannel = models.DbStringMap{}
 
 	k := k8s.Querier{Client: *r.s.k}
 
@@ -38,16 +45,26 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	if newChain.NodeConfig != nil {
 		newChain.NodeConfig.Name = newChain.ChainName
 
-		if err := r.s.rc.AddChain(newChain.ChainName); err != nil {
-			e(ctx, http.StatusInternalServerError, err)
-			r.s.l.Error("cannot add chain name to cache", err)
-			return
+		// we trust that TestnetConfig holds the real chain ID
+		if newChain.NodeConfig.TestnetConfig != nil &&
+			*newChain.NodeConfig.TestnetConfig.ChainId != newChain.NodeInfo.ChainID {
+			newChain.NodeInfo.ChainID = *newChain.NodeConfig.TestnetConfig.ChainId
 		}
 
 		node, err := operator.NewNode(*newChain.NodeConfig)
 		if err != nil {
 			e(ctx, http.StatusBadRequest, err)
 			r.s.l.Error("cannot add chain", err)
+			return
+		}
+
+		if err := r.s.rc.AddChain(chainwatch.Chain{
+			Name:          newChain.ChainName,
+			AddressPrefix: newChain.NodeInfo.Bech32Config.MainPrefix,
+			HasFaucet:     node.Spec.Init.Faucet != nil,
+		}); err != nil {
+			e(ctx, http.StatusInternalServerError, err)
+			r.s.l.Error("cannot add chain name to cache", err)
 			return
 		}
 

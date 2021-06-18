@@ -4,7 +4,7 @@ metadata:
   name: act-on-nodes
 rules:
   - apiGroups: ["apps.starport.cloud"]
-    resources: ["nodesets"]
+    resources: ["nodesets", "relayers", "faucets"]
     verbs: ["*"]
 
 ---

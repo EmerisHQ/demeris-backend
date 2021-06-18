@@ -41,6 +41,8 @@ type NodeConfiguration struct {
 	TestnetConfig      *v1.ValidatorInitConfig `json:"testnet_config"`
 	DockerImage        string                  `json:"docker_image"`
 	DockerImageVersion string                  `json:"docker_image_version"`
+	Namespace          string                  `json:"namespace"`
+	TracelistenerImage string                  `json:"tracelistener_image"`
 }
 
 func (n NodeConfiguration) Validate() error {
@@ -74,11 +76,7 @@ var DefaultNodeConfig = v1.NodeSet{
 			// Users must provide "Name,DaemonName,CliName" field, they should probably all be
 			// the same.
 		},
-		Persistence: v1.NodesPersistenceSpec{
-			Size: "5G",
-		},
-		SdkVersion: v1.Stargate,
-		Moniker:    defaultMoniker,
+		Moniker: defaultMoniker,
 	},
 }
 
@@ -122,22 +120,32 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 		return nil, err
 	}
 
+	if c.Namespace == "" {
+		c.Namespace = defaultNamespace
+	}
+
+	if c.TracelistenerImage == "" {
+		c.TracelistenerImage = tracelistenerImage
+	}
+
 	var node = DefaultNodeConfig
+
+	node.ObjectMeta.Namespace = c.Namespace
 
 	node.ObjectMeta.Name = c.Name
 
 	ns := &node.Spec
 	ns.App.Name = c.Name
-	ns.App.CliName = c.Name
-	ns.App.DaemonName = c.Name
+	ns.App.CliName = &c.Name
+	ns.App.DaemonName = &c.Name
 	if c.CLIName != "" {
-		ns.App.CliName = c.CLIName
-		ns.App.DaemonName = c.CLIName
+		ns.App.CliName = &c.CLIName
+		ns.App.DaemonName = &c.CLIName
 	}
 
 	ns.Image = v1.Image{
 		Name:    c.DockerImage,
-		Version: c.DockerImageVersion,
+		Version: &c.DockerImageVersion,
 	}
 
 	switch {
@@ -148,6 +156,8 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 	}
 
 	tracelistenerConfig := defaultTracelistenerConfig
+
+	tracelistenerConfig.Image = c.TracelistenerImage
 
 	tracelistenerConfig.Env = append(tracelistenerConfig.Env, corev1.EnvVar{
 		Name:  trChainNameVar,

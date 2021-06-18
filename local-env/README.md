@@ -21,9 +21,11 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
 ```json
 {
     "chain_name":"cosmos-hub",
+    "derivation_path": "m/44'/118'/0'/0/0",
     "logo": "logo url",
     "enabled": true,
     "valid_block_thresh": "10s",
+    "minimum_thresh_relayer_balance": 42,
     "display_name": "Cosmos Hub",
     "counterparty_names":{
         "cn1": "cn1",
@@ -78,9 +80,10 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
                 "100000000000000000uatom"
             ],
             "faucet": {
-                "funds": "100000000000000000stake",
-                "denom": [
-                    "stake"
+                "funds": "100000000000000000stake,100000000000000000uatom",
+                "denoms": [
+                    "stake",
+                    "uatom"
                 ]
             }
         },
@@ -101,7 +104,9 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
     "chain_name":"akash",
     "logo": "logo url",
     "enabled": true,
+    "derivation_path": "m/44'/118'/0'/0/0",
     "valid_block_thresh": "10s",
+    "minimum_thresh_relayer_balance": 42,
     "display_name": "Akash",
     "counterparty_names":{
         "cn1": "cn1",
@@ -132,7 +137,7 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
         "endpoint": "endpoint",
         "chain_id": "chainid",
         "bech32_config": {
-            "main_prefix": "main_prefix",
+            "main_prefix": "akash",
             "prefix_account": "prefix_account",
             "prefix_validator": "prefix_validator",
             "prefix_consensus": "prefix_consensus",
@@ -155,9 +160,10 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
                 "100000000000000000uakt"
             ],
            "faucet": {
-             "funds": "100000000000000000stake",
-             "denom": [
-               "stake"
+             "funds": "100000000000000000stake,100000000000000000uakt",
+             "denoms": [
+               "stake",
+               "uakt"
              ]
            }          
         },
@@ -167,6 +173,74 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
 }
 ```
 
+To deploy a Crypto.com node, `POST localhost:9999/add` this JSON:
+
+```json
+{
+  "chain_name":"crypto-com",
+  "logo": "logo url",
+  "derivation_path": "m/44'/394'/0'/0/0",
+  "enabled": true,
+  "valid_block_thresh": "10s",
+  "minimum_thresh_relayer_balance": 42,
+  "display_name": "Crypto.com",
+  "counterparty_names":{
+    "cn1": "cn1",
+    "cn2": "cn2"
+  },
+  "primary_channel":{
+    "cn1": "cn1",
+    "cn2": "cn2"
+  },
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "BASECRO",
+      "name": "basecro",
+      "verified": true,
+      "precision": 6
+    }
+  ],
+  "base_ibc_fee":1,
+  "genesis_hash":"genesis_hash",
+  "node_info": {
+    "endpoint": "endpoint",
+    "chain_id": "chainid",
+    "bech32_config": {
+      "main_prefix": "cro",
+      "prefix_account": "prefix_account",
+      "prefix_validator": "prefix_validator",
+      "prefix_consensus": "prefix_consensus",
+      "prefix_public": "prefix_public",
+      "prefix_operator": "prefix_operator"
+    }
+  },
+  "base_tx_fee": {
+    "low": 1,
+    "average": 22,
+    "high": 42
+  },
+  "node_config": {
+    "name": "crypto-com",
+    "cli_name": "chain-maind",
+    "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener",
+    "testnet_config": {
+      "chainID": "crypto-com-demeris",
+      "stakeAmount": "10000000000basecro",
+      "bondDenom": "basecro",
+      "assets": [
+        "10000000000000000000000basecro"
+      ],
+      "faucet": {
+        "funds": "100000000000000000000000000basecro",
+        "denoms": ["basecro"]
+      }
+    },
+    "docker_image": "gcr.io/tendermint-dev/crypto-com",
+    "docker_image_version": "v2.0.1"
+  }
+}
+```
 ## Deleting chains
 
 To delete a chain, `DELETE localhost:9999/delete` the following JSON
