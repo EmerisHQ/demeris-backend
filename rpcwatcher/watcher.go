@@ -181,7 +181,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if err := q.Select(&c, map[string]interface{}{
 			"chain_name": w.Name,
-			"channel":    sendPacketSourceChannel,
+			"channel":    sendPacketSourceChannel[0],
 		}); err != nil {
 			w.l.Errorw("cannot query chain", "error", err)
 			return
@@ -222,7 +222,6 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		key := fmt.Sprintf(w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
 
 		w.store.SetIbcReceived(key)
-
 	}
 
 }
