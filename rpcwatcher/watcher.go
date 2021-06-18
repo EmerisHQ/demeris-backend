@@ -171,7 +171,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		var c models.ChannelQuery
+		var c []models.ChannelQuery
 
 		q, err := w.d.DB.PrepareNamed("select chain_name, json_data.* from cns.chains, jsonb_each_text(primary_channel) as json_data where chain_name=:chain_name and value=:channel limit 1;")
 		if err != nil {
@@ -187,7 +187,12 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		w.store.SetInTransit(fmt.Sprintf("%s-%s", w.Name, txHash), c.Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0])
+		if len(c) == 0 {
+			w.l.Errorw("cannot query chain, database query returned 0 rows")
+			return
+		}
+
+		w.store.SetInTransit(fmt.Sprintf("%s-%s", w.Name, txHash), c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0])
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
