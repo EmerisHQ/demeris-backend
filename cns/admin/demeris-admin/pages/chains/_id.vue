@@ -1,15 +1,26 @@
 <template>
   <div class="container">
     <h1>{{ chain.chain_name }}</h1>
-    <label for="display_name">Display Name</label>
+    <h5 for="display_name">Display Name</h5>
     <input
       type="text"
       name="display_name"
       id="display_name"
       v-model="chain.display_name"
     />
-    <label for="logo">Chain Logo URL</label>
-    <input type="text" name="logo" id="logo" v-model="chain.logo" />
+
+    <br>
+    <h5 for="logo">Logo</h5>
+    <div>
+      <img :src="chain.logo" class="logo" />
+
+      <button id="upload_widget" class="cloudinary-button">Upload image</button>
+
+      <script
+        src="https://upload-widget.cloudinary.com/global/all.js"
+        type="text/javascript"
+      ></script>
+    </div>
     <h3>Primary Channels</h3>
     <table>
       <thead>
@@ -140,13 +151,36 @@ export default {
         display_name: "",
         logo: "",
         primary_channel: {},
-        denoms: [{fee_levels:{}}]
+        denoms: [{ fee_levels: {} }]
       },
       errorText: ""
     };
   },
   async created() {
     await this.loadData();
+    let widget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: "emeris",
+        uploadPreset: "chain-logos",
+        tags: [this.$route.params.id],
+      },
+      async (error, result) => {
+        if (!error && result && result.event === "success") {
+          console.log("Done! Here is the image info: ", result);
+
+          this.chain.logo = result.info.secure_url
+
+          await this.update()
+        }
+      }
+    );
+    document.getElementById("upload_widget").addEventListener(
+      "click",
+      function() {
+        widget.open();
+      },
+      false
+    );
   },
   async mounted() {
     await this.loadData();
@@ -170,6 +204,11 @@ export default {
 </script>
 
 <style scoped>
+
+.logo {
+  height: 128px;
+  width: 128px;
+}
 .denoms {
   width: 100%;
 }
