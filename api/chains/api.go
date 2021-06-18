@@ -473,6 +473,8 @@ func VerifyTrace(c *gin.Context) {
 	chain := c.Param("chain")
 	hash := c.Param("hash")
 
+	hash = strings.ToLower(hash)
+
 	denomTrace, err := d.Database.DenomTrace(chain, hash)
 
 	if err != nil {
