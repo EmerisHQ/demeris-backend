@@ -57,8 +57,8 @@ func (s *Store) SetComplete(key string) error {
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
-	if s.Exists(key) == true {
-		return fmt.Errorf("key already exists")
+	if !s.Exists(key) {
+		return fmt.Errorf("key doesn't exists")
 	}
 
 	data := map[string]interface{}{
