@@ -227,7 +227,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		key := fmt.Sprintf(w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
+		key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
 
 		w.store.SetIbcReceived(key)
 		return
