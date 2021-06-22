@@ -366,21 +366,27 @@ EOF
         &> /dev/null
 
     # ### Ensure price-oracle-server image
-    # if [[ "$(docker images -q demeris/price-oracle-server 2> /dev/null)" == "" ]]
-    # then
-    #     echo -e "${green}\xE2\x9C\x94${reset} Building demeris/price-oracle-server image"
-    #     docker build -t demeris/price-oracle-server -f Dockerfile.price-oracle .
-    # else
-    #     if [ "$BUILD" = "true" ]
-    #     then
-    #         echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/price-oracle-server image"
-    #         docker build -t demeris/price-oracle-server -f Dockerfile.price-oracle .
-    #     else
-    #         echo -e "${green}\xE2\x9C\x94${reset} Image demeris/price-oracle-server already exists"
-    #     fi
-    # fi
-    # echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/price-oracle-server image to cluster"
-    # kind load docker-image demeris/price-oracle-server --name $CLUSTER_NAME &> /dev/null
+     if [[ "$(docker images -q demeris/price-oracle-server 2> /dev/null)" == "" ]]
+     then
+         echo -e "${green}\xE2\x9C\x94${reset} Building demeris/price-oracle-server image"
+         docker build -t demeris/price-oracle-server -f Dockerfile.price-oracle .
+     else
+         if [ "$BUILD" = "true" ]
+         then
+             echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/price-oracle-server image"
+             docker build -t demeris/price-oracle-server -f Dockerfile.price-oracle .
+         else
+             echo -e "${green}\xE2\x9C\x94${reset} Image demeris/price-oracle-server already exists"
+         fi
+     fi
+     echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/price-oracle-server image to cluster"
+     kind load docker-image demeris/price-oracle-server --name $CLUSTER_NAME &> /dev/null
+
+    helm upgrade price-oracle-server \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --set imagePullPolicy=Never \
+        helm/demeris-price-oracle-server
 
     # ### Ensure tmwsproxy image
     # if [[ "$(docker images -q demeris/tmwsproxy 2> /dev/null)" == "" ]]
