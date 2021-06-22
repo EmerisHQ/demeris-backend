@@ -42,6 +42,7 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
             "name": "stake",
             "verified": true,
             "fee_token": true, 
+          "fetch_price": true,
             "fee_levels": {"low": 1, "average": 22, "high": 42},
             "precision": 6
         }, 
@@ -49,6 +50,7 @@ To deploy a Cosmos Hub node, `POST localhost:9999/add` this JSON:
             "display_name": "UATOM",
             "name": "uatom",
             "verified": true,
+          "fetch_price": true,
           "fee_token": true,
           "fee_levels": {"low": 1, "average": 22, "high": 42},
             "precision": 6
@@ -121,6 +123,7 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
             "display_name": "STAKE",
             "name": "stake",
             "verified": true,
+          "fetch_price": true,
             "precision": 6,
           "fee_token": true,
           "fee_levels": {"low": 1, "average": 22, "high": 42}
@@ -129,6 +132,7 @@ To deploy an Akash node, `POST localhost:9999/add` this JSON:
                     "display_name": "UACK",
             "name": "uakt",
             "verified": true,
+                  "fetch_price": true,
             "precision": 6,
                   "fee_token": true,
                   "fee_levels": {"low": 1, "average": 22, "high": 42}
@@ -195,6 +199,7 @@ To deploy a Crypto.com node, `POST localhost:9999/add` this JSON:
     {
       "display_name": "BASECRO",
       "name": "basecro",
+      "fetch_price": true,
       "verified": true,
       "precision": 6,
       "fee_token": true,

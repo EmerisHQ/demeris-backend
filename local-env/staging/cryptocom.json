@@ -22,6 +22,7 @@
       "verified": true,
       "stakable": true,
       "fee_token": true,
+      "fetch_price": true,
       "fee_levels": {"low": 1, "average": 22, "high": 42},
       "precision": 8
     }
