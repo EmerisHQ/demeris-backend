@@ -15,10 +15,10 @@ type IbcClientInfo struct {
 type IbcChannelInfo struct {
 	ChainAName             string `db:"chain_a_chain_name"`
 	ChainAChannelID        string `db:"chain_a_channel_id"`
-	ChainACounterChannelID string `db:"chain_a_counter_connection_id"`
+	ChainACounterChannelID string `db:"chain_a_counter_channel_id"`
 	ChainBName             string `db:"chain_b_chain_name"`
 	ChainBChannelID        string `db:"chain_b_channel_id"`
-	ChainBCounterChannelID string `db:"chain_b_counter_connection_id"`
+	ChainBCounterChannelID string `db:"chain_b_counter_channel_id"`
 }
 
 type IbcChannelsInfo []IbcChannelInfo
