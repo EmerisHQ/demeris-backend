@@ -1,6 +1,10 @@
 package database
 
-import "github.com/allinbits/demeris-backend/models"
+import (
+	"fmt"
+
+	"github.com/allinbits/demeris-backend/models"
+)
 
 func (d *Database) GetIbcChannelToChain(chain string, channel string) (models.IbcChannelsInfo, error) {
 	var c models.IbcChannelsInfo
@@ -26,11 +30,20 @@ func (d *Database) GetIbcChannelToChain(chain string, channel string) (models.Ib
 	WHERE 
 		c1.channel_id = c2.counter_channel_id 
 		AND c1.counter_channel_id = c2.channel_id 
-		AND c1.chain_name = '?' 
-		AND c1.channel_id = '?';
+		AND c1.chain_name = ?
+		AND c1.channel_id = ?;
 	`
 
 	q = d.dbi.DB.Rebind(q)
 
-	return c, d.dbi.DB.Select(&c, q, chain, channel)
+	err := d.dbi.DB.Select(&c, q, chain, channel)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(c) == 0 {
+		return nil, fmt.Errorf("query done but returned no result")
+	}
+
+	return c, nil
 }
