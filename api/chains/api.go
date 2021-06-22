@@ -504,82 +504,94 @@ func VerifyTrace(c *gin.Context) {
 	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
 	res.VerifiedTrace.Path = denomTrace.Path
 
-	// check if the path uses only the supported `transfer` port.
+	// if the path contains more than one slash, that means we cannot support it
+	if strings.Count(res.VerifiedTrace.Path, "/") > 1 {
+		err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
-	channels := strings.Split(res.VerifiedTrace.Path, "/transfer")
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
+			http.StatusBadRequest,
+		)
 
-	for idx, channel := range channels {
-		ch := strings.Trim(channel, "/")
+		d.WriteError(c, e,
+			"invalid denom",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"err",
+			err,
+		)
 
-		// port other than transfer being used
-		if strings.Contains(ch, "/") {
-
-			err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
-
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
-				http.StatusBadRequest,
-			)
-
-			d.WriteError(c, e,
-				"invalid denom",
-				"id",
-				e.ID,
-				"hash",
-				hash,
-				"path",
-				res.VerifiedTrace.Path,
-				"err",
-				err,
-			)
-		}
-
-		channels[idx] = ch
+		return
 	}
+
+	// otherwise, check that it has a transfer prefix
+	if !strings.HasPrefix(res.VerifiedTrace.Path, "transfer/") {
+		err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
+
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"invalid denom",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"err",
+			err,
+		)
+	}
+
+	channel := strings.TrimPrefix(res.VerifiedTrace.Path, "transfer/")
 
 	var channelInfo models.IbcChannelsInfo
 	var trace trace
 	nextChain := chain
 
-	for _, channel := range channels {
-		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel)
+	channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel)
 
-		if l := len(channelInfo); l != 1 {
-			err = errors.New(fmt.Sprintf(`Got too many channels in the response when querying %s channel %s: %d`, nextChain, channel, l))
+	if err != nil {
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("failed querying for %s", hash),
+			http.StatusBadRequest,
+		)
 
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("Failed querying for %s", hash),
-				http.StatusBadRequest,
-			)
+		d.WriteError(c, e,
+			"invalid number of query responses",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"chain",
+			chain,
+			"err",
+			err,
+		)
 
-			d.WriteError(c, e,
-				"invalid number of query responses",
-				"id",
-				e.ID,
-				"hash",
-				hash,
-				"path",
-				res.VerifiedTrace.Path,
-				"chain",
-				chain,
-				"err",
-				err,
-			)
-
-			return
-		}
-		trace.ChainName = channelInfo[0].ChainAName
-		trace.CounterpartyName = channelInfo[0].ChainBName
-		trace.Channel = channelInfo[0].ChainAChannelID
-		trace.Port = "transfer"
-
-		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
-
-		nextChain = trace.CounterpartyName
-
+		return
 	}
+
+	trace.ChainName = channelInfo[0].ChainAName
+	trace.CounterpartyName = channelInfo[0].ChainBName
+	trace.Channel = channelInfo[0].ChainAChannelID
+	trace.Port = "transfer"
+
+	res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
+
+	nextChain = trace.CounterpartyName
 
 	c.JSON(http.StatusOK, res)
 }
