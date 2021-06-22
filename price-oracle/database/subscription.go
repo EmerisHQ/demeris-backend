@@ -53,7 +53,7 @@ func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *conf
 }
 
 func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config, fn func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error) {
-	logger.Infow("INFO", "DB", "WORK Start")
+	logger.Infow("INFO", "DB", "Subscription WORK Start")
 	for {
 		select {
 		case <-ctx.Done():
@@ -62,10 +62,15 @@ func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLog
 		}
 
 		if err := fn(ctx, db, logger, cfg); err != nil {
-			logger.Errorw("DB", "WORK err", err)
+			logger.Errorw("DB", "Subscription WORK err", err)
 		}
 
-		time.Sleep(cfg.Interval * time.Second)
+		interval, err := time.ParseDuration(cfg.Interval)
+		if err != nil {
+			logger.Errorw("DB", "Subscription WORK err", err)
+			return
+		}
+		time.Sleep(interval)
 	}
 }
 

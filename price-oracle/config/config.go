@@ -13,16 +13,20 @@ type Config struct {
 	ListenAddr            string `validate:"required"`
 	Debug                 bool
 	LogPath               string
-	Interval              time.Duration `validate:"required"`
-	Whitelistfiats        []string      `validate:"required"`
-	CoinmarketcapapiKey   string        `validate:"required"`
-	Fixerapikey           string        `validate:"required"`
+	Interval              string   `validate:"required"`
+	Whitelistfiats        []string `validate:"required"`
+	CoinmarketcapapiKey   string   `validate:"required"`
+	Fixerapikey           string   `validate:"required"`
 }
 
 func (c Config) Validate() error {
 	err := validator.New().Struct(c)
 	if err != nil {
 		return validation.MissingFieldsErr(err, false)
+	}
+	_, err = time.ParseDuration(c.Interval)
+	if err != nil {
+		return err
 	}
 
 	return nil
