@@ -35,6 +35,8 @@ spec:
               value: "{{ .Values.debug }}"
             - name: DEMERIS-CNS_REDIS
               value: "{{ .Values.redisUrl }}"
+            - name: DEMERIS-CNS_KUBERNETESNAMESPACE
+              value: "{{ .Values.k8sNamespace }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       terminationGracePeriodSeconds: 10
