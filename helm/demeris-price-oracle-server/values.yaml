@@ -1,0 +1,20 @@
+image: demeris/price-oracle-server:latest
+imagePullPolicy: Always
+
+replicas: 1
+
+nodeSelector: {}
+
+resources: {}
+
+ports:
+  http: 8000
+
+databaseConnectionURL: postgres://root@cockroachdb-public:26257?sslmode=disable
+
+debug: true
+
+redisUrl: redis-master:6379
+updateInterval: 10s
+coinmarketcapKey: 1254aa0f-9591-4756-8c81-a89f415136a3
+fixerKey: 2d60cac55bd06a2799598f0b1d196942

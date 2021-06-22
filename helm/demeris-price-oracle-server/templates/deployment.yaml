@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "chart.labels" . | indent 6 }}
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+      labels:
+        {{- include "chart.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      containers:
+        - name: price-oracle-server
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+{{- include "ports.pod" . | indent 8 }}
+          env:
+            - name: DEMERIS-PRICE-ORACLE_LISTENADDR
+              value: 0.0.0.0:{{ .Values.ports.http }}
+            - name: DEMERIS-PRICE-ORACLE_DATABASECONNECTIONURL
+              value: "{{ .Values.databaseConnectionURL }}"
+            - name: DEMERIS-PRICE-ORACLE_DEBUG
+              value: "{{ .Values.debug }}"
+            - name: DEMERIS-PRICE-ORACLE_REDIS
+              value: "{{ .Values.redisUrl }}"
+            - name: DEMERIS-PRICE-ORACLE_INTERVAL
+              value: "{{ .Values.updateInterval }}"
+            - name: DEMERIS-PRICE-ORACLE_WHITELISTFIATS
+              value: "EUR,USD"
+            - name: DEMERIS-PRICE-ORACLE_COINMARKETCAPAPIKEY
+              value: "{{ .Values.coinmarketcapKey }}"
+            - name: DEMERIS-PRICE-ORACLE_FIXERAPIKEY
+              value: "{{ .Values.fixerKey }}"
+
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      terminationGracePeriodSeconds: 10
