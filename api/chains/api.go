@@ -567,6 +567,8 @@ func VerifyTrace(c *gin.Context) {
 				"err",
 				err,
 			)
+
+			return
 		}
 		trace.ChainName = channelInfo[0].ChainAName
 		trace.CounterpartyName = channelInfo[0].ChainBName
