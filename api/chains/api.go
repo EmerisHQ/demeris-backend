@@ -503,6 +503,7 @@ func VerifyTrace(c *gin.Context) {
 
 	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
 	res.VerifiedTrace.Path = denomTrace.Path
+	res.VerifiedTrace.BaseDenom = denomTrace.BaseDenom
 
 	// if the path contains more than one slash, that means we cannot support it
 	if strings.Count(res.VerifiedTrace.Path, "/") > 1 {
