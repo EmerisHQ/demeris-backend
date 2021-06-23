@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	types2 "github.com/tendermint/tendermint/abci/types"
@@ -129,27 +128,7 @@ func Tx(c *gin.Context) {
 
 // validateTx populates metadata and
 func validateTx(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
-
-	err := validateSignatures(tx, meta, d)
-
-	if err != nil {
-		return err
-	}
-
-	err = validateBody(tx, meta, d)
-
-	if err != nil {
-		return err
-	}
-
-	// TODO: Fetch sequence for ticketing system
-	err = validateAuthInfo(tx, meta, d)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return validateBody(tx, meta, d)
 }
 
 // validateBody validates the data inside the body and populates the relevant metadata
@@ -187,28 +166,6 @@ func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 				}
 			}
 		}
-	}
-
-	return nil
-}
-
-// validateAuthInfo validates the data inside auth_info and populates the relevant metadata
-func validateAuthInfo(tx *sdktx.Tx, meta *TxMeta, _ *deps.Deps) error {
-
-	if infos := tx.AuthInfo.SignerInfos; len(infos) == 1 {
-		// Fetch signer sequence
-		meta.SignerSequence = strconv.FormatUint(tx.AuthInfo.SignerInfos[0].Sequence, 10)
-	} else {
-		return fmt.Errorf("Invalid number of signatures. Expected 1, got %d", len(infos))
-	}
-
-	return nil
-}
-
-// validateSignatures ensures the signature exists
-func validateSignatures(tx *sdktx.Tx, _ *TxMeta, _ *deps.Deps) error {
-	if len(tx.Signatures) != 1 {
-		return fmt.Errorf("Invalid number of signatures")
 	}
 
 	return nil
