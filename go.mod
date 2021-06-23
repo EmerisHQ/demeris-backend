@@ -33,7 +33,7 @@ require (
 	github.com/lib/pq v1.10.1
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/r3labs/diff v1.1.0 // indirect
+	github.com/r3labs/diff v1.1.0
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
