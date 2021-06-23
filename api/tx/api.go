@@ -63,7 +63,11 @@ func Tx(c *gin.Context) {
 
 	tx := sdktx.Tx{}
 
-	d.Codec.MustUnmarshalBinaryBare(txRequest.TxBytes, &tx)
+	mustCheckTx := true
+	if err := d.Codec.UnmarshalBinaryBare(txRequest.TxBytes, &tx); err != nil {
+		mustCheckTx = false
+		d.Logger.Warnw("cannot decode transaction with the codec we have, bypassing transaction checking", "error", err)
+	}
 
 	meta.Chain, err = d.Database.Chain(chainName)
 
@@ -81,9 +85,14 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	err = validateTx(&tx, &meta, d)
+	var validationErr error
+	validationErr = nil
 
-	if err != nil {
+	if mustCheckTx {
+		validationErr = validateTx(&tx, &meta, d)
+	}
+
+	if validationErr != nil {
 		e := deps.NewError("tx", fmt.Errorf("invalid transaction"), http.StatusBadRequest)
 
 		d.WriteError(c, e,
@@ -97,7 +106,7 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	txhash, err := relayTx(d, tx, meta)
+	txhash, err := relayTx(d, txRequest.TxBytes, meta)
 
 	if err != nil {
 		e := deps.NewError("tx", fmt.Errorf("relaying tx failed, %w", err), http.StatusBadRequest)
@@ -208,9 +217,7 @@ func validateSignatures(tx *sdktx.Tx, _ *TxMeta, _ *deps.Deps) error {
 // RelayTx relays the tx to the specifc endpoint
 // RelayTx will also perform the ticketing mechanism
 // Always expect broadcast mode to be `async`
-func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
-
-	b := d.Codec.MustMarshalBinaryBare(&tx)
+func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 
 	grpcConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%d", meta.Chain.ChainName, 9090), // Or your gRPC server address.
@@ -229,7 +236,7 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 		context.Background(),
 		&sdktx.BroadcastTxRequest{
 			Mode:    sdktx.BroadcastMode_BROADCAST_MODE_SYNC,
-			TxBytes: b, // Proto-binary of the signed transaction, see previous step.
+			TxBytes: txBytes, // Proto-binary of the signed transaction, see previous step.
 		},
 	)
 
