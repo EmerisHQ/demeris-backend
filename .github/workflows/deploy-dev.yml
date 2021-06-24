@@ -56,7 +56,7 @@ jobs:
               --install \
               --namespace demeris \
               --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.sha }} \
-              helm/demeris-cns-server
+              ./helm/demeris-cns-server
   
   api-server:
     runs-on: self-hosted
@@ -73,7 +73,7 @@ jobs:
               --install \
               --namespace demeris \
               --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.sha }} \
-              helm/demeris-api-server
+              ./helm/demeris-api-server
 
   rpcwatcher:
     runs-on: self-hosted
@@ -90,7 +90,7 @@ jobs:
               --install \
               --namespace demeris \
               --set image=gcr.io/tendermint-dev/emeris-rpcwatcher:${{ github.sha }} \
-              helm/demeris-rpcwatcher
+              ./helm/demeris-rpcwatcher
 
   price-oracle:
     runs-on: self-hosted
@@ -107,7 +107,7 @@ jobs:
               --install \
               --namespace demeris \
               --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.sha }} \
-              helm/demeris-price-oracle-server
+              ./helm/demeris-price-oracle-server
 
   admin-ui:
     runs-on: self-hosted
@@ -124,7 +124,7 @@ jobs:
               --install \
               --namespace demeris \
               --set image=gcr.io/tendermint-dev/emeris-admin-ui:${{ github.sha }} \
-              helm/demeris-admin-ui-server
+              ./helm/demeris-admin-ui-server
 
   ingress:
     runs-on: self-hosted
