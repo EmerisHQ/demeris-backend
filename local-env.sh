@@ -274,7 +274,7 @@ EOF
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --set imagePullPolicy=Never \
-        helm/demeris-cns-server \
+        helm/emeris-cns-server \
         &> /dev/null
 
     ### Ensure admin-ui image
@@ -299,7 +299,7 @@ EOF
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --set imagePullPolicy=Never \
-        helm/demeris-admin-ui \
+        helm/emeris-admin-ui \
         &> /dev/null
 
     ### Setup container for proxying localhost:$CNS_PORT to cns-server
@@ -337,7 +337,7 @@ EOF
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --set imagePullPolicy=Never \
-        helm/demeris-api-server \
+        helm/emeris-api-server \
         &> /dev/null
 
     ### Ensure rpcwatcher image
@@ -362,7 +362,7 @@ EOF
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --set imagePullPolicy=Never \
-        helm/demeris-rpcwatcher \
+        helm/emeris-rpcwatcher \
         &> /dev/null
 
     # ### Ensure price-oracle-server image
@@ -386,7 +386,7 @@ EOF
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --set imagePullPolicy=Never \
-        helm/demeris-price-oracle-server
+        helm/emeris-price-oracle-server
 
     # ### Ensure tmwsproxy image
     # if [[ "$(docker images -q demeris/tmwsproxy 2> /dev/null)" == "" ]]
