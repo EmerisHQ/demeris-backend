@@ -1,0 +1,139 @@
+name: Deploy on Emeris Dev Environment
+
+on:
+  workflow_run:
+    workflows: ["Build docker images"]
+    branches: [master]
+    types: 
+      - completed
+
+jobs:
+  redis:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm repo add bitnami https://charts.bitnami.com/bitnami;
+            helm upgrade redis \
+              --install \
+              --namespace demeris \
+              --set auth.enabled=false \
+              --set auth.sentinel=false \
+              --set architecture=standalone \
+              bitnami/redis
+
+  cockroachdb:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm repo add cockroachdb https://charts.cockroachdb.com;
+            helm upgrade cockroachdb \
+              --install \
+              --namespace demeris \
+              --set tls.enabled=false \
+              --set statefulset.replicas=3 \
+              cockroachdb/cockroachdb
+
+  cns-server:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade cns-server \
+              --install \
+              --namespace demeris \
+              --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.sha }} \
+              helm/demeris-cns-server
+  
+  api-server:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade api-server \
+              --install \
+              --namespace demeris \
+              --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.sha }} \
+              helm/demeris-api-server
+
+  rpcwatcher:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade rpcwatcher \
+              --install \
+              --namespace demeris \
+              --set image=gcr.io/tendermint-dev/emeris-rpcwatcher:${{ github.sha }} \
+              helm/demeris-rpcwatcher
+
+  price-oracle:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade price-oracle \
+              --install \
+              --namespace demeris \
+              --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.sha }} \
+              helm/demeris-price-oracle-server
+
+  admin-ui:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade admin-ui \
+              --install \
+              --namespace demeris \
+              --set image=gcr.io/tendermint-dev/emeris-admin-ui:${{ github.sha }} \
+              helm/demeris-admin-ui-server
+
+  ingress:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: apply -n demeris -f ci/ingress.yaml
