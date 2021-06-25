@@ -1,0 +1,117 @@
+name: Reset Emeris Dev Environment
+
+on: 
+  workflow_dispatch:
+    inputs:
+      delete_nodesets:
+        description: 'Whether to also delete NodeSet resources'     
+        required: true
+        default: 'false'
+
+jobs:
+  redis:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall redis --namespace emeris
+
+  cockroachdb:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall cockroachdb --namespace emeris
+
+  cns-server:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall cns-server --namespace emeris
+  
+  api-server:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall api-server --namespace emeris
+
+  rpcwatcher:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall rpcwatcher --namespace emeris
+
+  price-oracle:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade price-oracle \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.sha }} \
+              ./helm/emeris-price-oracle-server
+
+  admin-ui:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall admin-ui --namespace emeris
+
+  ingress:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete -n emeris -f ci/ingress.yaml
+
+  pvcs:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete -n emeris pvc datadir-cockroachdb-0 datadir-cockroachdb-1 datadir-cockroachdb-2 redis-data-redis-master-0

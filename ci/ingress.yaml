@@ -37,7 +37,7 @@ spec:
   tls:
   - hosts:
     - dev.demeris.io
-    secretName: demeris-cert
+    secretName: emeris-cert
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
