@@ -82,11 +82,7 @@ jobs:
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
           exec: |
-            helm upgrade price-oracle \
-              --install \
-              --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.sha }} \
-              ./helm/emeris-price-oracle-server
+            helm uninstall price-oracle --namespace emeris
 
   admin-ui:
     runs-on: self-hosted
