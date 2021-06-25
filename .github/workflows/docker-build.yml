@@ -116,7 +116,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          context: ./cns/admin/demeris-admin
+          context: ./cns/admin/emeris-admin
           tags: gcr.io/tendermint-dev/emeris-admin-ui:${{ steps.get_version.outputs.version-without-v }},gcr.io/tendermint-dev/emeris-admin-ui:${{ github.sha }}
   
   cns-server:

@@ -19,7 +19,7 @@ jobs:
             helm repo add bitnami https://charts.bitnami.com/bitnami;
             helm upgrade redis \
               --install \
-              --namespace demeris \
+              --namespace emeris \
               --set auth.enabled=false \
               --set auth.sentinel=false \
               --set architecture=standalone \
@@ -36,7 +36,7 @@ jobs:
             helm repo add cockroachdb https://charts.cockroachdb.com;
             helm upgrade cockroachdb \
               --install \
-              --namespace demeris \
+              --namespace emeris \
               --set tls.enabled=false \
               --set statefulset.replicas=3 \
               cockroachdb/cockroachdb
@@ -54,7 +54,7 @@ jobs:
           exec: |
             helm upgrade cns-server \
               --install \
-              --namespace demeris \
+              --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.sha }} \
               ./helm/emeris-cns-server
   
@@ -71,7 +71,7 @@ jobs:
           exec: |
             helm upgrade api-server \
               --install \
-              --namespace demeris \
+              --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.sha }} \
               ./helm/emeris-api-server
 
@@ -88,7 +88,7 @@ jobs:
           exec: |
             helm upgrade rpcwatcher \
               --install \
-              --namespace demeris \
+              --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-rpcwatcher:${{ github.sha }} \
               ./helm/emeris-rpcwatcher
 
@@ -105,7 +105,7 @@ jobs:
           exec: |
             helm upgrade price-oracle \
               --install \
-              --namespace demeris \
+              --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.sha }} \
               ./helm/emeris-price-oracle-server
 
@@ -122,7 +122,7 @@ jobs:
           exec: |
             helm upgrade admin-ui \
               --install \
-              --namespace demeris \
+              --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-admin-ui:${{ github.sha }} \
               ./helm/emeris-admin-ui
 
@@ -136,4 +136,4 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: apply -n demeris -f ci/ingress.yaml
+          command: apply -n emeris -f ci/ingress.yaml
