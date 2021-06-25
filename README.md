@@ -1,3 +1,5 @@
+[![Build docker images](https://github.com/allinbits/demeris-backend/actions/workflows/docker-build.yml/badge.svg)](https://github.com/allinbits/demeris-backend/actions/workflows/docker-build.yml)
+
 # Demeris Backend
 
 ## Generating API documentation
