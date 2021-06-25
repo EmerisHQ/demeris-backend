@@ -29,6 +29,8 @@ const (
 	done
 )
 
+var maxGas int64 = 6000000
+
 type Instance struct {
 	l                *zap.SugaredLogger
 	k                kube.Client
@@ -159,6 +161,7 @@ func (i *Instance) createRelayer(chain Chain) error {
 
 	cfg := operator.RelayerConfig{
 		NodesetName:   chain.Name,
+		HDPath:        chain.HDPath,
 		AccountPrefix: chain.AddressPrefix,
 	}
 
@@ -173,8 +176,10 @@ func (i *Instance) createRelayer(chain Chain) error {
 
 	relayer, err := q.Relayer()
 	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
-		return err
+		return fmt.Errorf("cannot query relayer, %w", err)
 	}
+
+	relayerWasEmpty := len(relayer.Spec.Chains) == 0
 
 	for _, existingChain := range relayer.Spec.Chains {
 		if existingChain.Nodeset == relayerConfig.Nodeset {
@@ -182,11 +187,30 @@ func (i *Instance) createRelayer(chain Chain) error {
 		}
 	}
 
+	relayerConfig.GasPrice = v1.GasPriceConfig{}
+	relayerConfig.MaxGas = &maxGas
+
 	relayer.Spec.Chains = append(relayer.Spec.Chains, &relayerConfig)
 
+	ctc, err := i.chainsToConnectTo(cfg.NodesetName)
+	if err != nil {
+		i.l.Debugw("cannot query chains to connect to", "error", err)
+		return err
+	}
+
+	i.l.Debugw("chains to connect to", "ctc", ctc)
+
+	for _, ccc := range ctc {
+		relayer.Spec.Paths = append(relayer.Spec.Paths, v1.PathConfig{
+			SideA: cfg.NodesetName,
+			SideB: ccc,
+		})
+	}
+
 	var execErr error
-	if errors.Is(err, k8s.ErrNotFound) {
+	if errors.Is(err, k8s.ErrNotFound) || relayerWasEmpty {
 		relayer.Namespace = i.defaultNamespace
+		relayer.Name = "relayer"
 		relayer.ObjectMeta.Name = "relayer"
 		execErr = q.AddRelayer(relayer)
 	} else {
@@ -194,7 +218,11 @@ func (i *Instance) createRelayer(chain Chain) error {
 		execErr = q.UpdateRelayer(relayer)
 	}
 
-	return execErr
+	if execErr != nil {
+		return fmt.Errorf("cannot update or add relayer, %w", execErr)
+	}
+
+	return nil
 }
 
 func (i *Instance) relayerFinished(chain Chain, relayer v1.Relayer) error {
@@ -203,6 +231,34 @@ func (i *Instance) relayerFinished(chain Chain, relayer v1.Relayer) error {
 	}
 
 	return nil
+}
+
+func (i *Instance) chainsToConnectTo(chainName string) ([]string, error) {
+	chains, err := i.db.Chains()
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []string
+
+	for _, c := range chains {
+		if c.ChainName == chainName {
+			continue
+		}
+
+		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName)
+		if err != nil {
+			return nil, fmt.Errorf("cannot scan channels between chain %s and %s, %w", chainName, c.ChainName, err)
+		}
+
+		i.l.Debugw("chains between", "chainName", chainName, "other", c.ChainName, "conns", conns)
+
+		if conns == nil || len(conns) == 0 {
+			ret = append(ret, c.ChainName)
+		}
+	}
+
+	return ret, nil
 }
 
 func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
@@ -214,38 +270,37 @@ func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
 	}
 
 	for _, chain := range chains {
-		i.l.Debugw("chain read", "name", chain.ChainName)
+		i.l.Debugw("chain read", "chainID", chain.NodeInfo.ChainID, "name", chain.ChainName)
 		chainsMap[chain.NodeInfo.ChainID] = chain
 	}
 
 	paths := relayer.Status.Paths
-	for chainID := range chainsMap {
+	for chainID, chain := range chainsMap {
 		i.l.Debugw("iterating chainsmap", "chainID", chainID)
-		foundOurselves := false
 
 		for _, path := range paths {
 			i.l.Debugw("iterating path", "path", path)
 			for counterpartyChainID, value := range path {
+				i.l.Debugw("beginning of path iteration", "counterpartyChainID", counterpartyChainID, "chainID", chainID)
 				if counterpartyChainID == chainID {
-					foundOurselves = true
-					continue
-				}
-
-				if !foundOurselves {
+					i.l.Debugw("found ourselves", "chainID", chainID)
 					continue
 				}
 
 				counterparty, found := chainsMap[counterpartyChainID]
+				i.l.Debugw("found counterparty in chainsMap", "counterparty name", counterparty.ChainName, "found", found)
 
 				if !found {
 					i.l.Panicw("found counterparty chain which isn't in chainsMap", "chainsMap", chainsMap, "counterparty", counterpartyChainID)
 				}
-				chainsMap[chainID].PrimaryChannel[counterparty.ChainName] = value.ChannelID
+
+				i.l.Debugw("updating chain", "chain to be update", chainsMap[chainID].ChainName, "counterparty", counterparty.ChainName, "value", value.ChannelID)
+				chain.PrimaryChannel[counterparty.ChainName] = value.ChannelID
 			}
 		}
-	}
 
-	for _, chain := range chainsMap {
+		i.l.Debugw("new primary channel struct", "data", chain.PrimaryChannel)
+
 		if err := i.db.AddChain(chain); err != nil {
 			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
 		}
