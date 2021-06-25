@@ -10,6 +10,7 @@ type RelayerConfig struct {
 	NodesetName   string `json:"nodeset_name"`
 	FaucetName    string `json:"faucet_name"`
 	AccountPrefix string `json:"account_prefix"`
+	HDPath        string `json:"hd_path"`
 }
 
 func (rc RelayerConfig) Validate() error {
@@ -31,6 +32,7 @@ func BuildRelayer(c RelayerConfig) (v1.RelayerChain, error) {
 	rcs := v1.RelayerChain{
 		Nodeset:       &c.NodesetName,
 		AccountPrefix: &c.AccountPrefix,
+		HDPath:        &c.HDPath,
 	}
 
 	if c.FaucetName != "" {
