@@ -71,6 +71,7 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			Name:          newChain.ChainName,
 			AddressPrefix: newChain.NodeInfo.Bech32Config.MainPrefix,
 			HasFaucet:     node.Spec.Init.Faucet != nil,
+			HDPath:        newChain.DerivationPath,
 		}); err != nil {
 			e(ctx, http.StatusInternalServerError, err)
 			r.s.l.Error("cannot add chain name to cache", err)

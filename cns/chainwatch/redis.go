@@ -18,6 +18,7 @@ type Chain struct {
 	Name          string
 	AddressPrefix string
 	HasFaucet     bool
+	HDPath        string
 }
 
 func (cc Chain) Validate() error {
@@ -27,6 +28,10 @@ func (cc Chain) Validate() error {
 
 	if cc.AddressPrefix == "" {
 		return fmt.Errorf("empty address prefix")
+	}
+
+	if cc.HDPath == "" {
+		return fmt.Errorf("empty HD path")
 	}
 
 	return nil
