@@ -7,6 +7,14 @@ on:
         description: 'Whether to also delete NodeSet resources'     
         required: true
         default: 'false'
+      delete_faucets:
+        description: 'Whether to also delete Faucet resources'     
+        required: true
+        default: 'false'
+      delete_relayers:
+        description: 'Whether to also delete Relayer resources'     
+        required: true
+        default: 'false'
 
 jobs:
   redis:
@@ -102,16 +110,43 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete -n emeris -f ci/ingress.yaml
+          command: delete --namespace emeris -f ci/ingress.yaml
 
   pvcs:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Delete
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete -n emeris pvc datadir-cockroachdb-0 datadir-cockroachdb-1 datadir-cockroachdb-2 redis-data-redis-master-0
+          command: delete --all pvc --namespace emeris
+
+  nodesets:
+    if: ${{ github.event.inputs.delete_nodesets == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --all nodesets --namespace emeris
+
+  faucets:
+    if: ${{ github.event.inputs.delete_faucets == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --all faucets --namespace emeris
+
+  relayers:
+    if: ${{ github.event.inputs.delete_relayers == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --all relayers --namespace emeris
