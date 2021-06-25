@@ -1,4 +1,4 @@
-image: demeris/cns-server:latest
+image: emeris/cns-server:latest
 imagePullPolicy: Always
 
 replicas: 1

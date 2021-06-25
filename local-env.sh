@@ -1,17 +1,14 @@
 #!/bin/bash
 
-CLUSTER_NAME=demeris
+CLUSTER_NAME=emeris
 BUILD=false
 NO_CHAINS=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
-PORT=8000
 KIND_CONFIG=""
-CNS_PORT=9999
-ADDRESS=127.0.0.1
 
 usage()
 {
-    echo -e "Manage demeris local environment\n"
+    echo -e "Manage emeris local environment\n"
     echo -e "Usage: \n  $0 [command]\n"
     echo -e "Available Commands:"
     echo -e "  up \t\t Setup the development environment"
@@ -131,22 +128,37 @@ nodes:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
   extraPortMappings:
+  - containerPort: 30080
+    hostPort: 8000
+    protocol: TCP
+  - containerPort: 30443
+    hostPort: 443
+    protocol: TCP
   - containerPort: 30090
     hostPort: 9090
     protocol: TCP
-  - containerPort: 30080
+  - containerPort: 30880
     hostPort: 8080
     protocol: TCP
 EOF
     fi
 
-    ### Ensure nginx ingress controller is deployed
+    ### Ensure emeris namespace
+    kubectl create namespace emeris &> /dev/null
+    kubectl config set-context kind-$CLUSTER_NAME --namespace=emeris &> /dev/null
 
+    ### Ensure nginx ingress controller is deployed
     echo -e "${green}\xE2\x9C\x94${reset} Ensure nginx ingress controller is installed and running"
     kubectl apply \
         --context kind-$CLUSTER_NAME \
-        -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml \
+        -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/helm-chart-3.34.0/deploy/static/provider/kind/deploy.yaml \
         &> /dev/null
+    kubectl patch \
+      --context kind-$CLUSTER_NAME \
+      --namespace ingress-nginx \
+      svc ingress-nginx-controller \
+      --patch "$(cat local-env/nginx-patch.yaml)" \
+      &> /dev/null
 
     ### Wait for nginx to be up and running
     while : ; do
@@ -163,19 +175,6 @@ EOF
         --selector=app.kubernetes.io/component=controller \
         --timeout=90s \
         &> /dev/null
-
-    ### Setup container for proxying localhost:$PORT to nginx
-    if [ ! "$(docker ps | grep $CLUSTER_NAME-local-proxy)" ]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying api traffic to cluster"
-        node_port=$(kubectl get service -n ingress-nginx ingress-nginx-controller -o=jsonpath="{.spec.ports[?(@.port == 80)].nodePort}")
-        docker run -d --rm \
-            --name $CLUSTER_NAME-local-proxy \
-            -p $ADDRESS:$PORT:80 \
-            --network kind \
-            --link $CLUSTER_NAME-control-plane:target \
-            alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
-    fi
 
     ### Ensure starport-operator is deployed
 
@@ -208,6 +207,7 @@ EOF
     helm upgrade cockroachdb \
         --install \
         --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
         --set tls.enabled=false \
         --set config.single-node=true \
         --set statefulset.replicas=1 \
@@ -221,6 +221,7 @@ EOF
     helm upgrade redis \
         --install \
         --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
         --set auth.enabled=false \
         --set auth.sentinel=false \
         --set architecture=standalone \
@@ -228,21 +229,21 @@ EOF
         &> /dev/null
 
     ### Ensure tracelistener image
-    if [[ "$(docker images -q demeris/tracelistener 2> /dev/null)" == "" ]]
+    if [[ "$(docker images -q emeris/tracelistener 2> /dev/null)" == "" ]]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/tracelistener image"
-        docker build -t demeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/tracelistener image"
+        docker build -t emeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
     else
         if [ "$BUILD" = "true" ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/tracelistener image"
-            docker build -t demeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/tracelistener image"
+            docker build -t emeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/tracelistener already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/tracelistener already exists"
         fi
     fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/tracelistener image to cluster"
-    kind load docker-image demeris/tracelistener --name $CLUSTER_NAME &> /dev/null
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/tracelistener image to cluster"
+    kind load docker-image emeris/tracelistener --name $CLUSTER_NAME &> /dev/null
 
     ### Setup chains
     if [ "$NO_CHAINS" = "false" ]; then
@@ -253,174 +254,150 @@ EOF
     fi
 
     ### Ensure cns-server image
-    if [[ "$(docker images -q demeris/cns-server 2> /dev/null)" == "" ]]
+    if [[ "$(docker images -q emeris/cns-server 2> /dev/null)" == "" ]]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/cns-server image"
-        docker build -t demeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/cns-server image"
+        docker build -t emeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
     else
         if [ "$BUILD" = "true" ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/cns-server image"
-            docker build -t demeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/cns-server image"
+            docker build -t emeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/cns-server already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/cns-server already exists"
         fi
     fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/cns-server image to cluster"
-    kind load docker-image demeris/cns-server --name $CLUSTER_NAME &> /dev/null
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/cns-server image to cluster"
+    kind load docker-image emeris/cns-server --name $CLUSTER_NAME &> /dev/null
 
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying demeris/cns-server"
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/cns-server"
     helm upgrade cns-server \
         --install \
         --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
         --set imagePullPolicy=Never \
         helm/emeris-cns-server \
         &> /dev/null
 
     ### Ensure admin-ui image
-    if [[ "$(docker images -q demeris/admin-ui 2> /dev/null)" == "" ]]
+    if [[ "$(docker images -q emeris/admin-ui 2> /dev/null)" == "" ]]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/admin-ui image"
-        docker build -t demeris/admin-ui ./cns/admin/demeris-admin
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/admin-ui image"
+        docker build -t emeris/admin-ui ./cns/admin/emeris-admin
     else
         if [ "$BUILD" = "true" ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/admin-ui image"
-            docker build -t demeris/admin-ui ./cns/admin/demeris-admin
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/admin-ui image"
+            docker build -t emeris/admin-ui ./cns/admin/emeris-admin
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/admin-ui already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/admin-ui already exists"
         fi
     fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/admin-ui image to cluster"
-    kind load docker-image demeris/admin-ui --name $CLUSTER_NAME &> /dev/null
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/admin-ui image to cluster"
+    kind load docker-image emeris/admin-ui --name $CLUSTER_NAME &> /dev/null
 
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying demeris/admin-ui"
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/admin-ui"
     helm upgrade admin-ui \
         --install \
         --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
         --set imagePullPolicy=Never \
+        --set cnsAddress=http://localhost:8000/v1/cns \
         helm/emeris-admin-ui \
         &> /dev/null
 
-    ### Setup container for proxying localhost:$CNS_PORT to cns-server
-    if [ ! "$(docker ps | grep $CLUSTER_NAME-local-cns-proxy)" ]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Ensure local container for proxying cns"
-        node_port=$(kubectl get service cns-server -o=jsonpath="{.spec.ports[?(@.port == 8000)].nodePort}")
-        docker run -d --rm \
-            --name $CLUSTER_NAME-local-cns-proxy \
-            -p $ADDRESS:$CNS_PORT:80 \
-            --network kind \
-            --link $CLUSTER_NAME-control-plane:target \
-            alpine/socat -dd tcp-listen:80,fork,reuseaddr tcp-connect:target:$node_port
-    fi
-
     ### Ensure api-server image
-    if [[ "$(docker images -q demeris/api-server 2> /dev/null)" == "" ]]
+    if [[ "$(docker images -q emeris/api-server 2> /dev/null)" == "" ]]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/api-server image"
-        docker build -t demeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/api-server image"
+        docker build -t emeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
     else
         if [ "$BUILD" = "true" ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/api-server image"
-            docker build -t demeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/api-server image"
+            docker build -t emeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/api-server already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/api-server already exists"
         fi
     fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/api-server image to cluster"
-    kind load docker-image demeris/api-server --name $CLUSTER_NAME &> /dev/null
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/api-server image to cluster"
+    kind load docker-image emeris/api-server --name $CLUSTER_NAME &> /dev/null
 
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying demeris/api-server"
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/api-server"
     helm upgrade api-server \
         --install \
         --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
         --set imagePullPolicy=Never \
         helm/emeris-api-server \
         &> /dev/null
 
     ### Ensure rpcwatcher image
-    if [[ "$(docker images -q demeris/rpcwatcher 2> /dev/null)" == "" ]]
+    if [[ "$(docker images -q emeris/rpcwatcher 2> /dev/null)" == "" ]]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building demeris/rpcwatcher image"
-        docker build -t demeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/rpcwatcher image"
+        docker build -t emeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
     else
         if [ "$BUILD" = "true" ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/rpcwatcher image"
-            docker build -t demeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/rpcwatcher image"
+            docker build -t emeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image demeris/rpcwatcher already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/rpcwatcher already exists"
         fi
     fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/rpcwatcher image to cluster"
-    kind load docker-image demeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/rpcwatcher image to cluster"
+    kind load docker-image emeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
 
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying demeris/rpcwatcher"
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/rpcwatcher"
     helm upgrade rpcwatcher \
         --install \
         --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
         --set imagePullPolicy=Never \
         helm/emeris-rpcwatcher \
         &> /dev/null
 
-    # ### Ensure price-oracle-server image
-     if [[ "$(docker images -q demeris/price-oracle-server 2> /dev/null)" == "" ]]
+    ### Ensure price-oracle-server image
+     if [[ "$(docker images -q emeris/price-oracle-server 2> /dev/null)" == "" ]]
      then
-         echo -e "${green}\xE2\x9C\x94${reset} Building demeris/price-oracle-server image"
-         docker build -t demeris/price-oracle-server -f Dockerfile.price-oracle .
+         echo -e "${green}\xE2\x9C\x94${reset} Building emeris/price-oracle-server image"
+         docker build -t emeris/price-oracle-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.price-oracle .
      else
          if [ "$BUILD" = "true" ]
          then
-             echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/price-oracle-server image"
-             docker build -t demeris/price-oracle-server -f Dockerfile.price-oracle .
+             echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/price-oracle-server image"
+             docker build -t emeris/price-oracle-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.price-oracle .
          else
-             echo -e "${green}\xE2\x9C\x94${reset} Image demeris/price-oracle-server already exists"
+             echo -e "${green}\xE2\x9C\x94${reset} Image emeris/price-oracle-server already exists"
          fi
      fi
-     echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/price-oracle-server image to cluster"
-     kind load docker-image demeris/price-oracle-server --name $CLUSTER_NAME &> /dev/null
+     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/price-oracle-server image to cluster"
+     kind load docker-image emeris/price-oracle-server --name $CLUSTER_NAME &> /dev/null
 
-    helm upgrade price-oracle-server \
+    helm upgrade price-oracle \
         --install \
         --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
         --set imagePullPolicy=Never \
-        helm/emeris-price-oracle-server
+        helm/emeris-price-oracle-server \
+        &> /dev/null
 
-    # ### Ensure tmwsproxy image
-    # if [[ "$(docker images -q demeris/tmwsproxy 2> /dev/null)" == "" ]]
-    # then
-    #     echo -e "${green}\xE2\x9C\x94${reset} Building demeris/tmwsproxy image"
-    #     docker build -t demeris/tmwsproxy -f Dockerfile.tmwsproxy .
-    # else
-    #     if [ "$BUILD" = "true" ]
-    #     then
-    #         echo -e "${green}\xE2\x9C\x94${reset} Re-building demeris/tmwsproxy image"
-    #         docker build -t demeris/tmwsproxy -f Dockerfile.tmwsproxy .
-    #     else
-    #         echo -e "${green}\xE2\x9C\x94${reset} Image demeris/tmwsproxy already exists"
-    #     fi
-    # fi
-    # echo -e "${green}\xE2\x9C\x94${reset} Pushing demeris/tmwsproxy image to cluster"
-    # kind load docker-image demeris/tmwsproxy --name $CLUSTER_NAME &> /dev/null
-
-    echo -e "${green}\xE2\x9C\x94${reset} Deploy demeris ingress"
+    ## Ensure Emeris ingress
+    echo -e "${green}\xE2\x9C\x94${reset} Deploy emeris ingress"
     kubectl apply \
         --context kind-$CLUSTER_NAME \
+        --namespace emeris \
         -f local-env/ingress.yaml
-
-    echo -e "${green}\xE2\x9C\x94${reset} Deploy RBAC rules"
-    kubectl apply \
-        --context kind-$CLUSTER_NAME \
-        -f local-env/rbac.yaml
 
     ## Setup monitoring infrastructure
     if [ "$MONITORING" = "true" ]; then
       echo -e "${green}\xE2\x9C\x94${reset} Deploying monitoring"
       helm upgrade monitoring-stack \
           --install \
+          --create-namespace \
           --kube-context kind-$CLUSTER_NAME \
+          --namespace monitoring \
           --set imagePullPolicy=Never \
           -f local-env/monitoring-values.yaml \
           prometheus-community/kube-prometheus-stack --version 15.4.6 \
@@ -428,25 +405,13 @@ EOF
 
       kubectl apply \
         --context kind-$CLUSTER_NAME \
+        --namespace emeris \
         -f local-env/service-monitors.yaml
     fi
-
 fi
 
 if [ "$COMMAND" = "down" ]
 then
-    if [ "$(docker ps | grep $CLUSTER_NAME-local-proxy)" ]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Deleting local api proxy"
-        docker stop $CLUSTER_NAME-local-proxy &> /dev/null
-    fi
-
-    if [ "$(docker ps | grep $CLUSTER_NAME-local-cns-proxy)" ]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Deleting local cns proxy"
-        docker stop $CLUSTER_NAME-local-cns-proxy &> /dev/null
-    fi
-
     if kind get clusters | grep $CLUSTER_NAME &> /dev/null
     then
         echo -e "${green}\xE2\x9C\x94${reset} Deleting cluster $CLUSTER_NAME"
@@ -458,6 +423,7 @@ if [ "$COMMAND" = "connect-sql" ]
 then
     kubectl run cockroachdb-client \
         --context kind-$CLUSTER_NAME \
+        --namespace emeris \
         -it \
         --image=cockroachdb/cockroach:v20.2.8 \
         --rm \

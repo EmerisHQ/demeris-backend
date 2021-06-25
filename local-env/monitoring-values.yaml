@@ -27,7 +27,7 @@ grafana:
   adminPassword: admin
   service:
     type: NodePort
-    nodePort: 30080
+    nodePort: 30880
 prometheus:
   service:
     type: NodePort

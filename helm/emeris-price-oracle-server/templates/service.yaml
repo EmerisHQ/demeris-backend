@@ -6,7 +6,6 @@ metadata:
   labels:
     {{- include "chart.labels" . | indent 4 }}
 spec:
-  type: NodePort
   ports:
 {{- include "ports.service" . | indent 2 }}
   selector:

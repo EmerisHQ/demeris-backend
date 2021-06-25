@@ -124,6 +124,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-admin-ui:${{ github.sha }} \
+              --set cnsAddress=https://dev.demeris.io/v1/cns \
               ./helm/emeris-admin-ui
 
   ingress:

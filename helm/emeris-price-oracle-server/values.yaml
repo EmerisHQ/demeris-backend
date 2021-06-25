@@ -1,4 +1,4 @@
-image: demeris/price-oracle-server:latest
+image: emeris/price-oracle-server:latest
 imagePullPolicy: Always
 
 replicas: 1

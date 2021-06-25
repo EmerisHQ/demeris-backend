@@ -1,4 +1,4 @@
-image: demeris/api-server:latest
+image: emeris/api-server:latest
 imagePullPolicy: Always
 
 replicas: 1
