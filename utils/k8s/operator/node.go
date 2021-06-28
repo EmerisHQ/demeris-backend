@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	defaultMoniker   = "demeris"
-	defaultNamespace = "default"
+	defaultMoniker   = "emeris"
+	defaultNamespace = "emeris"
 
-	tracelistenerImage = "demeris/tracelistener"
+	tracelistenerImage = "emeris/tracelistener"
 
 	trFifoPathVar = "TRACELISTENER_FIFOPATH"
 	trFifoPath    = "/trace-store/kvstore.fifo"
