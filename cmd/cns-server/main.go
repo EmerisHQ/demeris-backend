@@ -8,6 +8,8 @@ import (
 	"github.com/allinbits/demeris-backend/utils/logging"
 )
 
+var Version = "not specified"
+
 func main() {
 	config, err := readConfig()
 	if err != nil {
@@ -18,6 +20,8 @@ func main() {
 		LogPath: config.LogPath,
 		Debug:   config.Debug,
 	})
+
+	logger.Infow("cns-server", "version", Version)
 
 	di, err := database.New(config.DatabaseConnectionURL)
 	if err != nil {

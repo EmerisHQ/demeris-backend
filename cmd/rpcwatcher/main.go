@@ -17,6 +17,8 @@ import (
 	"github.com/allinbits/demeris-backend/utils/store"
 )
 
+var Version = "not specified"
+
 type watcherInstance struct {
 	watcher *rpcwatcher.Watcher
 	cancel  context.CancelFunc
@@ -31,6 +33,8 @@ func main() {
 	l := logging.New(logging.LoggingConfig{
 		Debug: c.Debug,
 	})
+
+	l.Infow("rpcwatcher", "version", Version)
 
 	db, err := database.New(c.DatabaseConnectionURL)
 	if err != nil {

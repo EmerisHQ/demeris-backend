@@ -13,6 +13,8 @@ import (
 	"github.com/allinbits/demeris-backend/utils/logging"
 )
 
+var Version = "not specified"
+
 func main() {
 	config, err := config.Read()
 	if err != nil {
@@ -24,12 +26,13 @@ func main() {
 		Debug:   config.Debug,
 	})
 
+	logger.Infow("price-oracle-server", "version", Version)
+
 	di, err := database.New(config.DatabaseConnectionURL)
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	logger.Infow("INFO", "Oracle", "Start oracle")
 	var wg sync.WaitGroup
 
 	ctx, cancel := context.WithCancel(context.Background())
