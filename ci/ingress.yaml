@@ -7,9 +7,11 @@ metadata:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/enable-cors: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
-  - http:
+  - host: dev.demeris.io
+    http:
       paths:
       - backend:
           service:
@@ -32,6 +34,10 @@ spec:
               number: 8000
         path: /v1(/|$)(.*)
         pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - dev.demeris.io
+    secretName: emeris-cert
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -41,9 +47,13 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Demeris Admin'
 spec:
   rules:
-  - http:
+  - host: dev.demeris.io
+    http:
       paths:
       - backend:
           service:
@@ -59,3 +69,7 @@ spec:
               number: 80
         path: /()(.*)
         pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - dev.demeris.io
+    secretName: emeris-cert

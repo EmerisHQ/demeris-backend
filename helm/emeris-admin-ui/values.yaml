@@ -1,4 +1,4 @@
-image: demeris/admin-ui:latest
+image: emeris/admin-ui:latest
 imagePullPolicy: Always
 
 replicas: 1

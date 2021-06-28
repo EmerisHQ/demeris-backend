@@ -1,4 +1,4 @@
-image: demeris/api-server:latest
+image: emeris/cns-server:latest
 imagePullPolicy: Always
 
 replicas: 1
@@ -10,8 +10,10 @@ resources: {}
 ports:
   http: 8000
 
-cnsAddress: cns-server:8000
-
 databaseConnectionURL: postgres://root@cockroachdb-public:26257?sslmode=disable
 
+debug: true
+
 redisUrl: redis-master:6379
+
+k8sNamespace: default
