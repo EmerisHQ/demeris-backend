@@ -26,7 +26,7 @@ func (r *router) deleteChainHandler(ctx *gin.Context) {
 		return
 	}
 
-	k := k8s.Querier{Client: *r.s.k}
+	k := k8s.Querier{Client: *r.s.k, Namespace: r.s.defaultK8SNamespace}
 
 	if err := k.DeleteNode(chain.Chain); err != nil {
 		// there isn't always a k8s nodeset for a given chain

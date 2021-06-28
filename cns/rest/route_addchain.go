@@ -42,7 +42,10 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	// clean any primary channel that user might've added
 	newChain.PrimaryChannel = models.DbStringMap{}
 
-	k := k8s.Querier{Client: *r.s.k}
+	k := k8s.Querier{
+		Client:    *r.s.k,
+		Namespace: r.s.defaultK8SNamespace,
+	}
 
 	if _, err := k.ChainByName(newChain.ChainName); !errors.Is(err, k8s.ErrNotFound) {
 		r.s.l.Infow("trying to add a kubernetes nodeset which is already there, ignoring", "error", err)
