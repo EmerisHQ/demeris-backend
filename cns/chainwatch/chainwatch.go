@@ -79,7 +79,10 @@ func (i *Instance) Run() {
 				i.statusMap[chain.Name] = chainStatus
 			}
 
-			q := k8s.Querier{Client: i.k}
+			q := k8s.Querier{
+				Client:    i.k,
+				Namespace: i.defaultNamespace,
+			}
 
 			n, err := q.ChainByName(chain.Name)
 			if err != nil {
@@ -157,7 +160,10 @@ func (i *Instance) chainFinished(chain Chain) error {
 }
 
 func (i *Instance) createRelayer(chain Chain) error {
-	q := k8s.Querier{Client: i.k}
+	q := k8s.Querier{
+		Client:    i.k,
+		Namespace: i.defaultNamespace,
+	}
 
 	cfg := operator.RelayerConfig{
 		NodesetName:   chain.Name,
