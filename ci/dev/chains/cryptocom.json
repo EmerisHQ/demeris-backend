@@ -1,11 +1,11 @@
 {
-  "chain_name":"akash",
-  "derivation_path": "m/44'/118'/0'/0/0",
+  "chain_name":"crypto-com",
+  "derivation_path": "m/44'/394'/0'/0/0",
   "logo": "logo url",
   "enabled": true,
   "valid_block_thresh": "10s",
   "minimum_thresh_relayer_balance": 42,
-  "display_name": "Akash Emeris",
+  "display_name": "Crypto.com Emeris",
   "counterparty_names":{
     "cn1": "cn1",
     "cn2": "cn2"
@@ -17,24 +17,24 @@
   "demeris_addresses": ["feeaddress"],
   "denoms": [
     {
-      "display_name": "AKT",
-      "name": "uakt",
+      "display_name": "CRO",
+      "name": "basecro",
       "verified": true,
       "stakable": true,
       "fee_token": true,
       "fetch_price": true,
       "fee_levels": {"low": 1, "average": 22, "high": 42},
-      "precision": 6
+      "precision": 8
     }
   ],
   "base_ibc_fee":1,
   "genesis_hash":"genesis_hash",
   "node_info": {
-    "endpoint": "akash",
-    "chain_id": "akash-testnet",
+    "endpoint": "crypto-com",
+    "chain_id": "crypto-com-testnet",
     "bech32_config": {
-      "main_prefix": "akash",
-      "prefix_account": "akash",
+      "main_prefix": "cro",
+      "prefix_account": "cro",
       "prefix_validator": "val",
       "prefix_consensus": "cons",
       "prefix_public": "pub",
@@ -42,22 +42,23 @@
     }
   },
   "node_config": {
-    "name": "akash",
-    "namespace": "demeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener",
+    "name": "crypto-com",
+    "cli_name": "chain-maind",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener:master",
     "testnet_config": {
-      "chainID": "akash-testnet",
-      "stakeAmount": "10000000000uakt",
-      "bondDenom": "uakt",
+      "chainID": "crypto-com-testnet",
+      "stakeAmount": "10000000000basecro",
+      "bondDenom": "basecro",
       "assets": [
-        "10000000000000000000000uakt"
+        "10000000000000000000000basecro"
       ],
       "faucet": {
-        "funds": "10000000000000000000000uakt",
-        "denoms": ["uakt"]
+        "funds": "100000000000000000000000000basecro",
+        "denoms": ["basecro"]
       }
     },
-    "docker_image": "gcr.io/tendermint-dev/akash",
-    "docker_image_version": "v0.12.1"
+    "docker_image": "gcr.io/tendermint-dev/crypto-com",
+    "docker_image_version": "v2.0.1"
   }
 }
