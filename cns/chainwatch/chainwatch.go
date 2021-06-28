@@ -198,13 +198,21 @@ func (i *Instance) createRelayer(chain Chain) error {
 
 	relayer.Spec.Chains = append(relayer.Spec.Chains, &relayerConfig)
 
-	ctc, err := i.chainsToConnectTo(cfg.NodesetName)
+	ctc, alreadyConnected, err := i.chainsConnectedAndToConnectTo(cfg.NodesetName)
 	if err != nil {
 		i.l.Debugw("cannot query chains to connect to", "error", err)
 		return err
 	}
 
 	i.l.Debugw("chains to connect to", "ctc", ctc)
+	i.l.Debugw("chains already connected", "chains", alreadyConnected, "how many", len(alreadyConnected))
+
+	if len(alreadyConnected) != 0 {
+		if err := i.updateAlreadyConnected(alreadyConnected); err != nil {
+			i.l.Debugw("cannot update already connected chains", "error", err)
+			return err
+		}
+	}
 
 	for _, ccc := range ctc {
 		relayer.Spec.Paths = append(relayer.Spec.Paths, v1.PathConfig{
@@ -239,13 +247,25 @@ func (i *Instance) relayerFinished(chain Chain, relayer v1.Relayer) error {
 	return nil
 }
 
-func (i *Instance) chainsToConnectTo(chainName string) ([]string, error) {
+type connectedChain struct {
+	chainName        string
+	counterChainName string
+	channel          string
+	counterChannel   string
+}
+
+func (c connectedChain) String() string {
+	return fmt.Sprintf("%s, %s, %s, %s", c.chainName, c.counterChainName, c.channel, c.counterChannel)
+}
+
+func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []connectedChain, error) {
 	chains, err := i.db.Chains()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var ret []string
+	var connected []connectedChain
 
 	for _, c := range chains {
 		if c.ChainName == chainName {
@@ -254,17 +274,71 @@ func (i *Instance) chainsToConnectTo(chainName string) ([]string, error) {
 
 		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName)
 		if err != nil {
-			return nil, fmt.Errorf("cannot scan channels between chain %s and %s, %w", chainName, c.ChainName, err)
+			return nil, nil, fmt.Errorf("cannot scan channels between chain %s and %s, %w", chainName, c.ChainName, err)
 		}
 
 		i.l.Debugw("chains between", "chainName", chainName, "other", c.ChainName, "conns", conns)
 
 		if conns == nil || len(conns) == 0 {
-			ret = append(ret, c.ChainName)
+			ret = append(ret, c.ChainName) // c.ChainName is not connected to chainName
+		} else {
+			cc := connectedChain{
+				chainName:        chainName,
+				counterChainName: c.ChainName,
+			}
+
+			for chanID, counterChanID := range conns {
+				cc.channel = chanID
+				cc.counterChannel = counterChanID
+				break
+			}
+
+			i.l.Debugw("new connected chain", "chain", cc)
+
+			connected = append(connected, cc) // c.ChainName is connected via cc.counterChannel, chainName is connected via cc.channel
 		}
 	}
 
-	return ret, nil
+	i.l.Debugw("returning data from chains connected func", "ret", ret, "connected", connected)
+
+	return ret, connected, nil
+}
+
+func (i *Instance) updateAlreadyConnected(connected []connectedChain) error {
+	chains, err := i.db.Chains()
+	if err != nil {
+		return err
+	}
+
+	chainsMap := map[string]models.Chain{}
+	for _, c := range chains {
+		chainsMap[c.ChainName] = c
+	}
+
+	for _, c := range connected {
+		chain, ok := chainsMap[c.chainName]
+		if !ok {
+			return fmt.Errorf("found chain %s in connectedChain but not into chains database", c.chainName)
+		}
+
+		counterChain, ok := chainsMap[c.counterChainName]
+		if !ok {
+			return fmt.Errorf("found counterparty chain %s in connectedChain but not into chains database", c.counterChainName)
+		}
+
+		chain.PrimaryChannel[c.counterChainName] = c.counterChannel
+		counterChain.PrimaryChannel[c.chainName] = c.channel
+
+		if err := i.db.AddChain(chain); err != nil {
+			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
+		}
+
+		if err := i.db.AddChain(counterChain); err != nil {
+			return fmt.Errorf("error while updating chain %s, %w", counterChain.ChainName, err)
+		}
+	}
+
+	return nil
 }
 
 func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
