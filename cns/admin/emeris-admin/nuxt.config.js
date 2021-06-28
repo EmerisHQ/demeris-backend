@@ -1,6 +1,12 @@
 export default {
   // Target: https://go.nuxtjs.dev/config-target
-  target: 'server',
+  target: 'static',
+
+  generate: {
+    exclude: [
+      /^\/chain/ // path starts with /chain
+    ]
+  },
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -45,10 +51,10 @@ export default {
   },
 
   axios: {
-    baseUrl: process.env.CNS_URL || "http://localhost:9999"
+    baseUrl: process.env.CNS_URL || "/v1/cns"
   },
 
   router: {
-    base: process.env.BASE_URL || "/"
+    base: process.env.BASE_URL || "/admin"
   }
 };

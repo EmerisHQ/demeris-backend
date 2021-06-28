@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:14 as builder
 
 WORKDIR /usr/src/app
 
@@ -6,13 +6,7 @@ COPY package.json .
 RUN yarn
 
 COPY . .
-RUN yarn build
+RUN yarn generate
 
-ENV HOST=0.0.0.0
-ENV PORT=80
-ENV CNS_URL=http://cns-server:8000
-ENV BASE_URL="/"
-
-EXPOSE ${PORT}
-
-CMD [ "yarn", "start" ]
+FROM nginx:alpine
+COPY --from=builder /usr/src/app/dist /usr/share/nginx/html/admin

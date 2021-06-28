@@ -9,6 +9,3 @@ resources: {}
 
 ports:
   http: 80
-
-cnsAddress: http://cns-server:8000
-baseURL: /admin/
