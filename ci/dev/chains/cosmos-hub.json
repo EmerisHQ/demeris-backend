@@ -47,7 +47,7 @@
     "name": "cosmos-hub",
     "cli_name": "gaiad",
     "namespace": "emeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener:master",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
     "testnet_config": {
       "chainID": "cosmos-hub-testnet",
       "stake_amount": "10000000000uatom",
