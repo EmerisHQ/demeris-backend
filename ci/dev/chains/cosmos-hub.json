@@ -46,7 +46,7 @@
   "node_config": {
     "name": "cosmos-hub",
     "cli_name": "gaiad",
-    "namespace": "demeris",
+    "namespace": "emeris",
     "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener:master",
     "testnet_config": {
       "chainID": "cosmos-hub-testnet",

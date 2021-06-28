@@ -3,13 +3,22 @@ name: Deploy Chains
 on: 
   workflow_dispatch:
     inputs:
-      cosmos-hub:
+      cosmos_hub:
         description: 'Deploy Cosmos Hub'     
+        required: true
+        default: 'false'
+      akash:
+        description: 'Deploy Akash'     
+        required: true
+        default: 'false'
+      crypto_com:
+        description: 'Deploy Crypto.com'     
         required: true
         default: 'false'
 
 jobs:
   cosmos-hub:
+    if: ${{ github.event.inputs.cosmos_hub == 'true' }}
     runs-on: self-hosted
     steps:
       - name: Checkout
@@ -19,3 +28,27 @@ jobs:
         uses: wei/curl@v1
         with:
           args: -X POST -u tendermint:${{ secrets.DEV_CNS_PASSWORD }} -d @ci/dev/chains/cosmos-hub.json https://dev.demeris.io/v1/cns/add
+
+  akash:
+    if: ${{ github.event.inputs.akash == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: wei/curl@v1
+        with:
+          args: -X POST -u tendermint:${{ secrets.DEV_CNS_PASSWORD }} -d @ci/dev/chains/akash.json https://dev.demeris.io/v1/cns/add
+
+  crypto-com:
+    if: ${{ github.event.inputs.crypto_com == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: wei/curl@v1
+        with:
+          args: -X POST -u tendermint:${{ secrets.DEV_CNS_PASSWORD }} -d @ci/dev/chains/cryptocom.json https://dev.demeris.io/v1/cns/add

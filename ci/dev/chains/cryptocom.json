@@ -44,7 +44,7 @@
   "node_config": {
     "name": "crypto-com",
     "cli_name": "chain-maind",
-    "namespace": "demeris",
+    "namespace": "emeris",
     "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener:master",
     "testnet_config": {
       "chainID": "crypto-com-testnet",

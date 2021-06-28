@@ -43,7 +43,7 @@
   },
   "node_config": {
     "name": "akash",
-    "namespace": "demeris",
+    "namespace": "emeris",
     "tracelistener_image": "gcr.io/tendermint-dev/demeris-tracelistener:master",
     "testnet_config": {
       "chainID": "akash-testnet",
