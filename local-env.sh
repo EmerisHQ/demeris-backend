@@ -302,7 +302,6 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        --set cnsAddress=http://localhost:8000/v1/cns \
         helm/emeris-admin-ui \
         &> /dev/null
 
