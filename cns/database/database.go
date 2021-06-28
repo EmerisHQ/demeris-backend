@@ -145,16 +145,25 @@ func (i *Instance) UpdateDenoms(chain string, denoms models.DenomList) error {
 	return nil
 }
 
+type channelsBetweenChain struct {
+	C1ChainName        string `db:"c1_chain_name"`
+	C1ChannelID        string `db:"c1_channel_id"`
+	C1CounterChannelID string `db:"c1_counter_channel_id"`
+	C2ChainName        string `db:"c2_chain_name"`
+	C2ChannelID        string `db:"c2_channel_id"`
+	C2CounterChannelID string `db:"c2_counter_channel_id"`
+}
+
 func (i *Instance) ChannelsBetweenChains(source, destination string) (map[string]string, error) {
 
-	var c []models.IBCChannelRow
+	var c []channelsBetweenChain
 
 	n, err := i.d.DB.PrepareNamed(channelsBetweenChains)
 	if err != nil {
 		return map[string]string{}, err
 	}
 
-	if err := n.Get(&c, map[string]interface{}{
+	if err := n.Select(&c, map[string]interface{}{
 		"source":      source,
 		"destination": destination,
 	}); err != nil {
@@ -164,7 +173,7 @@ func (i *Instance) ChannelsBetweenChains(source, destination string) (map[string
 	ret := map[string]string{}
 
 	for _, cc := range c {
-		ret[cc.ChannelID] = cc.CounterChannelID
+		ret[cc.C1ChannelID] = cc.C1CounterChannelID
 	}
 
 	return ret, nil

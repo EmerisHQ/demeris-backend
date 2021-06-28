@@ -90,12 +90,12 @@ SELECT * FROM cns.chains WHERE chain_name='?' limit 1;
 
 const channelsBetweenChains = `
 select 
-  c1.chain_name, 
-  c1.channel_id, 
-  c1.counter_channel_id, 
-  c2.chain_name, 
-  c2.channel_id, 
-  c2.counter_channel_id 
+  c1.chain_name as c1_chain_name, 
+  c1.channel_id as c1_channel_id, 
+  c1.counter_channel_id as c1_counter_channel_id, 
+  c2.chain_name as c2_chain_name, 
+  c2.channel_id as c2_channel_id, 
+  c2.counter_channel_id as c2_counter_channel_id
 from 
   tracelistener.channels c1, 
   (
