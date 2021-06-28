@@ -16,4 +16,4 @@ debug: true
 
 redisUrl: redis-master:6379
 
-k8sNamespace: default
+k8sNamespace: emeris
