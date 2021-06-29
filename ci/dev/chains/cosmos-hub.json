@@ -62,7 +62,7 @@
         ]
       }
     },
-    "docker_image": "gcr.io/tendermint-dev/gaia-liquidity",
-    "docker_image_version": "v1.0.2"
+    "docker_image": "gcr.io/tendermint-dev/gaia",
+    "docker_image_version": "v5.0.0"
   }
 }
