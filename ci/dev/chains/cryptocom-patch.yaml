@@ -1,0 +1,6 @@
+spec:
+  expose:
+    domain: crypto-com-emeris.app.alpha.starport.cloud
+    grpc: true
+    rpc: true
+    api: true
