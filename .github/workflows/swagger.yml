@@ -1,0 +1,18 @@
+name: Generate Swagger
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Generate swagger
+        run: make generate-swagger
