@@ -3,6 +3,7 @@ package chainwatch
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/allinbits/demeris-backend/models"
@@ -160,6 +161,11 @@ func (i *Instance) chainFinished(chain Chain) error {
 }
 
 func (i *Instance) createRelayer(chain Chain) error {
+	relayerDenom, err := i.relayerDenom(chain.Name)
+	if err != nil {
+		return err
+	}
+
 	q := k8s.Querier{
 		Client:    i.k,
 		Namespace: i.defaultNamespace,
@@ -193,7 +199,12 @@ func (i *Instance) createRelayer(chain Chain) error {
 		}
 	}
 
-	relayerConfig.GasPrice = v1.GasPriceConfig{}
+	gasPrice := strconv.FormatUint(relayerDenom.GasPriceLevels.Average, 10)
+
+	relayerConfig.GasPrice = v1.GasPriceConfig{
+		Price: &gasPrice,
+		Denom: &relayerDenom.Name,
+	}
 	relayerConfig.MaxGas = &maxGas
 
 	relayer.Spec.Chains = append(relayer.Spec.Chains, &relayerConfig)
@@ -387,4 +398,13 @@ func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
 	}
 
 	return nil
+}
+
+func (i *Instance) relayerDenom(chainName string) (models.Denom, error) {
+	chain, err := i.db.Chain(chainName)
+	if err != nil {
+		return models.Denom{}, err
+	}
+
+	return chain.RelayerToken(), nil
 }
