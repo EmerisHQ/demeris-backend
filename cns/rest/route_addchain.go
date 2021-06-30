@@ -66,6 +66,8 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			newChain.NodeInfo.ChainID = *newChain.NodeConfig.TestnetConfig.ChainId
 		}
 
+		newChain.NodeConfig.TracelistenerDebug = r.s.debug
+
 		node, err := operator.NewNode(*newChain.NodeConfig)
 		if err != nil {
 			e(ctx, http.StatusBadRequest, err)

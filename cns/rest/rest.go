@@ -28,6 +28,7 @@ type Server struct {
 	k                   *kube.Client
 	rc                  *chainwatch.Connection
 	defaultK8SNamespace string
+	debug               bool
 }
 
 type router struct {
@@ -48,6 +49,7 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc
 		k:                   kube,
 		rc:                  rc,
 		defaultK8SNamespace: defaultK8SNamespace,
+		debug:               debug,
 	}
 
 	r := &router{s: s}
