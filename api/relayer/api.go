@@ -61,11 +61,11 @@ func getRelayerStatus(c *gin.Context) {
 		return
 	}
 
+	res.Running = true
+
 	if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
 		res.Running = false
 	}
-
-	res.Running = true
 
 	c.JSON(http.StatusOK, res)
 }
