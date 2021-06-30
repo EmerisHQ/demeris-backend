@@ -23,7 +23,9 @@
       "stakable": true,
       "fee_token": true,
       "fetch_price": true,
-      "fee_levels": {"low": 1, "average": 22, "high": 42},
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance":42,
+      "gas_price_levels": {"low": 1, "average": 22, "high": 42},
       "precision": 6
     }
   ],
