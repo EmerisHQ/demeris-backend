@@ -1,14 +1,13 @@
 package main
 
 import (
-	"github.com/allinbits/demeris-backend/utils/logging"
-	"github.com/allinbits/demeris-backend/utils/store"
-	gaia "github.com/cosmos/gaia/v4/app"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router"
+	"github.com/allinbits/demeris-backend/utils/k8s"
+	"github.com/allinbits/demeris-backend/utils/logging"
+	"github.com/allinbits/demeris-backend/utils/store"
+	gaia "github.com/cosmos/gaia/v4/app"
 )
 
 var Version = "not specified"
@@ -32,19 +31,19 @@ func main() {
 
 	s := store.NewClient(cfg.RedisAddr)
 
-	/*kubeClient, err := k8s.NewInCluster()
+	kubeClient, err := k8s.NewInCluster()
 	if err != nil {
 		l.Panicw("cannot initialize k8s", "error", err)
-	}*/
+	}
 
-	var c client.Client
 	cdc, _ := gaia.MakeCodecs()
 
 	r := router.New(
 		dbi,
 		l,
 		s,
-		c,
+		kubeClient,
+		cfg.KubernetesNamespace,
 		cfg.CNSAddr,
 		cdc,
 	)
