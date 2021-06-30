@@ -34,6 +34,6 @@ func readConfig() (*Config, error) {
 
 	return &c, configuration.ReadConfig(&c, "demeris-cns", map[string]string{
 		"RESTAddress":         ":9999",
-		"KubernetesNamespace": "demeris",
+		"KubernetesNamespace": "emeris",
 	})
 }
