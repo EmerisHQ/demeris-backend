@@ -665,7 +665,10 @@ func GetChainStatus(c *gin.Context) {
 		return
 	}
 
-	running, err := k8s.Querier{Client: *d.K8S}.ChainRunning(chainName)
+	running, err := k8s.Querier{
+		Client:    *d.K8S,
+		Namespace: d.KubeNamespace,
+	}.ChainRunning(chainName)
 
 	if err != nil {
 		e := deps.NewError(
