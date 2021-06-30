@@ -39,8 +39,6 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		return
 	}
 
-	// clean any primary channel that user might've added
-	newChain.PrimaryChannel = models.DbStringMap{}
 
 	k := k8s.Querier{
 		Client:    *r.s.k,
