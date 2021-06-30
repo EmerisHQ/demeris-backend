@@ -33,7 +33,7 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: patch -n emeris nodeset cosmos-hub --patch "$(cat ci/dev/chains/cosmos-hub-patch.yaml)"
+          command: patch -n emeris nodeset cosmos-hub --type merge --patch "$(cat ci/dev/chains/cosmos-hub-patch.yaml)"
 
   akash:
     if: ${{ github.event.inputs.akash == 'true' }}
@@ -51,7 +51,7 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: patch -n emeris nodeset akash--patch "$(cat ci/dev/chains/akash-patch.yaml)"
+          command: patch -n emeris nodeset akash --type merge --patch "$(cat ci/dev/chains/akash-patch.yaml)"
 
   crypto-com:
     if: ${{ github.event.inputs.crypto_com == 'true' }}
@@ -69,4 +69,4 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: patch -n emeris nodeset crypto-com --patch "$(cat ci/dev/chains/cryptocom-patch.yaml)"
+          command: patch -n emeris nodeset crypto-com --type merge --patch "$(cat ci/dev/chains/cryptocom-patch.yaml)"
