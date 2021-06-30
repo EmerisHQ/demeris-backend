@@ -39,6 +39,11 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		return
 	}
 
+	if err := validateDenoms(newChain.Chain); err != nil {
+		e(ctx, http.StatusBadRequest, err)
+		r.s.l.Error("fee validation failed", err)
+		return
+	}
 
 	k := k8s.Querier{
 		Client:    *r.s.k,
@@ -101,9 +106,33 @@ func (r *router) addChain() (string, gin.HandlerFunc) {
 }
 
 func validateFees(c models.Chain) error {
-	for _, denom := range c.FeeTokens() {
-		if denom.FeeLevels.Empty() {
+	ft := c.FeeTokens()
+	if len(ft) == 0 {
+		return fmt.Errorf("no fee token specified")
+	}
+
+	for _, denom := range ft {
+		if denom.GasPriceLevels.Empty() {
 			return fmt.Errorf("fee levels for %s are not defined", denom.Name)
+		}
+	}
+
+	return nil
+}
+
+func validateDenoms(c models.Chain) error {
+	foundRelayerDenom := false
+	for _, d := range c.Denoms {
+		if d.RelayerDenom {
+			if foundRelayerDenom {
+				return fmt.Errorf("multiple relayer denoms detected")
+			}
+
+			if d.MinimumThreshRelayerBalance == nil {
+				return fmt.Errorf("relayer denom detected but no relayer minimum threshold balance defined")
+			}
+
+			foundRelayerDenom = true
 		}
 	}
 
