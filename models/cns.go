@@ -136,9 +136,9 @@ func (a *NodeInfo) Scan(value interface{}) error {
 
 // GasPrice holds gas prices.
 type GasPrice struct {
-	Low     uint64 `binding:"required" json:"low"`
-	Average uint64 `binding:"required" json:"average"`
-	High    uint64 `binding:"required" json:"high"`
+	Low     float64 `binding:"required" json:"low"`
+	Average float64 `binding:"required" json:"average"`
+	High    float64 `binding:"required" json:"high"`
 }
 
 func (a GasPrice) Empty() bool {

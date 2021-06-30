@@ -3,7 +3,6 @@ package chainwatch
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/allinbits/demeris-backend/models"
@@ -199,7 +198,7 @@ func (i *Instance) createRelayer(chain Chain) error {
 		}
 	}
 
-	gasPrice := strconv.FormatUint(relayerDenom.GasPriceLevels.Average, 10)
+	gasPrice := fmt.Sprintf("%.2f", relayerDenom.GasPriceLevels.Average)
 
 	relayerConfig.GasPrice = v1.GasPriceConfig{
 		Price: &gasPrice,
