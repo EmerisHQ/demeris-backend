@@ -12,19 +12,18 @@ import (
 
 // Chain represents CNS chain metadata row on the database.
 type Chain struct {
-	ID                          uint64         `diff:"-" db:"id" json:"-"`
-	Enabled                     bool           `diff:"-" db:"enabled" json:"enabled"`                                                                          // boolean that marks whether the given chain is enabled or not (when enabled, API endpoints will return data)
-	ChainName                   string         `db:"chain_name" binding:"required" json:"chain_name"`                                                          // the unique name of the chain
-	Logo                        string         `diff:"-" db:"logo" binding:"required" json:"logo"`                                                             // logo of the chain
-	DisplayName                 string         `diff:"-" db:"display_name" binding:"required" json:"display_name"`                                             // user-friendly chain name
-	PrimaryChannel              DbStringMap    `diff:"-" db:"primary_channel"  json:"primary_channel"`                                                         // a mapping of chain name to primary channel
-	Denoms                      DenomList      `diff:"-" db:"denoms" binding:"dive" json:"denoms"`                                                             // a list of denoms native to the chain
-	DemerisAddresses            pq.StringArray `diff:"-" db:"demeris_addresses" binding:"required" json:"demeris_addresses"`                                   // the addresses on which we accept fee payments
-	GenesisHash                 string         `diff:"-" db:"genesis_hash" binding:"required" json:"genesis_hash"`                                             // hash of the chain's genesis file
-	NodeInfo                    NodeInfo       `diff:"-" db:"node_info" binding:"required,dive" json:"node_info"`                                              // info required to query full-node (e.g. to submit tx)
-	ValidBlockThresh            Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
-	MinimumThreshRelayerBalance int64          `diff:"-" db:"minimum_thresh_relayer_balance" binding:"required" json:"minimum_thresh_relayer_balance"`         // minimum relayer balance threshold that a relayer account must contains
-	DerivationPath              string         `diff:"-" db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                        // chain derivation path
+	ID               uint64         `diff:"-" db:"id" json:"-"`
+	Enabled          bool           `diff:"-" db:"enabled" json:"enabled"`                                                                          // boolean that marks whether the given chain is enabled or not (when enabled, API endpoints will return data)
+	ChainName        string         `db:"chain_name" binding:"required" json:"chain_name"`                                                          // the unique name of the chain
+	Logo             string         `diff:"-" db:"logo" binding:"required" json:"logo"`                                                             // logo of the chain
+	DisplayName      string         `diff:"-" db:"display_name" binding:"required" json:"display_name"`                                             // user-friendly chain name
+	PrimaryChannel   DbStringMap    `diff:"-" db:"primary_channel"  json:"primary_channel"`                                                         // a mapping of chain name to primary channel
+	Denoms           DenomList      `diff:"-" db:"denoms" binding:"dive" json:"denoms"`                                                             // a list of denoms native to the chain
+	DemerisAddresses pq.StringArray `diff:"-" db:"demeris_addresses" binding:"required" json:"demeris_addresses"`                                   // the addresses on which we accept fee payments
+	GenesisHash      string         `diff:"-" db:"genesis_hash" binding:"required" json:"genesis_hash"`                                             // hash of the chain's genesis file
+	NodeInfo         NodeInfo       `diff:"-" db:"node_info" binding:"required,dive" json:"node_info"`                                              // info required to query full-node (e.g. to submit tx)
+	ValidBlockThresh Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
+	DerivationPath   string         `diff:"-" db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                        // chain derivation path
 }
 
 // VerifiedTokens returns a DenomList of native denoms that are verified.
@@ -53,6 +52,17 @@ func (c Chain) FeeTokens() DenomList {
 	}
 
 	return ret
+}
+
+// RelayerToken returns the relayer token for a given chain.
+func (c Chain) RelayerToken() Denom {
+	for _, ft := range c.Denoms {
+		if ft.RelayerDenom {
+			return ft
+		}
+	}
+
+	panic("relayer token not defined")
 }
 
 // Threshold is a database-friendly time.Duration.
@@ -124,19 +134,19 @@ func (a *NodeInfo) Scan(value interface{}) error {
 	return json.Unmarshal(b, &a)
 }
 
-// TxFee holds levels of payment for fees.
-type TxFee struct {
+// GasPrice holds gas prices.
+type GasPrice struct {
 	Low     uint64 `binding:"required" json:"low"`
 	Average uint64 `binding:"required" json:"average"`
 	High    uint64 `binding:"required" json:"high"`
 }
 
-func (a TxFee) Empty() bool {
-	return a == TxFee{}
+func (a GasPrice) Empty() bool {
+	return a == GasPrice{}
 }
 
 // Scan is the sql.Scanner implementation for DbStringMap.
-func (a *TxFee) Scan(value interface{}) error {
+func (a *GasPrice) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
@@ -223,16 +233,18 @@ type bech32ConfigMarshaled struct {
 
 // Denom holds a token denomination and its verification status.
 type Denom struct {
-	Name        string `db:"name" binding:"required" json:"name,omitempty"`
-	DisplayName string `db:"display_name" json:"display_name"`
-	Logo        string `db:"logo" json:"logo,omitempty"`
-	Precision   int64  `db:"precision" json:"precision,omitempty"`
-	Verified    bool   `db:"verified" json:"verified,omitempty"`
-	Stakable    bool   `db:"stakable" json:"stakable,omitempty"`
-	Ticker      string `db:"ticker" json:"ticker,omitempty"`
-	FeeToken    bool   `db:"fee_token" json:"fee_token,omitempty"`
-	FeeLevels   TxFee  `db:"fee_levels" json:"fee_levels"`
-	FetchPrice  bool   `db:"fetch_price" json:"fetch_price"`
+	Name                        string   `db:"name" binding:"required" json:"name,omitempty"`
+	DisplayName                 string   `db:"display_name" json:"display_name"`
+	Logo                        string   `db:"logo" json:"logo,omitempty"`
+	Precision                   int64    `db:"precision" json:"precision,omitempty"`
+	Verified                    bool     `db:"verified" json:"verified,omitempty"`
+	Stakable                    bool     `db:"stakable" json:"stakable,omitempty"`
+	Ticker                      string   `db:"ticker" json:"ticker,omitempty"`
+	FeeToken                    bool     `db:"fee_token" json:"fee_token,omitempty"`
+	GasPriceLevels              GasPrice `db:"gas_price_levels" json:"gas_price_levels"`
+	FetchPrice                  bool     `db:"fetch_price" json:"fetch_price"`
+	RelayerDenom                bool     `db:"relayer_denom" json:"relayer_denom"`
+	MinimumThreshRelayerBalance *int64   `db:"minimum_thresh_relayer_balance" json:"minimum_thresh_relayer_balance,omitempty"`
 }
 
 // DenomList represents a slice of Denom.
