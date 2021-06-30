@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"strconv"
 
 	v1 "github.com/allinbits/starport-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -26,6 +27,7 @@ const (
 	trType    = "gaia"
 
 	trChainNameVar = "TRACELISTENER_CHAINNAME"
+	trDebugVar     = "TRACELISTENER_DEBUG"
 )
 
 var (
@@ -43,6 +45,7 @@ type NodeConfiguration struct {
 	DockerImageVersion string                  `json:"docker_image_version"`
 	Namespace          string                  `json:"-"`
 	TracelistenerImage string                  `json:"tracelistener_image"`
+	TracelistenerDebug bool
 }
 
 func (n NodeConfiguration) Validate() error {
@@ -166,6 +169,11 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 	tracelistenerConfig.Env = append(tracelistenerConfig.Env, corev1.EnvVar{
 		Name:  trChainNameVar,
 		Value: c.Name,
+	})
+
+	tracelistenerConfig.Env = append(tracelistenerConfig.Env, corev1.EnvVar{
+		Name:  trDebugVar,
+		Value: strconv.FormatBool(c.TracelistenerDebug),
 	})
 
 	nodeConfig := defaultConfig
