@@ -226,10 +226,16 @@ func (i *Instance) createRelayer(chain Chain) error {
 	}
 
 	for _, ccc := range ctc {
-		relayer.Spec.Paths = append(relayer.Spec.Paths, v1.PathConfig{
+		newPath := v1.PathConfig{
 			SideA: cfg.NodesetName,
 			SideB: ccc,
-		})
+		}
+
+		if pathDuplicate(newPath, relayer.Spec.Paths) {
+			continue
+		}
+
+		relayer.Spec.Paths = append(relayer.Spec.Paths, newPath)
 	}
 
 	var execErr error
@@ -248,6 +254,21 @@ func (i *Instance) createRelayer(chain Chain) error {
 	}
 
 	return nil
+}
+
+func pathDuplicate(newConfig v1.PathConfig, paths []v1.PathConfig) bool {
+	flipped := v1.PathConfig{
+		SideA: newConfig.SideB,
+		SideB: newConfig.SideA,
+	}
+
+	for _, path := range paths {
+		if path == newConfig || path == flipped {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (i *Instance) relayerFinished(chain Chain, relayer v1.Relayer) error {
