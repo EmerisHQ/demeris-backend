@@ -104,7 +104,8 @@ from
   ) c2 
 where 
   c1.channel_id = c2.counter_channel_id 
-  and c1.counter_channel_id = c2.channel_id 
+  and c1.counter_channel_id = c2.channel_id
+  and c1.chain_name != c2.chain_name
   and c1.chain_name = :source 
   and c2.chain_name = :destination;
 `
