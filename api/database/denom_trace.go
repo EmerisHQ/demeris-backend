@@ -11,7 +11,7 @@ func (d *Database) DenomTrace(chain string, hash string) (models.IBCDenomTraceRo
 	hash = strings.ToLower(hash)
 	var denomTraces []models.IBCDenomTraceRow
 
-	q := "SELECT * FROM tracelistener.denom_traces WHERE chain_name=? and hash=? limit 1;"
+	q := "SELECT * FROM tracelistener.denom_traces WHERE chain_name=? and hash=? limit 1 and base_denom != '';"
 
 	q = d.dbi.DB.Rebind(q)
 
