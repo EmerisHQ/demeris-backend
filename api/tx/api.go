@@ -201,14 +201,14 @@ func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 		return "", err
 	}
 
+	if grpcRes.TxResponse.Code != types2.CodeTypeOK {
+		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
+	}
+
 	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash)
 
 	if err != nil {
 		return grpcRes.TxResponse.TxHash, err
-	}
-
-	if grpcRes.TxResponse.Code != types2.CodeTypeOK {
-		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
 	}
 
 	return grpcRes.TxResponse.TxHash, nil
