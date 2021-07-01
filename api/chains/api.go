@@ -505,8 +505,9 @@ func VerifyTrace(c *gin.Context) {
 	res.VerifiedTrace.Path = denomTrace.Path
 	res.VerifiedTrace.BaseDenom = denomTrace.BaseDenom
 
-	// if the path contains more than one slash, that means we cannot support it
-	if strings.Count(res.VerifiedTrace.Path, "/") > 1 {
+	pathsElements, err := paths(res.VerifiedTrace.Path)
+
+	if err != nil {
 		err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
 		e := deps.NewError(
@@ -530,71 +531,137 @@ func VerifyTrace(c *gin.Context) {
 		return
 	}
 
-	// otherwise, check that it has a transfer prefix
-	if !strings.HasPrefix(res.VerifiedTrace.Path, "transfer/") {
-		err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
+	nextChain := chain
+	for _, element := range pathsElements {
+		// otherwise, check that it has a transfer prefix
+		if !strings.HasPrefix(element, "transfer/") {
+			err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
-			http.StatusBadRequest,
-		)
+			e := deps.NewError(
+				"denom/verify-trace",
+				fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
+				http.StatusBadRequest,
+			)
 
-		d.WriteError(c, e,
-			"invalid denom",
-			"id",
-			e.ID,
-			"hash",
-			hash,
-			"path",
-			res.VerifiedTrace.Path,
-			"err",
-			err,
-		)
+			d.WriteError(c, e,
+				"invalid denom",
+				"id",
+				e.ID,
+				"hash",
+				hash,
+				"path",
+				res.VerifiedTrace.Path,
+				"err",
+				err,
+			)
+
+			return
+		}
+
+		channel := strings.TrimPrefix(element, "transfer/")
+
+		var channelInfo models.IbcChannelsInfo
+		var trace trace
+
+		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel)
+
+		if err != nil {
+			e := deps.NewError(
+				"denom/verify-trace",
+				fmt.Errorf("failed querying for %s", hash),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"invalid number of query responses",
+				"id",
+				e.ID,
+				"hash",
+				hash,
+				"path",
+				res.VerifiedTrace.Path,
+				"chain",
+				chain,
+				"err",
+				err,
+			)
+
+			return
+		}
+
+		trace.ChainName = channelInfo[0].ChainAName
+		trace.CounterpartyName = channelInfo[0].ChainBName
+		trace.Channel = channelInfo[0].ChainAChannelID
+		trace.Port = "transfer"
+
+		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
+
+		nextChain = trace.CounterpartyName
 	}
 
-	channel := strings.TrimPrefix(res.VerifiedTrace.Path, "transfer/")
-
-	var channelInfo models.IbcChannelsInfo
-	var trace trace
-	nextChain := chain
-
-	channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel)
-
+	nextChainData, err := d.Database.Chain(nextChain)
 	if err != nil {
 		e := deps.NewError(
 			"denom/verify-trace",
-			fmt.Errorf("failed querying for %s", hash),
+			fmt.Errorf("cannot query chain %s", nextChain),
 			http.StatusBadRequest,
 		)
 
 		d.WriteError(c, e,
-			"invalid number of query responses",
+			"cannot query chain",
 			"id",
 			e.ID,
 			"hash",
 			hash,
 			"path",
 			res.VerifiedTrace.Path,
-			"chain",
-			chain,
+			"nextChain",
+			nextChain,
 			"err",
 			err,
 		)
-
 		return
 	}
 
-	trace.ChainName = channelInfo[0].ChainAName
-	trace.CounterpartyName = channelInfo[0].ChainBName
-	trace.Channel = channelInfo[0].ChainAChannelID
-	trace.Port = "transfer"
+	res.VerifiedTrace.Verified = false
 
-	res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
-
-	nextChain = trace.CounterpartyName
+	// set verifiedStatus for base denom on nextChain
+	for _, d := range nextChainData.Denoms {
+		if denomTrace.BaseDenom == d.Name {
+			res.VerifiedTrace.Verified = d.Verified
+			break
+		}
+	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+func paths(path string) ([]string, error) {
+	numSlash := strings.Count(path, "/")
+	if numSlash == 1 {
+		return []string{path}, nil
+	}
+
+	if numSlash%2 == 0 {
+		return nil, fmt.Errorf("malformed path")
+	}
+
+	spl := strings.Split(path, "/")
+
+	var paths []string
+	pathBuild := ""
+
+	for i, e := range spl {
+		if i%2 != 0 {
+			pathBuild = pathBuild + "/" + e
+			paths = append(paths, pathBuild)
+			pathBuild = ""
+		} else {
+			pathBuild = e
+		}
+	}
+
+	return paths, nil
 }
 
 // GetChainStatus returns the status of a given chain.
