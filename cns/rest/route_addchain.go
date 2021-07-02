@@ -75,10 +75,15 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			return
 		}
 
+		hasFaucet := false
+		if node.Spec.Init != nil {
+			hasFaucet = node.Spec.Init.Faucet != nil
+		}
+
 		if err := r.s.rc.AddChain(chainwatch.Chain{
 			Name:          newChain.ChainName,
 			AddressPrefix: newChain.NodeInfo.Bech32Config.MainPrefix,
-			HasFaucet:     node.Spec.Init.Faucet != nil,
+			HasFaucet:     hasFaucet,
 			HDPath:        newChain.DerivationPath,
 		}); err != nil {
 			e(ctx, http.StatusInternalServerError, err)
