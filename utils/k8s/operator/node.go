@@ -89,7 +89,7 @@ var DefaultNodeConfig = v1.NodeSet{
 
 var defaultTracelistenerConfig = v1.TraceStoreContainerConfig{
 	Image:           tracelistenerImage,
-	ImagePullPolicy: corev1.PullIfNotPresent,
+	ImagePullPolicy: corev1.PullAlways,
 	Env: []corev1.EnvVar{
 		{
 			Name:  trFifoPathVar,
