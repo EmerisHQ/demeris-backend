@@ -55,6 +55,18 @@ func (s *Store) SetComplete(key string) error {
 	return s.Set(key, `{"status":"complete"}`)
 }
 
+func (s *Store) SetFailed(key string) error {
+	return s.Set(key, `{"status":"receive_failed"}`)
+}
+
+func (s *Store) SetSuccess(key string) error {
+	return s.Set(key, `{"status":"receive_success"}`)
+}
+
+func (s *Store) SetTimeout(key string) error {
+	return s.Set(key, `{"status":"Tokens_unlocked_timeout"}`)
+}
+
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
 	if !s.Exists(key) {
@@ -84,6 +96,17 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 	return nil
 }
 
+func (s *Store) SetIbcTimeout(key string) error {
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetTimeout(prev)
+}
+
 func (s *Store) SetIbcReceived(key string) error {
 
 	prev, err := s.Get(key)
@@ -93,6 +116,31 @@ func (s *Store) SetIbcReceived(key string) error {
 	}
 
 	return s.SetComplete(prev)
+}
+
+func (s *Store) SetIbcFailed(key string) error {
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetFailed(prev)
+}
+
+func (s *Store) SetIbcSuccess(key string) error {
+	if !s.Exists(key) {
+		return fmt.Errorf("key doesn't exists")
+	}
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetSuccess(prev)
 }
 
 func (s *Store) Exists(key string) bool {
