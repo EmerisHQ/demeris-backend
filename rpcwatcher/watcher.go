@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/store"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -123,7 +122,9 @@ func (w *Watcher) readChannel() {
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
 	_, isIBC := data.Events["ibc_transfer.sender"]
+	_, isIBCSuccess := data.Events["fungible_token_packet.success"]
 	_, isIBCRecv := data.Events["recv_packet.packet_sequence"]
+	_, isIBCTimeout := data.Events["timeout.refund_receiver"]
 
 	if len(txHashSlice) == 0 {
 		return
@@ -133,9 +134,10 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", isIBC, "is ibc recv", isIBCRecv)
+	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", isIBC, "is ibc recv", isIBCRecv,
+		"is ibc success", isIBCSuccess, "is ibc timeout", isIBCTimeout)
 
-	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
+	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCSuccess && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
 		if err := w.store.SetComplete(key); err != nil {
@@ -173,63 +175,70 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		var c []models.ChannelQuery
-
-		q, err := w.d.DB.PrepareNamed("select chain_name, json_data.* from cns.chains, jsonb_each_text(primary_channel) as json_data where chain_name=:chain_name and value=:channel limit 1;")
-		if err != nil {
-			w.l.Errorw("cannot prepare statement", "error", err)
+		counterparty, ok := data.Events["send_packet.packet_dst_channel"]
+		if !ok {
+			w.l.Errorf("send_packet.packet_dst_channel not found")
 			return
 		}
 
-		if err := q.Select(&c, map[string]interface{}{
-			"chain_name": w.Name,
-			"channel":    sendPacketSourceChannel[0],
-		}); err != nil {
-			w.l.Errorw("cannot query chain", "error", err)
-			return
-		}
-
-		if len(c) == 0 {
-			w.l.Errorw("cannot query chain, database query returned 0 rows")
-			return
-		}
-
-		w.store.SetInTransit(fmt.Sprintf("%s-%s", w.Name, txHash), c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0])
+		w.store.SetInTransit(key, counterparty[0], sendPacketSourceChannel[0], sendPacketSequence[0])
 		return
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
-	if isIBCRecv {
+	if isIBCSuccess {
+		if isIBCRecv {
+			recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
 
-		recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
+			if !ok {
+				w.l.Errorf("recv_packet.packet_src_port not found")
+				return
+			}
 
+			if recvPacketSourcePort[0] != "transfer" {
+				w.l.Errorf("port is not 'transfer', ignoring")
+				return
+			}
+
+			recvPacketSourceChannel, ok := data.Events["recv_packet.packet_src_channel"]
+
+			if !ok {
+				w.l.Errorf("recv_packet.packet_src_channel not found")
+				return
+			}
+
+			recvPacketSequence, ok := data.Events["recv_packet.packet_sequence"]
+
+			if !ok {
+				w.l.Errorf("recv_packet.packet_sequence not found")
+				return
+			}
+
+			key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
+			w.store.SetIbcReceived(key)
+			return
+		}
+
+		successAck, ok := data.Events["fungible_token_packet.success"]
 		if !ok {
-			w.l.Errorf("recv_packet.packet_src_port not found")
+			w.l.Errorf("success ack not found")
 			return
 		}
 
-		if recvPacketSourcePort[0] != "transfer" {
-			w.l.Errorf("port is not 'transfer', ignoring")
+		if successAck[0] == "false" {
+			w.store.SetIbcFailed(key)
 			return
 		}
+	}
 
-		recvPacketSourceChannel, ok := data.Events["recv_packet.packet_src_channel"]
-
+	if isIBCTimeout {
+		_, ok := data.Events["timeout.refund_receiver"]
 		if !ok {
-			w.l.Errorf("recv_packet.packet_src_channel not found")
+			w.l.Errorf("refund receiver not found")
 			return
 		}
 
-		recvPacketSequence, ok := data.Events["recv_packet.packet_sequence"]
-
-		if !ok {
-			w.l.Errorf("recv_packet.packet_sequence not found")
-			return
-		}
-
-		key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
-
-		w.store.SetIbcReceived(key)
+		w.store.SetIbcTimeout(key)
 		return
 	}
 
