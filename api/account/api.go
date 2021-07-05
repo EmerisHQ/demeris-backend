@@ -302,6 +302,13 @@ func fetchNumbers(cns []database.ChainName, account string) ([]models.AuthRow, e
 		return nil, fmt.Errorf("cannot query chains, %w", err)
 	}
 
+	for i := 0; i < len(results); i++ {
+		if !(results[i].Address == "") {
+			continue
+		}
+		results = append(results[:i], results[i+1:]...)
+	}
+
 	return results, nil
 }
 
