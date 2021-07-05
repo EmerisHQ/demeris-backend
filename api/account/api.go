@@ -3,7 +3,6 @@ package account
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/models"
@@ -273,7 +272,7 @@ func fetchNumbers(cns []database.ChainName, account string) ([]models.AuthRow, e
 		queryGroup.Go(func() error {
 			resp, err := queryChainNumbers(chain.ChainName, addr)
 			if err != nil {
-				return err
+				return fmt.Errorf("%s error, %w", err)
 			}
 
 			if resp == nil {
