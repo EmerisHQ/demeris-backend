@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/models"
@@ -317,7 +318,7 @@ func queryChainNumbers(chainName string, address string) (*types.QueryAccountRes
 		Address: address,
 	})
 
-	if status.Code(err) == codes.NotFound {
+	if status.Code(errors.Unwrap(err)) == codes.NotFound {
 		return nil, nil
 	}
 
