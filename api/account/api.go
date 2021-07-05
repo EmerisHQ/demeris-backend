@@ -306,7 +306,9 @@ func fetchNumbers(cns []database.ChainName, account string) ([]models.AuthRow, e
 		if !(results[i].Address == "") {
 			continue
 		}
+
 		results = append(results[:i], results[i+1:]...)
+		i--
 	}
 
 	return results, nil
