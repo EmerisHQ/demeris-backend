@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strings"
 
 	"google.golang.org/grpc"
 	"net/http"
@@ -318,7 +319,8 @@ func queryChainNumbers(chainName string, address string) (*types.QueryAccountRes
 		Address: address,
 	})
 
-	if status.Code(errors.Unwrap(err)) == codes.NotFound {
+	if status.Code(err) == codes.NotFound ||
+		strings.Contains(strings.ToLower(err.Error()), "not found") {
 		return nil, nil
 	}
 
