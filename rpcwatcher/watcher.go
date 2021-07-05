@@ -213,22 +213,24 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 				w.l.Errorf("recv_packet.packet_sequence not found")
 				return
 			}
+			successAck, ok := data.Events["fungible_token_packet.success"]
+			w.l.Debugw("this is success Ack", "successAck", successAck)
+			if !ok {
+				w.l.Errorf("success ack not found")
+				return
+			}
+
+			if successAck[0] == "false" {
+				w.store.SetIbcFailed(key)
+				return
+			}
 
 			key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
 			w.store.SetIbcReceived(key)
 			return
 		}
 
-		successAck, ok := data.Events["fungible_token_packet.success"]
-		if !ok {
-			w.l.Errorf("success ack not found")
-			return
-		}
 
-		if successAck[0] == "false" {
-			w.store.SetIbcFailed(key)
-			return
-		}
 	}
 
 	if isIBCTimeout {
