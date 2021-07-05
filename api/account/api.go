@@ -10,12 +10,11 @@ import (
 	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
-
-	"google.golang.org/grpc"
 	"net/http"
+	"strings"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/gin-gonic/gin"
@@ -318,12 +317,15 @@ func queryChainNumbers(chainName string, address string) (*types.QueryAccountRes
 		Address: address,
 	})
 
-	if status.Code(err) == codes.NotFound ||
-		strings.Contains(strings.ToLower(err.Error()), "not found") {
+	if status.Code(err) == codes.NotFound {
 		return nil, nil
 	}
 
 	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+			return nil, nil
+		}
+
 		return nil, fmt.Errorf("cannot query account, %w", err)
 	}
 
