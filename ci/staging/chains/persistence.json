@@ -1,0 +1,66 @@
+{
+  "chain_name": "persistence",
+  "derivation_path": "m/44'/750'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/persistence.svg",
+  "enabled": false,
+  "valid_block_thresh": "10s",
+  "display_name": "Persistence",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "Persistence",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.015, "average": 0.0375, "high": 0.06 },
+      "name": "uxprt",
+      "logo": "https://storage.googleapis.com/emeris/logos/persistence.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "XPRT"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "persistence",
+    "chain_id": "core-1",
+    "bech32_config": {
+      "main_prefix": "persistence",
+      "prefix_account": "persistence",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "persistence",
+    "cli_name": "persistenceCore",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/persistenceOne/genesisTransactions/master/core-1/final_genesis.json"
+      },
+      "seeds": [
+        {"id": "876946a947850952383347724206d067d7032b22", "address": "3.137.86.151", "port": 26656},
+        {"id": "ecc00c5a7abd057ea5ca4a94c48d1d937bbab34a", "address": "34.118.19.56", "port": 26656},
+        {"id": "ac7e6aab726e842b92c06b8ebbf5a3616872ee80", "address": "128.1.133.107", "port": 26656},
+        {"id": "b9dab7a1a5ffd16d43b19e40a8020db84e8dfffd", "address": "3.14.116.246", "port": 44456},
+        {"id": "60385a36ea72a2985bd8450c95b8df8be2adebb8", "address": "54.95.235.242", "port": 26656},
+        {"id": "a92ff1da2020e5cbc9b05527e9e39c34a84e8a27", "address": "34.72.57.218", "port": 26656},
+        {"id": "e15524629aee25fea01f62d26c4e062bfda94b70", "address": "35.247.171.7", "port": 26656},
+        {"id": "7c106099b8d07085431a97387e5a5db2d1ecd71d", "address": "18.223.209.36", "port": 26656},
+        {"id": "b19a3cf4d9938b41539729d027bf2e3c1a4e1fbb", "address": "85.214.130.157", "port": 26656},
+        {"id": "7cc92a9e3dcad37e5e7b3adf7814c37070fa9787", "address": "161.97.187.189", "port": 26656},
+        {"id": "7b9839cd3e994c44cbd747d1ddc51ee695f60e58", "address": "157.90.134.48", "port": 26656},
+        {"id": "cfb529bd0325fc884296518655f1f315bc42dd0c", "address": "185.144.83.165", "port": 26656},
+        {"id": "01102f3c84e6602e30e1e39498e242cbb60a0b73", "address": "178.62.103.7", "port": 26656}
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/persistence",
+    "docker_image_version": "v0.1.3"
+  }
+}

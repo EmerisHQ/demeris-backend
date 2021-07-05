@@ -1,0 +1,63 @@
+{
+  "chain_name": "iris",
+  "derivation_path": "m/44'/566'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
+  "enabled": false,
+  "valid_block_thresh": "10s",
+  "display_name": "IRISNet",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "IRIS",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.2, "average": 0.3, "high": 0.4 },
+      "name": "uiris",
+      "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "IRIS"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "iris",
+    "chain_id": "irishub-1",
+    "bech32_config": {
+      "main_prefix": "iaa",
+      "prefix_account": "iaa",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "iris",
+    "cli_name": "iris",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/irisnet/mainnet/master/config/genesis.json"
+      },
+      "seeds": [
+        {
+          "id": "6a6de770deaa4b8c061dffd82e9c7f4d40c2165d",
+          "address": "seed-1.mainnet.irisnet.org",
+          "port": 26656
+        },
+        {
+          "id": "a17d7923293203c64ba75723db4d5f28e642f469",
+          "address": "seed-2.mainnet.irisnet.org",
+          "port": 26656
+        }
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/iris",
+    "docker_image_version": "v1.0.1"
+  }
+}
