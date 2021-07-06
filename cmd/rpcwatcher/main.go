@@ -10,6 +10,7 @@ import (
 
 	"github.com/r3labs/diff"
 
+	cnsdb "github.com/allinbits/demeris-backend/cns/database"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/rpcwatcher"
 	"github.com/allinbits/demeris-backend/utils/database"
@@ -41,13 +42,22 @@ func main() {
 		panic(err)
 	}
 
+	cns, err := cnsdb.New(c.DatabaseConnectionURL)
+	if err != nil {
+		panic(err)
+	}
+
 	s := store.NewClient(c.RedisURL)
 
 	var chains []models.Chain
 
 	watchers := map[string]watcherInstance{}
 
+<<<<<<< HEAD
 	err = db.Exec("select * from cns.chains where enabled=TRUE", nil, &chains)
+=======
+	chains, err = cns.Chains()
+>>>>>>> b5fc02d (rpcwatcher: use cns db instance)
 
 	if err != nil {
 		panic(err)
@@ -56,7 +66,7 @@ func main() {
 	chainsMap := mapChains(chains)
 
 	for cn := range chainsMap {
-		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, db, s, []string{"tm.event='Tx'"})
+		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, db, cns, s, []string{"tm.event='Tx'"})
 
 		if err != nil {
 			l.Errorw("cannot create chain", "error", err)
@@ -73,12 +83,13 @@ func main() {
 	}
 
 	for range time.Tick(1 * time.Second) {
+<<<<<<< HEAD
 		var ch []models.Chain
 		err = db.Exec("select * from cns.chains where enabled=TRUE", nil, &ch)
+=======
+>>>>>>> b5fc02d (rpcwatcher: use cns db instance)
 
-		if err != nil {
-			panic(err)
-		}
+		ch, err := cns.Chains()
 
 		newChainsMap := mapChains(ch)
 
@@ -110,7 +121,7 @@ func main() {
 				delete(chainsMap, name)
 			case diff.CREATE:
 				name := d.Path[0]
-				watcher, err := rpcwatcher.NewWatcher(endpoint(name), name, l, db, s, []string{"tm.event='Tx'"})
+				watcher, err := rpcwatcher.NewWatcher(endpoint(name), name, l, db, cns, s, []string{"tm.event='Tx'"})
 
 				if err != nil {
 					var dnsErr *net.DNSError

@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	cnsdb "github.com/allinbits/demeris-backend/cns/database"
+	// tldb "github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/database"
+
 	"github.com/allinbits/demeris-backend/utils/store"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
@@ -22,6 +25,7 @@ type Watcher struct {
 	Name            string
 	client          *client.WSClient
 	d               *database.Instance
+	cns             *cnsdb.Instance
 	l               *zap.SugaredLogger
 	store           *store.Store
 	stopReadChannel chan struct{}
@@ -48,7 +52,7 @@ type IbcReceiveData struct {
 
 type Events map[string][]string
 
-func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *database.Instance, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
 
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
@@ -61,6 +65,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 
 	w := &Watcher{
 		d:               db,
+		cns:             cnsdb,
 		client:          ws,
 		l:               logger,
 		store:           s,
@@ -151,17 +156,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	// Handle case where an LP is being created on the Cosmos Hub
 
 	if isCreateLP && w.Name == "cosmos-hub" {
-		var chain models.Chain
-		q, err := w.d.DB.PrepareNamed("select * from cns.chains where chain_name=:chain_name;")
-		if err != nil {
-			w.l.Errorw("cannot prepare statement", "error", err)
-			return
-		}
 
-		if err := q.Select(&chain, map[string]interface{}{
-			"chain_name": w.Name,
-		}); err != nil {
-			w.l.Errorw("cannot query chain in lp creation", "error", err)
+		chain, err := w.cns.Chain(w.Name)
+
+		if err != nil {
+			w.l.Errorw("can't find chain", "error", err)
 			return
 		}
 
@@ -184,75 +183,16 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 				}
 
 				token.DisplayName = fmt.Sprintf("[AMM] %s LP", poolName[0])
+
 				// todo: use simplified display name for IBC tokens
 				break
 			}
 		}
 
-		// cns endpoint/dedicated db instance for cns might be better
-
-		n, err := w.d.DB.PrepareNamed(`
-		INSERT INTO cns.chains
-			(
-				chain_name,
-				enabled,
-				logo,
-				display_name,
-				valid_block_thresh,
-				primary_channel,
-				denoms,
-				demeris_addresses,
-				genesis_hash,
-				node_info,
-				derivation_path
-			)
-		VALUES
-			(
-				:chain_name,
-				:enabled,
-				:logo,
-				:display_name,
-				:valid_block_thresh,
-				:primary_channel,
-				:denoms,
-				:demeris_addresses,
-				:genesis_hash,
-				:node_info,
-				:derivation_path
-			)
-		ON CONFLICT
-			(chain_name)
-		DO UPDATE SET 
-				chain_name=EXCLUDED.chain_name, 
-				enabled=EXCLUDED.enabled,
-				valid_block_thresh=EXCLUDED.valid_block_thresh,
-				logo=EXCLUDED.logo, 
-				display_name=EXCLUDED.display_name, 
-				primary_channel=EXCLUDED.primary_channel, 
-				denoms=EXCLUDED.denoms, 
-				demeris_addresses=EXCLUDED.demeris_addresses, 
-				genesis_hash=EXCLUDED.genesis_hash,
-				node_info=EXCLUDED.node_info,
-				derivation_path=EXCLUDED.derivation_path;
-		`)
+		err = w.cns.AddChain(chain)
 
 		if err != nil {
-			w.l.Errorw("failed to prepare query", "error", err)
-			return
-		}
 
-		res, err := n.Exec(chain)
-
-		if err != nil {
-			w.l.Errorw("failed to execute query", "error", err)
-			return
-		}
-
-		rows, _ := res.RowsAffected()
-
-		if rows == 0 {
-			w.l.Errorw("rows unchanged", "error", err)
-			return
 		}
 
 		return
