@@ -122,7 +122,7 @@ func (w *Watcher) readChannel() {
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
 	_, isIBC := data.Events["ibc_transfer.sender"]
-	_, isIBCSuccess := data.Events["fungible_token_packet.success"]
+	_, isIBCAck := data.Events["fungible_token_packet.acknowledgement"]
 	_, isIBCRecv := data.Events["recv_packet.packet_sequence"]
 	_, isIBCTimeout := data.Events["timeout.refund_receiver"]
 
@@ -135,9 +135,10 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", isIBC, "is ibc recv", isIBCRecv,
-		"is ibc success", isIBCSuccess, "is ibc timeout", isIBCTimeout)
+		"is ibc ack", isIBCAck, "is ibc timeout", isIBCTimeout)
 
-	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCSuccess && w.store.Exists(key))
+	w.l.Debugw("is simple ibc transfer"+
+		"", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
 		if err := w.store.SetComplete(key); err != nil {
@@ -186,51 +187,48 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
-	if isIBCSuccess {
-		if isIBCRecv {
-			recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
+	if isIBCRecv {
+		recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
 
-			if !ok {
-				w.l.Errorf("recv_packet.packet_src_port not found")
-				return
-			}
-
-			if recvPacketSourcePort[0] != "transfer" {
-				w.l.Errorf("port is not 'transfer', ignoring")
-				return
-			}
-
-			recvPacketSourceChannel, ok := data.Events["recv_packet.packet_src_channel"]
-
-			if !ok {
-				w.l.Errorf("recv_packet.packet_src_channel not found")
-				return
-			}
-
-			recvPacketSequence, ok := data.Events["recv_packet.packet_sequence"]
-
-			if !ok {
-				w.l.Errorf("recv_packet.packet_sequence not found")
-				return
-			}
-			successAck, ok := data.Events["fungible_token_packet.success"]
-			w.l.Debugw("this is success Ack", "successAck", successAck)
-			if !ok {
-				w.l.Errorf("success ack not found")
-				return
-			}
-
-			if successAck[0] == "false" {
-				w.store.SetIbcFailed(key)
-				return
-			}
-
-			key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
-			w.store.SetIbcReceived(key)
+		if !ok {
+			w.l.Errorf("recv_packet.packet_src_port not found")
 			return
 		}
 
+		if recvPacketSourcePort[0] != "transfer" {
+			w.l.Errorf("port is not 'transfer', ignoring")
+			return
+		}
 
+		recvPacketSourceChannel, ok := data.Events["recv_packet.packet_src_channel"]
+
+		if !ok {
+			w.l.Errorf("recv_packet.packet_src_channel not found")
+			return
+		}
+
+		recvPacketSequence, ok := data.Events["recv_packet.packet_sequence"]
+
+		if !ok {
+			w.l.Errorf("recv_packet.packet_sequence not found")
+			return
+		}
+
+		packetAck, ok := data.Events["write_acknowledgement.packet_ack"]
+
+		if !ok {
+			w.l.Errorf("packet ack not found")
+			return
+		}
+
+		if packetAck[0] != "AQ==" {
+			w.store.SetIbcFailed(key)
+			return
+		}
+
+		key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
+		w.store.SetIbcReceived(key)
+		return
 	}
 
 	if isIBCTimeout {
@@ -242,6 +240,15 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		w.store.SetIbcTimeout(key)
 		return
+	}
+
+	if isIBCAck {
+		_, ok := data.Events["fungible_token_packet.error"]
+		if !ok {
+			w.store.SetIbcUnlock(key)
+			return
+		}
+
 	}
 
 }

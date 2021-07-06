@@ -67,6 +67,10 @@ func (s *Store) SetTimeout(key string) error {
 	return s.Set(key, `{"status":"Tokens_unlocked_timeout"}`)
 }
 
+func (s *Store) SetUnlockAck(key string) error {
+	return s.Set(key, `{"status":"Tokens_unlocked_ack"}`)
+}
+
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
 	if !s.Exists(key) {
@@ -107,6 +111,17 @@ func (s *Store) SetIbcTimeout(key string) error {
 	return s.SetTimeout(prev)
 }
 
+func (s *Store) SetIbcUnlock(key string) error {
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetUnlockAck(prev)
+}
+
 func (s *Store) SetIbcReceived(key string) error {
 
 	prev, err := s.Get(key)
@@ -130,9 +145,6 @@ func (s *Store) SetIbcFailed(key string) error {
 }
 
 func (s *Store) SetIbcSuccess(key string) error {
-	if !s.Exists(key) {
-		return fmt.Errorf("key doesn't exists")
-	}
 
 	prev, err := s.Get(key)
 
