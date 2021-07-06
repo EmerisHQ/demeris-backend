@@ -238,14 +238,14 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		w.store.SetIbcTimeout(key)
+		w.store.SetIbcTimeoutUnlock(key)
 		return
 	}
 
 	if isIBCAck {
 		_, ok := data.Events["fungible_token_packet.error"]
-		if !ok {
-			w.store.SetIbcUnlock(key)
+		if ok {
+			w.store.SetIbcAckUnlock(key)
 			return
 		}
 
