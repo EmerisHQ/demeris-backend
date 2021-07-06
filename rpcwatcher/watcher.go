@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/database"
@@ -137,7 +138,26 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
+	if exists && !isIBC && !isIBCRecv {
+		w.l.Debugw("this is query", "data query",data.Query)
+		code, ok := data.Events["tx.code"]
+		if !ok{
+			w.l.Errorw("unable to fetch code of tx","tx", data)
+		}
+
+		intCode, err := strconv.ParseInt(code[0], 10, 64)
+		if err != nil{
+			w.l.Errorw("unable to convert code to int", "code", code)
+		}
+
+		if intCode != 0{
+			raw_log, ok := data.Events["tx.raw_log"]
+			if !ok{
+				w.l.Errorw("unable to fetch raw log of tx","tx", txHash)
+			}
+			w.l.Debugw("this is raw log", "raw_log", raw_log[0])
+		}
+
 		if err := w.store.SetComplete(key); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
