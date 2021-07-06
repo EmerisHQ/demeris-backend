@@ -152,6 +152,10 @@ func processorByName(name string, logger *zap.SugaredLogger) (Module, error) {
 	}
 }
 
+func (p *Processor) Flush() error {
+	return nil
+}
+
 func (p *Processor) lifecycle() {
 	for data := range p.writeChan {
 		if data.BlockHeight != p.lastHeight && data.BlockHeight != 0 {

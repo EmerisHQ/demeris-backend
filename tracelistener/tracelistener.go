@@ -59,6 +59,7 @@ type DataProcessor interface {
 	WritebackChan() chan []WritebackOp
 	ErrorsChan() chan error
 	DatabaseMigrations() []string
+	Flush() error
 }
 
 type TracingError struct {
