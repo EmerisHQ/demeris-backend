@@ -47,7 +47,7 @@ func main() {
 
 	watchers := map[string]watcherInstance{}
 
-	err = db.Exec("select * from cns.chains", nil, &chains)
+	err = db.Exec("select * from cns.chains where enabled=TRUE", nil, &chains)
 
 	if err != nil {
 		panic(err)
@@ -74,7 +74,7 @@ func main() {
 
 	for range time.Tick(1 * time.Second) {
 		var ch []models.Chain
-		err = db.Exec("select * from cns.chains", nil, &ch)
+		err = db.Exec("select * from cns.chains where enabled=TRUE", nil, &ch)
 
 		if err != nil {
 			panic(err)
