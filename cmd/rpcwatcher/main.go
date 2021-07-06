@@ -60,6 +60,7 @@ func main() {
 
 		if err != nil {
 			l.Errorw("cannot create chain", "error", err)
+			continue
 		}
 
 		ctx, cancel := context.WithCancel(context.Background())
