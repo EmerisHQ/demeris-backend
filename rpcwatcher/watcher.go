@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/store"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -121,6 +122,7 @@ func (w *Watcher) readChannel() {
 
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
+	_, isCreateLP := data.Events["create_pool.pool_name"]
 	_, isIBC := data.Events["ibc_transfer.sender"]
 	_, isIBCSuccess := data.Events["fungible_token_packet.success"]
 	_, isIBCRecv := data.Events["recv_packet.packet_sequence"]
@@ -137,13 +139,124 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", isIBC, "is ibc recv", isIBCRecv,
 		"is ibc success", isIBCSuccess, "is ibc timeout", isIBCTimeout)
 
-	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCSuccess && w.store.Exists(key))
+	w.l.Debugw("is simple ibc transfer", "is it", exists && !isCreateLP && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
+	if exists && !isCreateLP && !isIBC && !isIBCRecv && w.store.Exists(key) {
 		if err := w.store.SetComplete(key); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 		return
+	}
+
+	// Handle case where an LP is being created on the Cosmos Hub
+
+	if isCreateLP && w.Name == "cosmos-hub" {
+		var chain models.Chain
+		q, err := w.d.DB.PrepareNamed("select * from cns.chains where chain_name=:chain_name;")
+		if err != nil {
+			w.l.Errorw("cannot prepare statement", "error", err)
+			return
+		}
+
+		if err := q.Select(&chain, map[string]interface{}{
+			"chain_name": w.Name,
+		}); err != nil {
+			w.l.Errorw("cannot query chain in lp creation", "error", err)
+			return
+		}
+
+		poolCoinDenom, ok := data.Events["create_pool.pool_coin_denom"]
+
+		if !ok {
+			w.l.Errorw("no field create_pool.pool_coin_denom in Events", "error", err)
+			return
+		}
+
+		for _, token := range chain.Denoms {
+			if token.Name == poolCoinDenom[0] {
+				token.Verified = true
+
+				poolName, ok := data.Events["create_pool.pool_name"]
+
+				if !ok {
+					w.l.Errorw("no field create_pool.pool_name in Events", "error", err)
+					return
+				}
+
+				token.DisplayName = fmt.Sprintf("[AMM] %s LP", poolName[0])
+				// todo: use simplified display name for IBC tokens
+				break
+			}
+		}
+
+		// cns endpoint/dedicated db instance for cns might be better
+
+		n, err := w.d.DB.PrepareNamed(`
+		INSERT INTO cns.chains
+			(
+				chain_name,
+				enabled,
+				logo,
+				display_name,
+				valid_block_thresh,
+				primary_channel,
+				denoms,
+				demeris_addresses,
+				genesis_hash,
+				node_info,
+				derivation_path
+			)
+		VALUES
+			(
+				:chain_name,
+				:enabled,
+				:logo,
+				:display_name,
+				:valid_block_thresh,
+				:primary_channel,
+				:denoms,
+				:demeris_addresses,
+				:genesis_hash,
+				:node_info,
+				:derivation_path
+			)
+		ON CONFLICT
+			(chain_name)
+		DO UPDATE SET 
+				chain_name=EXCLUDED.chain_name, 
+				enabled=EXCLUDED.enabled,
+				valid_block_thresh=EXCLUDED.valid_block_thresh,
+				logo=EXCLUDED.logo, 
+				display_name=EXCLUDED.display_name, 
+				primary_channel=EXCLUDED.primary_channel, 
+				denoms=EXCLUDED.denoms, 
+				demeris_addresses=EXCLUDED.demeris_addresses, 
+				genesis_hash=EXCLUDED.genesis_hash,
+				node_info=EXCLUDED.node_info,
+				derivation_path=EXCLUDED.derivation_path;
+		`)
+
+		if err != nil {
+			w.l.Errorw("failed to prepare query", "error", err)
+			return
+		}
+
+		res, err := n.Exec(chain)
+
+		if err != nil {
+			w.l.Errorw("failed to execute query", "error", err)
+			return
+		}
+
+		rows, _ := res.RowsAffected()
+
+		if rows == 0 {
+			w.l.Errorw("rows unchanged", "error", err)
+			return
+		}
+
+		return
+
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
