@@ -139,7 +139,12 @@ func getRelayerBalance(c *gin.Context) {
 	}
 
 	for i := 0; i < len(addresses); i++ {
-		enough, err := enoughBalance(addresses[i], thresh[chains[i]], d.Database)
+		t, found := thresh[chains[i]]
+		if !found {
+			continue
+		}
+
+		enough, err := enoughBalance(addresses[i], t, d.Database)
 		if err != nil {
 			e := deps.NewError(
 				"status",
