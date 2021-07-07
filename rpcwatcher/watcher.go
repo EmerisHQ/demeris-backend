@@ -99,14 +99,14 @@ func (w *Watcher) readChannel() {
 			select {
 			case data := <-w.client.ResponsesCh:
 				if data.Error != nil {
-					w.l.Errorw("error from tendermint rpc", "error", data.Error.Error())
+					w.l.Errorw("error from tendermint rpc", "error", data.Error.Error(), "chain", w.Name)
 					continue
 				}
 
 				e := coretypes.ResultEvent{}
 				err := json.Unmarshal(data.Result, &e)
 				if err != nil {
-					w.l.Errorw("cannot unmarshal data into resultevent", "error", err)
+					w.l.Errorw("cannot unmarshal data into resultevent", "error", err, "chain", w.Name)
 					continue
 				}
 
