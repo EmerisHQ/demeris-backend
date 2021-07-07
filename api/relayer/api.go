@@ -1,6 +1,7 @@
 package relayer
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -171,6 +172,9 @@ func relayerThresh(chains []string, db *database.Database) (map[string]models.De
 	for _, cn := range chains {
 		chain, err := db.ChainFromChainID(cn)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				continue // probably the chain isn't enabled yet
+			}
 			return nil, fmt.Errorf("cannot retrieve chain %s, %w", cn, err)
 		}
 
