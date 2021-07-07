@@ -139,13 +139,14 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !isIBC && !isIBCRecv {
+	if exists && !isIBC && !isIBCRecv && w.store.Exists(key){
 		eventTx := data.Data.(types.EventDataTx)
 
 		if eventTx.Result.Code == 0 {
 			if err := w.store.SetComplete(key); err != nil {
 				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 			}
+			return
 		}
 
 		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
