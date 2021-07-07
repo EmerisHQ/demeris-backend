@@ -169,7 +169,7 @@ func relayerThresh(chains []string, db *database.Database) (map[string]models.De
 	res := map[string]models.Denom{}
 
 	for _, cn := range chains {
-		chain, err := db.Chain(cn)
+		chain, err := db.ChainFromChainID(cn)
 		if err != nil {
 			return nil, fmt.Errorf("cannot retrieve chain %s, %w", cn, err)
 		}

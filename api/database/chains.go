@@ -15,6 +15,19 @@ func (d *Database) Chain(name string) (models.Chain, error) {
 	})
 }
 
+func (d *Database) ChainFromChainID(chainID string) (models.Chain, error) {
+	var c models.Chain
+
+	n, err := d.dbi.DB.PrepareNamed("select * from cns.chains where node_info->>'chain_id'=:chainID and enabled=TRUE limit 1;")
+	if err != nil {
+		return models.Chain{}, err
+	}
+
+	return c, n.Get(&c, map[string]interface{}{
+		"chainID": chainID,
+	})
+}
+
 func (d *Database) ChainLastBlock(name string) (models.BlockTimeRow, error) {
 	var c models.BlockTimeRow
 
