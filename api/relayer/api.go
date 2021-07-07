@@ -200,7 +200,7 @@ func enoughBalance(address string, denom models.Denom, db *database.Database) (b
 		return false, err
 	}
 
-	var status *bool
+	status := false
 
 	for _, bal := range balance {
 		if bal.Denom != denom.Name {
@@ -212,14 +212,9 @@ func enoughBalance(address string, denom models.Denom, db *database.Database) (b
 			return false, fmt.Errorf("found relayeramount denom but failed to parse amount, %w", err)
 		}
 
-		statConcrete := parsedAmt.Amount.Int64() >= *denom.MinimumThreshRelayerBalance
-		status = &statConcrete
-
+		status = parsedAmt.Amount.Int64() >= *denom.MinimumThreshRelayerBalance
+		break
 	}
 
-	if status == nil {
-		return false, fmt.Errorf("cannot find relayerdenom %s in denom balance for address %s", denom.Name, address)
-	}
-
-	return *status, nil
+	return status, nil
 }
