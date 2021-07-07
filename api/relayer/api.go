@@ -107,11 +107,6 @@ func getRelayerBalance(c *gin.Context) {
 		return
 	}
 
-	if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
-		c.JSON(http.StatusOK, res) // empty response
-		return
-	}
-
 	chains := []string{}
 	addresses := []string{}
 
@@ -159,7 +154,7 @@ func getRelayerBalance(c *gin.Context) {
 			return
 		}
 
-		res = append(res, relayerBalance{
+		res.Balances = append(res.Balances, relayerBalance{
 			Address:       addresses[i],
 			EnoughBalance: enough,
 		})
