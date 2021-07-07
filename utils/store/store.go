@@ -55,11 +55,11 @@ func (s *Store) SetComplete(key string) error {
 	return s.Set(key, `{"status":"complete"}`)
 }
 
-func (s *Store) SetReceiveFailed(key string) error {
+func (s *Store) SetIBCReceiveFailed(key string) error {
 	return s.Set(key, `{"status":"IBC_receive_failed"}`)
 }
 
-func (s *Store) SetReceiveSuccess(key string) error {
+func (s *Store) SetIBCReceiveSuccess(key string) error {
 	return s.Set(key, `{"status":"IBC_receive_success"}`)
 }
 
@@ -141,7 +141,7 @@ func (s *Store) SetIbcFailed(key string) error {
 		return err
 	}
 
-	return s.SetReceiveFailed(prev)
+	return s.SetIBCReceiveFailed(prev)
 }
 
 func (s *Store) SetIbcSuccess(key string) error {
@@ -152,7 +152,7 @@ func (s *Store) SetIbcSuccess(key string) error {
 		return err
 	}
 
-	return s.SetReceiveSuccess(prev)
+	return s.SetIBCReceiveSuccess(prev)
 }
 
 func (s *Store) Exists(key string) bool {
