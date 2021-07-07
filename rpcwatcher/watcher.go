@@ -2,16 +2,17 @@ package rpcwatcher
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strconv"
+
+	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/store"
+	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
-	"go.uber.org/zap"
+	"github.com/tendermint/tendermint/types"
 )
 
 const (
@@ -105,7 +106,7 @@ func (w *Watcher) readChannel() {
 				}
 
 				e := coretypes.ResultEvent{}
-				err := json.Unmarshal(data.Result, &e)
+				err := tmjson.Unmarshal(data.Result, &e)
 				if err != nil {
 					w.l.Errorw("cannot unmarshal data into resultevent", "error", err)
 					continue
@@ -139,23 +140,12 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !isIBC && !isIBCRecv {
-		w.l.Debugw("this is query", "data query",data.Query)
-		code, ok := data.Events["tx.code"]
-		if !ok{
-			w.l.Errorw("unable to fetch code of tx","tx", data)
-		}
+		eventTx := data.Data.(types.EventDataTx)
 
-		intCode, err := strconv.ParseInt(code[0], 10, 64)
-		if err != nil{
-			w.l.Errorw("unable to convert code to int", "code", code)
-		}
-
-		if intCode != 0{
-			raw_log, ok := data.Events["tx.raw_log"]
-			if !ok{
-				w.l.Errorw("unable to fetch raw log of tx","tx", txHash)
+		if eventTx.Result.Code != 0 {
+			if err := w.store.SetCompleteWithErr(key, eventTx.Result.Log); err != nil {
+				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 			}
-			w.l.Debugw("this is raw log", "raw_log", raw_log[0])
 		}
 
 		if err := w.store.SetComplete(key); err != nil {

@@ -55,6 +55,21 @@ func (s *Store) SetComplete(key string) error {
 	return s.Set(key, `{"status":"complete"}`)
 }
 
+func (s *Store) SetCompleteWithErr(key, error string) error {
+	data := map[string]interface{}{
+		"status": "pending",
+		"err": error,
+	}
+
+	b, err := json.Marshal(data)
+
+	if err != nil {
+		return err
+	}
+
+	return s.Set(key, string(b))
+}
+
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
 	if !s.Exists(key) {
