@@ -55,9 +55,9 @@ func (s *Store) SetComplete(key string) error {
 	return s.Set(key, `{"status":"complete"}`)
 }
 
-func (s *Store) SetCompleteWithErr(key, error string) error {
+func (s *Store) SetFailedWithErr(key, error string) error {
 	data := map[string]interface{}{
-		"status": "pending",
+		"status": "failed",
 		"err": error,
 	}
 

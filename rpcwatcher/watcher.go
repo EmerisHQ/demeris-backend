@@ -142,14 +142,14 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	if exists && !isIBC && !isIBCRecv {
 		eventTx := data.Data.(types.EventDataTx)
 
-		if eventTx.Result.Code != 0 {
-			if err := w.store.SetCompleteWithErr(key, eventTx.Result.Log); err != nil {
+		if eventTx.Result.Code == 0 {
+			if err := w.store.SetComplete(key); err != nil {
 				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 			}
 		}
 
-		if err := w.store.SetComplete(key); err != nil {
-			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
+			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err)
 		}
 		return
 	}
