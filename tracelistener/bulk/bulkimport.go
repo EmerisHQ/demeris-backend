@@ -65,6 +65,7 @@ func (i *Importer) Do() error {
 			}
 		}
 	}()
+
 	if strings.HasSuffix(i.Path, ".db") {
 		i.Path = strings.TrimSuffix(i.Path, ".db")
 	}
@@ -74,7 +75,7 @@ func (i *Importer) Do() error {
 
 	db, err := db2.NewGoLevelDBWithOpts(dbName, path, &opt.Options{
 		ErrorIfMissing: true,
-		ReadOnly:       false,
+		ReadOnly:       true,
 	})
 
 	if err != nil {
@@ -82,14 +83,9 @@ func (i *Importer) Do() error {
 	}
 	rm := rootmulti.NewStore(db)
 
-	cinfo, err := getCommitInfo(db, rm.LastCommitID().Version)
-	if err != nil {
-		panic(err)
-	}
-
 	var keys []types2.StoreKey
-	for _, ci := range cinfo.StoreInfos {
-		key := types.NewKVStoreKey(ci.Name)
+	for _, ci := range []string{"bank", "auth", "ibc", "staking"} { // todo: add liquidity
+		key := types.NewKVStoreKey(ci)
 		keys = append(keys, key)
 		rm.MountStoreWithDB(key, types.StoreTypeIAVL, nil)
 	}
@@ -98,19 +94,31 @@ func (i *Importer) Do() error {
 		panic(err)
 	}
 
-	for _, key := range keys {
-		kn := key.Name()
-		_ = kn
+	processingTime := time.Now()
+
+	keysLen := len(keys)
+	for idx, key := range keys {
+		i.Logger.Infow("processing started", "module", key.Name(), "index", idx+1, "total", keysLen)
 
 		store := rm.GetKVStore(key)
 		ii := store.Iterator(nil, nil)
 
+		writtenIdx := 0
 		for ; ii.Valid(); ii.Next() {
+			writtenIdx++
 
 			to := tracelistener.TraceOperation{
 				Operation: tracelistener.WriteOp.String(),
 				Key:       ii.Key(),
 				Value:     ii.Value(),
+			}
+
+			if writtenIdx == 1000 {
+				time.Sleep(1 * time.Second)
+				if err := i.Processor.Flush(); err != nil {
+					return fmt.Errorf("cannot flush processor cache, %w", err)
+				}
+				writtenIdx = 0
 			}
 
 			if err := i.TraceWatcher.ParseOperation(to); err != nil {
@@ -128,9 +136,13 @@ func (i *Importer) Do() error {
 			return fmt.Errorf("cannot close iterator, %w", err)
 		}
 
+		time.Sleep(1 * time.Second)
+
 		if err := i.Processor.Flush(); err != nil {
 			return fmt.Errorf("cannot flush processor cache, %w", err)
 		}
+
+		i.Logger.Infow("processing done", "module", key.Name(), "index", idx+1, "total", keysLen)
 	}
 
 	/*
@@ -171,7 +183,8 @@ func (i *Importer) Do() error {
 		return fmt.Errorf("database closing error, %w", err)
 	}
 
-	i.Logger.Infow("import done", "elapsed", time.Now().Sub(t0))
+	tn := time.Now()
+	i.Logger.Infow("import done", "total time", tn.Sub(t0), "processing time", tn.Sub(processingTime))
 
 	return nil
 }
