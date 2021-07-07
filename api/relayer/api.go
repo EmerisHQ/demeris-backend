@@ -2,9 +2,12 @@ package relayer
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 
 	"github.com/cosmos/cosmos-sdk/types"
 
@@ -185,7 +188,14 @@ func relayerThresh(chains []string, db *database.Database) (map[string]models.De
 }
 
 func enoughBalance(address string, denom models.Denom, db *database.Database) (bool, error) {
-	balance, err := db.Balances(address)
+	_, hb, err := bech32.DecodeAndConvert(address)
+	if err != nil {
+		return false, err
+	}
+
+	addrHex := hex.EncodeToString(hb)
+
+	balance, err := db.Balances(addrHex)
 	if err != nil {
 		return false, err
 	}
