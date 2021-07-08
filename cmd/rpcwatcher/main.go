@@ -98,11 +98,7 @@ func main() {
 			switch d.Type {
 			case diff.DELETE:
 				name := d.Path[0]
-				wi, ok := watchers[name]
-				if !ok {
-					// we probably deleted this already somehow
-					continue
-				}
+				wi, _ := watchers[name]
 				wi.cancel()
 
 				delete(watchers, name)

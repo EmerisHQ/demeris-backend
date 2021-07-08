@@ -3,6 +3,7 @@ package rpcwatcher
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -12,22 +13,26 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
+	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
+
 	"github.com/tendermint/tendermint/types"
 )
 
-const (
-	blEvents = "tm.event='NewBlock'"
+var (
 	txEvent  = "tm.event='Tx'"
+	subscriptions = []string{txEvent}
 )
 
 type Watcher struct {
-	Name            string
-	client          *client.WSClient
-	d               *database.Instance
-	l               *zap.SugaredLogger
-	store           *store.Store
-	stopReadChannel chan struct{}
-	DataChannel     chan coretypes.ResultEvent
+	Name             string
+	client           *client.WSClient
+	d                *database.Instance
+	l                *zap.SugaredLogger
+	store            *store.Store
+	stopReadChannel  chan struct{}
+	DataChannel      chan coretypes.ResultEvent
+	stopErrorChannel chan struct{}
+	ErrorChannel     chan *jsonrpctypes.RPCError
 }
 
 type WsResponse struct {
@@ -57,7 +62,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 		return nil, err
 	}
 
-	if err := ws.Start(); err != nil {
+	if err := ws.OnStart(); err != nil {
 		return nil, err
 	}
 
@@ -69,6 +74,8 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 		Name:            chainName,
 		stopReadChannel: make(chan struct{}),
 		DataChannel:     make(chan coretypes.ResultEvent),
+		stopErrorChannel: make(chan struct{}),
+		ErrorChannel:     make(chan *jsonrpctypes.RPCError),
 	}
 
 	for _, sub := range subscriptions {
@@ -79,6 +86,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 
 	go w.readChannel()
 
+	go w.checkError()
 	return w, nil
 }
 
@@ -101,7 +109,11 @@ func (w *Watcher) readChannel() {
 			select {
 			case data := <-w.client.ResponsesCh:
 				if data.Error != nil {
-					w.l.Errorw("error from tendermint rpc", "error", data.Error.Error())
+					w.l.Debugw("this is error", "error", data.Error)
+					go func() {
+						w.l.Debugw("error is being written")
+						w.ErrorChannel <- data.Error
+					}()
 					continue
 				}
 
@@ -121,6 +133,41 @@ func (w *Watcher) readChannel() {
 		}
 	}
 }
+
+
+func (w *Watcher) checkError() {
+	for {
+		select {
+		case <-w.stopErrorChannel:
+			return
+		default:
+			select {
+			case err := <-w.ErrorChannel:
+				if err != nil {
+					resubscribe(w)
+					continue
+				}
+			}
+		}
+	}
+}
+
+func resubscribe(w *Watcher) {
+	count := 0
+	for {
+		time.Sleep(1000000000)
+		count = count + 1
+		w.l.Debugw("this is count", "count", count)
+		for _, sub := range subscriptions {
+			err := w.client.Subscribe(context.Background(), sub)
+			if err != nil {
+				w.l.Debugw("unable to subscribe", "error", err)
+			}
+		}
+        <-w.ErrorChannel
+	}
+}
+
 
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
@@ -251,6 +298,7 @@ func (w *Watcher) startChain(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			w.stopReadChannel <- struct{}{}
+			w.stopErrorChannel <- struct{}{}
 			w.l.Infof("watcher %s has been canceled", w.Name)
 			return
 		default:
