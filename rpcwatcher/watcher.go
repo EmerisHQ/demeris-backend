@@ -145,7 +145,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", isIBC, "is ibc recv", isIBCRecv,
+	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "id create lp", isCreateLP, "is ibc", isIBC, "is ibc recv", isIBCRecv,
 		"is ibc success", isIBCSuccess, "is ibc timeout", isIBCTimeout)
 
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isCreateLP && !isIBC && !isIBCRecv && w.store.Exists(key))
