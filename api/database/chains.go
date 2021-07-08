@@ -46,6 +46,26 @@ func (d *Database) Chains() ([]models.Chain, error) {
 	return c, d.dbi.Exec("select * from cns.chains where enabled=TRUE", nil, &c)
 }
 
+func (d *Database) ChainIDs() (map[string]string, error) {
+	type it struct {
+		ChainName string `db:"chain_name"`
+		ChainID   string `db:"chain_id"`
+	}
+
+	c := map[string]string{}
+	var cc []it
+	err := d.dbi.Exec("select chain_name, node_info->>'chain_id' as chain_id from cns.chains where enabled=TRUE", nil, &cc)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ccc := range cc {
+		c[ccc.ChainName] = ccc.ChainID
+	}
+
+	return c, nil
+}
+
 func (d *Database) PrimaryChannelCounterparty(chainName, counterparty string) (models.ChannelQuery, error) {
 	var c models.ChannelQuery
 
