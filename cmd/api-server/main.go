@@ -1,6 +1,10 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"runtime"
+
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router"
@@ -16,6 +20,18 @@ func main() {
 	cfg, err := config.Read()
 	if err != nil {
 		panic(err)
+	}
+
+	if cfg.Debug {
+		runtime.SetCPUProfileRate(500)
+
+		go func() {
+			log.Printf("Starting Server! \t Go to http://localhost:6060/debug/pprof/\n")
+			err := http.ListenAndServe("localhost:6060", nil)
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 
 	l := logging.New(logging.LoggingConfig{
@@ -46,6 +62,7 @@ func main() {
 		cfg.KubernetesNamespace,
 		cfg.CNSAddr,
 		cdc,
+		cfg.Debug,
 	)
 
 	if err := r.Serve(cfg.ListenAddr); err != nil {
