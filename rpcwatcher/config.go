@@ -9,6 +9,7 @@ import (
 type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
 	RedisURL              string `validate:"required"`
+	ApiURL                string `validate:"required"`
 	Debug                 bool
 }
 
@@ -25,5 +26,6 @@ func ReadConfig() (*Config, error) {
 	var c Config
 	return &c, configuration.ReadConfig(&c, "rpcwatcher", map[string]string{
 		"RedisURL": "http://localhost:6379",
+		"ApiURL":   "http://localhost:8000",
 	})
 }

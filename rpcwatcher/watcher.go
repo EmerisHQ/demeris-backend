@@ -25,6 +25,7 @@ const (
 
 type Watcher struct {
 	Name            string
+	apiUrl          string
 	client          *client.WSClient
 	db              *tldb.Database
 	d               *dbutils.Instance
@@ -55,7 +56,7 @@ type IbcReceiveData struct {
 
 type Events map[string][]string
 
-func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *dbutils.Instance, tldb *tldb.Database, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl string, db *dbutils.Instance, tldb *tldb.Database, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
 
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
@@ -67,6 +68,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *dbuti
 	}
 
 	w := &Watcher{
+		apiUrl:          apiUrl,
 		d:               db,
 		db:              tldb,
 		cns:             cnsdb,
