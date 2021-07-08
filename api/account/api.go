@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -13,8 +16,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"net/http"
-	"strings"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/gin-gonic/gin"
@@ -46,8 +47,6 @@ func GetBalancesByAddress(c *gin.Context) {
 	d := deps.GetDeps(c)
 
 	address := c.Param("address")
-
-	d.Logger.Info("Searching for addresses, ", address)
 
 	balances, err := d.Database.Balances(address)
 
@@ -120,8 +119,6 @@ func GetBalancesByAddress(c *gin.Context) {
 
 		res.Balances = append(res.Balances, balance)
 	}
-	// d.Logger.Info(d.Database.Balances(addresses))
-	d.Logger.Info(balances)
 
 	c.JSON(http.StatusOK, res)
 }
