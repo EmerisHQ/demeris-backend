@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"runtime"
 
@@ -22,21 +21,21 @@ func main() {
 		panic(err)
 	}
 
+	l := logging.New(logging.LoggingConfig{
+		Debug: cfg.Debug,
+	})
+
 	if cfg.Debug {
 		runtime.SetCPUProfileRate(500)
 
 		go func() {
-			log.Printf("Starting Server! \t Go to http://localhost:6060/debug/pprof/\n")
-			err := http.ListenAndServe("localhost:6060", nil)
+			l.Debugw("starting profiling server", "port", "6060")
+			err := http.ListenAndServe(":6060", nil)
 			if err != nil {
-				panic(err)
+				l.Panicw("cannot run profiling server", "error", err)
 			}
 		}()
 	}
-
-	l := logging.New(logging.LoggingConfig{
-		Debug: cfg.Debug,
-	})
 
 	l.Infow("api-server", "version", Version)
 
