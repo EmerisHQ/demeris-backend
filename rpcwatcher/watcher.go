@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
+	tldb "github.com/allinbits/demeris-backend/api/database"
 	cnsdb "github.com/allinbits/demeris-backend/cns/database"
-	// tldb "github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/models"
-	"github.com/allinbits/demeris-backend/utils/database"
+	dbutils "github.com/allinbits/demeris-backend/utils/database"
 
 	"github.com/allinbits/demeris-backend/utils/store"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	"go.uber.org/zap"
@@ -24,7 +26,8 @@ const (
 type Watcher struct {
 	Name            string
 	client          *client.WSClient
-	d               *database.Instance
+	db              *tldb.Database
+	d               *dbutils.Instance
 	cns             *cnsdb.Instance
 	l               *zap.SugaredLogger
 	store           *store.Store
@@ -52,7 +55,7 @@ type IbcReceiveData struct {
 
 type Events map[string][]string
 
-func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *database.Instance, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *dbutils.Instance, tldb *tldb.Database, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
 
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
@@ -65,6 +68,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 
 	w := &Watcher{
 		d:               db,
+		db:              tldb,
 		cns:             cnsdb,
 		client:          ws,
 		l:               logger,
@@ -171,28 +175,30 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
+		dd, err := formatDenom(w, data)
+
+		if err != nil {
+			w.l.Errorw("failed to format denom", "error", err)
+			return
+		}
+
+		found := false
+
 		for _, token := range chain.Denoms {
 			if token.Name == poolCoinDenom[0] {
-				token.Verified = true
-
-				poolName, ok := data.Events["create_pool.pool_name"]
-
-				if !ok {
-					w.l.Errorw("no field create_pool.pool_name in Events", "error", err)
-					return
-				}
-
-				token.DisplayName = fmt.Sprintf("[AMM] %s LP", poolName[0])
-
-				// todo: use simplified display name for IBC tokens
-				break
+				token = dd
+				found = true
 			}
+		}
+
+		if !found {
+			chain.Denoms = append(chain.Denoms, dd)
 		}
 
 		err = w.cns.AddChain(chain)
 
 		if err != nil {
-
+			w.l.Errorw("failed to update chain", "error", err)
 		}
 
 		return
@@ -312,4 +318,142 @@ func (w *Watcher) startChain(ctx context.Context) {
 		}
 
 	}
+}
+
+func paths(path string) ([]string, error) {
+	numSlash := strings.Count(path, "/")
+	if numSlash == 1 {
+		return []string{path}, nil
+	}
+
+	if numSlash%2 == 0 {
+		return nil, fmt.Errorf("malformed path")
+	}
+
+	spl := strings.Split(path, "/")
+
+	var paths []string
+	pathBuild := ""
+
+	for i, e := range spl {
+		if i%2 != 0 {
+			pathBuild = pathBuild + "/" + e
+			paths = append(paths, pathBuild)
+			pathBuild = ""
+		} else {
+			pathBuild = e
+		}
+	}
+
+	return paths, nil
+}
+
+func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
+	d := models.Denom{}
+
+	poolCoinDenom, ok := data.Events["create_pool.pool_coin_denom"]
+
+	if !ok {
+		return d, fmt.Errorf("failed to read pool coin denom")
+	}
+
+	d.Name = poolCoinDenom[0]
+
+	depositCoins, ok := data.Events["create_pool.deposit_coins"]
+	if !ok {
+		return d, fmt.Errorf("failed to read deposit coins")
+	}
+
+	coins, err := sdktypes.ParseCoinsNormalized(depositCoins[0])
+	chain, err := w.cns.Chain("cosmos-hub")
+
+	if err != nil {
+		return d, err
+	}
+
+	coinADenom := coins[0].Denom
+	coinBDenom := coins[1].Denom
+	d.Name = poolCoinDenom[0]
+	if "pool" == coinADenom[:4] || "pool" == coinBDenom[:4] {
+		d.DisplayName = fmt.Sprintf("GDEX %s LP", poolCoinDenom[0])
+		d.Verified = false
+		d.Ticker = fmt.Sprintf("G-%s", poolCoinDenom[0])
+
+		return d, nil
+	}
+
+	var tokenTickers []string
+
+	if "ibc/" == coinADenom[:4] {
+		// verify trace
+		denomTrace, err := w.db.DenomTrace("cosmos-hub", coinADenom[4:])
+		if err != nil {
+			return d, err
+		}
+
+		pathsElements, err := paths(denomTrace.Path)
+		if err != nil {
+			return d, err
+		}
+
+		if len(pathsElements) == 1 {
+			// only verify single hop tokens
+
+			denomTicker := getDisplayTicker(chain, denomTrace.BaseDenom)
+			tokenTickers = append(tokenTickers, denomTicker)
+			d.Verified = true
+
+		} else {
+			d.Verified = false
+		}
+
+	} else {
+		denomTicker := getDisplayTicker(chain, coinADenom)
+		tokenTickers = append(tokenTickers, denomTicker)
+
+	}
+
+	if "ibc/" == coinBDenom[:4] {
+		// verify trace
+		denomTrace, err := w.db.DenomTrace("cosmos-hub", coinBDenom[4:])
+		if err != nil {
+			return d, err
+		}
+
+		pathsElements, err := paths(denomTrace.Path)
+		if err != nil {
+			return d, err
+		}
+
+		if len(pathsElements) == 1 {
+			// only verify single hop tokens
+
+			denomTicker := getDisplayTicker(chain, denomTrace.BaseDenom)
+			tokenTickers = append(tokenTickers, denomTicker)
+			d.Verified = true
+
+		} else {
+			d.Verified = false
+		}
+
+	} else {
+		denomTicker := getDisplayTicker(chain, coinBDenom)
+		tokenTickers = append(tokenTickers, denomTicker)
+	}
+
+	d.DisplayName = fmt.Sprintf("GDEX %s/%s LP", tokenTickers[0], tokenTickers[1])
+	d.Ticker = fmt.Sprintf("G-%s-%s", tokenTickers[0], tokenTickers[1])
+
+	return d, nil
+}
+
+func getDisplayTicker(c models.Chain, denom string) string {
+	for _, d := range c.Denoms {
+		if d.Name == denom {
+			if d.DisplayName != "" {
+				return d.DisplayName
+			}
+		}
+	}
+	return denom
 }
