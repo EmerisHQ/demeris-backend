@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+	"path"
 	"strings"
 
 	tldb "github.com/allinbits/demeris-backend/api/database"
@@ -55,6 +58,21 @@ type IbcReceiveData struct {
 }
 
 type Events map[string][]string
+
+type VerifyTraceResponse struct {
+	VerifyTrace struct {
+		IbcDenom  string `json:"ibc_denom"`
+		BaseDenom string `json:"base_denom"`
+		Verified  bool   `json:"verified"`
+		Path      string `json:"path"`
+		Trace     []struct {
+			Channel          string `json:"channel"`
+			Port             string `json:"port"`
+			ChainName        string `json:"chain_name"`
+			CounterpartyName string `json:"counterparty_name"`
+		} `json:"trace"`
+	} `json:"verify_trace"`
+}
 
 func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl string, db *dbutils.Instance, tldb *tldb.Database, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
 
@@ -147,7 +165,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "id create lp", isCreateLP, "is ibc", isIBC, "is ibc recv", isIBCRecv,
+	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", isCreateLP, "is ibc", isIBC, "is ibc recv", isIBCRecv,
 		"is ibc success", isIBCSuccess, "is ibc timeout", isIBCTimeout)
 
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isCreateLP && !isIBC && !isIBCRecv && w.store.Exists(key))
@@ -159,6 +177,8 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		return
 	}
 
+	w.l.Debugw("is create lp", "is it", isCreateLP)
+
 	// Handle case where an LP is being created on the Cosmos Hub
 
 	if isCreateLP && w.Name == "cosmos-hub" {
@@ -166,7 +186,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		chain, err := w.cns.Chain(w.Name)
 
 		if err != nil {
-			w.l.Errorw("can't find chain", "error", err)
+			w.l.Errorw("can't find chain cosmos-hub", "error", err)
 			return
 		}
 
@@ -350,6 +370,29 @@ func paths(path string) ([]string, error) {
 	return paths, nil
 }
 
+type denomInfo struct {
+	displayName string
+	denom       string
+	baseDenom   string
+	verified    bool
+
+	originalChain models.Chain
+}
+
+func (d denomInfo) isPoolCoin() bool {
+	if len(d.denom) < 4 {
+		return false
+	}
+	return d.denom[:4] == "pool"
+}
+
+func (d denomInfo) isIBCToken() bool {
+	if len(d.denom) < 4 {
+		return false
+	}
+	return d.denom[:4] == "ibc/"
+}
+
 func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 	d := models.Denom{}
 
@@ -367,95 +410,119 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 	}
 
 	coins, err := sdktypes.ParseCoinsNormalized(depositCoins[0])
-	chain, err := w.cns.Chain("cosmos-hub")
+	cosmoshub, err := w.cns.Chain("cosmos-hub")
 
 	if err != nil {
 		return d, err
 	}
 
-	coinADenom := coins[0].Denom
-	coinBDenom := coins[1].Denom
-	d.Name = poolCoinDenom[0]
-	if "pool" == coinADenom[:4] || "pool" == coinBDenom[:4] {
+	var denomInfos []denomInfo
+
+	for _, coin := range coins {
+		denom := denomInfo{
+			denom: coin.Denom,
+		}
+
+		if denom.isIBCToken() {
+
+			u, err := url.Parse(w.apiUrl)
+
+			if err != nil {
+				return d, err
+			}
+
+			u.Path = path.Join(u.Path, "v1/chain/cosmos-hub/denom/verify_trace", denom.denom[4:])
+
+			w.l.Debugw("querying verified trace for coin", "coin", denom.denom, "url", u.Path)
+			resp, err := http.Get(u.Path)
+
+			var verifiedTrace VerifyTraceResponse
+
+			defer resp.Body.Close()
+
+			err = json.NewDecoder(resp.Body).Decode(verifiedTrace)
+
+			if err != nil {
+				return d, err
+			}
+
+			b, err := json.Marshal(verifiedTrace)
+
+			if err != nil {
+				return d, err
+			}
+
+			w.l.Debugw("got trace", "trace", string(b))
+
+			if !verifiedTrace.VerifyTrace.Verified {
+				return d, fmt.Errorf("not a verified denom")
+			}
+			if l := len(verifiedTrace.VerifyTrace.Trace); l != 1 {
+				return d, fmt.Errorf("trace too long, expected 1, got %d", l)
+			}
+
+			denom.baseDenom = verifiedTrace.VerifyTrace.BaseDenom
+
+			sourceChainName := verifiedTrace.VerifyTrace.Trace[0].CounterpartyName
+
+			sourceChain, err := w.cns.Chain(sourceChainName)
+
+			if err != nil {
+				return d, err
+			}
+
+			found := false
+
+			for _, dd := range sourceChain.Denoms {
+				if dd.Name == denom.baseDenom {
+
+					if !dd.Verified {
+						return d, fmt.Errorf("denom not verified in source chain")
+					}
+					denom.displayName = dd.DisplayName
+					denom.verified = dd.Verified
+
+				}
+			}
+
+			if !found {
+				return d, fmt.Errorf("denom not found")
+			}
+		} else {
+			// check if token exists & is verified on cosmos hub
+			denom.baseDenom = coin.Denom
+
+			for _, dd := range cosmoshub.Denoms {
+				if dd.Name == denom.baseDenom {
+
+					if !dd.Verified {
+						return d, fmt.Errorf("denom not verified in source chain")
+					}
+					denom.displayName = dd.DisplayName
+					denom.verified = dd.Verified
+
+				}
+			}
+
+		}
+
+		w.l.Debugw("adding verified denom", "denom", denom.displayName)
+
+		denomInfos = append(denomInfos, denom)
+
+	}
+
+	if denomInfos[0].isPoolCoin() || denomInfos[0].isPoolCoin() {
 		d.DisplayName = fmt.Sprintf("GDEX %s LP", poolCoinDenom[0])
-		d.Verified = false
 		d.Ticker = fmt.Sprintf("G-%s", poolCoinDenom[0])
-
-		return d, nil
-	}
-
-	var tokenTickers []string
-
-	if "ibc/" == coinADenom[:4] {
-		// verify trace
-		denomTrace, err := w.db.DenomTrace("cosmos-hub", coinADenom[4:])
-		if err != nil {
-			return d, err
-		}
-
-		pathsElements, err := paths(denomTrace.Path)
-		if err != nil {
-			return d, err
-		}
-
-		if len(pathsElements) == 1 {
-			// only verify single hop tokens
-
-			denomTicker := getDisplayTicker(chain, denomTrace.BaseDenom)
-			tokenTickers = append(tokenTickers, denomTicker)
-			d.Verified = true
-
-		} else {
-			d.Verified = false
-		}
-
+		d.Verified = true
 	} else {
-		denomTicker := getDisplayTicker(chain, coinADenom)
-		tokenTickers = append(tokenTickers, denomTicker)
-
+		d.DisplayName = fmt.Sprintf("GDEX %s/%s LP", denomInfos[0].displayName, denomInfos[1].displayName)
+		d.Ticker = fmt.Sprintf("G-%s-%s", denomInfos[0].displayName, denomInfos[1].displayName)
+		d.Verified = true
 	}
 
-	if "ibc/" == coinBDenom[:4] {
-		// verify trace
-		denomTrace, err := w.db.DenomTrace("cosmos-hub", coinBDenom[4:])
-		if err != nil {
-			return d, err
-		}
-
-		pathsElements, err := paths(denomTrace.Path)
-		if err != nil {
-			return d, err
-		}
-
-		if len(pathsElements) == 1 {
-			// only verify single hop tokens
-
-			denomTicker := getDisplayTicker(chain, denomTrace.BaseDenom)
-			tokenTickers = append(tokenTickers, denomTicker)
-			d.Verified = true
-
-		} else {
-			d.Verified = false
-		}
-
-	} else {
-		denomTicker := getDisplayTicker(chain, coinBDenom)
-		tokenTickers = append(tokenTickers, denomTicker)
-	}
-
-	d.DisplayName = fmt.Sprintf("GDEX %s/%s LP", tokenTickers[0], tokenTickers[1])
-	d.Ticker = fmt.Sprintf("G-%s-%s", tokenTickers[0], tokenTickers[1])
+	w.l.Debugw("verified lp denom", "displayname", d.DisplayName, "ticker", d.Ticker)
 
 	return d, nil
-}
-
-func getDisplayTicker(c models.Chain, denom string) string {
-	for _, d := range c.Denoms {
-		if d.Name == denom {
-			if d.DisplayName != "" {
-				return d.DisplayName
-			}
-		}
-	}
-	return denom
 }
