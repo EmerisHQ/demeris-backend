@@ -8,8 +8,8 @@ import (
 
 type Config struct {
 	DatabaseConnectionURL string `validate:"required"`
-	RedisURL              string `validate:"required"`
-	ApiURL                string `validate:"required"`
+	RedisURL              string `validate:"required,url"`
+	ApiURL                string `validate:"required,url"`
 	Debug                 bool
 }
 

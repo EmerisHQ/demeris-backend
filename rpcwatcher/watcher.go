@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
-	"path"
 	"strings"
 
 	tldb "github.com/allinbits/demeris-backend/api/database"
@@ -97,6 +95,8 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl st
 		stopReadChannel: make(chan struct{}),
 		DataChannel:     make(chan coretypes.ResultEvent),
 	}
+
+	w.l.Debugw("api url", "url", apiUrl)
 
 	for _, sub := range subscriptions {
 		if err := w.client.Subscribe(context.Background(), sub); err != nil {
@@ -374,9 +374,8 @@ type denomInfo struct {
 	displayName string
 	denom       string
 	baseDenom   string
+	ticker      string
 	verified    bool
-
-	originalChain models.Chain
 }
 
 func (d denomInfo) isPoolCoin() bool {
@@ -425,22 +424,36 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 
 		if denom.isIBCToken() {
 
-			u, err := url.Parse(w.apiUrl)
+			// u, err := url.Parse(w.apiUrl)
+
+			// if err != nil {
+			// 	return d, err
+			// }
+			verifiedTrace := VerifyTraceResponse{}
+			w.l.Debugw("querying verified trace for coin", "coin", denom.denom)
+
+			endpoint := fmt.Sprintf("%s/chain/%s/denom/verify_trace/%s", "http://api-server:8000", "cosmos-hub", denom.denom[4:])
+
+			resp, err := http.Get(endpoint)
 
 			if err != nil {
 				return d, err
 			}
 
-			u.Path = path.Join(u.Path, "v1/chain/cosmos-hub/denom/verify_trace", denom.denom[4:])
+			if resp.StatusCode == 200 {
+				resp, err = http.Get(endpoint)
 
-			w.l.Debugw("querying verified trace for coin", "coin", denom.denom, "url", u.Path)
-			resp, err := http.Get(u.Path)
+				if err != nil {
+					return d, err
+				}
+			}
 
-			var verifiedTrace VerifyTraceResponse
+			dc := json.NewDecoder(resp.Body)
 
-			defer resp.Body.Close()
+			err = dc.Decode(&verifiedTrace)
+			// return json.NewDecoder(resp.Body).Decode(dest)
 
-			err = json.NewDecoder(resp.Body).Decode(verifiedTrace)
+			// err = queryVerifyTrace("http://api-server:8000", "cosmos-hub", denom.denom, verifiedTrace)
 
 			if err != nil {
 				return d, err
@@ -464,6 +477,7 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 			denom.baseDenom = verifiedTrace.VerifyTrace.BaseDenom
 
 			sourceChainName := verifiedTrace.VerifyTrace.Trace[0].CounterpartyName
+			w.l.Debugw("checking base denom in chain", "denom", denom.baseDenom, "chain", sourceChainName)
 
 			sourceChain, err := w.cns.Chain(sourceChainName)
 
@@ -480,8 +494,16 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
 					denom.displayName = dd.DisplayName
+
+					if dd.Ticker == "" {
+						denom.ticker = dd.DisplayName
+					} else {
+						denom.ticker = dd.Ticker
+					}
+
 					denom.verified = dd.Verified
 
+					found = true
 				}
 			}
 
@@ -499,6 +521,11 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
 					denom.displayName = dd.DisplayName
+					if dd.Ticker == "" {
+						denom.ticker = dd.DisplayName
+					} else {
+						denom.ticker = dd.Ticker
+					}
 					denom.verified = dd.Verified
 
 				}
@@ -518,7 +545,7 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 		d.Verified = true
 	} else {
 		d.DisplayName = fmt.Sprintf("GDEX %s/%s LP", denomInfos[0].displayName, denomInfos[1].displayName)
-		d.Ticker = fmt.Sprintf("G-%s-%s", denomInfos[0].displayName, denomInfos[1].displayName)
+		d.Ticker = fmt.Sprintf("G-%s-%s", denomInfos[0].ticker, denomInfos[1].ticker)
 		d.Verified = true
 	}
 
@@ -526,3 +553,17 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 
 	return d, nil
 }
+
+// func queryVerifyTrace(apiUrl, chain, denom string, dest interface{}) error {
+// 	endpoint := fmt.Sprintf("%s/v1/chain/%s/denom/verify_trace/%s", apiUrl, chain, denom)
+
+// 	resp, err := http.Get(endpoint)
+
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	defer resp.Body.Close()
+
+// 	return json.NewDecoder(resp.Body).Decode(dest)
+// }
