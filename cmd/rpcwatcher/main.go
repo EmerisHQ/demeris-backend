@@ -11,13 +11,11 @@ import (
 	"github.com/r3labs/diff"
 
 	apiconfig "github.com/allinbits/demeris-backend/api/config"
-
 	apidb "github.com/allinbits/demeris-backend/api/database"
 	cnsdb "github.com/allinbits/demeris-backend/cns/database"
-	dbutils "github.com/allinbits/demeris-backend/utils/database"
-
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/rpcwatcher"
+	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 )
@@ -41,12 +39,13 @@ func main() {
 
 	l.Infow("rpcwatcher", "version", Version)
 
-	tldb, err := apidb.Init(&apiconfig.Config{DatabaseConnectionURL: c.DatabaseConnectionURL})
+	db, err := database.New(c.DatabaseConnectionURL)
 	if err != nil {
 		panic(err)
 	}
 
-	db, err := dbutils.New(c.DatabaseConnectionURL)
+	tldb, err := apidb.Init(&apiconfig.Config{DatabaseConnectionURL: c.DatabaseConnectionURL})
+
 	if err != nil {
 		panic(err)
 	}
@@ -62,11 +61,7 @@ func main() {
 
 	watchers := map[string]watcherInstance{}
 
-<<<<<<< HEAD
-	err = db.Exec("select * from cns.chains where enabled=TRUE", nil, &chains)
-=======
 	chains, err = cns.Chains()
->>>>>>> b5fc02d (rpcwatcher: use cns db instance)
 
 	if err != nil {
 		panic(err)
@@ -92,11 +87,6 @@ func main() {
 	}
 
 	for range time.Tick(1 * time.Second) {
-<<<<<<< HEAD
-		var ch []models.Chain
-		err = db.Exec("select * from cns.chains where enabled=TRUE", nil, &ch)
-=======
->>>>>>> b5fc02d (rpcwatcher: use cns db instance)
 
 		ch, err := cns.Chains()
 
