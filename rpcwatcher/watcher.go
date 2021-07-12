@@ -179,7 +179,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		counterparty, ok := data.Events["send_packet.packet_dst_channel"]
 		if !ok {
-			w.l.Errorf("send_packet.packet_dst_channel not found")
+			w.l.Errorf("send_packet.packet_dst_channel not found for key", "key", key)
 			return
 		}
 
