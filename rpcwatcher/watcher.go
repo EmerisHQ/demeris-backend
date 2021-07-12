@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	blEvents = "tm.event='NewBlock'"
-	txEvent  = "tm.event='Tx'"
+	blEvents   = "tm.event='NewBlock'"
+	txEvent    = "tm.event='Tx'"
+	ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
 )
 
 type Watcher struct {
@@ -121,10 +122,10 @@ func (w *Watcher) readChannel() {
 
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
-	_, isIBC := data.Events["ibc_transfer.sender"]
-	_, isIBCAck := data.Events["fungible_token_packet.acknowledgement"]
-	_, isIBCRecv := data.Events["recv_packet.packet_sequence"]
-	_, isIBCTimeout := data.Events["timeout.refund_receiver"]
+	_, IBCSenderEventPresent := data.Events["ibc_transfer.sender"]
+	_, IBCAckEventPresent := data.Events["fungible_token_packet.acknowledgement"]
+	_, IBCReceivePacketEventPresent := data.Events["recv_packet.packet_sequence"]
+	_, IBCTimeoutEventPresent := data.Events["timeout.refund_receiver"]
 
 	if len(txHashSlice) == 0 {
 		return
@@ -134,13 +135,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", isIBC, "is ibc recv", isIBCRecv,
-		"is ibc ack", isIBCAck, "is ibc timeout", isIBCTimeout)
+	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
+		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)
 
 	w.l.Debugw("is simple ibc transfer"+
-		"", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
+		"", "is it", exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
+	if exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key) {
 		if err := w.store.SetComplete(key); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
@@ -148,7 +149,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
-	if isIBC {
+	if IBCSenderEventPresent {
 
 		sendPacketSourcePort, ok := data.Events["send_packet.packet_src_port"]
 
@@ -182,12 +183,14 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		w.store.SetInTransit(key, counterparty[0], sendPacketSourceChannel[0], sendPacketSequence[0])
+		if err := w.store.SetInTransit(key, counterparty[0], sendPacketSourceChannel[0], sendPacketSequence[0]); err != nil {
+			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
+		}
 		return
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
-	if isIBCRecv {
+	if IBCReceivePacketEventPresent {
 		recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
 
 		if !ok {
@@ -221,31 +224,39 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		if packetAck[0] != "AQ==" {
-			w.store.SetIbcFailed(key)
+		if packetAck[0] != ackSuccess {
+			if err := w.store.SetIbcFailed(key); err != nil {
+				w.l.Errorw("unable to status as failed for key", "key", key, "error", err)
+			}
 			return
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
-		w.store.SetIbcReceived(key)
+		if err := w.store.SetIbcReceived(key); err != nil {
+			w.l.Errorw("unable to status as ibc received for key", "key", key, "error", err)
+		}
 		return
 	}
 
-	if isIBCTimeout {
+	if IBCTimeoutEventPresent {
 		_, ok := data.Events["timeout.refund_receiver"]
 		if !ok {
-			w.l.Errorf("refund receiver not found")
+			w.l.Errorw("refund receiver not found for key", "key", key)
 			return
 		}
 
-		w.store.SetIbcTimeoutUnlock(key)
+		if err := w.store.SetIbcTimeoutUnlock(key); err != nil {
+			w.l.Errorw("unable to status as ibc timeout unlock for key", "key", key, "error", err)
+		}
 		return
 	}
 
-	if isIBCAck {
+	if IBCAckEventPresent {
 		_, ok := data.Events["fungible_token_packet.error"]
 		if ok {
-			w.store.SetIbcAckUnlock(key)
+			if err := w.store.SetIbcAckUnlock(key); err != nil {
+				w.l.Errorw("unable to status as ibc ack unlock for key", "key", key, "error", err)
+			}
 			return
 		}
 
