@@ -28,7 +28,7 @@ func NewClient(connUrl string) *Store {
 		Addr: connUrl,
 		DB:   0,
 	})
-
+	store.Client.Do(store.Client.Context(),"CONFIG", "SET", "notify-keyspace-events", "KEA")
 	store.ConnectionURL = connUrl
 
 	store.Config.ExpiryTime = time.Duration(300000000000)
@@ -57,9 +57,9 @@ func (s *Store) SetComplete(key string) error {
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
-	if !s.Exists(key) {
-		return fmt.Errorf("key doesn't exists")
-	}
+	//if !s.Exists(key) {
+	//	return fmt.Errorf("key doesn't exists")
+	//}
 
 	data := map[string]interface{}{
 		"status": "transit",
@@ -102,7 +102,12 @@ func (s *Store) Exists(key string) bool {
 }
 
 func (s *Store) Set(key, value string) error {
-	return s.Client.Set(ctx, key, value, s.Config.ExpiryTime).Err()
+	err :=  s.Client.Set(ctx, key, value, s.Config.ExpiryTime).Err()
+	if err =s.Client.Set(ctx, key, value, s.Config.ExpiryTime).Err(); err != nil{
+		return err
+	}
+
+	return s.Client.Publish(s.Client.Context(), "test", "this is test message").Err()
 }
 
 func (s *Store) Get(key string) (string, error) {

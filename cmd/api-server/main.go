@@ -46,6 +46,17 @@ func main() {
 
 	s := store.NewClient(cfg.RedisAddr)
 
+	sub := s.Client.PSubscribe(s.Client.Context(), "__key*__:*")
+	go func() {
+		for {
+			msg, err := sub.ReceiveMessage(s.Client.Context())
+			if msg != nil && err == nil {
+				l.Infow("tHis is messgae", "msg", msg)
+			}
+		}
+	}()
+
+
 	kubeClient, err := k8s.NewInCluster()
 	if err != nil {
 		l.Panicw("cannot initialize k8s", "error", err)

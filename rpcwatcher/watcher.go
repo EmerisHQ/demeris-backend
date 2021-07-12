@@ -195,6 +195,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		w.store.SetInTransit(fmt.Sprintf("%s-%s", w.Name, txHash), c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0])
+		w.l.Debugw("setting to transit", "key", key)
 		return
 	}
 
