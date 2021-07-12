@@ -11,12 +11,29 @@ import (
 
 var ctx = context.Background()
 
+const (
+	timeout = 500 * time.Millisecond
+)
+
 type Store struct {
 	Client        *redis.Client
 	ConnectionURL string
 	Config        struct {
 		ExpiryTime time.Duration
 	}
+}
+
+type Ticket struct {
+	Info   string `json:"info,omitempty"`
+	Status string `json:"status,omitempty"`
+	Error  string `json:"error,omitempty"`
+}
+
+func (t *Ticket) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, t)
+}
+func (t Ticket) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(t)
 }
 
 // NewClient creates a new redis client
@@ -38,21 +55,20 @@ func NewClient(connUrl string) *Store {
 }
 
 func (s *Store) CreateTicket(chain, txHash string) error {
-	data := map[string]interface{}{
-		"status": "pending",
+	data := Ticket{
+		Status: "pending",
 	}
 
-	b, err := json.Marshal(data)
-
-	if err != nil {
-		return err
-	}
-
-	return s.Set(fmt.Sprintf("%s-%s", chain, txHash), string(b))
+	return s.Set(fmt.Sprintf("%s-%s", chain, txHash), data, s.Config.ExpiryTime)
 }
 
 func (s *Store) SetComplete(key string) error {
-	return s.Set(key, `{"status":"complete"}`)
+	shadow := "shadow" + key
+	if err := s.Set(shadow, Ticket{}, timeout); err != nil {
+		return err
+	}
+
+	return s.Set(key, Ticket{Status: "complete"}, s.Config.ExpiryTime)
 }
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
@@ -61,23 +77,22 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 	//	return fmt.Errorf("key doesn't exists")
 	//}
 
-	data := map[string]interface{}{
-		"status": "transit",
-	}
-
-	b, err := json.Marshal(data)
-
-	if err != nil {
+	shadow := "shadow" + key
+	if err := s.Set(shadow, Ticket{}, timeout); err != nil {
 		return err
 	}
 
-	if s.Set(key, string(b)) != nil {
+	data :=Ticket{
+		Status: "transit",
+	}
+
+	if err := s.Set(key, data, s.Config.ExpiryTime); err != nil {
 		return err
 	}
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if s.Set(newKey, key) != nil {
+	if err := s.Set(newKey, Ticket{Info: key}, s.Config.ExpiryTime); err != nil {
 		return err
 	}
 
@@ -92,7 +107,7 @@ func (s *Store) SetIbcReceived(key string) error {
 		return err
 	}
 
-	return s.SetComplete(prev)
+	return s.SetComplete(prev.Info)
 }
 
 func (s *Store) Exists(key string) bool {
@@ -101,15 +116,14 @@ func (s *Store) Exists(key string) bool {
 	return exists == 1
 }
 
-func (s *Store) Set(key, value string) error {
-	err :=  s.Client.Set(ctx, key, value, s.Config.ExpiryTime).Err()
-	if err =s.Client.Set(ctx, key, value, s.Config.ExpiryTime).Err(); err != nil{
-		return err
-	}
-
-	return s.Client.Publish(s.Client.Context(), "test", "this is test message").Err()
+func (s *Store) Set(key string, value Ticket, expiry time.Duration,info ...string,) error {
+	return s.Client.Set(ctx, key, value, expiry).Err()
 }
 
-func (s *Store) Get(key string) (string, error) {
-	return s.Client.Get(ctx, key).Result()
+func (s *Store) Get(key string) (Ticket, error) {
+	var res Ticket
+	 if err := s.Client.Get(ctx, key).Scan(&res); err != nil{
+	 	return Ticket{}, err
+	 }
+	return res, nil
 }
