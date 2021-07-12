@@ -424,11 +424,6 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 
 		if denom.isIBCToken() {
 
-			// u, err := url.Parse(w.apiUrl)
-
-			// if err != nil {
-			// 	return d, err
-			// }
 			verifiedTrace := VerifyTraceResponse{}
 			w.l.Debugw("querying verified trace for coin", "coin", denom.denom)
 
@@ -451,9 +446,6 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 			dc := json.NewDecoder(resp.Body)
 
 			err = dc.Decode(&verifiedTrace)
-			// return json.NewDecoder(resp.Body).Decode(dest)
-
-			// err = queryVerifyTrace("http://api-server:8000", "cosmos-hub", denom.denom, verifiedTrace)
 
 			if err != nil {
 				return d, err
@@ -553,17 +545,3 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 
 	return d, nil
 }
-
-// func queryVerifyTrace(apiUrl, chain, denom string, dest interface{}) error {
-// 	endpoint := fmt.Sprintf("%s/v1/chain/%s/denom/verify_trace/%s", apiUrl, chain, denom)
-
-// 	resp, err := http.Get(endpoint)
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	defer resp.Body.Close()
-
-// 	return json.NewDecoder(resp.Body).Decode(dest)
-// }
