@@ -106,8 +106,7 @@ func (w *Watcher) readChannel() {
 				}
 
 				e := coretypes.ResultEvent{}
-				err := tmjson.Unmarshal(data.Result, &e)
-				if err != nil {
+				if err := tmjson.Unmarshal(data.Result, &e); err != nil {
 					w.l.Errorw("cannot unmarshal data into resultevent", "error", err)
 					continue
 				}
@@ -150,7 +149,8 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
-			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err)
+			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
+				"txHash", txHash, "code", eventTx.Result.Code)
 		}
 		return
 	}
