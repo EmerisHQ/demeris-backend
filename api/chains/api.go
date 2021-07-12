@@ -531,6 +531,31 @@ func VerifyTrace(c *gin.Context) {
 		return
 	}
 
+	chainIDsMap, err := d.Database.ChainIDs()
+	if err != nil {
+		err = fmt.Errorf("cannot query list of chain ids, %w", err)
+
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("cannot query list of chain ids"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query list of chain ids",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"err",
+			err,
+		)
+
+		return
+	}
+
 	nextChain := chain
 	for _, element := range pathsElements {
 		// otherwise, check that it has a transfer prefix
@@ -563,7 +588,29 @@ func VerifyTrace(c *gin.Context) {
 		var channelInfo models.IbcChannelsInfo
 		var trace trace
 
-		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel)
+		chainID, ok := chainIDsMap[nextChain]
+		if !ok {
+			e := deps.NewError(
+				"denom/verify-trace",
+				fmt.Errorf("cannot check path element during path resolution"),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"cannot check path element during path resolution",
+				"id",
+				e.ID,
+				"hash",
+				hash,
+				"path",
+				res.VerifiedTrace.Path,
+				"err",
+				fmt.Errorf("cannot find %s in chainIDs map", nextChain),
+			)
+
+			return
+		}
+		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel, chainID)
 
 		if err != nil {
 			e := deps.NewError(

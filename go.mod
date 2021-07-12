@@ -26,7 +26,6 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/iamolegga/enviper v1.2.1
-	github.com/ilgooz/openapiconsole v0.0.0-20210521063533-567a97c7c7e9 // indirect
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/jmoiron/sqlx v1.3.3
@@ -44,7 +43,7 @@ require (
 	github.com/zsais/go-gin-prometheus v0.1.0
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/grpc v1.37.0
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1

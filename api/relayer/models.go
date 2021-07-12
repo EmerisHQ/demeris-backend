@@ -9,4 +9,6 @@ type relayerBalance struct {
 	EnoughBalance bool   `json:"enough_balance"`
 }
 
-type relayerBalances []relayerBalance
+type relayerBalances struct {
+	Balances []relayerBalance `json:"balances"`
+}

@@ -3,6 +3,8 @@ package gaia_processor
 import (
 	"bytes"
 	"encoding/hex"
+	"fmt"
+
 	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/allinbits/demeris-backend/tracelistener"
@@ -70,6 +72,10 @@ func (b *delegationsProcessor) OwnsKey(key []byte) bool {
 
 func (b *delegationsProcessor) Process(data tracelistener.TraceOperation) error {
 	if data.Operation == tracelistener.DeleteOp.String() {
+		if len(data.Key) < 41 { // 20 bytes by address, 1 prefix = 2*20 + 1
+			return nil // found probably liquidity stuff being deleted
+		}
+
 		delegatorAddr := hex.EncodeToString(data.Key[1:21])
 		validatorAddr := hex.EncodeToString(data.Key[21:41])
 		b.l.Debugw("new delegation delete", "delegatorAddr", delegatorAddr, "validatorAddr", validatorAddr)
@@ -93,12 +99,12 @@ func (b *delegationsProcessor) Process(data tracelistener.TraceOperation) error 
 
 	delegator, err := b32Hex(delegation.DelegatorAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot convert delegator address from bech32 to hex, %w", err)
 	}
 
 	validator, err := b32Hex(delegation.ValidatorAddress)
 	if err != nil {
-		return err
+		return fmt.Errorf("cannot convert validator address from bech32 to hex, %w", err)
 	}
 
 	b.l.Debugw("new delegation write",

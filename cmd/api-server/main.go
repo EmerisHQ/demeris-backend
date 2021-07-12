@@ -1,6 +1,9 @@
 package main
 
 import (
+	"net/http"
+	"runtime"
+
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router"
@@ -21,6 +24,18 @@ func main() {
 	l := logging.New(logging.LoggingConfig{
 		Debug: cfg.Debug,
 	})
+
+	if cfg.Debug {
+		runtime.SetCPUProfileRate(500)
+
+		go func() {
+			l.Debugw("starting profiling server", "port", "6060")
+			err := http.ListenAndServe(":6060", nil)
+			if err != nil {
+				l.Panicw("cannot run profiling server", "error", err)
+			}
+		}()
+	}
 
 	l.Infow("api-server", "version", Version)
 
@@ -46,6 +61,7 @@ func main() {
 		cfg.KubernetesNamespace,
 		cfg.CNSAddr,
 		cdc,
+		cfg.Debug,
 	)
 
 	if err := r.Serve(cfg.ListenAddr); err != nil {

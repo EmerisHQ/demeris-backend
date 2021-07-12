@@ -303,7 +303,7 @@ func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []
 			continue
 		}
 
-		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName)
+		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName, c.NodeInfo.ChainID)
 		if err != nil {
 			return nil, nil, fmt.Errorf("cannot scan channels between chain %s and %s, %w", chainName, c.ChainName, err)
 		}
