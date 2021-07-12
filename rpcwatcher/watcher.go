@@ -155,16 +155,20 @@ func (w *Watcher) checkError() {
 func resubscribe(w *Watcher) {
 	count := 0
 	for {
-		time.Sleep(1000000000)
+		time.Sleep(500*time.Millisecond)
 		count = count + 1
 		w.l.Debugw("this is count", "count", count)
 		for _, sub := range subscriptions {
 			err := w.client.Subscribe(context.Background(), sub)
 			if err != nil {
+				if err.Error() == "RPC error -32603 - Internal error: already subscribed"{
+					w.l.Debugw("unable to subscribe thisss", "error", err)
+					<-w.ErrorChannel
+					return
+				}
 				w.l.Debugw("unable to subscribe", "error", err)
 			}
 		}
-        <-w.ErrorChannel
 	}
 }
 
