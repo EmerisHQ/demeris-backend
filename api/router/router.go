@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/utils/logging"
+
 	"github.com/allinbits/demeris-backend/api/relayer"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -21,7 +23,6 @@ import (
 	"github.com/allinbits/demeris-backend/api/account"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
-	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -46,8 +47,15 @@ func New(
 	kubeNamespace string,
 	cnsURL string,
 	cdc codec.Marshaler,
+	debug bool,
 ) *Router {
-	engine := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+
+	if debug {
+		gin.SetMode(gin.DebugMode)
+	}
+
+	engine := gin.New()
 
 	r := &Router{
 		g:            engine,
@@ -65,7 +73,9 @@ func New(
 	validation.JSONFields(binding.Validator)
 
 	engine.Use(r.catchPanics())
-	engine.Use(logging.LogRequest(l.Desugar()))
+	if debug {
+		engine.Use(logging.LogRequest(l.Desugar()))
+	}
 	engine.Use(r.decorateCtxWithDeps())
 	engine.Use(r.handleErrors())
 	engine.RedirectTrailingSlash = false
