@@ -19,12 +19,15 @@ import (
 )
 
 var (
-	txEvent  = "tm.event='Tx'"
+	txEvent       = "tm.event='Tx'"
 	subscriptions = []string{txEvent}
 )
 
 type Watcher struct {
 	Name             string
+	runContext       context.Context
+	endpoint         string
+	subs             []string
 	client           *client.WSClient
 	d                *database.Instance
 	l                *zap.SugaredLogger
@@ -67,13 +70,15 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 	}
 
 	w := &Watcher{
-		d:               db,
-		client:          ws,
-		l:               logger,
-		store:           s,
-		Name:            chainName,
-		stopReadChannel: make(chan struct{}),
-		DataChannel:     make(chan coretypes.ResultEvent),
+		d:                db,
+		endpoint:         endpoint,
+		subs:             subscriptions,
+		client:           ws,
+		l:                logger,
+		store:            s,
+		Name:             chainName,
+		stopReadChannel:  make(chan struct{}),
+		DataChannel:      make(chan coretypes.ResultEvent),
 		stopErrorChannel: make(chan struct{}),
 		ErrorChannel:     make(chan *jsonrpctypes.RPCError),
 	}
@@ -91,6 +96,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 }
 
 func Start(watcher *Watcher, ctx context.Context) {
+	watcher.runContext = ctx
 	go watcher.startChain(ctx)
 }
 
@@ -114,7 +120,10 @@ func (w *Watcher) readChannel() {
 						w.l.Debugw("error is being written")
 						w.ErrorChannel <- data.Error
 					}()
-					continue
+
+					// if we get any kind of error from tendermint, exit: the reconnection routine will take care of
+					// getting us up to speed again
+					return
 				}
 
 				e := coretypes.ResultEvent{}
@@ -124,8 +133,6 @@ func (w *Watcher) readChannel() {
 					continue
 				}
 
-				w.l.Debugw("got message to handle", "chain name", w.Name)
-
 				go func() {
 					w.DataChannel <- e
 				}()
@@ -133,7 +140,6 @@ func (w *Watcher) readChannel() {
 		}
 	}
 }
-
 
 func (w *Watcher) checkError() {
 	for {
@@ -145,7 +151,7 @@ func (w *Watcher) checkError() {
 			case err := <-w.ErrorChannel:
 				if err != nil {
 					resubscribe(w)
-					continue
+					return
 				}
 			}
 		}
@@ -155,23 +161,25 @@ func (w *Watcher) checkError() {
 func resubscribe(w *Watcher) {
 	count := 0
 	for {
-		time.Sleep(500*time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 		count = count + 1
 		w.l.Debugw("this is count", "count", count)
-		for _, sub := range subscriptions {
-			err := w.client.Subscribe(context.Background(), sub)
-			if err != nil {
-				if err.Error() == "RPC error -32603 - Internal error: already subscribed"{
-					w.l.Debugw("unable to subscribe thisss", "error", err)
-					<-w.ErrorChannel
-					return
-				}
-				w.l.Debugw("unable to subscribe", "error", err)
-			}
+
+		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.d, w.store, w.subs)
+		if err != nil {
+			w.l.Errorw("cannot resubscribe to chain", "name", w.Name, "endpoint", w.endpoint, "error", err)
+			continue
 		}
+
+		ww.runContext = w.runContext
+		w = ww
+
+		Start(w, w.runContext)
+
+		w.l.Infow("successfully reconnected", "name", w.Name, "endpoint", w.endpoint)
+		return
 	}
 }
-
 
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
@@ -190,7 +198,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	w.l.Debugw("is simple ibc transfer", "is it", exists && !isIBC && !isIBCRecv && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !isIBC && !isIBCRecv && w.store.Exists(key){
+	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
 		eventTx := data.Data.(types.EventDataTx)
 
 		if eventTx.Result.Code == 0 {
