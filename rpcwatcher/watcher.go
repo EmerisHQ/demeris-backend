@@ -3,6 +3,7 @@ package rpcwatcher
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -11,23 +12,25 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
+	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	"github.com/tendermint/tendermint/types"
 )
 
-const (
-	blEvents   = "tm.event='NewBlock'"
-	txEvent    = "tm.event='Tx'"
-	ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
-)
+const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
 
 type Watcher struct {
-	Name            string
-	client          *client.WSClient
-	d               *database.Instance
-	l               *zap.SugaredLogger
-	store           *store.Store
-	stopReadChannel chan struct{}
-	DataChannel     chan coretypes.ResultEvent
+	Name             string
+	runContext       context.Context
+	endpoint         string
+	subs             []string
+	client           *client.WSClient
+	d                *database.Instance
+	l                *zap.SugaredLogger
+	store            *store.Store
+	stopReadChannel  chan struct{}
+	DataChannel      chan coretypes.ResultEvent
+	stopErrorChannel chan struct{}
+	ErrorChannel     chan *jsonrpctypes.RPCError
 }
 
 type WsResponse struct {
@@ -57,18 +60,22 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 		return nil, err
 	}
 
-	if err := ws.Start(); err != nil {
+	if err := ws.OnStart(); err != nil {
 		return nil, err
 	}
 
 	w := &Watcher{
-		d:               db,
-		client:          ws,
-		l:               logger,
-		store:           s,
-		Name:            chainName,
-		stopReadChannel: make(chan struct{}),
-		DataChannel:     make(chan coretypes.ResultEvent),
+		d:                db,
+		endpoint:         endpoint,
+		subs:             subscriptions,
+		client:           ws,
+		l:                logger,
+		store:            s,
+		Name:             chainName,
+		stopReadChannel:  make(chan struct{}),
+		DataChannel:      make(chan coretypes.ResultEvent),
+		stopErrorChannel: make(chan struct{}),
+		ErrorChannel:     make(chan *jsonrpctypes.RPCError),
 	}
 
 	for _, sub := range subscriptions {
@@ -79,10 +86,12 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 
 	go w.readChannel()
 
+	go w.checkError()
 	return w, nil
 }
 
 func Start(watcher *Watcher, ctx context.Context) {
+	watcher.runContext = ctx
 	go watcher.startChain(ctx)
 }
 
@@ -101,8 +110,14 @@ func (w *Watcher) readChannel() {
 			select {
 			case data := <-w.client.ResponsesCh:
 				if data.Error != nil {
-					w.l.Errorw("error from tendermint rpc", "error", data.Error.Error(), "chain", w.Name)
-					continue
+					go func() {
+						w.l.Debugw("writing error to error channel", "error", data.Error)
+						w.ErrorChannel <- data.Error
+					}()
+
+					// if we get any kind of error from tendermint, exit: the reconnection routine will take care of
+					// getting us up to speed again
+					return
 				}
 
 				e := coretypes.ResultEvent{}
@@ -111,13 +126,51 @@ func (w *Watcher) readChannel() {
 					continue
 				}
 
-				w.l.Debugw("got message to handle", "chain name", w.Name)
-
 				go func() {
 					w.DataChannel <- e
 				}()
 			}
 		}
+	}
+}
+
+func (w *Watcher) checkError() {
+	for {
+		select {
+		case <-w.stopErrorChannel:
+			return
+		default:
+			select {
+			case err := <-w.ErrorChannel:
+				if err != nil {
+					resubscribe(w)
+					return
+				}
+			}
+		}
+	}
+}
+
+func resubscribe(w *Watcher) {
+	count := 0
+	for {
+		time.Sleep(500 * time.Millisecond)
+		count = count + 1
+		w.l.Debugw("this is count", "count", count)
+
+		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.d, w.store, w.subs)
+		if err != nil {
+			w.l.Errorw("cannot resubscribe to chain", "name", w.Name, "endpoint", w.endpoint, "error", err)
+			continue
+		}
+
+		ww.runContext = w.runContext
+		w = ww
+
+		Start(w, w.runContext)
+
+		w.l.Infow("successfully reconnected", "name", w.Name, "endpoint", w.endpoint)
+		return
 	}
 }
 
@@ -280,6 +333,7 @@ func (w *Watcher) startChain(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			w.stopReadChannel <- struct{}{}
+			w.stopErrorChannel <- struct{}{}
 			w.l.Infof("watcher %s has been canceled", w.Name)
 			return
 		default:
