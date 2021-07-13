@@ -11,6 +11,7 @@ import (
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
+type poolCoinDenomsInfo []denomInfo
 type denomInfo struct {
 	displayName string
 	denom       string
@@ -56,7 +57,7 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 		return d, err
 	}
 
-	var denomInfos []denomInfo
+	var denomInfos poolCoinDenomsInfo
 
 	for _, coin := range coins {
 		denom := denomInfo{
@@ -129,12 +130,18 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 					if !dd.Verified {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
-					denom.displayName = dd.DisplayName
 
 					if dd.Ticker == "" {
-						denom.ticker = dd.DisplayName
+						if dd.DisplayName == "" {
+							denom.ticker = dd.Name
+							denom.displayName = dd.Name
+						} else {
+							denom.ticker = dd.DisplayName
+							denom.displayName = dd.DisplayName
+						}
 					} else {
 						denom.ticker = dd.Ticker
+						denom.displayName = dd.DisplayName
 					}
 
 					denom.verified = dd.Verified
@@ -156,12 +163,20 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 					if !dd.Verified {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
-					denom.displayName = dd.DisplayName
+
 					if dd.Ticker == "" {
-						denom.ticker = dd.DisplayName
+						if dd.DisplayName == "" {
+							denom.ticker = dd.Name
+							denom.displayName = dd.Name
+						} else {
+							denom.ticker = dd.DisplayName
+							denom.displayName = dd.DisplayName
+						}
 					} else {
 						denom.ticker = dd.Ticker
+						denom.displayName = dd.DisplayName
 					}
+
 					denom.verified = dd.Verified
 
 				}
