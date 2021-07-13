@@ -55,6 +55,22 @@ func (s *Store) SetComplete(key string) error {
 	return s.Set(key, `{"status":"complete"}`)
 }
 
+func (s *Store) SetIBCReceiveFailed(key string) error {
+	return s.Set(key, `{"status":"IBC_receive_failed"}`)
+}
+
+func (s *Store) SetIBCReceiveSuccess(key string) error {
+	return s.Set(key, `{"status":"IBC_receive_success"}`)
+}
+
+func (s *Store) SetUnlockTimeout(key string) error {
+	return s.Set(key, `{"status":"Tokens_unlocked_timeout"}`)
+}
+
+func (s *Store) SetUnlockAck(key string) error {
+	return s.Set(key, `{"status":"Tokens_unlocked_ack"}`)
+}
+
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
 	if !s.Exists(key) {
@@ -84,6 +100,28 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 	return nil
 }
 
+func (s *Store) SetIbcTimeoutUnlock(key string) error {
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetUnlockTimeout(prev)
+}
+
+func (s *Store) SetIbcAckUnlock(key string) error {
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetUnlockAck(prev)
+}
+
 func (s *Store) SetIbcReceived(key string) error {
 
 	prev, err := s.Get(key)
@@ -93,6 +131,28 @@ func (s *Store) SetIbcReceived(key string) error {
 	}
 
 	return s.SetComplete(prev)
+}
+
+func (s *Store) SetIbcFailed(key string) error {
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetIBCReceiveFailed(prev)
+}
+
+func (s *Store) SetIbcSuccess(key string) error {
+
+	prev, err := s.Get(key)
+
+	if err != nil {
+		return err
+	}
+
+	return s.SetIBCReceiveSuccess(prev)
 }
 
 func (s *Store) Exists(key string) bool {
