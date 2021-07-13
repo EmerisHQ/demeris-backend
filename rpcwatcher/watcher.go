@@ -13,7 +13,6 @@ import (
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
-
 	"github.com/tendermint/tendermint/types"
 )
 
@@ -127,8 +126,7 @@ func (w *Watcher) readChannel() {
 				}
 
 				e := coretypes.ResultEvent{}
-				err := tmjson.Unmarshal(data.Result, &e)
-				if err != nil {
+				if err := tmjson.Unmarshal(data.Result, &e); err != nil {
 					w.l.Errorw("cannot unmarshal data into resultevent", "error", err, "chain", w.Name)
 					continue
 				}
