@@ -12,7 +12,7 @@ import (
 var ctx = context.Background()
 
 const (
-	timeout = 500 * time.Millisecond
+	timeout = 10 * time.Second
 )
 
 type Store struct {
@@ -48,7 +48,7 @@ func NewClient(connUrl string) *Store {
 	store.Client.Do(store.Client.Context(),"CONFIG", "SET", "notify-keyspace-events", "KEA")
 	store.ConnectionURL = connUrl
 
-	store.Config.ExpiryTime = time.Duration(300000000000)
+	store.Config.ExpiryTime = 300 * time.Second
 
 	return &store
 
@@ -59,7 +59,13 @@ func (s *Store) CreateTicket(chain, txHash string) error {
 		Status: "pending",
 	}
 
-	return s.Set(fmt.Sprintf("%s-%s", chain, txHash), data, s.Config.ExpiryTime)
+	key := fmt.Sprintf("%s-%s", chain, txHash)
+	shadow := "shadow" + key
+	if err := s.Set(shadow, Ticket{}, timeout); err != nil {
+		return err
+	}
+
+	return s.Set(key, data, s.Config.ExpiryTime)
 }
 
 func (s *Store) SetComplete(key string) error {
@@ -72,41 +78,41 @@ func (s *Store) SetComplete(key string) error {
 }
 
 func (s *Store) SetIBCReceiveFailed(key string) error {
-	return s.Set(key, `{"status":"IBC_receive_failed"}`)
-}
-
-func (s *Store) SetIBCReceiveSuccess(key string) error {
-	return s.Set(key, `{"status":"IBC_receive_success"}`)
-}
-
-func (s *Store) SetUnlockTimeout(key string) error {
-	return s.Set(key, `{"status":"Tokens_unlocked_timeout"}`)
-}
-
-func (s *Store) SetUnlockAck(key string) error {
-	return s.Set(key, `{"status":"Tokens_unlocked_ack"}`)
-}
-
-func (s *Store) SetFailedWithErr(key, error string) error {
-	data := map[string]interface{}{
-		"status": "failed",
-		"err":    error,
-	}
-
-	b, err := json.Marshal(data)
-
-	if err != nil {
+	shadow := "shadow" + key
+	if err := s.Set(shadow, Ticket{}, timeout); err != nil {
 		return err
 	}
 
-	return s.Set(key, string(b))
+	return s.Set(key, Ticket{Status: "IBC_receive_failed"}, s.Config.ExpiryTime)
+}
+
+func (s *Store) SetIBCReceiveSuccess(key string) error {
+	return s.Set(key, Ticket{
+		Status: "IBC_receive_success"}, s.Config.ExpiryTime)
+}
+
+func (s *Store) SetUnlockTimeout(key string) error {
+	return s.Set(key, Ticket{Status: "Tokens_unlocked_timeout"}, s.Config.ExpiryTime)
+}
+
+func (s *Store) SetUnlockAck(key string) error {
+	return s.Set(key, Ticket{Status: "Tokens_unlocked_ack"}, s.Config.ExpiryTime)
+}
+
+func (s *Store) SetFailedWithErr(key, error string) error {
+	data := Ticket{
+		Status: "failed",
+		Error:    error,
+	}
+
+	return s.Set(key, data, s.Config.ExpiryTime)
 }
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
 
-	//if !s.Exists(key) {
-	//	return fmt.Errorf("key doesn't exists")
-	//}
+	if !s.Exists(key) {
+		return fmt.Errorf("key doesn't exists")
+	}
 
 	shadow := "shadow" + key
 	if err := s.Set(shadow, Ticket{}, timeout); err != nil {
@@ -138,7 +144,7 @@ func (s *Store) SetIbcTimeoutUnlock(key string) error {
 		return err
 	}
 
-	return s.SetUnlockTimeout(prev)
+	return s.SetUnlockTimeout(prev.Info)
 }
 
 func (s *Store) SetIbcAckUnlock(key string) error {
@@ -149,7 +155,7 @@ func (s *Store) SetIbcAckUnlock(key string) error {
 		return err
 	}
 
-	return s.SetUnlockAck(prev)
+	return s.SetUnlockAck(prev.Info)
 }
 
 func (s *Store) SetIbcReceived(key string) error {
@@ -171,7 +177,7 @@ func (s *Store) SetIbcFailed(key string) error {
 		return err
 	}
 
-	return s.SetIBCReceiveFailed(prev)
+	return s.SetIBCReceiveFailed(prev.Info)
 }
 
 func (s *Store) SetIbcSuccess(key string) error {
@@ -182,7 +188,7 @@ func (s *Store) SetIbcSuccess(key string) error {
 		return err
 	}
 
-	return s.SetIBCReceiveSuccess(prev)
+	return s.SetIBCReceiveSuccess(prev.Info)
 }
 
 func (s *Store) Exists(key string) bool {
@@ -191,7 +197,8 @@ func (s *Store) Exists(key string) bool {
 	return exists == 1
 }
 
-func (s *Store) Set(key string, value Ticket, expiry time.Duration,info ...string,) error {
+func (s *Store) Set(key string, value Ticket, expiry time.Duration) error {
+
 	return s.Client.Set(ctx, key, value, expiry).Err()
 }
 

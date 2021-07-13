@@ -220,7 +220,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	// Handle case where an IBC transfer is sent from the origin chain.
 	if IBCSenderEventPresent {
-
+		err := w.store.CreateTicket(w.Name, txHash)
+		w.l.Debugw("this is key", "key", key)
+		if err != nil{
+			w.l.Debugw("this is error", "error", err)
+		}
 		sendPacketSourcePort, ok := data.Events["send_packet.packet_src_port"]
 
 		if !ok {
