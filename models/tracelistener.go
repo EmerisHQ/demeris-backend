@@ -32,6 +32,20 @@ func (b BalanceRow) WithChainName(cn string) DatabaseEntrier {
 	return b
 }
 
+// SupplyRow represents a supply row inserted into the database.
+type SupplyRow struct {
+	TracelistenerDatabaseRow
+
+	Amount string `db:"amount" json:"amount"`
+	Denom  string `db:"denom" json:"denom"`
+}
+
+// WithChainName implements the DatabaseEntrier interface.
+func (b SupplyRow) WithChainName(cn string) DatabaseEntrier {
+	b.ChainName = cn
+	return b
+}
+
 // DelegationRow represents a delegation row inserted into the database.
 type DelegationRow struct {
 	TracelistenerDatabaseRow
