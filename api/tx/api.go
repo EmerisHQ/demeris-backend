@@ -84,7 +84,6 @@ func Tx(c *gin.Context) {
 	}
 
 	var validationErr error
-	validationErr = nil
 
 	if mustCheckTx {
 		validationErr = validateTx(&tx, &meta, d)
@@ -98,7 +97,7 @@ func Tx(c *gin.Context) {
 			"id",
 			e.ID,
 			"error",
-			err,
+			validationErr,
 		)
 
 		return
@@ -159,8 +158,9 @@ func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 					return fmt.Errorf("Invalid denom trace")
 				}
 
-				channels := strings.Split(denomTrace.Path, "/transfer")
-				if channels[0] != sourceChannel {
+				// TODO: move this to the chains/api.go.path() function
+				channels := strings.Split(denomTrace.Path, "/")
+				if channels[1] != sourceChannel {
 					return fmt.Errorf("IBC forward is disabled for multi-hop tokens. Try sending it back through the original channel.")
 				}
 			}

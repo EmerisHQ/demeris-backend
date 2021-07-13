@@ -90,7 +90,7 @@ func (s *Store) SetUnlockAck(key string) error {
 func (s *Store) SetFailedWithErr(key, error string) error {
 	data := map[string]interface{}{
 		"status": "failed",
-		"err": error,
+		"err":    error,
 	}
 
 	b, err := json.Marshal(data)
@@ -160,7 +160,7 @@ func (s *Store) SetIbcReceived(key string) error {
 		return err
 	}
 
-	return s.SetComplete(prev.Info)
+	return s.SetIBCReceiveSuccess(prev.Info)
 }
 
 func (s *Store) SetIbcFailed(key string) error {
