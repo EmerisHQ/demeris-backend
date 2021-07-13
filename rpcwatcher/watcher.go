@@ -2,14 +2,16 @@ package rpcwatcher
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+
+	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/store"
+	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
-	"go.uber.org/zap"
+	"github.com/tendermint/tendermint/types"
 )
 
 const (
@@ -104,8 +106,7 @@ func (w *Watcher) readChannel() {
 				}
 
 				e := coretypes.ResultEvent{}
-				err := json.Unmarshal(data.Result, &e)
-				if err != nil {
+				if err := tmjson.Unmarshal(data.Result, &e); err != nil {
 					w.l.Errorw("cannot unmarshal data into resultevent", "error", err, "chain", w.Name)
 					continue
 				}
@@ -142,8 +143,18 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		"", "is it", exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key) {
-		if err := w.store.SetComplete(key); err != nil {
-			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+		eventTx := data.Data.(types.EventDataTx)
+
+		if eventTx.Result.Code == 0 {
+			if err := w.store.SetComplete(key); err != nil {
+				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+			}
+			return
+		}
+
+		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
+			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
+				"txHash", txHash, "code", eventTx.Result.Code)
 		}
 		return
 	}
