@@ -28,8 +28,10 @@ func New(connString string) (*Instance, error) {
 	return ii, nil
 }
 
-func (i *Instance) AddChain(chain models.Chain) error {
-	n, err := i.d.DB.PrepareNamed(insertChain)
+func (i *Instance) UpdateDenoms(chain models.Chain) error {
+	n, err := i.d.DB.PrepareNamed(`UPDATE cns.chains 
+	SET denoms=:denoms 
+	WHERE chain_name=:chain_name;`)
 	if err != nil {
 		return err
 	}
@@ -43,7 +45,7 @@ func (i *Instance) AddChain(chain models.Chain) error {
 	rows, _ := res.RowsAffected()
 
 	if rows == 0 {
-		return fmt.Errorf("database delete statement had no effect")
+		return fmt.Errorf("database update statement had no effect")
 	}
 
 	return nil
@@ -60,42 +62,5 @@ func (i *Instance) Chain(chain string) (models.Chain, error) {
 func (i *Instance) Chains() ([]models.Chain, error) {
 	var c []models.Chain
 
-	return c, i.d.Exec(getAllChains, nil, &c)
-}
-
-type channelsBetweenChain struct {
-	ChainAName             string `db:"chain_a_chain_name"`
-	ChainAChannelID        string `db:"chain_a_channel_id"`
-	ChainACounterChannelID string `db:"chain_a_counter_channel_id"`
-	ChainAChainID          string `db:"chain_a_chain_id"`
-	ChainBName             string `db:"chain_b_chain_name"`
-	ChainBChannelID        string `db:"chain_b_channel_id"`
-	ChainBCounterChannelID string `db:"chain_b_counter_channel_id"`
-	ChainBChainID          string `db:"chain_b_chain_id"`
-}
-
-func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (map[string]string, error) {
-
-	var c []channelsBetweenChain
-
-	n, err := i.d.DB.PrepareNamed(channelsBetweenChains)
-	if err != nil {
-		return map[string]string{}, err
-	}
-
-	if err := n.Select(&c, map[string]interface{}{
-		"source":      source,
-		"destination": destination,
-		"chainID":     chainID,
-	}); err != nil {
-		return map[string]string{}, err
-	}
-
-	ret := map[string]string{}
-
-	for _, cc := range c {
-		ret[cc.ChainAChannelID] = cc.ChainBChannelID
-	}
-
-	return ret, nil
+	return c, i.d.Exec("SELECT * FROM cns.chains", nil, &c)
 }

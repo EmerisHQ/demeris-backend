@@ -193,7 +193,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			chain.Denoms = append(chain.Denoms, dd)
 		}
 
-		err = w.cns.AddChain(chain)
+		err = w.cns.UpdateDenoms(chain)
 
 		if err != nil {
 			w.l.Errorw("failed to update chain", "error", err)
