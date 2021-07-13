@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	tldb "github.com/allinbits/demeris-backend/api/database"
 	cnsdb "github.com/allinbits/demeris-backend/cns/database"
-	dbutils "github.com/allinbits/demeris-backend/utils/database"
 
 	"github.com/allinbits/demeris-backend/utils/store"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -24,8 +22,6 @@ type Watcher struct {
 	Name            string
 	apiUrl          string
 	client          *client.WSClient
-	db              *tldb.Database
-	d               *dbutils.Instance
 	cns             *cnsdb.Instance
 	l               *zap.SugaredLogger
 	store           *store.Store
@@ -35,20 +31,6 @@ type Watcher struct {
 
 type WsResponse struct {
 	Event coretypes.ResultEvent `json:"result"`
-}
-
-type IbcTransitData struct {
-	SourceChain              string `json:"sourceChain"`
-	DestChain                string `json:"destChain"`
-	SendPacketSourceChannel  string `json:"sourceChannel"`  // send_packet.packet_src_channel
-	SendPacketPacketSequence string `json:"packetSequence"` // send_packet.packet_sequence
-}
-
-type IbcReceiveData struct {
-	SourceChain              string `json:"sourceChain"`
-	DestChain                string `json:"destChain"`
-	RecvPacketSourceChannel  string `json:"sourceChannel"`  // recv_packet.packet_src_channel
-	RecvPacketPacketSequence string `json:"packetSequence"` // write_acknowledgement.packet_sequence
 }
 
 type Events map[string][]string
@@ -68,7 +50,7 @@ type VerifyTraceResponse struct {
 	} `json:"verify_trace"`
 }
 
-func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl string, db *dbutils.Instance, tldb *tldb.Database, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl string, cnsdb *cnsdb.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
 
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
@@ -81,8 +63,6 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl st
 
 	w := &Watcher{
 		apiUrl:          apiUrl,
-		d:               db,
-		db:              tldb,
 		cns:             cnsdb,
 		client:          ws,
 		l:               logger,
