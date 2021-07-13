@@ -6,7 +6,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/store"
 	tmjson "github.com/tendermint/tendermint/libs/json"
