@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	cnsdb "github.com/allinbits/demeris-backend/cns/database"
+	cnsdb "github.com/allinbits/demeris-backend/rpcwatcher/database"
 
 	"github.com/allinbits/demeris-backend/utils/store"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -72,7 +72,7 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl st
 		DataChannel:     make(chan coretypes.ResultEvent),
 	}
 
-	w.l.Debugw("api url", "url", apiUrl)
+	w.l.Debugw("creating rpcwatcher with config", "apiurl", apiUrl)
 
 	for _, sub := range subscriptions {
 		if err := w.client.Subscribe(context.Background(), sub); err != nil {

@@ -10,9 +10,9 @@ import (
 
 	"github.com/r3labs/diff"
 
-	cnsdb "github.com/allinbits/demeris-backend/cns/database"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/rpcwatcher"
+	db "github.com/allinbits/demeris-backend/rpcwatcher/database"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 )
@@ -36,7 +36,8 @@ func main() {
 
 	l.Infow("rpcwatcher", "version", Version)
 
-	cns, err := cnsdb.New(c.DatabaseConnectionURL)
+	cns, err := db.New(c.DatabaseConnectionURL)
+
 	if err != nil {
 		panic(err)
 	}
