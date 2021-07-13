@@ -104,7 +104,6 @@ func main() {
 					// we probably deleted this already somehow
 					continue
 				}
-				wi, _ = watchers[name]
 				wi.cancel()
 
 				delete(watchers, name)

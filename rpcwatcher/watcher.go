@@ -16,11 +16,7 @@ import (
 	"github.com/tendermint/tendermint/types"
 )
 
-const (
-	txEvent    = "tm.event='Tx'"
-	subscriptions = []string{txEvent}
-	ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
-)
+const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
 
 type Watcher struct {
 	Name             string
@@ -114,9 +110,8 @@ func (w *Watcher) readChannel() {
 			select {
 			case data := <-w.client.ResponsesCh:
 				if data.Error != nil {
-					w.l.Debugw("this is error", "error", data.Error)
 					go func() {
-						w.l.Debugw("error is being written")
+						w.l.Debugw("writing error to error channel", "error", data.Error)
 						w.ErrorChannel <- data.Error
 					}()
 
@@ -200,7 +195,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	w.l.Debugw("is simple ibc transfer"+
 		"", "is it", exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !isIBC && !isIBCRecv && w.store.Exists(key) {
+	if exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key) {
 		eventTx := data.Data.(types.EventDataTx)
 
 		if eventTx.Result.Code == 0 {
@@ -211,7 +206,8 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
-			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err)
+			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
+				"txHash", txHash, "code", eventTx.Result.Code)
 		}
 		return
 	}
