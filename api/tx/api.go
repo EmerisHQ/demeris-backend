@@ -85,7 +85,6 @@ func Tx(c *gin.Context) {
 	}
 
 	var validationErr error
-	validationErr = nil
 
 	if mustCheckTx {
 		validationErr = validateTx(&tx, &meta, d)
@@ -99,7 +98,7 @@ func Tx(c *gin.Context) {
 			"id",
 			e.ID,
 			"error",
-			err,
+			validationErr,
 		)
 
 		return
