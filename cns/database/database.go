@@ -146,15 +146,17 @@ func (i *Instance) UpdateDenoms(chain string, denoms models.DenomList) error {
 }
 
 type channelsBetweenChain struct {
-	C1ChainName        string `db:"c1_chain_name"`
-	C1ChannelID        string `db:"c1_channel_id"`
-	C1CounterChannelID string `db:"c1_counter_channel_id"`
-	C2ChainName        string `db:"c2_chain_name"`
-	C2ChannelID        string `db:"c2_channel_id"`
-	C2CounterChannelID string `db:"c2_counter_channel_id"`
+	ChainAName             string `db:"chain_a_chain_name"`
+	ChainAChannelID        string `db:"chain_a_channel_id"`
+	ChainACounterChannelID string `db:"chain_a_counter_channel_id"`
+	ChainAChainID          string `db:"chain_a_chain_id"`
+	ChainBName             string `db:"chain_b_chain_name"`
+	ChainBChannelID        string `db:"chain_b_channel_id"`
+	ChainBCounterChannelID string `db:"chain_b_counter_channel_id"`
+	ChainBChainID          string `db:"chain_b_chain_id"`
 }
 
-func (i *Instance) ChannelsBetweenChains(source, destination string) (map[string]string, error) {
+func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (map[string]string, error) {
 
 	var c []channelsBetweenChain
 
@@ -166,6 +168,7 @@ func (i *Instance) ChannelsBetweenChains(source, destination string) (map[string
 	if err := n.Select(&c, map[string]interface{}{
 		"source":      source,
 		"destination": destination,
+		"chainID":     chainID,
 	}); err != nil {
 		return map[string]string{}, err
 	}
@@ -173,7 +176,7 @@ func (i *Instance) ChannelsBetweenChains(source, destination string) (map[string
 	ret := map[string]string{}
 
 	for _, cc := range c {
-		ret[cc.C1ChannelID] = cc.C1CounterChannelID
+		ret[cc.ChainAChannelID] = cc.ChainBChannelID
 	}
 
 	return ret, nil

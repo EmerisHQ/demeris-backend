@@ -26,7 +26,7 @@ type ChainName struct {
 func (d *Database) ChainNames() ([]ChainName, error) {
 	var cn []ChainName
 
-	q := `select chain_name,node_info->'bech32_config'->>'prefix_account' as account_prefix from cns.chains`
+	q := `select chain_name,node_info->'bech32_config'->>'prefix_account' as account_prefix from cns.chains where enabled=true`
 
 	q = d.dbi.DB.Rebind(q)
 

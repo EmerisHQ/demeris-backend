@@ -40,7 +40,7 @@
     "cli_name": "persistenceCore",
     "namespace": "emeris",
     "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
-    "join": {
+    "join_config": {
       "genesis": {
         "url": "https://raw.githubusercontent.com/persistenceOne/genesisTransactions/master/core-1/final_genesis.json"
       },

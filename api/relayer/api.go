@@ -1,9 +1,13 @@
 package relayer
 
 import (
+	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 
 	"github.com/cosmos/cosmos-sdk/types"
 
@@ -107,11 +111,6 @@ func getRelayerBalance(c *gin.Context) {
 		return
 	}
 
-	if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
-		c.JSON(http.StatusOK, res) // empty response
-		return
-	}
-
 	chains := []string{}
 	addresses := []string{}
 
@@ -140,7 +139,12 @@ func getRelayerBalance(c *gin.Context) {
 	}
 
 	for i := 0; i < len(addresses); i++ {
-		enough, err := enoughBalance(addresses[i], thresh[chains[i]], d.Database)
+		t, found := thresh[chains[i]]
+		if !found {
+			continue
+		}
+
+		enough, err := enoughBalance(addresses[i], t, d.Database)
 		if err != nil {
 			e := deps.NewError(
 				"status",
@@ -159,7 +163,7 @@ func getRelayerBalance(c *gin.Context) {
 			return
 		}
 
-		res = append(res, relayerBalance{
+		res.Balances = append(res.Balances, relayerBalance{
 			Address:       addresses[i],
 			EnoughBalance: enough,
 		})
@@ -174,8 +178,11 @@ func relayerThresh(chains []string, db *database.Database) (map[string]models.De
 	res := map[string]models.Denom{}
 
 	for _, cn := range chains {
-		chain, err := db.Chain(cn)
+		chain, err := db.ChainFromChainID(cn)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				continue // probably the chain isn't enabled yet
+			}
 			return nil, fmt.Errorf("cannot retrieve chain %s, %w", cn, err)
 		}
 
@@ -186,12 +193,19 @@ func relayerThresh(chains []string, db *database.Database) (map[string]models.De
 }
 
 func enoughBalance(address string, denom models.Denom, db *database.Database) (bool, error) {
-	balance, err := db.Balances(address)
+	_, hb, err := bech32.DecodeAndConvert(address)
 	if err != nil {
 		return false, err
 	}
 
-	var status *bool
+	addrHex := hex.EncodeToString(hb)
+
+	balance, err := db.Balances(addrHex)
+	if err != nil {
+		return false, err
+	}
+
+	status := false
 
 	for _, bal := range balance {
 		if bal.Denom != denom.Name {
@@ -203,14 +217,9 @@ func enoughBalance(address string, denom models.Denom, db *database.Database) (b
 			return false, fmt.Errorf("found relayeramount denom but failed to parse amount, %w", err)
 		}
 
-		statConcrete := parsedAmt.Amount.Int64() >= *denom.MinimumThreshRelayerBalance
-		status = &statConcrete
-
+		status = parsedAmt.Amount.Int64() >= *denom.MinimumThreshRelayerBalance
+		break
 	}
 
-	if status == nil {
-		return false, fmt.Errorf("cannot find relayerdenom %s in denom balance for address %s", denom.Name, address)
-	}
-
-	return *status, nil
+	return status, nil
 }
