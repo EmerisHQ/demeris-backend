@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/allinbits/demeris-backend/models"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
@@ -67,7 +68,10 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 			verifiedTrace := VerifyTraceResponse{}
 			w.l.Debugw("querying verified trace for coin", "coin", denom.denom)
 
-			endpoint := fmt.Sprintf("%s/chain/%s/denom/verify_trace/%s", "http://api-server:8000", "cosmos-hub", denom.denom[4:])
+			u, err := url.Parse(w.apiUrl)
+			u.Path = fmt.Sprintf("chain/%s/denom/verify_trace/%s", "cosmos-hub", denom.denom[4:])
+
+			endpoint := u.String()
 
 			resp, err := http.Get(endpoint)
 
