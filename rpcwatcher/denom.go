@@ -80,7 +80,8 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 				return d, err
 			}
 
-			if resp.StatusCode == 200 {
+			if resp.StatusCode != 200 {
+				// retry if query fails
 				resp, err = http.Get(endpoint)
 
 				if err != nil {
