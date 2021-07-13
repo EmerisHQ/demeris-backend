@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	tldb "github.com/allinbits/demeris-backend/api/database"
 	cnsdb "github.com/allinbits/demeris-backend/cns/database"
@@ -151,11 +150,11 @@ func (w *Watcher) readChannel() {
 
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
-	_, isCreateLP := data.Events["create_pool.pool_name"]
-	_, isIBC := data.Events["ibc_transfer.sender"]
-	_, isIBCSuccess := data.Events["fungible_token_packet.success"]
-	_, isIBCRecv := data.Events["recv_packet.packet_sequence"]
-	_, isIBCTimeout := data.Events["timeout.refund_receiver"]
+	_, createPoolEventPresent := data.Events["create_pool.pool_name"]
+	_, ibcTransferEventPresent := data.Events["ibc_transfer.sender"]
+	_, ibcSuccessEventPresent := data.Events["fungible_token_packet.success"]
+	_, ibcReciveEventPresent := data.Events["recv_packet.packet_sequence"]
+	_, ibcTimeoutEventPresent := data.Events["timeout.refund_receiver"]
 
 	if len(txHashSlice) == 0 {
 		return
@@ -165,23 +164,23 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", isCreateLP, "is ibc", isIBC, "is ibc recv", isIBCRecv,
-		"is ibc success", isIBCSuccess, "is ibc timeout", isIBCTimeout)
+	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", ibcTransferEventPresent, "is ibc recv", ibcReciveEventPresent,
+		"is ibc success", ibcSuccessEventPresent, "is ibc timeout", ibcTimeoutEventPresent)
 
-	w.l.Debugw("is simple ibc transfer", "is it", exists && !isCreateLP && !isIBC && !isIBCRecv && w.store.Exists(key))
+	w.l.Debugw("is simple ibc transfer", "is it", exists && !createPoolEventPresent && !ibcTransferEventPresent && !ibcReciveEventPresent && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !isCreateLP && !isIBC && !isIBCRecv && w.store.Exists(key) {
+	if exists && !createPoolEventPresent && !ibcTransferEventPresent && !ibcReciveEventPresent && w.store.Exists(key) {
 		if err := w.store.SetComplete(key); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 		return
 	}
 
-	w.l.Debugw("is create lp", "is it", isCreateLP)
+	w.l.Debugw("is create lp", "is it", createPoolEventPresent)
 
 	// Handle case where an LP is being created on the Cosmos Hub
 
-	if isCreateLP && w.Name == "cosmos-hub" {
+	if createPoolEventPresent && w.Name == "cosmos-hub" {
 
 		chain, err := w.cns.Chain(w.Name)
 
@@ -228,7 +227,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
-	if isIBC {
+	if ibcTransferEventPresent {
 
 		sendPacketSourcePort, ok := data.Events["send_packet.packet_src_port"]
 
@@ -267,8 +266,8 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
-	if isIBCSuccess {
-		if isIBCRecv {
+	if ibcSuccessEventPresent {
+		if ibcReciveEventPresent {
 			recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
 
 			if !ok {
@@ -312,7 +311,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 	}
 
-	if isIBCTimeout {
+	if ibcTimeoutEventPresent {
 		_, ok := data.Events["timeout.refund_receiver"]
 		if !ok {
 			w.l.Errorf("refund receiver not found")
@@ -340,34 +339,6 @@ func (w *Watcher) startChain(ctx context.Context) {
 		}
 
 	}
-}
-
-func paths(path string) ([]string, error) {
-	numSlash := strings.Count(path, "/")
-	if numSlash == 1 {
-		return []string{path}, nil
-	}
-
-	if numSlash%2 == 0 {
-		return nil, fmt.Errorf("malformed path")
-	}
-
-	spl := strings.Split(path, "/")
-
-	var paths []string
-	pathBuild := ""
-
-	for i, e := range spl {
-		if i%2 != 0 {
-			pathBuild = pathBuild + "/" + e
-			paths = append(paths, pathBuild)
-			pathBuild = ""
-		} else {
-			pathBuild = e
-		}
-	}
-
-	return paths, nil
 }
 
 type denomInfo struct {
