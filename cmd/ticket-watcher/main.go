@@ -12,9 +12,9 @@ import (
 
 var Version = "not specified"
 
-const trim  = "__keyspace@0__:shadow"
+const trim = "__keyspace@0__:shadow"
 
-func main(){
+func main() {
 	cfg, err := readConfig()
 	if err != nil {
 		panic(err)
@@ -42,10 +42,10 @@ func main(){
 
 	sub := s.Client.PSubscribe(s.Client.Context(), "__key*__:*")
 	for msg := range sub.Channel() {
-		l.Infow("new message received","msg",  msg.Channel)
+		l.Infow("new message received", "msg", msg.Channel)
 		k := strings.TrimPrefix(msg.Channel, trim)
-		l.Infow("this is string", "string", k )
-		if s.Exists(k){
+		l.Infow("this is string", "string", k)
+		if s.Exists(k) {
 			ticket, err := s.Get(k)
 			l.Infow("this is value", "ticket", ticket, "err", err)
 			if err != nil {
