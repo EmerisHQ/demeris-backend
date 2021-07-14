@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	Redis                 string `validate:"required"`
-	KubernetesNamespace   string `validate:"required"`
-	LogPath               string
-	Debug                 bool
+	Redis               string `validate:"required"`
+	KubernetesNamespace string `validate:"required"`
+	LogPath             string
+	Debug               bool
 }
 
 func (c Config) Validate() error {
@@ -29,9 +29,8 @@ func (c Config) Validate() error {
 func readConfig() (*Config, error) {
 	var c Config
 
-	return &c, configuration.ReadConfig(&c, "demeris-cns", map[string]string{
-		"RedisURL": "http://localhost:6379",
+	return &c, configuration.ReadConfig(&c, "emeris-tw", map[string]string{
+		"RedisURL":            "http://localhost:6379",
 		"KubernetesNamespace": "emeris",
 	})
 }
-
