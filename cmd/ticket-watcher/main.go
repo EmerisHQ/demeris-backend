@@ -1,4 +1,4 @@
-package ticket_watcher
+package main
 
 import (
 	"fmt"
