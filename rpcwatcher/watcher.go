@@ -250,7 +250,9 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		c, err := w.GetCounterParty(sendPacketSourceChannel[0])
 		if err != nil{
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			return
 		}
+
 		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0]); err != nil {
 			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
 		}
@@ -296,6 +298,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		var ack Ack
 		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil{
 			w.l.Errorw("unable to unmarshal packetAck", "err", err)
+			return
 		}
 
 		if ack.Result != ackSuccess {
@@ -329,6 +332,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		c, err := w.GetCounterParty(timeoutPacketSourceChannel[0])
 		if err != nil{
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			return
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
@@ -356,6 +360,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		c, err := w.GetCounterParty(ackPacketSourceChannel[0])
 		if err != nil{
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			return
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
