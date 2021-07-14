@@ -251,11 +251,16 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c := w.GetCounterParty(sendPacketSourceChannel[0])
-		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0]); err != nil {
-			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
+		c, err := w.GetCounterParty(sendPacketSourceChannel[0])
+		if err != nil{
+			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
 		}
+
+		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0]); err != nil {
+			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
+		}
+		return
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
@@ -295,7 +300,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
 		var ack Ack
-		_ = json.Unmarshal([]byte(packetAck[0]), &ack)
+		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil{
+			w.l.Errorw("unable to unmarshal packetAck", "err", err)
+			return
+		}
+
 		if ack.Result != ackSuccess {
 			if err := w.store.SetIbcFailed(key); err != nil {
 				w.l.Errorw("unable to set status as failed for key", "key", key, "error", err)
@@ -324,9 +333,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c := w.GetCounterParty(timeoutPacketSourceChannel[0])
-		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
+		c, err := w.GetCounterParty(timeoutPacketSourceChannel[0])
+		if err != nil{
+			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			return
+		}
 
+		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
 		if err := w.store.SetIbcTimeoutUnlock(key); err != nil {
 			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
 		}
@@ -348,7 +361,12 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c := w.GetCounterParty(ackPacketSourceChannel[0])
+		c, err := w.GetCounterParty(ackPacketSourceChannel[0])
+		if err != nil{
+			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			return
+		}
+
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
 		_, ok = data.Events["fungible_token_packet.error"]
 		if ok {
