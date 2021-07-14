@@ -17,19 +17,19 @@ spec:
       labels:
         {{- include "chart.labels" . | indent 8 }}
     spec:
-      serviceAccountName: {{ .Release.Name }}
       nodeSelector:
-  {{ toYaml .Values.nodeSelector | indent 8 }}
+{{ toYaml .Values.nodeSelector | indent 8 }}
       containers:
         - name: ticket-watcher
           image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
-          {{- include "ports.pod" . | indent 8 }}
+{{- include "ports.pod" . | indent 8 }}
           env:
-          - name: EMERIS-TW_DEBUG
-            value: "{{ .Values.debug }}"
-          - name: EMERIS-TW_REDISURL
-            value: "{{ .Values.redisUrl }}"
-          resources: { { toYaml .Values.resources | indent 12 } }
+            - name: EMERIS-TW_DEBUG
+              value: "{{ .Values.debug }}"
+            - name: TW_REDISURL
+              value: "{{ .Values.redisUrl }}"
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
       terminationGracePeriodSeconds: 10

@@ -8,6 +8,6 @@ metadata:
 spec:
   type: NodePort
   ports:
-  {{- include "ports.service" . | indent 2 }}
-selector:
-  {{- include "chart.labels" . | indent 4 }}
+{{- include "ports.service" . | indent 2 }}
+  selector:
+{{- include "chart.labels" . | indent 4 }}
