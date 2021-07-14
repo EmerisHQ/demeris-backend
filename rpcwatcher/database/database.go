@@ -64,3 +64,21 @@ func (i *Instance) Chains() ([]models.Chain, error) {
 
 	return c, i.d.Exec("SELECT * FROM cns.chains", nil, &c)
 }
+
+func (i *Instance) GetCounterParty(chain, srcChannel string) ([]models.ChannelQuery, error) {
+	var c []models.ChannelQuery
+
+	q, err := i.d.DB.PrepareNamed("select chain_name, json_data.* from cns.chains, jsonb_each_text(primary_channel) as json_data where chain_name=:chain_name and value=:channel limit 1;")
+	if err != nil {
+		return []models.ChannelQuery{}, err
+	}
+
+	if err := q.Select(&c, map[string]interface{}{
+		"chain_name": chain,
+		"channel":    srcChannel,
+	}); err != nil {
+		return []models.ChannelQuery{}, err
+	}
+
+	return c, nil
+}

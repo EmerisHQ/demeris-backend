@@ -51,7 +51,7 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 	}
 
 	coins, err := sdktypes.ParseCoinsNormalized(depositCoins[0])
-	cosmoshub, err := w.cns.Chain("cosmos-hub")
+	cosmoshub, err := w.d.Chain("cosmos-hub")
 
 	if err != nil {
 		return d, err
@@ -117,7 +117,7 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 			sourceChainName := verifiedTrace.VerifyTrace.Trace[0].CounterpartyName
 			w.l.Debugw("checking base denom in chain", "denom", denom.baseDenom, "chain", sourceChainName)
 
-			sourceChain, err := w.cns.Chain(sourceChainName)
+			sourceChain, err := w.d.Chain(sourceChainName)
 
 			if err != nil {
 				return d, err

@@ -108,7 +108,7 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if s.Set(newKey, key) != nil {
+	if err = s.Set(newKey, key); err != nil {
 		return err
 	}
 
@@ -145,7 +145,7 @@ func (s *Store) SetIbcReceived(key string) error {
 		return err
 	}
 
-	return s.SetComplete(prev)
+	return s.SetIBCReceiveSuccess(prev)
 }
 
 func (s *Store) SetIbcFailed(key string) error {
