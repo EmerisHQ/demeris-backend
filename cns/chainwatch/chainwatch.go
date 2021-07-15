@@ -125,6 +125,19 @@ func (i *Instance) Run() {
 					continue
 				}
 
+				amt, err := i.db.ChainAmount()
+				if err != nil {
+					i.l.Errorw("cannot get amount of chains", "error", err)
+					continue
+				}
+
+				chainStatuses := relayer.Status.ChainStatuses
+
+				if amt != len(chainStatuses) {
+					continue // corner case where the chain gets added, previous chains are already connected, but the operator still reports "Running" because the
+					// reconcile cycle didn't get up yet.
+				}
+
 				phase := relayer.Status.Phase
 				if phase != v1.RelayerPhaseRunning {
 					amt, err := i.db.ChainAmount()
