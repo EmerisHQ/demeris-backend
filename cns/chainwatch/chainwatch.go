@@ -138,12 +138,6 @@ func (i *Instance) Run() {
 
 				phase := relayer.Status.Phase
 				if phase != v1.RelayerPhaseRunning {
-					amt, err := i.db.ChainAmount()
-					if err != nil {
-						i.l.Errorw("cannot get amount of chains", "error", err)
-						continue
-					}
-
 					if amt == 1 {
 						if err := i.c.SetChainStatus(chain.Name, done); err != nil {
 							i.l.Errorw("cannot set chain status in redis", "chainName", chain.Name, "error", err, "newStatus", done.String())
