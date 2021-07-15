@@ -9,8 +9,7 @@ import (
 )
 
 type Config struct {
-	Redis               string `validate:"required"`
-	KubernetesNamespace string `validate:"required"`
+	redisUrl            string `validate:"required"`
 	LogPath             string
 	Debug               bool
 }
