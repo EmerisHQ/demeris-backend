@@ -50,14 +50,17 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 		return d, fmt.Errorf("failed to read deposit coins")
 	}
 
+	poolId, ok := data.Events["create_pool.pool_id"]
+	if !ok {
+		return d, fmt.Errorf("pool id not found in events")
+	}
+
 	coins, err := sdktypes.ParseCoinsNormalized(depositCoins[0])
 	cosmoshub, err := w.d.Chain("cosmos-hub")
 
 	if err != nil {
 		return d, err
 	}
-
-	var denomInfos poolCoinDenomsInfo
 
 	for _, coin := range coins {
 		denom := denomInfo{
@@ -112,10 +115,8 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 				return d, fmt.Errorf("trace too long, expected 1, got %d", l)
 			}
 
-			denom.baseDenom = verifiedTrace.VerifyTrace.BaseDenom
-
 			sourceChainName := verifiedTrace.VerifyTrace.Trace[0].CounterpartyName
-			w.l.Debugw("checking base denom in chain", "denom", denom.baseDenom, "chain", sourceChainName)
+			w.l.Debugw("checking base denom in chain", "denom", verifiedTrace.VerifyTrace.BaseDenom, "chain", sourceChainName)
 
 			sourceChain, err := w.d.Chain(sourceChainName)
 
@@ -126,26 +127,11 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 			found := false
 
 			for _, dd := range sourceChain.Denoms {
-				if dd.Name == denom.baseDenom {
+				if dd.Name == verifiedTrace.VerifyTrace.BaseDenom {
 
 					if !dd.Verified {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
-
-					if dd.Ticker == "" {
-						if dd.DisplayName == "" {
-							denom.ticker = dd.Name
-							denom.displayName = dd.Name
-						} else {
-							denom.ticker = dd.DisplayName
-							denom.displayName = dd.DisplayName
-						}
-					} else {
-						denom.ticker = dd.Ticker
-						denom.displayName = dd.DisplayName
-					}
-
-					denom.verified = dd.Verified
 
 					found = true
 				}
@@ -156,50 +142,27 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 			}
 		} else {
 			// check if token exists & is verified on cosmos hub
-			denom.baseDenom = coin.Denom
 
 			for _, dd := range cosmoshub.Denoms {
-				if dd.Name == denom.baseDenom {
+				if dd.Name == coin.Denom {
 
 					if !dd.Verified {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
-
-					if dd.Ticker == "" {
-						if dd.DisplayName == "" {
-							denom.ticker = dd.Name
-							denom.displayName = dd.Name
-						} else {
-							denom.ticker = dd.DisplayName
-							denom.displayName = dd.DisplayName
-						}
-					} else {
-						denom.ticker = dd.Ticker
-						denom.displayName = dd.DisplayName
-					}
-
-					denom.verified = dd.Verified
 
 				}
 			}
 
 		}
 
-		w.l.Debugw("adding verified denom", "denom", denom.displayName)
-
-		denomInfos = append(denomInfos, denom)
+		w.l.Debugw("verified denom", "denom", coin.Denom)
 
 	}
 
-	if denomInfos[0].isPoolCoin() || denomInfos[0].isPoolCoin() {
-		d.DisplayName = fmt.Sprintf("GDEX %s LP", poolCoinDenom[0])
-		d.Ticker = fmt.Sprintf("G-%s", poolCoinDenom[0])
-		d.Verified = true
-	} else {
-		d.DisplayName = fmt.Sprintf("GDEX %s/%s LP", denomInfos[0].displayName, denomInfos[1].displayName)
-		d.Ticker = fmt.Sprintf("G-%s-%s", denomInfos[0].ticker, denomInfos[1].ticker)
-		d.Verified = true
-	}
+	d.DisplayName = fmt.Sprintf("Gravity %s", poolId[0])
+	d.Ticker = fmt.Sprintf("G%s", poolId[0])
+
+	d.Verified = true
 
 	w.l.Debugw("verified lp denom", "displayname", d.DisplayName, "ticker", d.Ticker)
 
