@@ -11,27 +11,18 @@ import (
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
-type poolCoinDenomsInfo []denomInfo
-type denomInfo struct {
-	displayName string
-	denom       string
-	baseDenom   string
-	ticker      string
-	verified    bool
-}
-
-func (d denomInfo) isPoolCoin() bool {
-	if len(d.denom) < 4 {
+func isPoolCoin(denom string) bool {
+	if len(denom) < 4 {
 		return false
 	}
-	return d.denom[:4] == "pool"
+	return denom[:4] == "pool"
 }
 
-func (d denomInfo) isIBCToken() bool {
-	if len(d.denom) < 4 {
+func isIBCToken(denom string) bool {
+	if len(denom) < 4 {
 		return false
 	}
-	return d.denom[:4] == "ibc/"
+	return denom[:4] == "ibc/"
 }
 
 func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
@@ -63,17 +54,14 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 	}
 
 	for _, coin := range coins {
-		denom := denomInfo{
-			denom: coin.Denom,
-		}
 
-		if denom.isIBCToken() {
+		if isIBCToken(coin.Denom) {
 
 			verifiedTrace := VerifyTraceResponse{}
-			w.l.Debugw("querying verified trace for coin", "coin", denom.denom)
+			w.l.Debugw("querying verified trace for coin", "coin", coin.Denom)
 
 			u, err := url.Parse(w.apiUrl)
-			u.Path = fmt.Sprintf("chain/%s/denom/verify_trace/%s", "cosmos-hub", denom.denom[4:])
+			u.Path = fmt.Sprintf("chain/%s/denom/verify_trace/%s", "cosmos-hub", coin.Denom[4:])
 
 			endpoint := u.String()
 
