@@ -1,9 +1,5 @@
 <template>
   <div class="container">
-    <script
-      src="https://upload-widget.cloudinary.com/global/all.js"
-      type="text/javascript"
-    ></script>
     <h1>{{ chain.chain_name }}</h1>
     <h5 for="display_name">Display Name</h5>
     <input
@@ -17,7 +13,12 @@
     <h5 for="logo">Logo</h5>
     <div>
       <img :src="chain.logo" class="logo" />
-      <button id="upload_widget" class="cloudinary-button">Upload image</button>
+      <input
+        type="text"
+        name="display_name"
+        id="display_name"
+        v-model="chain.logo"
+      />
     </div>
     <h3>Primary Channels</h3>
     <table>
@@ -86,13 +87,12 @@
           </td>
           <td>
             <img :src="denom.logo" class="logo-sm" />
-            <button
-              :id="'upload_widget_' + chain.name + '_' + denom.name"
-              class="cloudinary-button"
-              v-on:click="openCustomUploadWidget(denom.name)"
-            >
-              Upload
-            </button>
+            <input
+              type="text"
+              name="display_name"
+              id="display_name"
+              v-model="denom.logo"
+            />
           </td>
 
           <td>
@@ -133,10 +133,6 @@
     </table>
     <button v-on:click="update()">Save Changes</button>
     <div class="error">{{ errorText }}</div>
-    <!-- <h3>Raw data</h3>
-    <p>
-      {{ JSON.stringify(chain, "\n", 4) }}
-    </p> -->
   </div>
 </template>
 
@@ -151,46 +147,11 @@ export default {
         display_name: "",
         logo: "",
         primary_channel: {},
-        denoms: [{ fee_levels: {} }],
+        denoms: [{ fee_levels: {} }]
       },
-      cloudinary:{},
       errorText: ""
     };
   },
-  async created() {
-    await this.loadData();
-    if (process.browser) {
-      this.cloudinary = window.cloudinary
-
-      let widget = window.cloudinary.createUploadWidget(
-        {
-          cloudName: "emeris",
-          uploadPreset: "chain-logos",
-          tags: [this.$route.params.id]
-        },
-        async (error, result) => {
-          if (!error && result && result.event === "success") {
-            console.log("Done! Here is the image info: ", result);
-
-            this.chain.logo = result.info.secure_url;
-
-            await this.update();
-          }
-        }
-      );
-      document.getElementById("upload_widget").addEventListener(
-        "click",
-        function() {
-          widget.open();
-        },
-        false
-      );
-    }
-  },
-  async mounted() {
-    await this.loadData();
-  },
-
   methods: {
     async loadData() {
       let res = await axios.get("/chain/" + this.$route.params.id);
@@ -204,29 +165,6 @@ export default {
         this.$nuxt.refresh();
       }
     },
-    async openCustomUploadWidget(denom) {
-      let widget = this.cloudinary.createUploadWidget(
-        {
-          cloudName: "emeris",
-          uploadPreset: "denom-logos",
-          tags: [this.$route.params.id]
-        },
-        async (error, result) => {
-          if (!error && result && result.event === "success") {
-            console.log("Done! Here is the image info: ", result);
-
-            this.chain.denoms.forEach(d => {
-              if (d.name == denom) {
-                d.logo = result.info.secure_url;
-              }
-            });
-
-            await this.update();
-          }
-        }
-      );
-      widget.open();
-    }
   }
 };
 </script>
