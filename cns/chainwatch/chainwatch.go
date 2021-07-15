@@ -117,8 +117,6 @@ func (i *Instance) Run() {
 					continue
 				}
 			case relayerConnecting:
-				// TODO: query channels from db if any
-
 				relayer, err := q.Relayer()
 				if err != nil {
 					i.l.Errorw("cannot get relayer", "error", err)
