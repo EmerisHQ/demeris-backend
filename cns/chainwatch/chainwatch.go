@@ -310,6 +310,11 @@ func (c connectedChain) String() string {
 }
 
 func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []connectedChain, error) {
+	sourceChain, err := i.db.Chain(chainName)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	chains, err := i.db.Chains()
 	if err != nil {
 		return nil, nil, err
@@ -323,7 +328,8 @@ func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []
 			continue
 		}
 
-		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName, c.NodeInfo.ChainID)
+		i.l.Debugw("querying channels between chains", "chainName", chainName, "destination", c.ChainName, "chainID", sourceChain.NodeInfo.ChainID)
+		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName, sourceChain.NodeInfo.ChainID)
 		if err != nil {
 			return nil, nil, fmt.Errorf("cannot scan channels between chain %s and %s, %w", chainName, c.ChainName, err)
 		}
