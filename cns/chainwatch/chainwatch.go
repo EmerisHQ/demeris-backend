@@ -19,16 +19,6 @@ import (
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-//go:generate stringer -type=chainStatus
-type chainStatus uint
-
-const (
-	starting chainStatus = iota
-	running
-	relayerConnecting
-	done
-)
-
 var maxGas int64 = 6000000
 
 type Instance struct {
@@ -37,7 +27,6 @@ type Instance struct {
 	defaultNamespace string
 	c                *Connection
 	db               *database.Instance
-	statusMap        map[string]chainStatus
 }
 
 func New(
@@ -53,7 +42,6 @@ func New(
 		defaultNamespace: defaultNamespace,
 		c:                c,
 		db:               db,
-		statusMap:        map[string]chainStatus{},
 	}
 
 }
@@ -73,10 +61,18 @@ func (i *Instance) Run() {
 		i.l.Debugw("chains in cache", "list", chains)
 
 		for idx, chain := range chains {
-			chainStatus, found := i.statusMap[chain.Name]
+			chainStatus, found, err := i.c.ChainStatus(chain.Name)
+			if err != nil {
+				i.l.Errorw("cannot query chain status from redis at beginning of chains loop", "chainName", chain.Name, "error", err)
+				continue
+			}
+
 			if !found {
 				chainStatus = starting
-				i.statusMap[chain.Name] = chainStatus
+				if err := i.c.SetChainStatus(chain.Name, chainStatus); err != nil {
+					i.l.Errorw("cannot set new chain status in redis", "chainName", chain.Name, "error", err, "newStatus", starting.String())
+					continue
+				}
 			}
 
 			q := k8s.Querier{
@@ -96,12 +92,19 @@ func (i *Instance) Run() {
 			case starting:
 				if n.Status.Phase != v1.PhaseRunning {
 					i.l.Debugw("chain not in running phase", "name", n.Name, "phase", n.Status.Phase)
-					i.statusMap[chain.Name] = starting
+					if err := i.c.SetChainStatus(chain.Name, starting); err != nil {
+						i.l.Errorw("cannot set chain status in redis", "chainName", chain.Name, "error", err, "newStatus", starting.String())
+						continue
+					}
 					continue
 				}
 
 				// chain is now in running phase
-				i.statusMap[chain.Name] = running
+				if err := i.c.SetChainStatus(chain.Name, running); err != nil {
+					i.l.Errorw("cannot set chain status in redis", "chainName", chain.Name, "error", err, "newStatus", running.String())
+					continue
+				}
+
 				i.l.Debugw("chain status update", "name", chain.Name, "new_status", running.String())
 			case running:
 				if err := i.chainFinished(chains[idx]); err != nil {
@@ -109,26 +112,37 @@ func (i *Instance) Run() {
 					continue
 				}
 
-				i.statusMap[chain.Name] = relayerConnecting
+				if err := i.c.SetChainStatus(chain.Name, relayerConnecting); err != nil {
+					i.l.Errorw("cannot set chain status in redis", "chainName", chain.Name, "error", err, "newStatus", relayerConnecting.String())
+					continue
+				}
 			case relayerConnecting:
-				// TODO: query channels from db if any
-
 				relayer, err := q.Relayer()
 				if err != nil {
 					i.l.Errorw("cannot get relayer", "error", err)
 					continue
 				}
 
+				amt, err := i.db.ChainAmount()
+				if err != nil {
+					i.l.Errorw("cannot get amount of chains", "error", err)
+					continue
+				}
+
+				chainStatuses := relayer.Status.ChainStatuses
+
+				if amt != len(chainStatuses) {
+					continue // corner case where the chain gets added, previous chains are already connected, but the operator still reports "Running" because the
+					// reconcile cycle didn't get up yet.
+				}
+
 				phase := relayer.Status.Phase
 				if phase != v1.RelayerPhaseRunning {
-					amt, err := i.db.ChainAmount()
-					if err != nil {
-						i.l.Errorw("cannot get amount of chains", "error", err)
-						continue
-					}
-
 					if amt == 1 {
-						i.statusMap[chain.Name] = done
+						if err := i.c.SetChainStatus(chain.Name, done); err != nil {
+							i.l.Errorw("cannot set chain status in redis", "chainName", chain.Name, "error", err, "newStatus", done.String())
+							continue
+						}
 					}
 					continue
 				}
@@ -138,13 +152,19 @@ func (i *Instance) Run() {
 					continue
 				}
 
-				i.statusMap[chain.Name] = done
+				if err := i.c.SetChainStatus(chain.Name, done); err != nil {
+					i.l.Errorw("cannot set chain status in redis", "chainName", chain.Name, "error", err, "newStatus", done.String())
+					continue
+				}
 			case done:
 				if err := i.c.RemoveChain(chain); err != nil {
 					i.l.Errorw("cannot remove chain from redis", "error", err)
 				}
 
-				delete(i.statusMap, chain.Name)
+				if err := i.c.DeleteChainStatus(chain.Name); err != nil {
+					i.l.Errorw("cannot delete chain status in redis", "chainName", chain.Name, "error", err)
+					continue
+				}
 			}
 
 		}
@@ -290,6 +310,11 @@ func (c connectedChain) String() string {
 }
 
 func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []connectedChain, error) {
+	sourceChain, err := i.db.Chain(chainName)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	chains, err := i.db.Chains()
 	if err != nil {
 		return nil, nil, err
@@ -303,7 +328,8 @@ func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []
 			continue
 		}
 
-		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName, c.NodeInfo.ChainID)
+		i.l.Debugw("querying channels between chains", "chainName", chainName, "destination", c.ChainName, "chainID", sourceChain.NodeInfo.ChainID)
+		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName, sourceChain.NodeInfo.ChainID)
 		if err != nil {
 			return nil, nil, fmt.Errorf("cannot scan channels between chain %s and %s, %w", chainName, c.ChainName, err)
 		}
