@@ -1,14 +1,49 @@
 package chainwatch
 
 import (
+	"bytes"
 	"context"
+	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	r "github.com/go-redis/redis/v8"
 )
 
-const setPrefix = "cns/waitingchains"
+const (
+	setPrefix            = "cns/waitingchains"
+	chainStatusPrefixFmt = "cns/ChainStatus/%s"
+)
+
+//go:generate stringer -type=ChainStatus
+type ChainStatus uint
+
+func (cs *ChainStatus) UnmarshalBinary(data []byte) error {
+	rr, err := binary.ReadUvarint(bytes.NewReader(data))
+	if err != nil {
+		*cs = undefined
+		return err
+	}
+
+	*cs = ChainStatus(rr)
+	return nil
+}
+
+func (cs ChainStatus) MarshalBinary() (data []byte, err error) {
+	dest := make([]byte, 8) // size of a uint
+	binary.PutUvarint(dest, uint64(cs))
+
+	return dest, nil
+}
+
+const (
+	starting ChainStatus = iota
+	running
+	relayerConnecting
+	done
+	undefined
+)
 
 type Connection struct {
 	conn *r.Client
@@ -107,4 +142,42 @@ func (c *Connection) Chains() ([]Chain, error) {
 	}
 
 	return ret, nil
+}
+
+func chainStatusKey(chainName string) string {
+	return fmt.Sprintf(chainStatusPrefixFmt, chainName)
+}
+
+func (c *Connection) SetChainStatus(chainName string, status ChainStatus) error {
+	return c.conn.Set(context.Background(), chainStatusKey(chainName), status, 0).Err()
+}
+
+func (c *Connection) ChainStatus(chainName string) (ChainStatus, bool, error) {
+	var cs ChainStatus
+	getRes := c.conn.Get(context.Background(), chainStatusKey(chainName))
+	err := getRes.Err()
+	if err != nil {
+		if errors.Is(err, r.Nil) {
+			return undefined, false, nil
+		}
+
+		return undefined, false, err
+	}
+
+	err = getRes.Scan(&cs)
+
+	return cs, true, err
+}
+
+func (c *Connection) DeleteChainStatus(chainName string) error {
+	return c.conn.Del(context.Background(), chainStatusKey(chainName)).Err()
+}
+
+func (c *Connection) HasChainStatus(chainName string) (bool, error) {
+	res, err := c.conn.Exists(context.Background(), chainStatusKey(chainName)).Result()
+	if err != nil {
+		return false, err
+	}
+
+	return res == 1, nil
 }
