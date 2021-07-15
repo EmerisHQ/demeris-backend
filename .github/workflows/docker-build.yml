@@ -1,6 +1,9 @@
 name: Build docker images
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   api-server:
