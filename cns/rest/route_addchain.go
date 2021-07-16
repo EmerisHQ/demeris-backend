@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	v1 "github.com/allinbits/starport-operator/api/v1"
+
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
 
 	"github.com/allinbits/demeris-backend/utils/validation"
@@ -74,6 +76,21 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			r.s.l.Error("cannot add chain", err)
 			return
 		}
+
+		minGasPriceVal := newChain.RelayerToken().GasPriceLevels.Low / 2
+		minGasPricesStr := fmt.Sprintf("%v%s", minGasPriceVal, newChain.RelayerToken().Name)
+
+		cfgOverride := v1.ConfigOverride{
+			App: []v1.TomlConfigField{
+				{
+					Key: "minimum-gas-prices",
+					Value: v1.TomlConfigFieldValue{
+						String: &minGasPricesStr,
+					},
+				},
+			},
+		}
+		node.Spec.Config.Nodes.ConfigOverride = &cfgOverride
 
 		hasFaucet := false
 		if node.Spec.Init != nil {
