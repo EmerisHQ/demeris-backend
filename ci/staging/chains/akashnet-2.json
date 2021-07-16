@@ -25,7 +25,7 @@
   "genesis_hash": "genesis_hash",
   "node_info": {
     "endpoint": "akash",
-    "chain_id": "akashnet-4",
+    "chain_id": "akashnet-2",
     "bech32_config": {
       "main_prefix": "akash",
       "prefix_account": "akash",
