@@ -44,6 +44,7 @@ func main() {
 		config.KubernetesNamespace,
 		rc,
 		di,
+		config.RelayerDebug,
 	)
 
 	go ci.Run()

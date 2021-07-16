@@ -19,7 +19,10 @@ import (
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var maxGas int64 = 6000000
+var (
+	relayerDebugLogLevel       = "debug"
+	maxGas               int64 = 6000000
+)
 
 type Instance struct {
 	l                *zap.SugaredLogger
@@ -27,6 +30,7 @@ type Instance struct {
 	defaultNamespace string
 	c                *Connection
 	db               *database.Instance
+	relayerDebug     bool
 }
 
 func New(
@@ -35,6 +39,7 @@ func New(
 	defaultNamespace string,
 	c *Connection,
 	db *database.Instance,
+	relayerDebug bool,
 ) *Instance {
 	return &Instance{
 		l:                l,
@@ -42,6 +47,7 @@ func New(
 		defaultNamespace: defaultNamespace,
 		c:                c,
 		db:               db,
+		relayerDebug:     relayerDebug,
 	}
 
 }
@@ -259,12 +265,23 @@ func (i *Instance) createRelayer(chain Chain) error {
 
 	var execErr error
 	if errors.Is(err, k8s.ErrNotFound) || relayerWasEmpty {
+		i.l.Debugw("creating new relayer instance", "debugMode", i.relayerDebug)
 		relayer.Namespace = i.defaultNamespace
 		relayer.Name = "relayer"
 		relayer.ObjectMeta.Name = "relayer"
+
+		if i.relayerDebug {
+			relayer.Spec.LogLevel = &relayerDebugLogLevel
+		}
+
 		execErr = q.AddRelayer(relayer)
 	} else {
 		i.l.Debugw("relayer configuration existing", "configuration", relayer)
+
+		if i.relayerDebug {
+			relayer.Spec.LogLevel = &relayerDebugLogLevel
+		}
+
 		execErr = q.UpdateRelayer(relayer)
 	}
 
