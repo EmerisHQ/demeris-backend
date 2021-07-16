@@ -56,12 +56,16 @@ func main() {
 	chainsMap := mapChains(chains)
 
 	for cn := range chainsMap {
+		l.Debugw("connecting to chain", "chainName", cn)
 		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, db, s, []string{"tm.event='Tx'"})
 
 		if err != nil {
 			l.Errorw("cannot create chain", "error", err)
+			delete(chainsMap, cn)
 			continue
 		}
+
+		l.Debugw("connected", "chainName", cn)
 
 		ctx, cancel := context.WithCancel(context.Background())
 		rpcwatcher.Start(watcher, ctx)
