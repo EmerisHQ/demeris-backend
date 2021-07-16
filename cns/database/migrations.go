@@ -90,17 +90,20 @@ SELECT
 	c1.channel_id AS chain_a_channel_id,
 	c1.counter_channel_id AS chain_a_counter_channel_id,
 	c1.chain_id AS chain_a_chain_id,
+	c1.state AS chain_a_state,
 	c2.chain_name AS chain_b_chain_name,
 	c2.channel_id AS chain_b_channel_id,
 	c2.counter_channel_id AS chain_b_counter_channel_id,
-	c2.chain_id AS chain_b_chain_id
+	c2.chain_id AS chain_b_chain_id,
+	c2.state AS chain_b_state
 FROM
 	(
 		SELECT
 			tracelistener.channels.chain_name,
 			tracelistener.channels.channel_id,
 			tracelistener.channels.counter_channel_id,
-			tracelistener.clients.chain_id
+			tracelistener.clients.chain_id,
+			tracelistener.channels.state
 		FROM
 			tracelistener.channels
 			LEFT JOIN tracelistener.connections ON
@@ -121,7 +124,8 @@ FROM
 			tracelistener.channels.chain_name,
 			tracelistener.channels.channel_id,
 			tracelistener.channels.counter_channel_id,
-			tracelistener.clients.chain_id
+			tracelistener.clients.chain_id,
+			tracelistener.channels.state
 		FROM
 			tracelistener.channels
 			LEFT JOIN tracelistener.connections ON
@@ -141,6 +145,8 @@ WHERE
 	c1.channel_id = c2.counter_channel_id
 	AND c1.counter_channel_id = c2.channel_id
 	AND c1.chain_name != c2.chain_name
+	AND c1.state = '3'
+	AND c2.state = '3'
 	AND c1.chain_name = :source
 	AND c2.chain_name = :destination
 	AND c2.chain_id = :chainID
