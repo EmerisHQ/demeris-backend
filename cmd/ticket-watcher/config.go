@@ -9,9 +9,9 @@ import (
 )
 
 type Config struct {
-	redisUrl            string `validate:"required"`
-	LogPath             string
-	Debug               bool
+	RedisUrl string `validate:"required"`
+	LogPath  string
+	Debug    bool
 }
 
 func (c Config) Validate() error {

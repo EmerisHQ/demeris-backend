@@ -12,14 +12,14 @@ import (
 var ctx = context.Background()
 
 const (
-	Pending               = "pending"
-	Transit               = "transit"
-	Complete              = "complete"
-	Failed                = "failed"
-	Shadow                = "shadow"
-	IBCReceiveFailed      = "IBC_receive_failed"
-	TokensUnlockedTimeout = "Tokens_unlocked_timeout"
-	TokensUnlockedAck     = "Tokens_unlocked_ack"
+	pending               = "pending"
+	transit               = "transit"
+	complete              = "complete"
+	failed                = "failed"
+	shadow                = "shadow"
+	ibcReceiveFailed      = "IBC_receive_failed"
+	tokensUnlockedTimeout = "Tokens_unlocked_timeout"
+	tokensUnlockedAck     = "Tokens_unlocked_ack"
 )
 
 type Store struct {
@@ -63,7 +63,7 @@ func NewClient(connUrl string) *Store {
 
 func (s *Store) CreateTicket(chain, txHash string) error {
 	data := Ticket{
-		Status: Pending,
+		Status: pending,
 	}
 
 	key := fmt.Sprintf("%s-%s", chain, txHash)
@@ -76,7 +76,7 @@ func (s *Store) CreateTicket(chain, txHash string) error {
 
 func (s *Store) SetComplete(key string) error {
 
-	return s.SetWithExpiry(key, Ticket{Status: Complete}, 2)
+	return s.SetWithExpiry(key, Ticket{Status: complete}, 2)
 }
 
 func (s *Store) SetIBCReceiveFailed(key string) error {
@@ -84,7 +84,7 @@ func (s *Store) SetIBCReceiveFailed(key string) error {
 		return err
 	}
 
-	return s.SetWithExpiry(key, Ticket{Status: IBCReceiveFailed}, 0)
+	return s.SetWithExpiry(key, Ticket{Status: ibcReceiveFailed}, 0)
 }
 
 func (s *Store) SetIBCReceiveSuccess(key string) error {
@@ -93,16 +93,16 @@ func (s *Store) SetIBCReceiveSuccess(key string) error {
 }
 
 func (s *Store) SetUnlockTimeout(key string) error {
-	return s.SetWithExpiry(key, Ticket{Status: TokensUnlockedTimeout}, 2)
+	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout}, 2)
 }
 
 func (s *Store) SetUnlockAck(key string) error {
-	return s.SetWithExpiry(key, Ticket{Status: TokensUnlockedAck}, 2)
+	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck}, 2)
 }
 
 func (s *Store) SetFailedWithErr(key, error string) error {
 	data := Ticket{
-		Status: Failed,
+		Status: failed,
 		Error:  error,
 	}
 
@@ -120,7 +120,7 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 	}
 
 	data := Ticket{
-		Status: Transit,
+		Status: transit,
 	}
 
 	if err := s.SetWithExpiry(key, data, 0); err != nil {
@@ -181,7 +181,7 @@ func (s *Store) SetIbcFailed(key string) error {
 }
 
 func (s *Store) CreateShadowKey(key string) error {
-	shadow := Shadow + key
+	shadow := shadow + key
 	return s.SetWithExpiry(shadow, "", 1)
 }
 

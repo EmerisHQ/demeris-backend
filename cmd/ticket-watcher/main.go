@@ -12,7 +12,7 @@ import (
 
 var Version = "not specified"
 
-const trim = "__keyspace@0__:shadow"
+const prefix = "__keyspace@0__:shadow"
 
 func main() {
 	cfg, err := readConfig()
@@ -37,13 +37,13 @@ func main() {
 	}
 
 	l.Infow("ticket-watcher", "version", Version)
-	s := store.NewClient(cfg.redisUrl)
+	s := store.NewClient(cfg.RedisUrl)
 	s.Client.ConfigSet(s.Client.Context(), "notify-keyspace-events", "Kx")
 
 	sub := s.Client.PSubscribe(s.Client.Context(), "__key*__:*")
 	for msg := range sub.Channel() {
 		l.Debugw("new message received", "msg", msg.Channel)
-		key := strings.TrimPrefix(msg.Channel, trim)
+		key := strings.TrimPrefix(msg.Channel, prefix)
 		l.Debugw("Received key after trim", "key", key)
 
 		if s.Exists(key) {
@@ -51,6 +51,7 @@ func main() {
 			ticket, err := s.Get(key)
 			if err != nil {
 				l.Errorw("unable to get ticket value to get error", "error", err)
+				continue
 			}
 
 			ticket.Status = fmt.Sprintf("stuck_%s", ticket.Status)
