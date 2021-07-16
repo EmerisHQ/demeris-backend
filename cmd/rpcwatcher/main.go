@@ -96,8 +96,6 @@ func main() {
 			continue
 		}
 
-		l.Infow("Chains modified. Restarting watchers")
-
 		l.Debugw("diff", "diff", chainsDiff)
 		for _, d := range chainsDiff {
 			switch d.Type {
