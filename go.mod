@@ -10,7 +10,7 @@ replace (
 )
 
 require (
-	github.com/allinbits/starport-operator v0.0.1-alpha.18
+	github.com/allinbits/starport-operator v0.0.1-alpha.26
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/containerd/fifo v1.0.0
 	github.com/cosmos/cosmos-sdk v0.42.5
@@ -34,9 +34,10 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/r3labs/diff v1.1.0
+	github.com/sethvargo/go-password v0.2.0 // indirect
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.7.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1-0.20210427113832-6241f9ab9942
 	github.com/swaggo/swag v1.7.0
 	github.com/tendermint/liquidity v1.2.4
 	github.com/tendermint/tendermint v0.34.10
