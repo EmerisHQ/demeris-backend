@@ -104,41 +104,34 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 			}
 
 			sourceChainName := verifiedTrace.VerifyTrace.Trace[0].CounterpartyName
-			w.l.Debugw("checking base denom in chain", "denom", verifiedTrace.VerifyTrace.BaseDenom, "chain", sourceChainName)
 
-			sourceChain, err := w.d.Chain(sourceChainName)
+			primaryChannel, exists := cosmoshub.PrimaryChannel[sourceChainName]
 
-			if err != nil {
-				return d, err
+			if !exists {
+				return d, fmt.Errorf("no primary channel exists from %s to %s", verifiedTrace.VerifyTrace.Trace[0].ChainName, verifiedTrace.VerifyTrace.Trace[0].CounterpartyName)
 			}
 
-			found := false
-
-			for _, dd := range sourceChain.Denoms {
-				if dd.Name == verifiedTrace.VerifyTrace.BaseDenom {
-
-					if !dd.Verified {
-						return d, fmt.Errorf("denom not verified in source chain")
-					}
-
-					found = true
-				}
+			if primaryChannel != verifiedTrace.VerifyTrace.Trace[0].Channel {
+				return d, fmt.Errorf("expected primary channel %s for verified ibc token, got %s", primaryChannel, verifiedTrace.VerifyTrace.Trace[0].Channel)
 			}
 
-			if !found {
-				return d, fmt.Errorf("denom not found")
-			}
 		} else {
 			// check if token exists & is verified on cosmos hub
 
+			found := false
 			for _, dd := range cosmoshub.Denoms {
 				if dd.Name == coin.Denom {
 
 					if !dd.Verified {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
+					found = true
 
 				}
+			}
+
+			if !found {
+				return d, fmt.Errorf("denom not found in source chain")
 			}
 
 		}
