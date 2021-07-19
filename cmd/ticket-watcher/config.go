@@ -29,7 +29,7 @@ func readConfig() (*Config, error) {
 	var c Config
 
 	return &c, configuration.ReadConfig(&c, "emeris-tw", map[string]string{
-		"RedisURL":           "redis-master:6379",
-		"Debug":              "true",
+		"RedisURL": "redis-master:6379",
+		"Debug":    "true",
 	})
 }
