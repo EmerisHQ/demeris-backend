@@ -19,6 +19,7 @@
 		{
 			"display_name": "CRO",
 			"name": "basecro",
+			"ticker": "CRO",
 			"verified": true,
 			"stakable": true,
 			"fee_token": true,
