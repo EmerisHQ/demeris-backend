@@ -209,7 +209,7 @@ func GetFee(c *gin.Context) {
 	}
 
 	res = feeResponse{
-		Fee: chain.BaseTxFee,
+		Denoms: chain.FeeTokens(),
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -473,6 +473,8 @@ func VerifyTrace(c *gin.Context) {
 	chain := c.Param("chain")
 	hash := c.Param("hash")
 
+	hash = strings.ToLower(hash)
+
 	denomTrace, err := d.Database.DenomTrace(chain, hash)
 
 	if err != nil {
@@ -501,17 +503,63 @@ func VerifyTrace(c *gin.Context) {
 
 	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
 	res.VerifiedTrace.Path = denomTrace.Path
+	res.VerifiedTrace.BaseDenom = denomTrace.BaseDenom
 
-	// check if the path uses only the supported `transfer` port.
+	pathsElements, err := paths(res.VerifiedTrace.Path)
 
-	channels := strings.Split(res.VerifiedTrace.Path, "/transfer")
+	if err != nil {
+		err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
-	for idx, channel := range channels {
-		ch := strings.Trim(channel, "/")
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
+			http.StatusBadRequest,
+		)
 
-		// port other than transfer being used
-		if strings.Contains(ch, "/") {
+		d.WriteError(c, e,
+			"invalid denom",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"err",
+			err,
+		)
 
+		return
+	}
+
+	chainIDsMap, err := d.Database.ChainIDs()
+	if err != nil {
+		err = fmt.Errorf("cannot query list of chain ids, %w", err)
+
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("cannot query list of chain ids"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query list of chain ids",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"err",
+			err,
+		)
+
+		return
+	}
+
+	nextChain := chain
+	for _, element := range pathsElements {
+		// otherwise, check that it has a transfer prefix
+		if !strings.HasPrefix(element, "transfer/") {
 			err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
 			e := deps.NewError(
@@ -531,90 +579,136 @@ func VerifyTrace(c *gin.Context) {
 				"err",
 				err,
 			)
+
+			return
 		}
 
-		channels[idx] = ch
-	}
+		channel := strings.TrimPrefix(element, "transfer/")
 
-	var client models.IbcClientInfo
-	var chainInfo models.Chain
-	var trace trace
+		var channelInfo models.IbcChannelsInfo
+		var trace trace
 
-	for _, channel := range channels {
-
-		client, _ = d.Database.QueryIBCClientTrace(chain, channel)
-
-		chainInfo, _ = d.Database.Chain(chain)
-
-		if counterparty := chainInfo.CounterpartyNames[client.ChannelId]; counterparty == "" {
-			err = errors.New(fmt.Sprintf("Unsupported client id %s on chain %s", client.ChannelId, chain))
-
+		chainID, ok := chainIDsMap[nextChain]
+		if !ok {
 			e := deps.NewError(
 				"denom/verify-trace",
-				fmt.Errorf("Unsupported client id when resolving path for %s", hash),
+				fmt.Errorf("cannot check path element during path resolution"),
 				http.StatusBadRequest,
 			)
 
 			d.WriteError(c, e,
-				"invalid client id",
+				"cannot check path element during path resolution",
 				"id",
 				e.ID,
 				"hash",
 				hash,
 				"path",
 				res.VerifiedTrace.Path,
-				"client_id",
-				client.ClientId,
+				"err",
+				fmt.Errorf("cannot find %s in chainIDs map", nextChain),
+			)
+
+			return
+		}
+		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel, chainID)
+
+		if err != nil {
+			e := deps.NewError(
+				"denom/verify-trace",
+				fmt.Errorf("failed querying for %s", hash),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"invalid number of query responses",
+				"id",
+				e.ID,
+				"hash",
+				hash,
+				"path",
+				res.VerifiedTrace.Path,
 				"chain",
 				chain,
 				"err",
 				err,
 			)
-		} else {
-			trace.ChainName = chain
-			trace.Channel = client.ChannelId
-			trace.ClientId = client.ClientId
-			trace.CounterpartyName = counterparty
 
-			// query counterparty chain name
-			counterpartyConn, _ := d.Database.Connection(chain, client.CounterConnectionID)
-
-			if counterpartyConn.CounterClientID != trace.ClientId {
-				err = errors.New("Client ids do not match")
-
-				e := deps.NewError(
-					"denom/verify-trace",
-					fmt.Errorf("Client ids do not match"),
-					http.StatusBadRequest,
-				)
-
-				d.WriteError(c, e,
-					"invalid client id",
-					"id",
-					e.ID,
-					"hash",
-					hash,
-					"path",
-					res.VerifiedTrace.Path,
-					"client_id",
-					client.ClientId,
-					"chain",
-					chain,
-					"counter_client_id",
-					counterpartyConn.CounterClientID,
-					"counter_chain",
-					counterparty,
-					"err",
-					err,
-				)
-			}
+			return
 		}
+
+		trace.ChainName = channelInfo[0].ChainAName
+		trace.CounterpartyName = channelInfo[0].ChainBName
+		trace.Channel = channelInfo[0].ChainAChannelID
+		trace.Port = "transfer"
 
 		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
 
+		nextChain = trace.CounterpartyName
+	}
+
+	nextChainData, err := d.Database.Chain(nextChain)
+	if err != nil {
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("cannot query chain %s", nextChain),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query chain",
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"nextChain",
+			nextChain,
+			"err",
+			err,
+		)
+		return
+	}
+
+	res.VerifiedTrace.Verified = false
+
+	// set verifiedStatus for base denom on nextChain
+	for _, d := range nextChainData.Denoms {
+		if denomTrace.BaseDenom == d.Name {
+			res.VerifiedTrace.Verified = d.Verified
+			break
+		}
 	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+func paths(path string) ([]string, error) {
+	numSlash := strings.Count(path, "/")
+	if numSlash == 1 {
+		return []string{path}, nil
+	}
+
+	if numSlash%2 == 0 {
+		return nil, fmt.Errorf("malformed path")
+	}
+
+	spl := strings.Split(path, "/")
+
+	var paths []string
+	pathBuild := ""
+
+	for i, e := range spl {
+		if i%2 != 0 {
+			pathBuild = pathBuild + "/" + e
+			paths = append(paths, pathBuild)
+			pathBuild = ""
+		} else {
+			pathBuild = e
+		}
+	}
+
+	return paths, nil
 }
 
 // GetChainStatus returns the status of a given chain.
@@ -685,7 +779,10 @@ func GetChainStatus(c *gin.Context) {
 		return
 	}
 
-	running, err := k8s.Querier{Client: *d.K8S}.ChainRunning(chainName)
+	running, err := k8s.Querier{
+		Client:    *d.K8S,
+		Namespace: d.KubeNamespace,
+	}.ChainRunning(chainName)
 
 	if err != nil {
 		e := deps.NewError(

@@ -1,0 +1,11 @@
+image: emeris/admin-ui:latest
+imagePullPolicy: Always
+
+replicas: 1
+
+nodeSelector: {}
+
+resources: {}
+
+ports:
+  http: 80

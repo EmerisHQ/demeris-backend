@@ -1,0 +1,56 @@
+{
+	"chain_name": "crypto-org",
+	"derivation_path": "m/44'/394'/0'/0/0",
+	"logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
+	"enabled": true,
+	"valid_block_thresh": "20s",
+	"display_name": "Crypto.org",
+	"demeris_addresses": ["feeaddress"],
+	"denoms": [
+		{
+			"display_name": "CRO",
+			"stakable": true,
+			"fee_token": true,
+			"fetch_price": true,
+			"relayer_denom": true,
+			"minimum_thresh_relayer_balance": 42,
+			"gas_price_levels": { "low": 0.025, "average": 0.03, "high": 0.04},
+			"name": "basecro",
+            "logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
+			"verified": true,
+			"precision": 8,
+            "ticker": "CRO"
+		}
+	],
+	"genesis_hash": "genesis_hash",
+	"node_info": {
+		"endpoint": "crypto-org",
+		"chain_id": "crypto-org-chain-mainnet-1",
+		"bech32_config": {
+			"main_prefix": "cro",
+			"prefix_account": "cro",
+			"prefix_validator": "cncl",
+			"prefix_consensus": "cons", 
+			"prefix_public": "pub",
+			"prefix_operator": "oper"
+		}
+	},
+	"node_config": {
+		"name": "crypto-org",
+		"cli_name": "chain-maind",
+		"namespace": "emeris",
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+        "join_config": {
+            "genesis": {
+                "url": "https://github.com/crypto-org-chain/mainnet/blob/main/crypto-org-chain-mainnet-1/genesis.json"
+            },
+            "seeds": [
+                {"id": "87c3adb7d8f649c51eebe0d3335d8f9e28c362f2", "address": "seed-0.crypto.org", "port": 26656},
+                {"id": "e1d7ff02b78044795371beb1cd5fb803f9389256", "address": "seed-1.crypto.org", "port": 26656},
+                {"id": "2c55809558a4e491e9995962e10c026eb9014655", "address": "seed-2.crypto.org", "port": 26656}
+            ]
+        },
+		"docker_image": "gcr.io/tendermint-dev/crypto-com",
+		"docker_image_version": "v2.0.1"
+	}
+}

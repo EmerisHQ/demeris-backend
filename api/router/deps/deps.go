@@ -14,12 +14,13 @@ import (
 
 // Deps represents a set of objects useful during the lifecycle of REST endpoints.
 type Deps struct {
-	Logger   *zap.SugaredLogger
-	Database *database.Database
-	Store    *store.Store
-	K8S      *kube.Client
-	Codec    codec.Marshaler
-	CNSURL   string
+	Logger        *zap.SugaredLogger
+	Database      *database.Database
+	Store         *store.Store
+	K8S           *kube.Client
+	Codec         codec.Marshaler
+	CNSURL        string
+	KubeNamespace string
 }
 
 func GetDeps(c *gin.Context) *Deps {

@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"flag"
 	"syscall"
 	"time"
+
+	"github.com/allinbits/demeris-backend/tracelistener/bulk"
 
 	"github.com/allinbits/demeris-backend/tracelistener/blocktime"
 
@@ -17,13 +20,19 @@ import (
 	"go.uber.org/zap"
 )
 
+var Version = "not specified"
+
 func main() {
 	cfg, err := config.Read()
 	if err != nil {
 		panic(err)
 	}
 
+	ca := readCLI()
+
 	logger := buildLogger(cfg)
+
+	logger.Infow("tracelistener", "version", Version)
 
 	var processorFunc tracelistener.DataProcessorFunc
 
@@ -47,23 +56,8 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	blw := blocktime.New(
-		di.Instance,
-		cfg.ChainName,
-		logger,
-	)
-
-	go connectTendermint(blw, logger)
-
-	ctx := context.Background()
-	f, err := fifo.OpenFifo(ctx, cfg.FIFOPath, syscall.O_CREAT|syscall.O_RDONLY, 0655)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
 	errChan := make(chan error)
 	watcher := tracelistener.TraceWatcher{
-		DataSource: f,
 		WatchedOps: []tracelistener.Operation{
 			tracelistener.WriteOp,
 			tracelistener.DeleteOp,
@@ -73,12 +67,42 @@ func main() {
 		Logger:    logger,
 	}
 
+	if ca.existingDatabasePath != "" {
+		importer := bulk.Importer{
+			Path:         ca.existingDatabasePath,
+			TraceWatcher: watcher,
+			Processor:    dpi,
+			Logger:       logger,
+			Database:     di,
+		}
+
+		if err := importer.Do(); err != nil {
+			logger.Panicw("import error", "error", err)
+		}
+
+		return
+	}
+
+	blw := blocktime.New(
+		di.Instance,
+		cfg.ChainName,
+		logger,
+	)
+
+	go connectTendermint(blw, logger)
+
+	ctx := context.Background()
+	watcher.DataSource, err = fifo.OpenFifo(ctx, cfg.FIFOPath, syscall.O_CREAT|syscall.O_RDONLY, 0655)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	go watcher.Watch()
 
 	for {
 		select {
 		case e := <-errChan:
-			logger.Error("watching error", e)
+			logger.Errorw("watching error", "error", e)
 		case e := <-dpi.ErrorsChan():
 			te := e.(tracelistener.TracingError)
 			logger.Errorw(
@@ -124,4 +148,17 @@ func connectTendermint(b *blocktime.Watcher, l *zap.SugaredLogger) {
 
 		connected = true
 	}
+}
+
+type cliArgs struct {
+	existingDatabasePath string
+}
+
+func readCLI() cliArgs {
+	ca := cliArgs{}
+
+	flag.StringVar(&ca.existingDatabasePath, "import", "", "import LevelDB database data from the path given, usually you want to process `application.db'")
+	flag.Parse()
+
+	return ca
 }

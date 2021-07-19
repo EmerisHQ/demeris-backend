@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	types2 "github.com/tendermint/tendermint/abci/types"
@@ -63,7 +62,11 @@ func Tx(c *gin.Context) {
 
 	tx := sdktx.Tx{}
 
-	d.Codec.MustUnmarshalBinaryBare(txRequest.TxBytes, &tx)
+	mustCheckTx := true
+	if err := d.Codec.UnmarshalBinaryBare(txRequest.TxBytes, &tx); err != nil {
+		mustCheckTx = false
+		d.Logger.Warnw("cannot decode transaction with the codec we have, bypassing transaction checking", "error", err)
+	}
 
 	meta.Chain, err = d.Database.Chain(chainName)
 
@@ -81,9 +84,13 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	err = validateTx(&tx, &meta, d)
+	var validationErr error
 
-	if err != nil {
+	if mustCheckTx {
+		validationErr = validateTx(&tx, &meta, d)
+	}
+
+	if validationErr != nil {
 		e := deps.NewError("tx", fmt.Errorf("invalid transaction"), http.StatusBadRequest)
 
 		d.WriteError(c, e,
@@ -91,13 +98,13 @@ func Tx(c *gin.Context) {
 			"id",
 			e.ID,
 			"error",
-			err,
+			validationErr,
 		)
 
 		return
 	}
 
-	txhash, err := relayTx(d, tx, meta)
+	txhash, err := relayTx(d, txRequest.TxBytes, meta)
 
 	if err != nil {
 		e := deps.NewError("tx", fmt.Errorf("relaying tx failed, %w", err), http.StatusBadRequest)
@@ -120,27 +127,7 @@ func Tx(c *gin.Context) {
 
 // validateTx populates metadata and
 func validateTx(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
-
-	err := validateSignatures(tx, meta, d)
-
-	if err != nil {
-		return err
-	}
-
-	err = validateBody(tx, meta, d)
-
-	if err != nil {
-		return err
-	}
-
-	// TODO: Fetch sequence for ticketing system
-	err = validateAuthInfo(tx, meta, d)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return validateBody(tx, meta, d)
 }
 
 // validateBody validates the data inside the body and populates the relevant metadata
@@ -172,8 +159,9 @@ func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 					return fmt.Errorf("Invalid denom trace")
 				}
 
-				channels := strings.Split(denomTrace.Path, "/transfer")
-				if channels[0] != sourceChannel {
+				// TODO: move this to the chains/api.go.path() function
+				channels := strings.Split(denomTrace.Path, "/")
+				if channels[1] != sourceChannel {
 					return fmt.Errorf("IBC forward is disabled for multi-hop tokens. Try sending it back through the original channel.")
 				}
 			}
@@ -183,34 +171,10 @@ func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 	return nil
 }
 
-// validateAuthInfo validates the data inside auth_info and populates the relevant metadata
-func validateAuthInfo(tx *sdktx.Tx, meta *TxMeta, _ *deps.Deps) error {
-
-	if infos := tx.AuthInfo.SignerInfos; len(infos) == 1 {
-		// Fetch signer sequence
-		meta.SignerSequence = strconv.FormatUint(tx.AuthInfo.SignerInfos[0].Sequence, 10)
-	} else {
-		return fmt.Errorf("Invalid number of signatures. Expected 1, got %d", len(infos))
-	}
-
-	return nil
-}
-
-// validateSignatures ensures the signature exists
-func validateSignatures(tx *sdktx.Tx, _ *TxMeta, _ *deps.Deps) error {
-	if len(tx.Signatures) != 1 {
-		return fmt.Errorf("Invalid number of signatures")
-	}
-
-	return nil
-}
-
 // RelayTx relays the tx to the specifc endpoint
 // RelayTx will also perform the ticketing mechanism
 // Always expect broadcast mode to be `async`
-func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
-
-	b := d.Codec.MustMarshalBinaryBare(&tx)
+func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 
 	grpcConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%d", meta.Chain.ChainName, 9090), // Or your gRPC server address.
@@ -229,7 +193,7 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 		context.Background(),
 		&sdktx.BroadcastTxRequest{
 			Mode:    sdktx.BroadcastMode_BROADCAST_MODE_SYNC,
-			TxBytes: b, // Proto-binary of the signed transaction, see previous step.
+			TxBytes: txBytes, // Proto-binary of the signed transaction, see previous step.
 		},
 	)
 
@@ -237,14 +201,14 @@ func relayTx(d *deps.Deps, tx sdktx.Tx, meta TxMeta) (string, error) {
 		return "", err
 	}
 
+	if grpcRes.TxResponse.Code != types2.CodeTypeOK {
+		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
+	}
+
 	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash)
 
 	if err != nil {
 		return grpcRes.TxResponse.TxHash, err
-	}
-
-	if grpcRes.TxResponse.Code != types2.CodeTypeOK {
-		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
 	}
 
 	return grpcRes.TxResponse.TxHash, nil

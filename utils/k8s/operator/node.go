@@ -2,6 +2,7 @@ package operator
 
 import (
 	"fmt"
+	"strconv"
 
 	v1 "github.com/allinbits/starport-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -11,10 +12,10 @@ import (
 )
 
 const (
-	defaultMoniker   = "demeris"
-	defaultNamespace = "default"
+	defaultMoniker   = "emeris"
+	defaultNamespace = "emeris"
 
-	tracelistenerImage = "demeris/tracelistener"
+	tracelistenerImage = "emeris/tracelistener"
 
 	trFifoPathVar = "TRACELISTENER_FIFOPATH"
 	trFifoPath    = "/trace-store/kvstore.fifo"
@@ -26,6 +27,7 @@ const (
 	trType    = "gaia"
 
 	trChainNameVar = "TRACELISTENER_CHAINNAME"
+	trDebugVar     = "TRACELISTENER_DEBUG"
 )
 
 var (
@@ -41,8 +43,9 @@ type NodeConfiguration struct {
 	TestnetConfig      *v1.ValidatorInitConfig `json:"testnet_config"`
 	DockerImage        string                  `json:"docker_image"`
 	DockerImageVersion string                  `json:"docker_image_version"`
-	Namespace          string                  `json:"namespace"`
+	Namespace          string                  `json:"-"`
 	TracelistenerImage string                  `json:"tracelistener_image"`
+	TracelistenerDebug bool
 }
 
 func (n NodeConfiguration) Validate() error {
@@ -60,6 +63,10 @@ func (n NodeConfiguration) Validate() error {
 
 	if n.DockerImageVersion == "" {
 		return fmt.Errorf("missing docker image version")
+	}
+
+	if n.Namespace == "" {
+		return fmt.Errorf("missing namespace")
 	}
 
 	return nil
@@ -82,7 +89,7 @@ var DefaultNodeConfig = v1.NodeSet{
 
 var defaultTracelistenerConfig = v1.TraceStoreContainerConfig{
 	Image:           tracelistenerImage,
-	ImagePullPolicy: corev1.PullIfNotPresent,
+	ImagePullPolicy: corev1.PullAlways,
 	Env: []corev1.EnvVar{
 		{
 			Name:  trFifoPathVar,
@@ -162,6 +169,11 @@ func NewNode(c NodeConfiguration) (*v1.NodeSet, error) {
 	tracelistenerConfig.Env = append(tracelistenerConfig.Env, corev1.EnvVar{
 		Name:  trChainNameVar,
 		Value: c.Name,
+	})
+
+	tracelistenerConfig.Env = append(tracelistenerConfig.Env, corev1.EnvVar{
+		Name:  trDebugVar,
+		Value: strconv.FormatBool(c.TracelistenerDebug),
 	})
 
 	nodeConfig := defaultConfig

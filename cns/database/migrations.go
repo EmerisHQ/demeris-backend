@@ -12,14 +12,11 @@ CREATE TABLE IF NOT EXISTS cns.chains (
 	enabled boolean default false,
 	chain_name string not null,
 	valid_block_thresh string not null,
-	minimum_thresh_relayer_balance bigint not null,
 	logo string not null,
 	display_name string not null,
-	counterparty_names jsonb not null,
 	primary_channel jsonb not null,
 	denoms jsonb not null,
 	demeris_addresses text[] not null,
-	base_tx_fee jsonb not null,
 	genesis_hash string not null,
 	node_info jsonb not null,
 	derivation_path string not null,
@@ -42,12 +39,9 @@ INSERT INTO cns.chains
 		logo,
 		display_name,
 		valid_block_thresh,
-		minimum_thresh_relayer_balance,
-		counterparty_names,
 		primary_channel,
 		denoms,
 		demeris_addresses,
-		base_tx_fee,
 		genesis_hash,
 		node_info,
 		derivation_path
@@ -59,12 +53,9 @@ VALUES
 		:logo,
 		:display_name,
 		:valid_block_thresh,
-		:minimum_thresh_relayer_balance,
-		:counterparty_names,
 		:primary_channel,
 		:denoms,
 		:demeris_addresses,
-		:base_tx_fee,
 		:genesis_hash,
 		:node_info,
 		:derivation_path
@@ -75,14 +66,11 @@ DO UPDATE SET
 		chain_name=EXCLUDED.chain_name, 
 		enabled=EXCLUDED.enabled,
 		valid_block_thresh=EXCLUDED.valid_block_thresh,
-		minimum_thresh_relayer_balance=EXCLUDED.minimum_thresh_relayer_balance,
 		logo=EXCLUDED.logo, 
 		display_name=EXCLUDED.display_name, 
-		counterparty_names=EXCLUDED.counterparty_names, 
 		primary_channel=EXCLUDED.primary_channel, 
 		denoms=EXCLUDED.denoms, 
 		demeris_addresses=EXCLUDED.demeris_addresses, 
-		base_tx_fee=EXCLUDED.base_tx_fee,
 		genesis_hash=EXCLUDED.genesis_hash,
 		node_info=EXCLUDED.node_info,
 		derivation_path=EXCLUDED.derivation_path;
@@ -97,28 +85,71 @@ SELECT * FROM cns.chains WHERE chain_name='?' limit 1;
 `
 
 const channelsBetweenChains = `
-select 
-  c1.chain_name, 
-  c1.channel_id, 
-  c1.counter_channel_id, 
-  c2.chain_name, 
-  c2.channel_id, 
-  c2.counter_channel_id 
-from 
-  tracelistener.channels c1, 
-  (
-    select 
-      chain_name, 
-      channel_id, 
-      counter_channel_id 
-    from 
-      tracelistener.channels
-  ) c2 
-where 
-  c1.channel_id = c2.counter_channel_id 
-  and c1.counter_channel_id = c2.channel_id 
-  and c1.chain_name = :source 
-  and c2.chain_name = :destination;
+SELECT
+	c1.chain_name AS chain_a_chain_name,
+	c1.channel_id AS chain_a_channel_id,
+	c1.counter_channel_id AS chain_a_counter_channel_id,
+	c1.chain_id AS chain_a_chain_id,
+	c1.state AS chain_a_state,
+	c2.chain_name AS chain_b_chain_name,
+	c2.channel_id AS chain_b_channel_id,
+	c2.counter_channel_id AS chain_b_counter_channel_id,
+	c2.chain_id AS chain_b_chain_id,
+	c2.state AS chain_b_state
+FROM
+	(
+		SELECT
+			tracelistener.channels.chain_name,
+			tracelistener.channels.channel_id,
+			tracelistener.channels.counter_channel_id,
+			tracelistener.clients.chain_id,
+			tracelistener.channels.state
+		FROM
+			tracelistener.channels
+			LEFT JOIN tracelistener.connections ON
+					tracelistener.channels.hops[1]
+					= tracelistener.connections.connection_id
+			LEFT JOIN tracelistener.clients ON
+					tracelistener.clients.client_id
+					= tracelistener.connections.client_id
+		WHERE
+			tracelistener.connections.chain_name
+			= tracelistener.channels.chain_name
+			AND tracelistener.clients.chain_name
+				= tracelistener.channels.chain_name
+	)
+		AS c1,
+	(
+		SELECT
+			tracelistener.channels.chain_name,
+			tracelistener.channels.channel_id,
+			tracelistener.channels.counter_channel_id,
+			tracelistener.clients.chain_id,
+			tracelistener.channels.state
+		FROM
+			tracelistener.channels
+			LEFT JOIN tracelistener.connections ON
+					tracelistener.channels.hops[1]
+					= tracelistener.connections.connection_id
+			LEFT JOIN tracelistener.clients ON
+					tracelistener.clients.client_id
+					= tracelistener.connections.client_id
+		WHERE
+			tracelistener.connections.chain_name
+			= tracelistener.channels.chain_name
+			AND tracelistener.clients.chain_name
+				= tracelistener.channels.chain_name
+	)
+		AS c2
+WHERE
+	c1.channel_id = c2.counter_channel_id
+	AND c1.counter_channel_id = c2.channel_id
+	AND c1.chain_name != c2.chain_name
+	AND c1.state = '3'
+	AND c2.state = '3'
+	AND c1.chain_name = :source
+	AND c2.chain_name = :destination
+	AND c2.chain_id = :chainID
 `
 
 var migrationList = []string{

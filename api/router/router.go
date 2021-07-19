@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/utils/logging"
+
+	"github.com/allinbits/demeris-backend/api/relayer"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	"github.com/allinbits/demeris-backend/utils/validation"
@@ -19,33 +23,49 @@ import (
 	"github.com/allinbits/demeris-backend/api/account"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
-	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type Router struct {
-	g      *gin.Engine
-	db     *database.Database
-	l      *zap.SugaredLogger
-	s      *store.Store
-	k8s    kube.Client
-	cdc    codec.Marshaler
-	cnsURL string
+	g            *gin.Engine
+	db           *database.Database
+	l            *zap.SugaredLogger
+	s            *store.Store
+	k8s          kube.Client
+	k8sNamespace string
+	cdc          codec.Marshaler
+	cnsURL       string
 }
 
-func New(db *database.Database, l *zap.SugaredLogger, s *store.Store, kubeClient kube.Client, cnsURL string, cdc codec.Marshaler) *Router {
-	engine := gin.Default()
+func New(
+	db *database.Database,
+	l *zap.SugaredLogger,
+	s *store.Store,
+	kubeClient kube.Client,
+	kubeNamespace string,
+	cnsURL string,
+	cdc codec.Marshaler,
+	debug bool,
+) *Router {
+	gin.SetMode(gin.ReleaseMode)
+
+	if debug {
+		gin.SetMode(gin.DebugMode)
+	}
+
+	engine := gin.New()
 
 	r := &Router{
-		g:      engine,
-		db:     db,
-		l:      l,
-		s:      s,
-		k8s:    kubeClient,
-		cnsURL: cnsURL,
-		cdc:    cdc,
+		g:            engine,
+		db:           db,
+		l:            l,
+		s:            s,
+		k8s:          kubeClient,
+		k8sNamespace: kubeNamespace,
+		cnsURL:       cnsURL,
+		cdc:          cdc,
 	}
 
 	r.metrics()
@@ -53,7 +73,9 @@ func New(db *database.Database, l *zap.SugaredLogger, s *store.Store, kubeClient
 	validation.JSONFields(binding.Validator)
 
 	engine.Use(r.catchPanics())
-	engine.Use(logging.LogRequest(l.Desugar()))
+	if debug {
+		engine.Use(logging.LogRequest(l.Desugar()))
+	}
 	engine.Use(r.decorateCtxWithDeps())
 	engine.Use(r.handleErrors())
 	engine.RedirectTrailingSlash = false
@@ -100,12 +122,13 @@ func (r *Router) catchPanics() gin.HandlerFunc {
 func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("deps", &deps.Deps{
-			Logger:   r.l,
-			Database: r.db,
-			Store:    r.s,
-			CNSURL:   r.cnsURL,
-			Codec:    r.cdc,
-			K8S:      &r.k8s,
+			Logger:        r.l,
+			Database:      r.db,
+			Store:         r.s,
+			CNSURL:        r.cnsURL,
+			KubeNamespace: r.k8sNamespace,
+			Codec:         r.cdc,
+			K8S:           &r.k8s,
 		})
 	}
 }
@@ -145,4 +168,8 @@ func registerRoutes(engine *gin.Engine) {
 	// @tag.name Transactions
 	// @tag.description Transaction-related endpoints
 	tx.Register(engine)
+
+	// @tag.name Relayer
+	// @tag.description Relayer-related endpoints
+	relayer.Register(engine)
 }

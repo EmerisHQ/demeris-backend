@@ -13,6 +13,7 @@ type Config struct {
 	ListenAddr            string `validate:"required"`
 	CNSAddr               string `validate:"required,url"`
 	RedisAddr             string `validate:"required"`
+	KubernetesNamespace   string `validate:"required"`
 	Debug                 bool
 }
 
@@ -29,7 +30,8 @@ func Read() (*Config, error) {
 	var c Config
 
 	return &c, configuration.ReadConfig(&c, "demeris-api", map[string]string{
-		"ListenAddr": ":9090",
-		"RedisAddr":  ":6379",
+		"ListenAddr":          ":9090",
+		"RedisAddr":           ":6379",
+		"KubernetesNamespace": "emeris",
 	})
 }

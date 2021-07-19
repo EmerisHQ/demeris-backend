@@ -15,6 +15,19 @@ func (d *Database) Chain(name string) (models.Chain, error) {
 	})
 }
 
+func (d *Database) ChainFromChainID(chainID string) (models.Chain, error) {
+	var c models.Chain
+
+	n, err := d.dbi.DB.PrepareNamed("select * from cns.chains where node_info->>'chain_id'=:chainID and enabled=TRUE limit 1;")
+	if err != nil {
+		return models.Chain{}, err
+	}
+
+	return c, n.Get(&c, map[string]interface{}{
+		"chainID": chainID,
+	})
+}
+
 func (d *Database) ChainLastBlock(name string) (models.BlockTimeRow, error) {
 	var c models.BlockTimeRow
 
@@ -31,6 +44,26 @@ func (d *Database) ChainLastBlock(name string) (models.BlockTimeRow, error) {
 func (d *Database) Chains() ([]models.Chain, error) {
 	var c []models.Chain
 	return c, d.dbi.Exec("select * from cns.chains where enabled=TRUE", nil, &c)
+}
+
+func (d *Database) ChainIDs() (map[string]string, error) {
+	type it struct {
+		ChainName string `db:"chain_name"`
+		ChainID   string `db:"chain_id"`
+	}
+
+	c := map[string]string{}
+	var cc []it
+	err := d.dbi.Exec("select chain_name, node_info->>'chain_id' as chain_id from cns.chains where enabled=TRUE", nil, &cc)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ccc := range cc {
+		c[ccc.ChainName] = ccc.ChainID
+	}
+
+	return c, nil
 }
 
 func (d *Database) PrimaryChannelCounterparty(chainName, counterparty string) (models.ChannelQuery, error) {

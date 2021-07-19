@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: demeris
-  namespace: default
+  name: emeris
+  namespace: emeris
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /$2
@@ -11,6 +11,20 @@ spec:
   rules:
   - http:
       paths:
+      - backend:
+          service:
+            name: cosmos-hub
+            port:
+              number: 1317
+        path: /v1/liquidity(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
+            name: price-oracle
+            port:
+              number: 8000
+        path: /v1/oracle(/|$)(.*)
+        pathType: ImplementationSpecific
       - backend:
           service:
             name: api-server
@@ -22,19 +36,26 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: demeris
-  namespace: default
+  name: emeris-admin
+  namespace: emeris
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
   - http:
       paths:
       - backend:
           service:
+            name: cns-server
+            port:
+              number: 8000
+        path: /v1/cns(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
             name: admin-ui
             port:
               number: 80
-        path: /admin
+        path: /()(.*)
         pathType: ImplementationSpecific
-      

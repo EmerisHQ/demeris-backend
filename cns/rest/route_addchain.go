@@ -2,7 +2,10 @@ package rest
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+
+	v1 "github.com/allinbits/starport-operator/api/v1"
 
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
 
@@ -32,10 +35,22 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		return
 	}
 
-	// clean any primary channel that user might've added
-	newChain.PrimaryChannel = models.DbStringMap{}
+	if err := validateFees(newChain.Chain); err != nil {
+		e(ctx, http.StatusBadRequest, err)
+		r.s.l.Error("fee validation failed", err)
+		return
+	}
 
-	k := k8s.Querier{Client: *r.s.k}
+	if err := validateDenoms(newChain.Chain); err != nil {
+		e(ctx, http.StatusBadRequest, err)
+		r.s.l.Error("fee validation failed", err)
+		return
+	}
+
+	k := k8s.Querier{
+		Client:    *r.s.k,
+		Namespace: r.s.defaultK8SNamespace,
+	}
 
 	if _, err := k.ChainByName(newChain.ChainName); !errors.Is(err, k8s.ErrNotFound) {
 		r.s.l.Infow("trying to add a kubernetes nodeset which is already there, ignoring", "error", err)
@@ -43,6 +58,8 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	}
 
 	if newChain.NodeConfig != nil {
+		newChain.NodeConfig.Namespace = r.s.defaultK8SNamespace
+
 		newChain.NodeConfig.Name = newChain.ChainName
 
 		// we trust that TestnetConfig holds the real chain ID
@@ -51,6 +68,8 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			newChain.NodeInfo.ChainID = *newChain.NodeConfig.TestnetConfig.ChainId
 		}
 
+		newChain.NodeConfig.TracelistenerDebug = r.s.debug
+
 		node, err := operator.NewNode(*newChain.NodeConfig)
 		if err != nil {
 			e(ctx, http.StatusBadRequest, err)
@@ -58,10 +77,31 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			return
 		}
 
+		minGasPriceVal := newChain.RelayerToken().GasPriceLevels.Low / 2
+		minGasPricesStr := fmt.Sprintf("%v%s", minGasPriceVal, newChain.RelayerToken().Name)
+
+		cfgOverride := v1.ConfigOverride{
+			App: []v1.TomlConfigField{
+				{
+					Key: "minimum-gas-prices",
+					Value: v1.TomlConfigFieldValue{
+						String: &minGasPricesStr,
+					},
+				},
+			},
+		}
+		node.Spec.Config.Nodes.ConfigOverride = &cfgOverride
+
+		hasFaucet := false
+		if node.Spec.Init != nil {
+			hasFaucet = node.Spec.Init.Faucet != nil
+		}
+
 		if err := r.s.rc.AddChain(chainwatch.Chain{
 			Name:          newChain.ChainName,
 			AddressPrefix: newChain.NodeInfo.Bech32Config.MainPrefix,
-			HasFaucet:     node.Spec.Init.Faucet != nil,
+			HasFaucet:     hasFaucet,
+			HDPath:        newChain.DerivationPath,
 		}); err != nil {
 			e(ctx, http.StatusInternalServerError, err)
 			r.s.l.Error("cannot add chain name to cache", err)
@@ -87,4 +127,38 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 }
 func (r *router) addChain() (string, gin.HandlerFunc) {
 	return addChainRoute, r.addChainHandler
+}
+
+func validateFees(c models.Chain) error {
+	ft := c.FeeTokens()
+	if len(ft) == 0 {
+		return fmt.Errorf("no fee token specified")
+	}
+
+	for _, denom := range ft {
+		if denom.GasPriceLevels.Empty() {
+			return fmt.Errorf("fee levels for %s are not defined", denom.Name)
+		}
+	}
+
+	return nil
+}
+
+func validateDenoms(c models.Chain) error {
+	foundRelayerDenom := false
+	for _, d := range c.Denoms {
+		if d.RelayerDenom {
+			if foundRelayerDenom {
+				return fmt.Errorf("multiple relayer denoms detected")
+			}
+
+			if d.MinimumThreshRelayerBalance == nil {
+				return fmt.Errorf("relayer denom detected but no relayer minimum threshold balance defined")
+			}
+
+			foundRelayerDenom = true
+		}
+	}
+
+	return nil
 }

@@ -17,3 +17,18 @@ func (d *Database) Numbers(address string) ([]models.AuthRow, error) {
 
 	return numbers, d.dbi.DB.Select(&numbers, q, args...)
 }
+
+type ChainName struct {
+	ChainName     string `db:"chain_name"`
+	AccountPrefix string `db:"account_prefix"`
+}
+
+func (d *Database) ChainNames() ([]ChainName, error) {
+	var cn []ChainName
+
+	q := `select chain_name,node_info->'bech32_config'->>'prefix_account' as account_prefix from cns.chains where enabled=true`
+
+	q = d.dbi.DB.Rebind(q)
+
+	return cn, d.dbi.DB.Select(&cn, q)
+}

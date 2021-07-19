@@ -19,7 +19,7 @@ type bech32ConfigResponse struct {
 }
 
 type feeResponse struct {
-	Fee models.TxFee `json:"fee"`
+	Denoms models.DenomList `json:"denoms"`
 }
 
 type feeAddressResponse struct {

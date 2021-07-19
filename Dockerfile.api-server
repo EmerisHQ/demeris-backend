@@ -9,11 +9,11 @@ WORKDIR /app
 COPY go.mod go.sum* ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOPROXY=direct go build -o bin/api-server ./cmd/api-server
+RUN CGO_ENABLED=0 GOPROXY=direct make api-server
 
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates mailcap && addgroup -S app && adduser -S app -G app
-COPY --from=builder /app/bin/api-server /usr/local/bin/api-server
+COPY --from=builder /app/build/api-server /usr/local/bin/api-server
 USER app
 ENTRYPOINT ["/usr/local/bin/api-server"]

@@ -1,0 +1,19 @@
+image: emeris/cns-server:latest
+imagePullPolicy: Always
+
+replicas: 1
+
+nodeSelector: {}
+
+resources: {}
+
+ports:
+  http: 8000
+
+databaseConnectionURL: postgres://root@cockroachdb-public:26257?sslmode=disable
+
+debug: true
+
+redisUrl: redis-master:6379
+
+k8sNamespace: emeris

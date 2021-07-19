@@ -3,6 +3,7 @@ package gaia_processor
 import (
 	"bytes"
 	"encoding/hex"
+	"fmt"
 	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/allinbits/demeris-backend/tracelistener"
@@ -49,15 +50,33 @@ func (b *ibcDenomTracesProcessor) OwnsKey(key []byte) bool {
 }
 
 func (b *ibcDenomTracesProcessor) Process(data tracelistener.TraceOperation) error {
+	b.l.Debugw("beginning denom trace processor", "key", string(data.Key), "value", string(data.Value))
+
 	dt := transferTypes.DenomTrace{}
 	if err := p.cdc.UnmarshalBinaryBare(data.Value, &dt); err != nil {
 		return err
 	}
 
-	b.denomTracesCache[dt.Path] = models.IBCDenomTraceRow{
+	if err := dt.Validate(); err != nil {
+		b.l.Debugw("found a denom trace that isn't ICS20 compliant", "denom trace", dt, "error", err)
+		return fmt.Errorf("denom trace validation failed, %w", err)
+	}
+
+	if dt.BaseDenom == "" {
+		b.l.Debugw("ignoring since it's not a denom trace")
+		return nil
+	}
+
+	hash := hex.EncodeToString(dt.Hash())
+
+	newObj := models.IBCDenomTraceRow{
 		Path:      dt.Path,
 		BaseDenom: dt.BaseDenom,
-		Hash:      hex.EncodeToString(dt.Hash()),
+		Hash:      hash,
 	}
+
+	b.l.Debugw("denom trace unmarshaled", "object", newObj)
+
+	b.denomTracesCache[hash] = newObj
 	return nil
 }

@@ -11,7 +11,8 @@ import (
 var ErrNotFound = fmt.Errorf("not found")
 
 type Querier struct {
-	Client kube.Client
+	Namespace string
+	Client    kube.Client
 }
 
 func (q Querier) ChainRunning(name string) (bool, error) {
@@ -19,7 +20,7 @@ func (q Querier) ChainRunning(name string) (bool, error) {
 
 	if err := q.Client.List(context.TODO(), &chainList, kube.MatchingFields{
 		"metadata.name": name,
-	}); err != nil {
+	}, kube.InNamespace(q.Namespace)); err != nil {
 		return false, err
 	}
 
@@ -35,7 +36,7 @@ func (q Querier) ChainByName(name string) (v1.NodeSet, error) {
 
 	if err := q.Client.List(context.TODO(), &chainList, kube.MatchingFields{
 		"metadata.name": name,
-	}); err != nil {
+	}, kube.InNamespace(q.Namespace)); err != nil {
 		return v1.NodeSet{}, err
 	}
 
@@ -73,7 +74,7 @@ func (q Querier) DeleteNode(nodeName string) error {
 	objs := v1.NodeSetList{}
 	if err := q.Client.List(context.TODO(), &objs, kube.MatchingFields{
 		"metadata.name": nodeName,
-	}); err != nil {
+	}, kube.InNamespace(q.Namespace)); err != nil {
 		return err
 	}
 
@@ -91,7 +92,7 @@ func (q Querier) DeleteNode(nodeName string) error {
 func (q Querier) Relayer() (v1.Relayer, error) {
 	var e v1.RelayerList
 
-	if err := q.Client.List(context.TODO(), &e); err != nil {
+	if err := q.Client.List(context.TODO(), &e, kube.InNamespace(q.Namespace)); err != nil {
 		return v1.Relayer{}, err
 	}
 
