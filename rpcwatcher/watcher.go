@@ -220,11 +220,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	// Handle case where an IBC transfer is sent from the origin chain.
 	if IBCSenderEventPresent {
-		err := w.store.CreateTicket(w.Name, txHash)
-		w.l.Debugw("this is key", "key", key)
-		if err != nil{
-			w.l.Debugw("this is error", "error", err)
-		}
+
 		sendPacketSourcePort, ok := data.Events["send_packet.packet_src_port"]
 
 		if !ok {
@@ -252,7 +248,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		c, err := w.GetCounterParty(sendPacketSourceChannel[0])
-		if err != nil{
+		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
 		}
@@ -300,7 +296,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
 		var ack Ack
-		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil{
+		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil {
 			w.l.Errorw("unable to unmarshal packetAck", "err", err)
 			return
 		}
@@ -334,7 +330,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		c, err := w.GetCounterParty(timeoutPacketSourceChannel[0])
-		if err != nil{
+		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
 		}
@@ -362,7 +358,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		c, err := w.GetCounterParty(ackPacketSourceChannel[0])
-		if err != nil{
+		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
 		}

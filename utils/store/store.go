@@ -52,11 +52,6 @@ func NewClient(connUrl string) (*Store, error) {
 		Addr: connUrl,
 		DB:   0,
 	})
-	store.Client.Do(store.Client.Context(), "CONFIG", "SET", "notify-keyspace-events", "KEA")
-
-	if err := store.Client.Ping(context.Background()).Err(); err != nil {
-		return nil, err
-	}
 
 	store.ConnectionURL = connUrl
 
@@ -93,15 +88,27 @@ func (s *Store) SetIBCReceiveFailed(key string) error {
 }
 
 func (s *Store) SetIBCReceiveSuccess(key string) error {
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
 	return s.SetWithExpiry(key, Ticket{
 		Status: "IBC_receive_success"}, 2)
 }
 
 func (s *Store) SetUnlockTimeout(key string) error {
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
 	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout}, 2)
 }
 
 func (s *Store) SetUnlockAck(key string) error {
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
 	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck}, 2)
 }
 
@@ -186,8 +193,13 @@ func (s *Store) SetIbcFailed(key string) error {
 }
 
 func (s *Store) CreateShadowKey(key string) error {
-	shadow := shadow + key
-	return s.SetWithExpiry(shadow, "", 1)
+	shadowKey := shadow + key
+
+	if s.Exists(shadowKey) {
+		return nil
+	}
+
+	return s.SetWithExpiry(shadowKey, "", 1)
 }
 
 func (s *Store) Exists(key string) bool {
@@ -212,4 +224,10 @@ func (s *Store) Get(key string) (Ticket, error) {
 func (s *Store) Delete(key string) error {
 
 	return s.Client.Del(ctx, key).Err()
+}
+
+func (s *Store) DeleteShadowKey(key string) error {
+	shadowKey := shadow + key
+
+	return s.Delete(shadowKey)
 }

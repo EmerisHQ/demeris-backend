@@ -50,14 +50,10 @@ func main() {
 	}
 
 	for msg := range sub.Channel() {
-		l.Infow("this is l value", "value", l)
-		l.Infow("this is msg key", "key", msg)
 		l.Debugw("new message received", "msg", msg.Channel)
-		key := strings.TrimPrefix(msg.Channel, prefix)
-		l.Debugw("Received key after trim", "key", key)
 
-		if s.Exists(key) {
-
+		if strings.Contains(msg.Channel, "shadow") {
+			key := strings.TrimPrefix(msg.Channel, prefix)
 			ticket, err := s.Get(key)
 			if err != nil {
 				l.Errorw("unable to get ticket value to get error", "error", err)
