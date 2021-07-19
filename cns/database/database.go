@@ -150,10 +150,12 @@ type channelsBetweenChain struct {
 	ChainAChannelID        string `db:"chain_a_channel_id"`
 	ChainACounterChannelID string `db:"chain_a_counter_channel_id"`
 	ChainAChainID          string `db:"chain_a_chain_id"`
+	ChainAState            int    `db:"chain_a_state"`
 	ChainBName             string `db:"chain_b_chain_name"`
 	ChainBChannelID        string `db:"chain_b_channel_id"`
 	ChainBCounterChannelID string `db:"chain_b_counter_channel_id"`
 	ChainBChainID          string `db:"chain_b_chain_id"`
+	ChainBState            int    `db:"chain_b_state"`
 }
 
 func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (map[string]string, error) {

@@ -1,0 +1,56 @@
+{
+  "chain_name": "cosmos-hub",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "Cosmos Hub",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "ATOM",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.01, "average": 0.025, "high": 0.03},
+      "name": "uatom",
+      "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "ATOM"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "cosmos-hub",
+    "chain_id": "cosmoshub-4",
+    "bech32_config": {
+      "main_prefix": "cosmos",
+      "prefix_account": "cosmos",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "gaia",
+    "cli_name": "gaiad",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://storage.googleapis.com/cosmos-hub/genesis.cosmoshub-4.json"
+      },
+      "seeds": [
+        {"id": "bf8328b66dceb4987e5cd94430af66045e59899f", "address": "public-seed.cosmos.vitwit.com", "port": 26656},
+        {"id": "ba3bacc714817218562f743178228f23678b2873", "address": "public-seed-node.cosmoshub.certus.one", "port": 26656},
+        {"id": "3c7cad4154967a294b3ba1cc752e40e8779640ad", "address": "84.201.128.115", "port": 26656}
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/gaia",
+    "docker_image_version": "v5.0.1"
+  }
+}
