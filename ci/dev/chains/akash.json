@@ -19,6 +19,7 @@
 		{
 			"display_name": "AKT",
 			"name": "uakt",
+			"ticker": "AKT",
 			"verified": true,
 			"stakable": true,
 			"fee_token": true,

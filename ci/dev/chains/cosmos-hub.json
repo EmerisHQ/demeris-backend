@@ -19,6 +19,7 @@
 		{
 			"display_name": "ATOM",
 			"stakable": true,
+			"ticker": "ATOM",
 			"fee_token": true,
 			"fetch_price": true,
 			"relayer_denom": true,
