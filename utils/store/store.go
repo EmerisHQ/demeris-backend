@@ -32,6 +32,7 @@ type Store struct {
 
 type Ticket struct {
 	Info   string `json:"info,omitempty"`
+	Height int64  `json:"height,omitempty"`
 	Status string `json:"status,omitempty"`
 	Error  string `json:"error,omitempty"`
 }
@@ -121,7 +122,7 @@ func (s *Store) SetFailedWithErr(key, error string) error {
 	return s.SetWithExpiry(key, data, 2)
 }
 
-func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
+func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string, height int64) error {
 
 	if !s.Exists(key) {
 		return fmt.Errorf("key doesn't exists")
@@ -133,6 +134,7 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 
 	data := Ticket{
 		Status: transit,
+		Height: height,
 	}
 
 	if err := s.SetWithExpiry(key, data, 0); err != nil {

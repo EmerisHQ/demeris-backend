@@ -191,6 +191,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	txHash := txHashSlice[0]
+	eventTx := data.Data.(types.EventDataTx)
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
@@ -202,7 +203,6 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
 		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
-		eventTx := data.Data.(types.EventDataTx)
 
 		if eventTx.Result.Code == 0 {
 			if err := w.store.SetComplete(key); err != nil {
@@ -253,7 +253,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0]); err != nil {
+		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0], eventTx.Height); err != nil {
 			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
 		}
 		return
