@@ -8,7 +8,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/utils/database"
+	"github.com/allinbits/demeris-backend/rpcwatcher/database"
+
 	"github.com/allinbits/demeris-backend/utils/store"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -21,13 +22,14 @@ const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and co
 
 type Watcher struct {
 	Name             string
-	runContext       context.Context
-	endpoint         string
-	subs             []string
+	apiUrl           string
 	client           *client.WSClient
 	d                *database.Instance
 	l                *zap.SugaredLogger
 	store            *store.Store
+	runContext       context.Context
+	endpoint         string
+	subs             []string
 	stopReadChannel  chan struct{}
 	DataChannel      chan coretypes.ResultEvent
 	stopErrorChannel chan struct{}
@@ -38,27 +40,28 @@ type WsResponse struct {
 	Event coretypes.ResultEvent `json:"result"`
 }
 
-type IbcTransitData struct {
-	SourceChain              string `json:"sourceChain"`
-	DestChain                string `json:"destChain"`
-	SendPacketSourceChannel  string `json:"sourceChannel"`  // send_packet.packet_src_channel
-	SendPacketPacketSequence string `json:"packetSequence"` // send_packet.packet_sequence
-}
+type Events map[string][]string
 
-type IbcReceiveData struct {
-	SourceChain              string `json:"sourceChain"`
-	DestChain                string `json:"destChain"`
-	RecvPacketSourceChannel  string `json:"sourceChannel"`  // recv_packet.packet_src_channel
-	RecvPacketPacketSequence string `json:"packetSequence"` // write_acknowledgement.packet_sequence
+type VerifyTraceResponse struct {
+	VerifyTrace struct {
+		IbcDenom  string `json:"ibc_denom"`
+		BaseDenom string `json:"base_denom"`
+		Verified  bool   `json:"verified"`
+		Path      string `json:"path"`
+		Trace     []struct {
+			Channel          string `json:"channel"`
+			Port             string `json:"port"`
+			ChainName        string `json:"chain_name"`
+			CounterpartyName string `json:"counterparty_name"`
+		} `json:"trace"`
+	} `json:"verify_trace"`
 }
 
 type Ack struct {
 	Result string `json:"result"`
 }
 
-type Events map[string][]string
-
-func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl string, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
 
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
@@ -70,18 +73,21 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, db *datab
 	}
 
 	w := &Watcher{
+		apiUrl:           apiUrl,
 		d:                db,
-		endpoint:         endpoint,
-		subs:             subscriptions,
 		client:           ws,
 		l:                logger,
 		store:            s,
 		Name:             chainName,
+		endpoint:         endpoint,
+		subs:             subscriptions,
 		stopReadChannel:  make(chan struct{}),
 		DataChannel:      make(chan coretypes.ResultEvent),
 		stopErrorChannel: make(chan struct{}),
 		ErrorChannel:     make(chan *jsonrpctypes.RPCError),
 	}
+
+	w.l.Debugw("creating rpcwatcher with config", "apiurl", apiUrl)
 
 	for _, sub := range subscriptions {
 		if err := w.client.Subscribe(context.Background(), sub); err != nil {
@@ -163,7 +169,7 @@ func resubscribe(w *Watcher) {
 		count = count + 1
 		w.l.Debugw("this is count", "count", count)
 
-		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.d, w.store, w.subs)
+		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.apiUrl, w.d, w.store, w.subs)
 		if err != nil {
 			w.l.Errorw("cannot resubscribe to chain", "name", w.Name, "endpoint", w.endpoint, "error", err)
 			continue
@@ -181,6 +187,7 @@ func resubscribe(w *Watcher) {
 
 func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
+	_, createPoolEventPresent := data.Events["create_pool.pool_name"]
 	_, IBCSenderEventPresent := data.Events["ibc_transfer.sender"]
 	_, IBCAckEventPresent := data.Events["fungible_token_packet.acknowledgement"]
 	_, IBCReceivePacketEventPresent := data.Events["recv_packet.packet_sequence"]
@@ -195,13 +202,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
+	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
 		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)
 
 	w.l.Debugw("is simple ibc transfer"+
-		"", "is it", exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
+		"", "is it", exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
+	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
 		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
 
 		if eventTx.Result.Code == 0 {
@@ -216,6 +223,56 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 				"txHash", txHash, "code", eventTx.Result.Code)
 		}
 		return
+	}
+
+	w.l.Debugw("is create lp", "is it", createPoolEventPresent)
+
+	// Handle case where an LP is being created on the Cosmos Hub
+
+	if createPoolEventPresent && w.Name == "cosmos-hub" {
+
+		chain, err := w.d.Chain(w.Name)
+
+		if err != nil {
+			w.l.Errorw("can't find chain cosmos-hub", "error", err)
+			return
+		}
+
+		poolCoinDenom, ok := data.Events["create_pool.pool_coin_denom"]
+
+		if !ok {
+			w.l.Errorw("no field create_pool.pool_coin_denom in Events", "error", err)
+			return
+		}
+
+		dd, err := formatDenom(w, data)
+
+		if err != nil {
+			w.l.Errorw("failed to format denom", "error", err)
+			return
+		}
+
+		found := false
+
+		for _, token := range chain.Denoms {
+			if token.Name == poolCoinDenom[0] {
+				token = dd
+				found = true
+			}
+		}
+
+		if !found {
+			chain.Denoms = append(chain.Denoms, dd)
+		}
+
+		err = w.d.UpdateDenoms(chain)
+
+		if err != nil {
+			w.l.Errorw("failed to update chain", "error", err)
+		}
+
+		return
+
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
@@ -247,7 +304,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c, err := w.GetCounterParty(sendPacketSourceChannel[0])
+		c, err := w.d.GetCounterParty(w.Name, sendPacketSourceChannel[0])
 		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
@@ -329,7 +386,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c, err := w.GetCounterParty(timeoutPacketSourceChannel[0])
+		c, err := w.d.GetCounterParty(w.Name, timeoutPacketSourceChannel[0])
 		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
@@ -357,7 +414,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c, err := w.GetCounterParty(ackPacketSourceChannel[0])
+		c, err := w.d.GetCounterParty(w.Name, ackPacketSourceChannel[0])
 		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
