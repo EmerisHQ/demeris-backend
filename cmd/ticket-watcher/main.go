@@ -37,12 +37,16 @@ func main() {
 	}
 
 	l.Infow("ticket-watcher", "version", Version)
-	s := store.NewClient(cfg.RedisUrl)
+	s, err := store.NewClient(cfg.RedisUrl)
+	if err != nil {
+		l.Panicw("cannot connect to redis", "error", err)
+	}
+
 	s.Client.ConfigSet(s.Client.Context(), "notify-keyspace-events", "Kx")
 
 	sub := s.Client.PSubscribe(s.Client.Context(), "__key*__:*")
-	if err = sub.Ping(s.Client.Context()); err != nil{
-		l.Errorw("unable ping pubsub connection","error", err)
+	if err = sub.Ping(s.Client.Context()); err != nil {
+		l.Panicw("unable ping pubsub connection", "error", err)
 	}
 
 	for msg := range sub.Channel() {
@@ -65,7 +69,7 @@ func main() {
 				l.Errorw("unable to set ticket value to stuck", "error", err)
 			}
 
-			if err := s.Delete(msg.Channel);err != nil{
+			if err := s.Delete(msg.Channel); err != nil {
 				l.Errorw("unable to delete shadow ticket value", "error", err)
 			}
 		}
