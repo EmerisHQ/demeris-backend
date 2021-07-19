@@ -41,7 +41,13 @@ func main() {
 	s.Client.ConfigSet(s.Client.Context(), "notify-keyspace-events", "Kx")
 
 	sub := s.Client.PSubscribe(s.Client.Context(), "__key*__:*")
+	if err = sub.Ping(s.Client.Context()); err != nil{
+		l.Errorw("unable ping pubsub connection","error", err)
+	}
+
 	for msg := range sub.Channel() {
+		l.Infow("this is l value", "value", l)
+		l.Infow("this is msg key", "key", msg)
 		l.Debugw("new message received", "msg", msg.Channel)
 		key := strings.TrimPrefix(msg.Channel, prefix)
 		l.Debugw("Received key after trim", "key", key)
@@ -57,6 +63,10 @@ func main() {
 			ticket.Status = fmt.Sprintf("stuck_%s", ticket.Status)
 			if err := s.SetWithExpiry(key, ticket, 0); err != nil {
 				l.Errorw("unable to set ticket value to stuck", "error", err)
+			}
+
+			if err := s.Delete(msg.Channel);err != nil{
+				l.Errorw("unable to delete shadow ticket value", "error", err)
 			}
 		}
 	}

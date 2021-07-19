@@ -203,3 +203,8 @@ func (s *Store) Get(key string) (Ticket, error) {
 	}
 	return res, nil
 }
+
+func (s *Store) Delete(key string) error  {
+
+	return s.Client.Del(ctx, key).Err()
+}
