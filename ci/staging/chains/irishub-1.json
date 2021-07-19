@@ -1,9 +1,9 @@
 {
   "chain_name": "iris",
-  "derivation_path": "m/44'/566'/0'/0/0",
+  "derivation_path": "m/44'/118'/0'/0/0",
   "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
-  "enabled": false,
-  "valid_block_thresh": "10s",
+  "enabled": true,
+  "valid_block_thresh": "20s",
   "display_name": "IRISNet",
   "demeris_addresses": ["feeaddress"],
   "denoms": [
@@ -58,6 +58,6 @@
       ]
     },
     "docker_image": "gcr.io/tendermint-dev/iris",
-    "docker_image_version": "v1.0.1"
+    "docker_image_version": "v1.1.1"
   }
 }

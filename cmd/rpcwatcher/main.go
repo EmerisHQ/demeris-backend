@@ -61,8 +61,11 @@ func main() {
 
 		if err != nil {
 			l.Errorw("cannot create chain", "error", err)
+			delete(chainsMap, cn)
 			continue
 		}
+
+		l.Debugw("connected", "chainName", cn)
 
 		ctx, cancel := context.WithCancel(context.Background())
 		rpcwatcher.Start(watcher, ctx)
@@ -88,8 +91,6 @@ func main() {
 		if chainsDiff == nil {
 			continue
 		}
-
-		l.Infow("Chains modified. Restarting watchers")
 
 		l.Debugw("diff", "diff", chainsDiff)
 		for _, d := range chainsDiff {

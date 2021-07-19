@@ -16,6 +16,7 @@ type Config struct {
 	LogPath               string
 	RESTAddress           string `validate:"required"`
 	Debug                 bool
+	RelayerDebug          bool
 }
 
 func (c Config) Validate() error {
@@ -35,5 +36,6 @@ func readConfig() (*Config, error) {
 	return &c, configuration.ReadConfig(&c, "demeris-cns", map[string]string{
 		"RESTAddress":         ":9999",
 		"KubernetesNamespace": "emeris",
+		"RelayerDebug":        "true",
 	})
 }
