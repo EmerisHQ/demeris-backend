@@ -80,37 +80,40 @@ func (s *Store) SetComplete(key string) error {
 	return s.SetWithExpiry(key, Ticket{Status: complete}, 2)
 }
 
-func (s *Store) SetIBCReceiveFailed(key string) error {
+func (s *Store) SetIBCReceiveFailed(key string, height int64) error {
 	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
 
-	return s.SetWithExpiry(key, Ticket{Status: ibcReceiveFailed}, 0)
+	return s.SetWithExpiry(key, Ticket{Status: ibcReceiveFailed, Height: height}, 0)
 }
 
-func (s *Store) SetIBCReceiveSuccess(key string) error {
+func (s *Store) SetIBCReceiveSuccess(key string, height int64) error {
 	if err := s.DeleteShadowKey(key); err != nil {
 		return err
 	}
 
 	return s.SetWithExpiry(key, Ticket{
-		Status: "IBC_receive_success"}, 2)
+		Status: "IBC_receive_success",
+		Height: height}, 2)
 }
 
-func (s *Store) SetUnlockTimeout(key string) error {
+func (s *Store) SetUnlockTimeout(key string, height int64) error {
 	if err := s.DeleteShadowKey(key); err != nil {
 		return err
 	}
 
-	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout}, 2)
+	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout,
+		Height: height}, 2)
 }
 
-func (s *Store) SetUnlockAck(key string) error {
+func (s *Store) SetUnlockAck(key string, height int64) error {
 	if err := s.DeleteShadowKey(key); err != nil {
 		return err
 	}
 
-	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck}, 2)
+	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck,
+		Height: height}, 2)
 }
 
 func (s *Store) SetFailedWithErr(key, error string) error {
@@ -150,7 +153,7 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 	return nil
 }
 
-func (s *Store) SetIbcTimeoutUnlock(key string) error {
+func (s *Store) SetIbcTimeoutUnlock(key string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -158,10 +161,10 @@ func (s *Store) SetIbcTimeoutUnlock(key string) error {
 		return err
 	}
 
-	return s.SetUnlockTimeout(prev.Info)
+	return s.SetUnlockTimeout(prev.Info, height)
 }
 
-func (s *Store) SetIbcAckUnlock(key string) error {
+func (s *Store) SetIbcAckUnlock(key string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -169,10 +172,10 @@ func (s *Store) SetIbcAckUnlock(key string) error {
 		return err
 	}
 
-	return s.SetUnlockAck(prev.Info)
+	return s.SetUnlockAck(prev.Info, height)
 }
 
-func (s *Store) SetIbcReceived(key string) error {
+func (s *Store) SetIbcReceived(key string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -180,10 +183,10 @@ func (s *Store) SetIbcReceived(key string) error {
 		return err
 	}
 
-	return s.SetIBCReceiveSuccess(prev.Info)
+	return s.SetIBCReceiveSuccess(prev.Info, height)
 }
 
-func (s *Store) SetIbcFailed(key string) error {
+func (s *Store) SetIbcFailed(key string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -191,7 +194,7 @@ func (s *Store) SetIbcFailed(key string) error {
 		return err
 	}
 
-	return s.SetIBCReceiveFailed(prev.Info)
+	return s.SetIBCReceiveFailed(prev.Info, height)
 }
 
 func (s *Store) CreateShadowKey(key string) error {

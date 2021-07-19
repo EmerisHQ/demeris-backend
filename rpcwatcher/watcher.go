@@ -302,13 +302,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		if ack.Result != ackSuccess {
-			if err := w.store.SetIbcFailed(key); err != nil {
+			if err := w.store.SetIbcFailed(key, eventTx.Height); err != nil {
 				w.l.Errorw("unable to set status as failed for key", "key", key, "error", err)
 			}
 			return
 		}
 
-		if err := w.store.SetIbcReceived(key); err != nil {
+		if err := w.store.SetIbcReceived(key, eventTx.Height); err != nil {
 			w.l.Errorw("unable to set status as ibc received for key", "key", key, "error", err)
 		}
 		return
@@ -336,7 +336,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
-		if err := w.store.SetIbcTimeoutUnlock(key); err != nil {
+		if err := w.store.SetIbcTimeoutUnlock(key, eventTx.Height); err != nil {
 			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
 		}
 		return
@@ -366,7 +366,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
 		_, ok = data.Events["fungible_token_packet.error"]
 		if ok {
-			if err := w.store.SetIbcAckUnlock(key); err != nil {
+			if err := w.store.SetIbcAckUnlock(key, eventTx.Height); err != nil {
 				w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
 			}
 			return
