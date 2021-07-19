@@ -15,8 +15,6 @@ import (
 
 var Version = "not specified"
 
-const trim    = "__keyspace@0__:shadow"
-
 func main() {
 	cfg, err := config.Read()
 	if err != nil {
@@ -46,7 +44,11 @@ func main() {
 		l.Panicw("cannot initialize database", "error", err)
 	}
 
-	s := store.NewClient(cfg.RedisAddr)
+	s, err := store.NewClient(cfg.RedisAddr)
+	if err != nil{
+		l.Panicw("unable to start redis client", "error", err)
+	}
+
 	kubeClient, err := k8s.NewInCluster()
 	if err != nil {
 		l.Panicw("cannot initialize k8s", "error", err)

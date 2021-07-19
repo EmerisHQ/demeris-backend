@@ -209,7 +209,6 @@ func (s *Store) Exists(key string) bool {
 }
 
 func (s *Store) SetWithExpiry(key string, value interface{}, mul int64) error {
-
 	return s.Client.Set(ctx, key, value, time.Duration(mul)*(s.Config.ExpiryTime)).Err()
 }
 
@@ -218,16 +217,15 @@ func (s *Store) Get(key string) (Ticket, error) {
 	if err := s.Client.Get(ctx, key).Scan(&res); err != nil {
 		return Ticket{}, err
 	}
+
 	return res, nil
 }
 
 func (s *Store) Delete(key string) error {
-
 	return s.Client.Del(ctx, key).Err()
 }
 
 func (s *Store) DeleteShadowKey(key string) error {
 	shadowKey := shadow + key
-
 	return s.Delete(shadowKey)
 }
