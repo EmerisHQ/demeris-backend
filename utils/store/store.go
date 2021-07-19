@@ -44,7 +44,7 @@ func (t Ticket) MarshalBinary() (data []byte, err error) {
 }
 
 // NewClient creates a new redis client
-func NewClient(connUrl string) *Store {
+func NewClient(connUrl string) (*Store, error) {
 
 	var store Store
 
@@ -53,11 +53,16 @@ func NewClient(connUrl string) *Store {
 		DB:   0,
 	})
 	store.Client.Do(store.Client.Context(), "CONFIG", "SET", "notify-keyspace-events", "KEA")
+
+	if err := store.Client.Ping(context.Background()).Err(); err != nil {
+		return nil, err
+	}
+
 	store.ConnectionURL = connUrl
 
 	store.Config.ExpiryTime = 300 * time.Second
 
-	return &store
+	return &store, nil
 
 }
 
@@ -204,7 +209,7 @@ func (s *Store) Get(key string) (Ticket, error) {
 	return res, nil
 }
 
-func (s *Store) Delete(key string) error  {
+func (s *Store) Delete(key string) error {
 
 	return s.Client.Del(ctx, key).Err()
 }
