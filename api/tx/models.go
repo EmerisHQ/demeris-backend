@@ -128,7 +128,3 @@ type TxResponse struct {
 	Ticket string `json:"ticket"`
 }
 
-type TxStatus struct {
-	Status    string `json:"status"`
-	NewTicket string `json:"newTicket"`
-}
