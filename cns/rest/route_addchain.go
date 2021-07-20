@@ -77,20 +77,22 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			return
 		}
 
-		minGasPriceVal := newChain.RelayerToken().GasPriceLevels.Low / 2
-		minGasPricesStr := fmt.Sprintf("%v%s", minGasPriceVal, newChain.RelayerToken().Name)
+		if newChain.NodeConfig.DisableMinFeeConfig {
+			minGasPriceVal := newChain.RelayerToken().GasPriceLevels.Low / 2
+			minGasPricesStr := fmt.Sprintf("%v%s", minGasPriceVal, newChain.RelayerToken().Name)
 
-		cfgOverride := v1.ConfigOverride{
-			App: []v1.TomlConfigField{
-				{
-					Key: "minimum-gas-prices",
-					Value: v1.TomlConfigFieldValue{
-						String: &minGasPricesStr,
+			cfgOverride := v1.ConfigOverride{
+				App: []v1.TomlConfigField{
+					{
+						Key: "minimum-gas-prices",
+						Value: v1.TomlConfigFieldValue{
+							String: &minGasPricesStr,
+						},
 					},
 				},
-			},
+			}
+			node.Spec.Config.Nodes.ConfigOverride = &cfgOverride
 		}
-		node.Spec.Config.Nodes.ConfigOverride = &cfgOverride
 
 		hasFaucet := false
 		if node.Spec.Init != nil {
