@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tendermint/tendermint/types"
-
 	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/rpcwatcher/database"
@@ -17,6 +15,7 @@ import (
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
+	"github.com/tendermint/tendermint/types"
 )
 
 const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
@@ -200,7 +199,8 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	txHash := txHashSlice[0]
-
+	eventTx := data.Data.(types.EventDataTx)
+	height := eventTx.Height
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
@@ -209,13 +209,12 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	w.l.Debugw("is simple ibc transfer"+
 		"", "is it", exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
 
-	eventTx := data.Data.(types.EventDataTx)
 	if eventTx.Result.Code != 0 {
 		logStr := fmt.Sprintf(nonZeroCodeErrFmt, w.Name, eventTx.Result.Log)
 
 		w.l.Debugw("transaction error", "chainName", w.Name, "txHash", txHash, "log", eventTx.Result.Log)
 
-		if err := w.store.SetFailedWithErr(key, logStr); err != nil {
+		if err := w.store.SetFailedWithErr(key, logStr, height); err != nil {
 			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
 				"txHash", txHash, "code", eventTx.Result.Code)
 		}
@@ -226,7 +225,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
 		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
-		if err := w.store.SetComplete(key); err != nil {
+		if err := w.store.SetComplete(key, height); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 		return
@@ -235,7 +234,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	// Handle case where an LP is being created on the Cosmos Hub
 	if createPoolEventPresent && w.Name == "cosmos-hub" {
 		defer func() {
-			if err := w.store.SetComplete(key); err != nil {
+			if err := w.store.SetComplete(key, height); err != nil {
 				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 			}
 		}()
@@ -321,7 +320,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0]); err != nil {
+		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0], height); err != nil {
 			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
 		}
 		return
@@ -370,13 +369,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		if ack.Result != ackSuccess {
-			if err := w.store.SetIbcFailed(key); err != nil {
+			if err := w.store.SetIbcFailed(key, height); err != nil {
 				w.l.Errorw("unable to set status as failed for key", "key", key, "error", err)
 			}
 			return
 		}
 
-		if err := w.store.SetIbcReceived(key); err != nil {
+		if err := w.store.SetIbcReceived(key, height); err != nil {
 			w.l.Errorw("unable to set status as ibc received for key", "key", key, "error", err)
 		}
 		return
@@ -404,7 +403,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
-		if err := w.store.SetIbcTimeoutUnlock(key); err != nil {
+		if err := w.store.SetIbcTimeoutUnlock(key, height); err != nil {
 			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
 		}
 		return
@@ -434,7 +433,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
 		_, ok = data.Events["fungible_token_packet.error"]
 		if ok {
-			if err := w.store.SetIbcAckUnlock(key); err != nil {
+			if err := w.store.SetIbcAckUnlock(key, height); err != nil {
 				w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
 			}
 			return
