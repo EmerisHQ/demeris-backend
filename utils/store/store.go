@@ -73,9 +73,10 @@ func (s *Store) CreateTicket(chain, txHash string) error {
 	return s.SetWithExpiry(key, data, 0)
 }
 
-func (s *Store) SetComplete(key string) error {
+func (s *Store) SetComplete(key string, height int64) error {
 
-	return s.SetWithExpiry(key, Ticket{Status: complete}, 2)
+	return s.SetWithExpiry(key, Ticket{Status: complete,
+		Height: height}, 2)
 }
 
 func (s *Store) SetIBCReceiveFailed(key string, height int64) error {
@@ -114,8 +115,9 @@ func (s *Store) SetUnlockAck(key string, height int64) error {
 	return s.DeleteShadowKey(key)
 }
 
-func (s *Store) SetFailedWithErr(key, error string) error {
+func (s *Store) SetFailedWithErr(key, error string, height int64) error {
 	data := Ticket{
+		Height: height,
 		Status: failed,
 		Error:  error,
 	}

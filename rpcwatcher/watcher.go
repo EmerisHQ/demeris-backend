@@ -214,7 +214,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		w.l.Debugw("transaction error", "chainName", w.Name, "txHash", txHash, "log", eventTx.Result.Log)
 
-		if err := w.store.SetFailedWithErr(key, logStr); err != nil {
+		if err := w.store.SetFailedWithErr(key, logStr, height); err != nil {
 			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
 				"txHash", txHash, "code", eventTx.Result.Code)
 		}
@@ -225,7 +225,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
 		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
-		if err := w.store.SetComplete(key); err != nil {
+		if err := w.store.SetComplete(key, height); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 		return
@@ -234,7 +234,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	// Handle case where an LP is being created on the Cosmos Hub
 	if createPoolEventPresent && w.Name == "cosmos-hub" {
 		defer func() {
-			if err := w.store.SetComplete(key); err != nil {
+			if err := w.store.SetComplete(key, height); err != nil {
 				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 			}
 		}()
