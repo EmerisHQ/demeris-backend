@@ -1,7 +1,7 @@
 {
 	"chain_name": "crypto-com",
 	"derivation_path": "m/44'/394'/0'/0/0",
-	"logo": "logo url",
+	"logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
 	"enabled": true,
 	"valid_block_thresh": "10s",
 	"minimum_thresh_relayer_balance": 42,
@@ -19,6 +19,7 @@
 		{
 			"display_name": "CRO",
 			"name": "basecro",
+			"ticker": "CRO",
 			"verified": true,
 			"stakable": true,
 			"fee_token": true,
@@ -26,7 +27,8 @@
 			"relayer_denom": true,
 			"minimum_thresh_relayer_balance": 42,
 			"gas_price_levels": { "low": 0.01, "average": 0.022, "high": 0.042 },
-			"precision": 8
+			"precision": 8,
+			"logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg"
 		}
 	],
 	"base_ibc_fee": 1,

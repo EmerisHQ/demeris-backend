@@ -14,4 +14,6 @@ databaseConnectionURL: postgres://root@cockroachdb-public:26257?sslmode=disable
 
 debug: true
 
+apiUrl: api-server:8000
+
 redisUrl: redis-master:6379
