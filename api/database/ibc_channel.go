@@ -67,7 +67,7 @@ func (d *Database) GetIbcChannelToChain(chain, channel, chainID string) (models.
 		AND c1.counter_channel_id = c2.channel_id
 		AND c1.chain_name != c2.chain_name
 		AND c1.chain_name = ?
-		AND c1.channel_id = ?
+		AND c1.counter_channel_id = ?
 		AND c2.chain_id = ?
 
 	`
