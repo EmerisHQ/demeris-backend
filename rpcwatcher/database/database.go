@@ -80,5 +80,9 @@ func (i *Instance) GetCounterParty(chain, srcChannel string) ([]models.ChannelQu
 		return []models.ChannelQuery{}, err
 	}
 
+	if len(c) == 0 {
+		return nil, fmt.Errorf("no counterparty found for chain %s on channel %s", chain, srcChannel)
+	}
+
 	return c, nil
 }
