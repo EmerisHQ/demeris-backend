@@ -178,6 +178,7 @@ func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (m
 	ret := map[string]string{}
 
 	for _, cc := range c {
+		// channel ID destination => channel ID on source
 		ret[cc.ChainAChannelID] = cc.ChainBChannelID
 	}
 

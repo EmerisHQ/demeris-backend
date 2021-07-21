@@ -361,7 +361,7 @@ func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []
 				counterChainName: c.ChainName,
 			}
 
-			for chanID, counterChanID := range conns {
+			for counterChanID, chanID := range conns {
 				cc.channel = chanID
 				cc.counterChannel = counterChanID
 				break
