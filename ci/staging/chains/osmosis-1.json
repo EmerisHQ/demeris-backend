@@ -74,6 +74,6 @@
       ]
     },
     "docker_image": "gcr.io/tendermint-dev/osmosis",
-    "docker_image_version": "v1.0.1"
+    "docker_image_version": "v1.0.2"
   }
 }
