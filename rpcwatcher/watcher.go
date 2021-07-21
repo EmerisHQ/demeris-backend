@@ -317,7 +317,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		c, err := w.d.GetCounterParty(w.Name, sendPacketSourceChannel[0])
 		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
 			return
 		}
 
