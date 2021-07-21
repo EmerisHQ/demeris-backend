@@ -9,8 +9,6 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var ctx = context.Background()
-
 const (
 	pending               = "pending"
 	transit               = "transit"
@@ -88,28 +86,28 @@ func (s *Store) SetIBCReceiveFailed(key string) error {
 }
 
 func (s *Store) SetIBCReceiveSuccess(key string) error {
-	if err := s.DeleteShadowKey(key); err != nil {
+	if err := s.SetWithExpiry(key, Ticket{
+		Status: "IBC_receive_success"}, 2); err != nil {
 		return err
 	}
 
-	return s.SetWithExpiry(key, Ticket{
-		Status: "IBC_receive_success"}, 2)
+	return s.DeleteShadowKey(key)
 }
 
 func (s *Store) SetUnlockTimeout(key string) error {
-	if err := s.DeleteShadowKey(key); err != nil {
+	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout}, 2); err != nil {
 		return err
 	}
 
-	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout}, 2)
+	return s.DeleteShadowKey(key)
 }
 
 func (s *Store) SetUnlockAck(key string) error {
-	if err := s.DeleteShadowKey(key); err != nil {
+	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck}, 2); err != nil {
 		return err
 	}
 
-	return s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck}, 2)
+	return s.DeleteShadowKey(key)
 }
 
 func (s *Store) SetFailedWithErr(key, error string) error {
@@ -195,26 +193,22 @@ func (s *Store) SetIbcFailed(key string) error {
 func (s *Store) CreateShadowKey(key string) error {
 	shadowKey := shadow + key
 
-	if s.Exists(shadowKey) {
-		return nil
-	}
-
 	return s.SetWithExpiry(shadowKey, "", 1)
 }
 
 func (s *Store) Exists(key string) bool {
-	exists, _ := s.Client.Exists(ctx, key).Result()
+	exists, _ := s.Client.Exists(context.Background(), key).Result()
 
 	return exists == 1
 }
 
 func (s *Store) SetWithExpiry(key string, value interface{}, mul int64) error {
-	return s.Client.Set(ctx, key, value, time.Duration(mul)*(s.Config.ExpiryTime)).Err()
+	return s.Client.Set(context.Background(), key, value, time.Duration(mul)*(s.Config.ExpiryTime)).Err()
 }
 
 func (s *Store) Get(key string) (Ticket, error) {
 	var res Ticket
-	if err := s.Client.Get(ctx, key).Scan(&res); err != nil {
+	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
 		return Ticket{}, err
 	}
 
@@ -222,7 +216,7 @@ func (s *Store) Get(key string) (Ticket, error) {
 }
 
 func (s *Store) Delete(key string) error {
-	return s.Client.Del(ctx, key).Err()
+	return s.Client.Del(context.Background(), key).Err()
 }
 
 func (s *Store) DeleteShadowKey(key string) error {
