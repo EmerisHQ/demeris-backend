@@ -1,9 +1,13 @@
 package rpcwatcher
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -20,6 +24,12 @@ import (
 
 const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
 const nonZeroCodeErrFmt = "non-zero code on chain %s: %s"
+
+const (
+	EventsTx       = "tm.event='Tx'"
+	EventsBlock    = "tm.event='NewBlock'"
+	defaultRPCPort = 26657
+)
 
 type Watcher struct {
 	Name             string
@@ -454,9 +464,61 @@ func (w *Watcher) startChain(ctx context.Context) {
 		default:
 			select {
 			case data := <-w.DataChannel:
-				w.handleMessage(data)
+				switch data.Query {
+				case EventsTx:
+					w.handleMessage(data)
+				case EventsBlock:
+					w.handleBlock(data.Data)
+				}
 			}
 		}
 
 	}
+}
+
+func (w *Watcher) handleBlock(data types.TMEventData) {
+	realData, ok := data.(types.EventDataNewBlock)
+	if !ok {
+		panic("rpc returned data which is not of expected type")
+	}
+
+	newHeight := realData.Block.Header.Height
+
+	u := fmt.Sprintf("http://%s:%d", w.Name, defaultRPCPort)
+
+	ru, err := url.Parse(u)
+	if err != nil {
+		panic(err)
+	}
+
+	vals := url.Values{}
+	vals.Set("height", strconv.FormatInt(newHeight, 10))
+
+	ru.Path = "block"
+	ru.RawQuery = vals.Encode()
+
+	res := bytes.Buffer{}
+
+	resp, err := http.Get(ru.String())
+	if err != nil {
+		w.l.Errorw("cannot query node for block data", "error", err)
+		return
+	}
+
+	_, err = res.ReadFrom(resp.Body)
+	if err != nil {
+		w.l.Errorw("cannot read block data resp body into buffer", "error", err)
+		return
+	}
+
+	bs := store.NewBlocks(w.store)
+	err = bs.Add(res.Bytes(), newHeight)
+	if err != nil {
+		w.l.Errorw("cannot set block to cache", "error", err, "height", newHeight)
+		return
+	}
+
+	_ = resp.Body.Close()
+
+	return
 }
