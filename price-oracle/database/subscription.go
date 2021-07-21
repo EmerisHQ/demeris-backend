@@ -179,7 +179,8 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	var data map[string]struct {
 		Quote struct {
 			USDT struct {
-				Price float64 `json:"price"`
+				Price      float64 `json:"price"`
+				Market_cap float64 `json:"market_cap"`
 			} `json:"USDT"`
 		} `json:"quote"`
 	}
@@ -204,6 +205,17 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 		logger.Infow("CoinmarketcapSubscription", tokensum, d.Quote.USDT.Price)
 		tx := db.MustBegin()
 		now := time.Now()
+
+		resultsupply := tx.MustExec("UPDATE oracle.coinmarketcapsupply SET supply = ($1) WHERE symbol = ($2)", d.Quote.USDT.Market_cap, tokensum)
+
+		updateresultsupply, err := resultsupply.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("DB UPDATE: %w", err)
+		}
+		if updateresultsupply == 0 {
+			tx.MustExec("INSERT INTO oracle.coinmarketcapsupply VALUES (($1),($2));", tokensum, d.Quote.USDT.Market_cap)
+		}
+
 		result := tx.MustExec("UPDATE oracle.coinmarketcap SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", d.Quote.USDT.Price, now.Unix(), tokensum)
 
 		updateresult, err := result.RowsAffected()
