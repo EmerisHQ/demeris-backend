@@ -18,4 +18,5 @@ package docs
 import (
 	_ "github.com/allinbits/demeris-backend/models"
 	_ "github.com/swaggo/swag"
+	_ "github.com/allinbits/demeris-backend/utils/store"
 )

@@ -9,7 +9,16 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var ctx = context.Background()
+const (
+	pending               = "pending"
+	transit               = "transit"
+	complete              = "complete"
+	failed                = "failed"
+	shadow                = "shadow"
+	ibcReceiveFailed      = "IBC_receive_failed"
+	tokensUnlockedTimeout = "Tokens_unlocked_timeout"
+	tokensUnlockedAck     = "Tokens_unlocked_ack"
+)
 
 type Store struct {
 	Client        *redis.Client
@@ -19,8 +28,21 @@ type Store struct {
 	}
 }
 
+type Ticket struct {
+	Info   string `json:"info,omitempty"`
+	Status string `json:"status,omitempty"`
+	Error  string `json:"error,omitempty"`
+}
+
+func (t *Ticket) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, t)
+}
+func (t Ticket) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(t)
+}
+
 // NewClient creates a new redis client
-func NewClient(connUrl string) *Store {
+func NewClient(connUrl string) (*Store, error) {
 
 	var store Store
 
@@ -31,59 +53,70 @@ func NewClient(connUrl string) *Store {
 
 	store.ConnectionURL = connUrl
 
-	store.Config.ExpiryTime = time.Duration(300000000000)
+	store.Config.ExpiryTime = 300 * time.Second
 
-	return &store
+	return &store, nil
 
 }
 
 func (s *Store) CreateTicket(chain, txHash string) error {
-	data := map[string]interface{}{
-		"status": "pending",
+	data := Ticket{
+		Status: pending,
 	}
 
-	b, err := json.Marshal(data)
-
-	if err != nil {
+	key := fmt.Sprintf("%s-%s", chain, txHash)
+	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
 
-	return s.Set(fmt.Sprintf("%s-%s", chain, txHash), string(b))
+	return s.SetWithExpiry(key, data, 0)
 }
 
 func (s *Store) SetComplete(key string) error {
-	return s.Set(key, `{"status":"complete"}`)
+
+	return s.SetWithExpiry(key, Ticket{Status: complete}, 2)
 }
 
 func (s *Store) SetIBCReceiveFailed(key string) error {
-	return s.Set(key, `{"status":"IBC_receive_failed"}`)
-}
-
-func (s *Store) SetIBCReceiveSuccess(key string) error {
-	return s.Set(key, `{"status":"IBC_receive_success"}`)
-}
-
-func (s *Store) SetUnlockTimeout(key string) error {
-	return s.Set(key, `{"status":"Tokens_unlocked_timeout"}`)
-}
-
-func (s *Store) SetUnlockAck(key string) error {
-	return s.Set(key, `{"status":"Tokens_unlocked_ack"}`)
-}
-
-func (s *Store) SetFailedWithErr(key, error string) error {
-	data := map[string]interface{}{
-		"status": "failed",
-		"err":    error,
-	}
-
-	b, err := json.Marshal(data)
-
-	if err != nil {
+	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
 
-	return s.Set(key, string(b))
+	return s.SetWithExpiry(key, Ticket{Status: ibcReceiveFailed}, 0)
+}
+
+func (s *Store) SetIBCReceiveSuccess(key string) error {
+	if err := s.SetWithExpiry(key, Ticket{
+		Status: "IBC_receive_success"}, 2); err != nil {
+		return err
+	}
+
+	return s.DeleteShadowKey(key)
+}
+
+func (s *Store) SetUnlockTimeout(key string) error {
+	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout}, 2); err != nil {
+		return err
+	}
+
+	return s.DeleteShadowKey(key)
+}
+
+func (s *Store) SetUnlockAck(key string) error {
+	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck}, 2); err != nil {
+		return err
+	}
+
+	return s.DeleteShadowKey(key)
+}
+
+func (s *Store) SetFailedWithErr(key, error string) error {
+	data := Ticket{
+		Status: failed,
+		Error:  error,
+	}
+
+	return s.SetWithExpiry(key, data, 2)
 }
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string) error {
@@ -92,23 +125,21 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 		return fmt.Errorf("key doesn't exists")
 	}
 
-	data := map[string]interface{}{
-		"status": "transit",
-	}
-
-	b, err := json.Marshal(data)
-
-	if err != nil {
+	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
 
-	if s.Set(key, string(b)) != nil {
+	data := Ticket{
+		Status: transit,
+	}
+
+	if err := s.SetWithExpiry(key, data, 0); err != nil {
 		return err
 	}
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if err = s.Set(newKey, key); err != nil {
+	if err := s.SetWithExpiry(newKey, Ticket{Info: key}, 2); err != nil {
 		return err
 	}
 
@@ -123,7 +154,7 @@ func (s *Store) SetIbcTimeoutUnlock(key string) error {
 		return err
 	}
 
-	return s.SetUnlockTimeout(prev)
+	return s.SetUnlockTimeout(prev.Info)
 }
 
 func (s *Store) SetIbcAckUnlock(key string) error {
@@ -134,7 +165,7 @@ func (s *Store) SetIbcAckUnlock(key string) error {
 		return err
 	}
 
-	return s.SetUnlockAck(prev)
+	return s.SetUnlockAck(prev.Info)
 }
 
 func (s *Store) SetIbcReceived(key string) error {
@@ -145,7 +176,7 @@ func (s *Store) SetIbcReceived(key string) error {
 		return err
 	}
 
-	return s.SetIBCReceiveSuccess(prev)
+	return s.SetIBCReceiveSuccess(prev.Info)
 }
 
 func (s *Store) SetIbcFailed(key string) error {
@@ -156,30 +187,39 @@ func (s *Store) SetIbcFailed(key string) error {
 		return err
 	}
 
-	return s.SetIBCReceiveFailed(prev)
+	return s.SetIBCReceiveFailed(prev.Info)
 }
 
-func (s *Store) SetIbcSuccess(key string) error {
+func (s *Store) CreateShadowKey(key string) error {
+	shadowKey := shadow + key
 
-	prev, err := s.Get(key)
-
-	if err != nil {
-		return err
-	}
-
-	return s.SetIBCReceiveSuccess(prev)
+	return s.SetWithExpiry(shadowKey, "", 1)
 }
 
 func (s *Store) Exists(key string) bool {
-	exists, _ := s.Client.Exists(ctx, key).Result()
+	exists, _ := s.Client.Exists(context.Background(), key).Result()
 
 	return exists == 1
 }
 
-func (s *Store) Set(key, value string) error {
-	return s.Client.Set(ctx, key, value, s.Config.ExpiryTime).Err()
+func (s *Store) SetWithExpiry(key string, value interface{}, mul int64) error {
+	return s.Client.Set(context.Background(), key, value, time.Duration(mul)*(s.Config.ExpiryTime)).Err()
 }
 
-func (s *Store) Get(key string) (string, error) {
-	return s.Client.Get(ctx, key).Result()
+func (s *Store) Get(key string) (Ticket, error) {
+	var res Ticket
+	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
+		return Ticket{}, err
+	}
+
+	return res, nil
+}
+
+func (s *Store) Delete(key string) error {
+	return s.Client.Del(context.Background(), key).Err()
+}
+
+func (s *Store) DeleteShadowKey(key string) error {
+	shadowKey := shadow + key
+	return s.Delete(shadowKey)
 }

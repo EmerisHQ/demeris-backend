@@ -1,0 +1,15 @@
+image: emeris/ticket-watcher:latest
+imagePullPolicy: Always
+
+replicas: 1
+
+nodeSelector: {}
+
+resources: {}
+
+ports:
+  http: 8000
+
+debug: true
+
+redisUrl: redis-master:6379

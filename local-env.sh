@@ -357,6 +357,32 @@ EOF
         helm/emeris-rpcwatcher \
         &> /dev/null
 
+### Ensure ticket-watcher image
+    if [[ "$(docker images -q emeris/ticket-watcher 2> /dev/null)" == "" ]]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/ticket-watcher image"
+        docker build -t emeris/ticket-watcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.ticket-watcher .
+    else
+        if [ "$BUILD" = "true" ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/ticket-watcher image"
+            docker build -t emeris/ticket-watcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.ticket-watcher .
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/ticket-watcher already exists"
+        fi
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/ticket-watcher image to cluster"
+    kind load docker-image emeris/ticket-watcher --name $CLUSTER_NAME &> /dev/null
+
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/ticket-watcher"
+    helm upgrade ticket-watcher \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
+        --set imagePullPolicy=Never \
+        helm/emeris-ticket-watcher \
+        &> /dev/null
+
     ### Ensure price-oracle-server image
      if [[ "$(docker images -q emeris/price-oracle-server 2> /dev/null)" == "" ]]
      then

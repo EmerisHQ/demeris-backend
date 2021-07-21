@@ -1,0 +1,5 @@
+apiVersion: v2
+name: emeris-ticket-watcher
+description: emeris ticket watcher service
+version: 0.0.1
+appVersion: 0.0.1

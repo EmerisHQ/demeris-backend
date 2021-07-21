@@ -2,7 +2,6 @@ package tx
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -222,11 +221,10 @@ func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 // @Param ticketId path string true "ticket id"
 // @Param chainName path string true "chain name"
 // @Produce json
-// @Success 200 {object} TxStatus
+// @Success 200 {object} store.Ticket
 // @Failure 500,403 {object} deps.Error
 // @Router /tx/ticket/{chainName}/{ticketId} [get]
 func GetTicket(c *gin.Context) {
-	var res TxStatus
 
 	d := deps.GetDeps(c)
 
@@ -255,27 +253,5 @@ func GetTicket(c *gin.Context) {
 		return
 	}
 
-	if err := json.Unmarshal([]byte(ticket), &res); err != nil {
-		e := deps.NewError(
-			"tx",
-			fmt.Errorf("cannot retrieve ticket with id %v", ticketId),
-			http.StatusInternalServerError,
-		)
-
-		d.WriteError(c, e,
-			"cannot unmarshal ticket",
-			"id",
-			e.ID,
-			"name",
-			ticketId,
-			"ticket",
-			ticket,
-			"error",
-			err,
-		)
-
-		return
-	}
-
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, ticket)
 }

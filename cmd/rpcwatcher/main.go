@@ -42,8 +42,10 @@ func main() {
 		panic(err)
 	}
 
-	s := store.NewClient(c.RedisURL)
-
+	s, err := store.NewClient(c.RedisURL)
+	if err != nil{
+		l.Panicw("unable to start redis client", "error", err)
+	}
 	var chains []models.Chain
 
 	watchers := map[string]watcherInstance{}
