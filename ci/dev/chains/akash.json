@@ -1,7 +1,7 @@
 {
 	"chain_name": "akash",
 	"derivation_path": "m/44'/118'/0'/0/0",
-	"logo": "logo url",
+	"logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
 	"enabled": true,
 	"valid_block_thresh": "10s",
 	"minimum_thresh_relayer_balance": 42,
@@ -27,7 +27,8 @@
 			"relayer_denom": true,
 			"minimum_thresh_relayer_balance": 42,
 			"gas_price_levels": { "low": 0.01, "average": 0.022, "high": 0.042 },
-			"precision": 6
+			"precision": 6,
+			"logo": "https://storage.googleapis.com/emeris/logos/akash.svg"
 		}
 	],
 	"base_ibc_fee": 1,

@@ -19,6 +19,7 @@ import (
 )
 
 const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
+const nonZeroCodeErrFmt = "non-zero code on chain %s: %s"
 
 type Watcher struct {
 	Name             string
@@ -207,29 +208,38 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	w.l.Debugw("is simple ibc transfer"+
 		"", "is it", exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
+
+	if eventTx.Result.Code != 0 {
+		logStr := fmt.Sprintf(nonZeroCodeErrFmt, w.Name, eventTx.Result.Log)
+
+		w.l.Debugw("transaction error", "chainName", w.Name, "txHash", txHash, "log", eventTx.Result.Log)
+
+		if err := w.store.SetFailedWithErr(key, logStr); err != nil {
+			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
+				"txHash", txHash, "code", eventTx.Result.Code)
+		}
+
+		return
+	}
+
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
 		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
-
-		if eventTx.Result.Code == 0 {
-			if err := w.store.SetComplete(key); err != nil {
-				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
-			}
-			return
-		}
-
-		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
-			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
-				"txHash", txHash, "code", eventTx.Result.Code)
+		if err := w.store.SetComplete(key); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 		return
 	}
 
-	w.l.Debugw("is create lp", "is it", createPoolEventPresent)
-
 	// Handle case where an LP is being created on the Cosmos Hub
-
 	if createPoolEventPresent && w.Name == "cosmos-hub" {
+		defer func() {
+			if err := w.store.SetComplete(key); err != nil {
+				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+			}
+		}()
+
+		w.l.Debugw("is create lp", "is it", createPoolEventPresent)
 
 		chain, err := w.d.Chain(w.Name)
 
@@ -269,10 +279,10 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if err != nil {
 			w.l.Errorw("failed to update chain", "error", err)
+			return
 		}
 
 		return
-
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
@@ -306,7 +316,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		c, err := w.d.GetCounterParty(w.Name, sendPacketSourceChannel[0])
 		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
 			return
 		}
 
@@ -416,7 +426,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		c, err := w.d.GetCounterParty(w.Name, ackPacketSourceChannel[0])
 		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
 			return
 		}
 

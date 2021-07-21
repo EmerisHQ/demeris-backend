@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"runtime"
 	"strings"
 
 	"github.com/allinbits/demeris-backend/utils/logging"
@@ -25,7 +24,6 @@ func main() {
 	})
 
 	if cfg.Debug {
-		runtime.SetCPUProfileRate(500)
 
 		go func() {
 			l.Debugw("starting profiling server", "port", "6060")
@@ -52,7 +50,7 @@ func main() {
 	for msg := range sub.Channel() {
 		l.Debugw("new message received", "msg", msg.Channel)
 
-		if strings.Contains(msg.Channel, "shadow") {
+		if strings.HasPrefix(msg.Channel, prefix) {
 			key := strings.TrimPrefix(msg.Channel, prefix)
 			ticket, err := s.Get(key)
 			if err != nil {
@@ -63,10 +61,12 @@ func main() {
 			ticket.Status = fmt.Sprintf("stuck_%s", ticket.Status)
 			if err := s.SetWithExpiry(key, ticket, 0); err != nil {
 				l.Errorw("unable to set ticket value to stuck", "error", err)
+				continue
 			}
 
 			if err := s.Delete(msg.Channel); err != nil {
 				l.Errorw("unable to delete shadow ticket value", "error", err)
+				continue
 			}
 		}
 	}

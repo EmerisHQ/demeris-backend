@@ -42,7 +42,7 @@
 		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
         "join_config": {
             "genesis": {
-                "url": "https://github.com/crypto-org-chain/mainnet/blob/main/crypto-org-chain-mainnet-1/genesis.json"
+                "url": "https://raw.githubusercontent.com/crypto-org-chain/mainnet/main/crypto-org-chain-mainnet-1/genesis.json"
             },
             "seeds": [
                 {"id": "87c3adb7d8f649c51eebe0d3335d8f9e28c362f2", "address": "seed-0.crypto.org", "port": 26656},

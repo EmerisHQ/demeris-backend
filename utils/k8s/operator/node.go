@@ -37,15 +37,16 @@ var (
 )
 
 type NodeConfiguration struct {
-	Name               string                  // we don't export this since the REST server will fill this for us
-	CLIName            string                  `json:"cli_name"`
-	JoinConfig         *v1.JoinConfig          `json:"join_config"`
-	TestnetConfig      *v1.ValidatorInitConfig `json:"testnet_config"`
-	DockerImage        string                  `json:"docker_image"`
-	DockerImageVersion string                  `json:"docker_image_version"`
-	Namespace          string                  `json:"-"`
-	TracelistenerImage string                  `json:"tracelistener_image"`
-	TracelistenerDebug bool
+	Name                string                  // we don't export this since the REST server will fill this for us
+	CLIName             string                  `json:"cli_name"`
+	JoinConfig          *v1.JoinConfig          `json:"join_config"`
+	TestnetConfig       *v1.ValidatorInitConfig `json:"testnet_config"`
+	DockerImage         string                  `json:"docker_image"`
+	DockerImageVersion  string                  `json:"docker_image_version"`
+	Namespace           string                  `json:"-"`
+	TracelistenerImage  string                  `json:"tracelistener_image"`
+	DisableMinFeeConfig bool                    `json:"disable_min_fee_config"`
+	TracelistenerDebug  bool
 }
 
 func (n NodeConfiguration) Validate() error {
