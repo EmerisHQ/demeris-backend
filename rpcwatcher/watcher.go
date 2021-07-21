@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/tendermint/tendermint/types"
+
 	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/rpcwatcher/database"
@@ -15,10 +17,10 @@ import (
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
-	"github.com/tendermint/tendermint/types"
 )
 
 const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
+const nonZeroCodeErrFmt = "non-zero code on chain %s: %s"
 
 type Watcher struct {
 	Name             string
@@ -206,35 +208,44 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	w.l.Debugw("is simple ibc transfer"+
 		"", "is it", exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
+
+	eventTx := data.Data.(types.EventDataTx)
+	if eventTx.Result.Code != 0 {
+		logStr := fmt.Sprintf(nonZeroCodeErrFmt, w.Name, eventTx.Result.Log)
+
+		w.l.Debugw("transaction error", "chainName", w.Name, "txHash", txHash, "log", eventTx.Result.Log)
+
+		if err := w.store.SetFailedWithErr(key, logStr); err != nil {
+			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
+				"txHash", txHash, "code", eventTx.Result.Code)
+		}
+
+		return
+	}
+
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
 		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
-		eventTx := data.Data.(types.EventDataTx)
-
-		if eventTx.Result.Code == 0 {
-			if err := w.store.SetComplete(key); err != nil {
-				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
-			}
-			return
-		}
-
-		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
-			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
-				"txHash", txHash, "code", eventTx.Result.Code)
+		if err := w.store.SetComplete(key); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 		return
 	}
 
-	w.l.Debugw("is create lp", "is it", createPoolEventPresent)
-
 	// Handle case where an LP is being created on the Cosmos Hub
-
 	if createPoolEventPresent && w.Name == "cosmos-hub" {
+		w.l.Debugw("is create lp", "is it", createPoolEventPresent)
 
 		chain, err := w.d.Chain(w.Name)
 
 		if err != nil {
 			w.l.Errorw("can't find chain cosmos-hub", "error", err)
+
+			if err := w.store.SetFailedWithErr(key, "cosmos-hub node not found"); err != nil {
+				w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
+					"txHash", txHash)
+			}
+
 			return
 		}
 
@@ -242,6 +253,12 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if !ok {
 			w.l.Errorw("no field create_pool.pool_coin_denom in Events", "error", err)
+
+			if err := w.store.SetFailedWithErr(key, "malformed pool creation event"); err != nil {
+				w.l.Errorw("cannot set failed with err on malformed pool creation event", "chain name", w.Name, "error", err,
+					"txHash", txHash)
+			}
+
 			return
 		}
 
@@ -249,6 +266,12 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if err != nil {
 			w.l.Errorw("failed to format denom", "error", err)
+
+			if err := w.store.SetFailedWithErr(key, "malformed pool creation event"); err != nil {
+				w.l.Errorw("cannot format denom", "chain name", w.Name, "error", err,
+					"txHash", txHash)
+			}
+
 			return
 		}
 
@@ -269,10 +292,18 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if err != nil {
 			w.l.Errorw("failed to update chain", "error", err)
+
+			if err := w.store.SetFailedWithErr(key, "fatal chain update error"); err != nil {
+				w.l.Errorw("failed to update chain after verifying pool denom", "chain name", w.Name, "error", err,
+					"txHash", txHash)
+			}
+		}
+
+		if err := w.store.SetComplete(key); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 
 		return
-
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
