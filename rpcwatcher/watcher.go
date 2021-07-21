@@ -234,18 +234,18 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	// Handle case where an LP is being created on the Cosmos Hub
 	if createPoolEventPresent && w.Name == "cosmos-hub" {
+		defer func() {
+			if err := w.store.SetComplete(key); err != nil {
+				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+			}
+		}()
+
 		w.l.Debugw("is create lp", "is it", createPoolEventPresent)
 
 		chain, err := w.d.Chain(w.Name)
 
 		if err != nil {
 			w.l.Errorw("can't find chain cosmos-hub", "error", err)
-
-			if err := w.store.SetFailedWithErr(key, "cosmos-hub node not found"); err != nil {
-				w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
-					"txHash", txHash)
-			}
-
 			return
 		}
 
@@ -253,12 +253,6 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if !ok {
 			w.l.Errorw("no field create_pool.pool_coin_denom in Events", "error", err)
-
-			if err := w.store.SetFailedWithErr(key, "malformed pool creation event"); err != nil {
-				w.l.Errorw("cannot set failed with err on malformed pool creation event", "chain name", w.Name, "error", err,
-					"txHash", txHash)
-			}
-
 			return
 		}
 
@@ -266,12 +260,6 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if err != nil {
 			w.l.Errorw("failed to format denom", "error", err)
-
-			if err := w.store.SetFailedWithErr(key, "malformed pool creation event"); err != nil {
-				w.l.Errorw("cannot format denom", "chain name", w.Name, "error", err,
-					"txHash", txHash)
-			}
-
 			return
 		}
 
@@ -292,15 +280,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if err != nil {
 			w.l.Errorw("failed to update chain", "error", err)
-
-			if err := w.store.SetFailedWithErr(key, "fatal chain update error"); err != nil {
-				w.l.Errorw("failed to update chain after verifying pool denom", "chain name", w.Name, "error", err,
-					"txHash", txHash)
-			}
-		}
-
-		if err := w.store.SetComplete(key); err != nil {
-			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+			return
 		}
 
 		return
