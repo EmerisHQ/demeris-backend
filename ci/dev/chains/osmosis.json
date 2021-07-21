@@ -1,0 +1,66 @@
+{
+	"chain_name": "osmosis",
+	"derivation_path": "m/44'/118'/0'/0/0",
+	"logo": "https://storage.googleapis.com/emeris/logos/osmosis.svg",
+	"enabled": true,
+	"valid_block_thresh": "10s",
+	"minimum_thresh_relayer_balance": 42,
+	"display_name": "Osmosis Emeris",
+	"counterparty_names": {
+		"cn1": "cn1",
+		"cn2": "cn2"
+	},
+	"primary_channel": {
+		"cn1": "cn1",
+		"cn2": "cn2"
+	},
+	"demeris_addresses": ["feeaddress"],
+	"denoms": [
+		{
+			"display_name": "OSMO",
+			"stakable": true,
+			"ticker": "OSMO",
+			"fee_token": true,
+			"fetch_price": true,
+			"relayer_denom": true,
+			"minimum_thresh_relayer_balance": 42,
+			"gas_price_levels": { "low": 0.03, "average": 0.075, "high": 0.12},
+			"name": "uosmo",
+			"verified": true,
+			"precision": 6,
+			"logo": "https://storage.googleapis.com/emeris/logos/osmosis.svg"
+		}
+	],
+	"base_ibc_fee": 1,
+	"genesis_hash": "genesis_hash",
+	"node_info": {
+		"endpoint": "osmosis",
+		"chain_id": "osmosis-testnet",
+		"bech32_config": {
+			"main_prefix": "osmo",
+			"prefix_account": "osmo",
+			"prefix_validator": "val",
+			"prefix_consensus": "cons",
+			"prefix_public": "pub",
+			"prefix_operator": "oper"
+		}
+	},
+	"node_config": {
+		"name": "osmosis",
+		"cli_name": "osmosisd",
+		"namespace": "emeris",
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+		"testnet_config": {
+			"chainID": "osmosis-testnet",
+			"stake_amount": "10000000000uosmo",
+			"bondDenom": "uosmo",
+			"assets": ["10000000000000000000000uosmo"],
+			"faucet": {
+				"funds": "10000000000000000000000uosmo",
+				"denoms": ["uosmo"]
+			}
+		},
+		"docker_image": "gcr.io/tendermint-dev/osmosis",
+		"docker_image_version": "v1.0.2"
+	}
+}
