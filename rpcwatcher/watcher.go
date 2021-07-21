@@ -208,9 +208,9 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		"", "is it", exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
-		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
+		!IBCAckEventPresent && !IBCTimeoutEventPresent {
 		eventTx := data.Data.(types.EventDataTx)
-
+		w.l.Debugw("the value of data is ","data", data)
 		if eventTx.Result.Code == 0 {
 			if err := w.store.SetComplete(key); err != nil {
 				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)

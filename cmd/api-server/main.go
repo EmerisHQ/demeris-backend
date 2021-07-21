@@ -10,7 +10,7 @@ import (
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
-	gaia "github.com/cosmos/gaia/v4/app"
+	gaia "github.com/cosmos/gaia/v5/app"
 )
 
 var Version = "not specified"
