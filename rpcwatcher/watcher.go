@@ -477,12 +477,12 @@ func (w *Watcher) startChain(ctx context.Context) {
 }
 
 func (w *Watcher) handleBlock(data types.TMEventData) {
-	time.Sleep(750 * time.Millisecond) // to handle the time gap between block production and event broadcast
 	realData, ok := data.(types.EventDataNewBlock)
 	if !ok {
 		panic("rpc returned data which is not of expected type")
 	}
 
+	time.Sleep(750 * time.Millisecond) // to handle the time gap between block production and event broadcast
 	newHeight := realData.Block.Header.Height
 
 	u := fmt.Sprintf("http://%s:%d", w.Name, defaultRPCPort)
