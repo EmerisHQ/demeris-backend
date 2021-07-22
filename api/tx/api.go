@@ -213,7 +213,7 @@ func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 		return "", fmt.Errorf("unable to fetch signer information, signers %v", signers)
 	}
 
-	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash)
+	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash, signers[0].String())
 
 	if err != nil {
 		return grpcRes.TxResponse.TxHash, err

@@ -10,7 +10,7 @@ import (
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
-	gaia "github.com/cosmos/gaia/v5/app"
+	gaia "github.com/cosmos/gaia/v4/app"
 )
 
 var Version = "not specified"
@@ -45,7 +45,7 @@ func main() {
 	}
 
 	s, err := store.NewClient(cfg.RedisAddr)
-	if err != nil{
+	if err != nil {
 		l.Panicw("unable to start redis client", "error", err)
 	}
 

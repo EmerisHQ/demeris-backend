@@ -74,7 +74,7 @@ func (s *Store) CreateTicket(chain, txHash, owner string) error {
 		return err
 	}
 
-	return s.Client.SAdd()
+	return s.Client.SAdd(context.Background(), owner, key).Err()
 }
 
 func (s *Store) SetComplete(key string, height int64) error {
@@ -136,10 +136,6 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 	}
 
 	if err := s.CreateShadowKey(key); err != nil {
-		return err
-	}
-
-	if s.Set(key, string(b)) != nil {
 		return err
 	}
 
