@@ -500,6 +500,10 @@ func (w *Watcher) handleBlock(data types.TMEventData) {
 	res := bytes.Buffer{}
 
 	resp, err := http.Get(ru.String())
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	if err != nil {
 		w.l.Errorw("cannot query node for block data", "error", err)
 		return
@@ -517,8 +521,6 @@ func (w *Watcher) handleBlock(data types.TMEventData) {
 		w.l.Errorw("cannot set block to cache", "error", err, "height", newHeight)
 		return
 	}
-
-	_ = resp.Body.Close()
 
 	return
 }
