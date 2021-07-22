@@ -19,6 +19,13 @@ INSERT INTO oracle.coinmarketcap VALUES ('LUNAUSDT','10','1351700038');
 INSERT INTO oracle.coinmarketcap VALUES ('ETHUSDT','10','1351700038');
 SELECT * FROM oracle.coinmarketcap;
 
+CREATE TABLE oracle.coinmarketcapsupply (symbol STRING PRIMARY KEY,supply FLOAT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.coinmarketcapsupply TO testuser;
+INSERT INTO oracle.coinmarketcapsupply VALUES ('ATOMUSDT','10','113563929433.0');
+INSERT INTO oracle.coinmarketcapsupply VALUES ('LUNAUSDT','10','113563929433.0');
+INSERT INTO oracle.coinmarketcapsupply VALUES ('ETHUSDT','10','113563929433.0');
+SELECT * FROM oracle.coinmarketcapsupply;
+
 CREATE TABLE oracle.fixer (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
 GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.fixer TO testuser;
 INSERT INTO oracle.fixer VALUES ('USDEUR','10','1351700038');

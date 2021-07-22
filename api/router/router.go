@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/api/block"
+
 	"github.com/allinbits/demeris-backend/utils/logging"
 
 	"github.com/allinbits/demeris-backend/api/relayer"
@@ -172,4 +174,8 @@ func registerRoutes(engine *gin.Engine) {
 	// @tag.name Relayer
 	// @tag.description Relayer-related endpoints
 	relayer.Register(engine)
+
+	// @tag.name Block
+	// @tag.description Blocks-related endpoints
+	block.Register(engine)
 }

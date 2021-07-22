@@ -1,0 +1,66 @@
+{
+	"chain_name": "persistence",
+	"derivation_path": "m/44'/750'/0'/0/0",
+	"logo": "https://storage.googleapis.com/emeris/logos/persistence.svg",
+	"enabled": true,
+	"valid_block_thresh": "10s",
+	"minimum_thresh_relayer_balance": 42,
+	"display_name": "Persistence Emeris",
+	"counterparty_names": {
+		"cn1": "cn1",
+		"cn2": "cn2"
+	},
+	"primary_channel": {
+		"cn1": "cn1",
+		"cn2": "cn2"
+	},
+	"demeris_addresses": ["feeaddress"],
+	"denoms": [
+		{
+			"display_name": "XPRT",
+			"stakable": true,
+			"ticker": "XPRT",
+			"fee_token": true,
+			"fetch_price": true,
+			"relayer_denom": true,
+			"minimum_thresh_relayer_balance": 42,
+			"gas_price_levels": { "low": 0.015, "average": 0.0375, "high": 0.06 },
+			"name": "uxprt",
+			"verified": true,
+			"precision": 6,
+			"logo": "https://storage.googleapis.com/emeris/logos/persistence.svg"
+		}
+	],
+	"base_ibc_fee": 1,
+	"genesis_hash": "genesis_hash",
+	"node_info": {
+		"endpoint": "persistence",
+		"chain_id": "persistence-testnet",
+		"bech32_config": {
+			"main_prefix": "persistence",
+			"prefix_account": "persistence",
+			"prefix_validator": "val",
+			"prefix_consensus": "cons",
+			"prefix_public": "pub",
+			"prefix_operator": "oper"
+		}
+	},
+	"node_config": {
+		"name": "persistence",
+		"cli_name": "gaiad",
+		"namespace": "persistenceCore",
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+		"testnet_config": {
+			"chainID": "persistence-testnet",
+			"stake_amount": "10000000000uxprt",
+			"bondDenom": "uxprt",
+			"assets": ["10000000000000000000000uxprt"],
+			"faucet": {
+				"funds": "10000000000000000000000uxprt",
+				"denoms": ["uxprt"]
+			}
+		},
+		"docker_image": "gcr.io/tendermint-dev/persistence",
+		"docker_image_version": "v0.1.3"
+	}
+}

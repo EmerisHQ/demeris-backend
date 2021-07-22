@@ -26,7 +26,6 @@ var p Processor
 var defaultProcessors = []string{
 	"bank",
 	"delegations",
-	"auth",
 	"ibc_clients",
 	"ibc_channels",
 	"ibc_connections",
@@ -169,7 +168,11 @@ func (p *Processor) Flush() error {
 		}
 	}
 
-	p.writebackChan <- wb
+	p.l.Debugw("flush call", "content", wb)
+
+	go func() {
+		p.writebackChan <- wb
+	}()
 
 	return nil
 }

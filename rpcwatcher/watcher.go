@@ -1,9 +1,13 @@
 package rpcwatcher
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -19,6 +23,13 @@ import (
 )
 
 const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
+const nonZeroCodeErrFmt = "non-zero code on chain %s: %s"
+
+const (
+	EventsTx       = "tm.event='Tx'"
+	EventsBlock    = "tm.event='NewBlock'"
+	defaultRPCPort = 26657
+)
 
 type Watcher struct {
 	Name             string
@@ -198,7 +209,8 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	txHash := txHashSlice[0]
-
+	eventTx := data.Data.(types.EventDataTx)
+	height := eventTx.Height
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
@@ -206,30 +218,38 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 	w.l.Debugw("is simple ibc transfer"+
 		"", "is it", exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
-	// Handle case where a simple non-IBC transfer is being used.
-	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
-		!IBCAckEventPresent && !IBCTimeoutEventPresent {
-		eventTx := data.Data.(types.EventDataTx)
-		w.l.Debugw("the value of data is ","data", data)
-		if eventTx.Result.Code == 0 {
-			if err := w.store.SetComplete(key); err != nil {
-				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
-			}
-			return
-		}
 
-		if err := w.store.SetFailedWithErr(key, eventTx.Result.Log); err != nil {
+	if eventTx.Result.Code != 0 {
+		logStr := fmt.Sprintf(nonZeroCodeErrFmt, w.Name, eventTx.Result.Log)
+
+		w.l.Debugw("transaction error", "chainName", w.Name, "txHash", txHash, "log", eventTx.Result.Log)
+
+		if err := w.store.SetFailedWithErr(key, logStr, height); err != nil {
 			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
 				"txHash", txHash, "code", eventTx.Result.Code)
+		}
+
+		return
+	}
+
+	// Handle case where a simple non-IBC transfer is being used.
+	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
+		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
+		if err := w.store.SetComplete(key, height); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
 		return
 	}
 
-	w.l.Debugw("is create lp", "is it", createPoolEventPresent)
-
 	// Handle case where an LP is being created on the Cosmos Hub
-
 	if createPoolEventPresent && w.Name == "cosmos-hub" {
+		defer func() {
+			if err := w.store.SetComplete(key, height); err != nil {
+				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+			}
+		}()
+
+		w.l.Debugw("is create lp", "is it", createPoolEventPresent)
 
 		chain, err := w.d.Chain(w.Name)
 
@@ -269,10 +289,10 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		if err != nil {
 			w.l.Errorw("failed to update chain", "error", err)
+			return
 		}
 
 		return
-
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
@@ -306,11 +326,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		c, err := w.d.GetCounterParty(w.Name, sendPacketSourceChannel[0])
 		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
 			return
 		}
 
-		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0]); err != nil {
+		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0], height); err != nil {
 			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
 		}
 		return
@@ -359,13 +379,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		if ack.Result != ackSuccess {
-			if err := w.store.SetIbcFailed(key); err != nil {
+			if err := w.store.SetIbcFailed(key, height); err != nil {
 				w.l.Errorw("unable to set status as failed for key", "key", key, "error", err)
 			}
 			return
 		}
 
-		if err := w.store.SetIbcReceived(key); err != nil {
+		if err := w.store.SetIbcReceived(key, height); err != nil {
 			w.l.Errorw("unable to set status as ibc received for key", "key", key, "error", err)
 		}
 		return
@@ -393,7 +413,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
-		if err := w.store.SetIbcTimeoutUnlock(key); err != nil {
+		if err := w.store.SetIbcTimeoutUnlock(key, height); err != nil {
 			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
 		}
 		return
@@ -416,14 +436,14 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		c, err := w.d.GetCounterParty(w.Name, ackPacketSourceChannel[0])
 		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", err)
+			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
 			return
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
 		_, ok = data.Events["fungible_token_packet.error"]
 		if ok {
-			if err := w.store.SetIbcAckUnlock(key); err != nil {
+			if err := w.store.SetIbcAckUnlock(key, height); err != nil {
 				w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
 			}
 			return
@@ -444,9 +464,63 @@ func (w *Watcher) startChain(ctx context.Context) {
 		default:
 			select {
 			case data := <-w.DataChannel:
-				w.handleMessage(data)
+				switch data.Query {
+				case EventsTx:
+					w.handleMessage(data)
+				case EventsBlock:
+					w.handleBlock(data.Data)
+				}
 			}
 		}
 
 	}
+}
+
+func (w *Watcher) handleBlock(data types.TMEventData) {
+	realData, ok := data.(types.EventDataNewBlock)
+	if !ok {
+		panic("rpc returned data which is not of expected type")
+	}
+
+	newHeight := realData.Block.Header.Height
+
+	u := fmt.Sprintf("http://%s:%d", w.Name, defaultRPCPort)
+
+	ru, err := url.Parse(u)
+	if err != nil {
+		panic(err)
+	}
+
+	vals := url.Values{}
+	vals.Set("height", strconv.FormatInt(newHeight, 10))
+
+	ru.Path = "block"
+	ru.RawQuery = vals.Encode()
+
+	res := bytes.Buffer{}
+
+	resp, err := http.Get(ru.String())
+	if err != nil {
+		w.l.Errorw("cannot query node for block data", "error", err)
+		return
+	}
+
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	_, err = res.ReadFrom(resp.Body)
+	if err != nil {
+		w.l.Errorw("cannot read block data resp body into buffer", "error", err)
+		return
+	}
+
+	bs := store.NewBlocks(w.store)
+	err = bs.Add(res.Bytes(), newHeight)
+	if err != nil {
+		w.l.Errorw("cannot set block to cache", "error", err, "height", newHeight)
+		return
+	}
+
+	return
 }

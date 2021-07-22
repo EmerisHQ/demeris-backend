@@ -22,6 +22,7 @@ require (
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-playground/validator/v10 v10.5.0
 	github.com/go-redis/redis/v8 v8.8.3
+	github.com/gogo/protobuf v1.3.3
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
@@ -33,16 +34,16 @@ require (
 	github.com/lib/pq v1.10.1
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/nxadm/tail v1.4.8
 	github.com/r3labs/diff v1.1.0
-	github.com/sethvargo/go-password v0.2.0 // indirect
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.1-0.20210427113832-6241f9ab9942
 	github.com/swaggo/swag v1.7.0
-	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954 // indirect
+	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954
 	github.com/tendermint/liquidity v1.2.4
 	github.com/tendermint/tendermint v0.34.10
-	github.com/tendermint/tm-db v0.6.4 // indirect
+	github.com/tendermint/tm-db v0.6.4
 	github.com/zsais/go-gin-prometheus v0.1.0
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc // indirect

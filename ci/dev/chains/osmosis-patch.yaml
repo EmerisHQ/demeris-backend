@@ -1,0 +1,6 @@
+spec:
+  expose:
+    domain: osmosis-emeris.app.alpha.starport.cloud
+    grpc: true
+    rpc: true
+    api: true
