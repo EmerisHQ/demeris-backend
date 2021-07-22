@@ -449,6 +449,11 @@ func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
 				}
 
 				i.l.Debugw("updating chain", "chain to be update", chainsMap[chainID].ChainName, "counterparty", counterparty.ChainName, "value", value.ChannelID)
+				if _, ok := chain.PrimaryChannel[counterparty.ChainName]; ok {
+					// don't overwrite a primary channel that was set before
+					continue
+				}
+
 				chain.PrimaryChannel[counterparty.ChainName] = value.ChannelID
 			}
 		}
