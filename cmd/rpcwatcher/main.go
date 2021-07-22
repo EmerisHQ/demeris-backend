@@ -43,7 +43,7 @@ func main() {
 	}
 
 	s, err := store.NewClient(c.RedisURL)
-	if err != nil{
+	if err != nil {
 		l.Panicw("unable to start redis client", "error", err)
 	}
 	var chains []models.Chain
@@ -59,7 +59,13 @@ func main() {
 	chainsMap := mapChains(chains)
 
 	for cn := range chainsMap {
-		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, c.ApiURL, db, s, []string{"tm.event='Tx'"})
+		subEvents := []string{rpcwatcher.EventsTx}
+
+		if cn == "cosmos-hub" { // special case, needs to observe new blocks too
+			subEvents = append(subEvents, rpcwatcher.EventsBlock)
+		}
+
+		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, c.ApiURL, db, s, subEvents)
 
 		if err != nil {
 			l.Errorw("cannot create chain", "error", err)
