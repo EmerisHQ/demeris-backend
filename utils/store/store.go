@@ -60,7 +60,7 @@ func NewClient(connUrl string) (*Store, error) {
 
 }
 
-func (s *Store) CreateTicket(chain, txHash string) error {
+func (s *Store) CreateTicket(chain, txHash, owner string) error {
 	data := Ticket{
 		Status: pending,
 	}
@@ -70,7 +70,11 @@ func (s *Store) CreateTicket(chain, txHash string) error {
 		return err
 	}
 
-	return s.SetWithExpiry(key, data, 0)
+	if err := s.SetWithExpiry(key, data, 0); err != nil {
+		return err
+	}
+
+	return s.Client.SAdd()
 }
 
 func (s *Store) SetComplete(key string, height int64) error {
