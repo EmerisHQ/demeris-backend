@@ -11,31 +11,50 @@ import (
 
 const getAllPriceRoute = "/prices"
 
-func allPrices(r *router) ([]types.ResponsePrices, error) {
-	var symbols []types.ResponsePrices
-	var symbolToken types.ResponsePrices
-	var symbolFiat types.ResponsePrices
+func allPrices(r *router) ([]types.TokenPriceResponse, []types.FiatPriceResponse, error) {
+	var Fiats []types.FiatPriceResponse
+	var Fiat types.FiatPriceResponse
+	var Tokens []types.TokenPriceResponse
+	var Token types.TokenPriceResponse
 
 	rowsToken, err := r.s.d.Query("SELECT * FROM oracle.tokens")
 	if err != nil {
 		r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
-		return nil, err
+		return nil, nil, err
 	}
+	defer rowsToken.Close()
 	Whitelists, err := r.s.d.CnstokenQueryHandler()
 	if err != nil {
 		r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
-		return nil, err
+		return nil, nil, err
 	}
 	for rowsToken.Next() {
-		err := rowsToken.StructScan(&symbolToken)
+		var symbol string
+		var price float64
+		var supply float64
+		err := rowsToken.Scan(&symbol, &price)
 		if err != nil {
 			r.s.l.Fatalw("Error", "DB", err.Error(), "Duration", time.Second)
-			return nil, err
+			return nil, nil, err
 		}
-		for _, token := range Whitelists {
-			token = token + types.TokenBasecurrency
-			if symbolToken.Symbol == token {
-				symbols = append(symbols, symbolToken)
+		for _, Whitelisttoken := range Whitelists {
+			Whitelisttoken = Whitelisttoken + types.TokenBasecurrency
+			if symbol == Whitelisttoken {
+				rowCmcSupply, err := r.s.d.Query("SELECT * FROM oracle.coinmarketcapsupply WHERE symbol=$1", Whitelisttoken)
+				if err != nil {
+					r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
+					return nil, nil, err
+				}
+				defer rowCmcSupply.Close()
+				for rowCmcSupply.Next() {
+					if err := rowCmcSupply.Scan(&symbol, &supply); err != nil {
+						r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
+					}
+				}
+				Token.Symbol = symbol
+				Token.Price = price
+				Token.Supply = supply
+				Tokens = append(Tokens, Token)
 			}
 		}
 	}
@@ -43,34 +62,43 @@ func allPrices(r *router) ([]types.ResponsePrices, error) {
 	rowsFiat, err := r.s.d.Query("SELECT * FROM oracle.fiats")
 	if err != nil {
 		r.s.l.Fatalw("Error", "DB", err.Error(), "Duration", time.Second)
-		return nil, err
+		return nil, nil, err
 	}
+	defer rowsFiat.Close()
 	for rowsFiat.Next() {
-		err := rowsFiat.StructScan(&symbolFiat)
+		var symbol string
+		var price float64
+		err := rowsFiat.Scan(&symbol, &price)
 		if err != nil {
 			r.s.l.Errorw("Error", "DB", err.Error(), "Duration", time.Second)
-			return nil, err
+			return nil, nil, err
 		}
 		for _, fiat := range r.s.c.Whitelistfiats {
 			fiat = types.FiatBasecurrency + fiat
-			if symbolFiat.Symbol == fiat {
-				symbols = append(symbols, symbolFiat)
+
+			Fiat.Symbol = symbol
+			Fiat.Price = price
+			if symbol == fiat {
+				Fiats = append(Fiats, Fiat)
 			}
 		}
 	}
-	return symbols, nil
+
+	return Tokens, Fiats, nil
 }
 
 func (r *router) allPricesHandler(ctx *gin.Context) {
-	Allsymbols, err := allPrices(r)
+	var AllPriceResponse types.AllPriceResponse
+	Tokens, Fiats, err := allPrices(r)
+	AllPriceResponse.Tokens = Tokens
+	AllPriceResponse.Fiats = Fiats
 	if err != nil {
 		e(ctx, http.StatusInternalServerError, err)
 		return
 	}
-
 	ctx.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
-		"data":    &Allsymbols,
+		"data":    &AllPriceResponse,
 		"message": nil,
 	})
 }

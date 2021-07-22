@@ -12,9 +12,9 @@ import (
 
 const getselectFiatsPricesRoute = "/fiats"
 
-func selectFiatsPrices(r *router, selectFiat types.SelectFiat) ([]types.ResponsePrices, error) {
-	var symbols []types.ResponsePrices
-	var symbol types.ResponsePrices
+func selectFiatsPrices(r *router, selectFiat types.SelectFiat) ([]types.FiatPriceResponse, error) {
+	var symbols []types.FiatPriceResponse
+	var symbol types.FiatPriceResponse
 	var symbolList []interface{}
 
 	symbolNum := len(selectFiat.Fiats)
@@ -33,6 +33,7 @@ func selectFiatsPrices(r *router, selectFiat types.SelectFiat) ([]types.Response
 	if err != nil {
 		r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.StructScan(&symbol)
 		if err != nil {
@@ -47,7 +48,7 @@ func selectFiatsPrices(r *router, selectFiat types.SelectFiat) ([]types.Response
 
 func (r *router) FiatsPrices(ctx *gin.Context) {
 	var selectFiat types.SelectFiat
-	var symbols []types.ResponsePrices
+	var symbols []types.FiatPriceResponse
 
 	err := ctx.BindJSON(&selectFiat)
 	if err != nil {
