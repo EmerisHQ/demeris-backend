@@ -10,7 +10,17 @@ const (
 	FiatBasecurrency  = "USD"
 )
 
-type ResponsePrices struct {
+type AllPriceResponse struct {
+	Tokens []TokenPriceResponse
+	Fiats  []FiatPriceResponse
+}
+
+type TokenPriceResponse struct {
+	Symbol string  `db:"symbol"`
+	Price  float64 `db:"price"`
+	Supply float64 `db:"supply"`
+}
+type FiatPriceResponse struct {
 	Symbol string  `db:"symbol"`
 	Price  float64 `db:"price"`
 }

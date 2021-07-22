@@ -12,9 +12,9 @@ import (
 
 const getselectTokensPricesRoute = "/tokens"
 
-func selectTokensPrices(r *router, selectToken types.SelectToken) ([]types.ResponsePrices, error) {
-	var symbols []types.ResponsePrices
-	var symbol types.ResponsePrices
+func selectTokensPrices(r *router, selectToken types.SelectToken) ([]types.TokenPriceResponse, error) {
+	var Tokens []types.TokenPriceResponse
+	var Token types.TokenPriceResponse
 	var symbolList []interface{}
 
 	symbolNum := len(selectToken.Tokens)
@@ -34,21 +34,40 @@ func selectTokensPrices(r *router, selectToken types.SelectToken) ([]types.Respo
 		r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
-		err := rows.StructScan(&symbol)
+		var symbol string
+		var price float64
+		var supply float64
+		err := rows.Scan(&symbol, &price)
 		if err != nil {
 			r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 			return nil, err
 		}
-		symbols = append(symbols, symbol)
+		rowCmcSupply, err := r.s.d.Query("SELECT * FROM oracle.coinmarketcapsupply WHERE symbol=$1", symbol)
+		if err != nil {
+			r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
+			return nil, err
+		}
+		defer rowCmcSupply.Close()
+		for rowCmcSupply.Next() {
+			if err := rowCmcSupply.Scan(&symbol, &supply); err != nil {
+				r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
+			}
+		}
+		Token.Symbol = symbol
+		Token.Price = price
+		Token.Supply = supply
+
+		Tokens = append(Tokens, Token)
 	}
 
-	return symbols, nil
+	return Tokens, nil
 }
 
 func (r *router) TokensPrices(ctx *gin.Context) {
 	var selectToken types.SelectToken
-	var symbols []types.ResponsePrices
+	var symbols []types.TokenPriceResponse
 
 	err := ctx.BindJSON(&selectToken)
 	if err != nil {

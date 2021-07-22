@@ -12,6 +12,9 @@ CREATE TABLE oracle.binance (symbol STRING PRIMARY KEY, price FLOAT, updatedat I
 const createTableCoinmarketcap = `
 CREATE TABLE oracle.coinmarketcap (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
 `
+const createTableCoinmarketcapSupply = `
+CREATE TABLE oracle.coinmarketcapsupply (symbol STRING PRIMARY KEY, supply FLOAT);
+`
 const createTableFixer = `
 CREATE TABLE oracle.fixer (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
 `
@@ -26,6 +29,7 @@ var migrationList = []string{
 	createDatabase,
 	createTableBinance,
 	createTableCoinmarketcap,
+	createTableCoinmarketcapSupply,
 	createTableFixer,
 	createTableTokens,
 	createTableFiats,

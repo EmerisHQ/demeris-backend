@@ -187,6 +187,7 @@ func PriceQuery(db *sqlx.DB, logger *zap.SugaredLogger, Query string) []types.Pr
 	if err != nil {
 		logger.Fatalw("Fatal", "DB", err.Error(), "Duration", time.Second)
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.StructScan(&symbol)
 		if err != nil {
