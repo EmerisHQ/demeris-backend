@@ -44,6 +44,11 @@ type Binance struct {
 	Price  string `json:"price"`
 }
 
+type BinanceMsg struct {
+	Code int64  `json:"code"`
+	Msg  string `json:"msg"`
+}
+
 type Coinmarketcap struct {
 	Status struct {
 		Timestamp    time.Time   `json:"timestamp"`
