@@ -116,7 +116,14 @@ func main() {
 				delete(chainsMap, name)
 			case diff.CREATE:
 				name := d.Path[0]
-				watcher, err := rpcwatcher.NewWatcher(endpoint(name), name, l, c.ApiURL, db, s, []string{"tm.event='Tx'"})
+
+				subEvents := []string{rpcwatcher.EventsTx}
+
+				if name == "cosmos-hub" { // special case, needs to observe new blocks too
+					subEvents = append(subEvents, rpcwatcher.EventsBlock)
+				}
+
+				watcher, err := rpcwatcher.NewWatcher(endpoint(name), name, l, c.ApiURL, db, s, subEvents)
 
 				if err != nil {
 					var dnsErr *net.DNSError
