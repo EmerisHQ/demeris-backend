@@ -208,8 +208,29 @@ func (s *Store) SetWithExpiry(key string, value interface{}, mul int64) error {
 
 func (s *Store) Get(key string) (Ticket, error) {
 	var res Ticket
+	fmt.Printf("\nTHIS IS  KEY %s", key)
 	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
 		return Ticket{}, err
+	}
+
+	return res, nil
+}
+
+func (s *Store) GetUserTickets(user string) ([]Ticket, error) {
+	var keys []string
+	if err := s.Client.SMembers(context.Background(), user).ScanSlice(&keys); err != nil {
+		return []Ticket{}, err
+	}
+
+	fmt.Printf("thse are keys %v", keys)
+	var res []Ticket
+	for _, v := range keys {
+		fmt.Printf("this is v value %v", v)
+		value, err := s.Get(v)
+		if err != nil {
+			return []Ticket{}, err
+		}
+		res = append(res, value)
 	}
 
 	return res, nil
