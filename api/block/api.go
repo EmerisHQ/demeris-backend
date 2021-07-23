@@ -12,7 +12,7 @@ import (
 )
 
 func Register(router *gin.Engine) {
-	router.GET("/block", GetBlock)
+	router.GET("/block_results", GetBlock)
 }
 
 // GetBlock returns a Tendermint block data at a given height.
