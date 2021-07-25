@@ -503,7 +503,7 @@ func (w *Watcher) handleBlock(data types.TMEventData) {
 
 	w.l.Debugw("asking for block", "height", newHeight)
 
-	ru.Path = "block"
+	ru.Path = "block_results"
 	ru.RawQuery = vals.Encode()
 
 	res := bytes.Buffer{}
