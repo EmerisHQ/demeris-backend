@@ -212,11 +212,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	eventTx := data.Data.(types.EventDataTx)
 	height := eventTx.Height
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
-	err := w.store.CreateTicket(w.Name, txHash)
-	w.l.Debugw("this is key", "key", key)
-	if err != nil {
-		w.l.Debugw("this is error", "error", err)
-	}
+
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
 		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)
 

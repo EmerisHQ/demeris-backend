@@ -232,7 +232,7 @@ func GetTicket(c *gin.Context) {
 	ticketId := c.Param("ticket")
 
 	ticket, err := d.Store.Get(fmt.Sprintf("%s-%s", chainName, ticketId))
-	fmt.Printf("this is ticket %v", ticket)
+
 	if err != nil {
 		e := deps.NewError(
 			"tx",
@@ -257,12 +257,12 @@ func GetTicket(c *gin.Context) {
 	if err != nil {
 		e := deps.NewError(
 			"tx",
-			fmt.Errorf("cannot retrieve ticket with id %v", ticketId),
+			fmt.Errorf("cannot marshal ticket with id %v", ticketId),
 			http.StatusBadRequest,
 		)
 
 		d.WriteError(c, e,
-			"cannot retrieve ticket",
+			"cannot marshal ticket",
 			"id",
 			e.ID,
 			"name",
@@ -273,5 +273,5 @@ func GetTicket(c *gin.Context) {
 
 		return
 	}
-	c.Data(http.StatusOK, "applicatio/json", bz)
+	c.Data(http.StatusOK, "application/json", bz)
 }
