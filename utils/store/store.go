@@ -141,18 +141,18 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, 
 	}
 
 	data := Ticket{
-		Status:   transit,
-		Height:   height,
-		TxHashes: []string{txHash},
+		Status: transit,
+		Height: height,
 	}
 
-	if err := s.SetWithExpiry(key, data, 0); err != nil {
+	if err := s.SetWithExpiry(key, data, 2); err != nil {
 		return err
 	}
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if err := s.SetWithExpiry(newKey, Ticket{Info: key}, 2); err != nil {
+	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
+		TxHashes: []string{txHash}}, 2); err != nil {
 		return err
 	}
 
