@@ -232,7 +232,7 @@ func GetTicket(c *gin.Context) {
 	ticketId := c.Param("ticket")
 
 	ticket, err := d.Store.Get(fmt.Sprintf("%s-%s", chainName, ticketId))
-
+	fmt.Printf("this is ticket %v", ticket)
 	if err != nil {
 		e := deps.NewError(
 			"tx",
@@ -253,5 +253,25 @@ func GetTicket(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, ticket)
+	bz, err := ticket.MarshalBinary()
+	if err != nil {
+		e := deps.NewError(
+			"tx",
+			fmt.Errorf("cannot retrieve ticket with id %v", ticketId),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve ticket",
+			"id",
+			e.ID,
+			"name",
+			ticketId,
+			"error",
+			err,
+		)
+
+		return
+	}
+	c.Data(http.StatusOK, "applicatio/json", bz)
 }
