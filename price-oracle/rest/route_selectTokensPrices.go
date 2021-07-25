@@ -44,7 +44,8 @@ func selectTokensPrices(r *router, selectToken types.SelectToken) ([]types.Token
 			r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 			return nil, err
 		}
-		rowCmcSupply, err := r.s.d.Query("SELECT * FROM oracle.coinmarketcapsupply WHERE symbol=$1", symbol)
+		//rowCmcSupply, err := r.s.d.Query("SELECT * FROM oracle.coinmarketcapsupply WHERE symbol=$1", symbol)
+		rowCmcSupply, err := r.s.d.Query("SELECT * FROM oracle.coingeckosupply WHERE symbol=$1", symbol)
 		if err != nil {
 			r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 			return nil, err
@@ -106,7 +107,7 @@ func (r *router) TokensPrices(ctx *gin.Context) {
 	}
 	var basetokens []string
 	for _, token := range Whitelists {
-		tokens := token + types.TokenBasecurrency
+		tokens := token + types.USDTBasecurrency
 		basetokens = append(basetokens, tokens)
 	}
 	if Diffpair(selectToken.Tokens, basetokens) == false {

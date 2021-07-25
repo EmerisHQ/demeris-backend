@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	TokenBasecurrency = "USDT"
-	FiatBasecurrency  = "USD"
+	USDTBasecurrency = "USDT"
+	USDBasecurrency  = "USD"
 )
 
 type AllPriceResponse struct {
@@ -42,11 +42,6 @@ type SelectFiat struct {
 type Binance struct {
 	Symbol string `json:"symbol"`
 	Price  string `json:"price"`
-}
-
-type BinanceMsg struct {
-	Code int64  `json:"code"`
-	Msg  string `json:"msg"`
 }
 
 type Coinmarketcap struct {

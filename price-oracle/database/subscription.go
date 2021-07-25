@@ -14,6 +14,8 @@ import (
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	gecko "github.com/superoo7/go-gecko/v3"
+	geckoTypes "github.com/superoo7/go-gecko/v3/types"
 	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/price-oracle/config"
@@ -37,7 +39,8 @@ func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *conf
 	var wg sync.WaitGroup
 	for _, subscriber := range []func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error{
 		SubscriptionBinance,
-		SubscriptionCoinmarketcap,
+		//SubscriptionCoinmarketcap,
+		SubscriptionCoingecko,
 		SubscriptionFixer,
 		//...
 	} {
@@ -86,7 +89,7 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 		return fmt.Errorf("SubscriptionBinance CnsTokenQuery: The token does not exist.")
 	}
 	for _, token := range Whitelisttokens {
-		tokensum := token + types.TokenBasecurrency
+		tokensum := token + types.USDTBasecurrency
 
 		req, err := http.NewRequest("GET", BinanceURL, nil)
 		if err != nil {
@@ -108,14 +111,7 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 			return fmt.Errorf("SubscriptionBinance read body: %w", err)
 		}
 		if resp.StatusCode != 200 {
-			bp := types.BinanceMsg{}
-			err = json.Unmarshal(body, &bp)
-			if err != nil {
-				logger.Infow("SubscriptionBinance", resp.Status, "Request fail(apikey, symbol, rate-limited check)")
-				return nil
-			}
-			logger.Infow("SubscriptionBinance", resp.Status, bp.Msg, "Request Symbol", token)
-			return nil
+			return fmt.Errorf("SubscriptionBinance: %s, Status: %s", body, resp.Status)
 		}
 		bp := types.Binance{}
 		err = json.Unmarshal(body, &bp)
@@ -167,7 +163,7 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	}
 	q := url.Values{}
 	q.Add("symbol", strings.Join(Whitelisttokens, ","))
-	q.Add("convert", types.TokenBasecurrency)
+	q.Add("convert", types.USDTBasecurrency)
 	req.Header.Set("Accepts", "application/json")
 	req.Header.Add("X-CMC_PRO_API_KEY", cfg.CoinmarketcapapiKey)
 	req.URL.RawQuery = q.Encode()
@@ -182,15 +178,9 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	if err != nil {
 		return fmt.Errorf("SubscriptionCoinmarketcap read body: %w", err)
 	}
-	bp := types.Coinmarketcap{}
+
 	if resp.StatusCode != 200 {
-		err = json.Unmarshal(body, &bp)
-		if err != nil {
-			logger.Infow("SubscriptionCoinmarketcap", resp.Status, "Request fail(apikey, symbol, rate-limited check)")
-			return nil
-		}
-		logger.Infow("SubscriptionCoinmarketcap", resp.Status, bp.Status.ErrorMessage, "Request Symbol", Whitelisttokens)
-		return nil
+		return fmt.Errorf("SubscriptionCoinmarketcap: %s, Status: %s", body, resp.Status)
 	}
 	var data map[string]struct {
 		Quote struct {
@@ -200,7 +190,7 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 			} `json:"USDT"`
 		} `json:"quote"`
 	}
-
+	bp := types.Coinmarketcap{}
 	err = json.Unmarshal(body, &bp)
 	if err != nil {
 		return fmt.Errorf("SubscriptionCoinmarketcap unmarshal body: %w", err)
@@ -211,7 +201,7 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	}
 
 	for _, token := range Whitelisttokens {
-		tokensum := token + types.TokenBasecurrency
+		tokensum := token + types.USDTBasecurrency
 		d, ok := data[token]
 		if !ok {
 			return fmt.Errorf("SubscriptionCoinmarketcap price for symbol %q not found", tokensum)
@@ -248,7 +238,76 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	}
 	return nil
 }
+func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
+	Whitelisttokens, err := CnsTokenQuery(db)
+	if err != nil {
+		return fmt.Errorf("SubscriptionCoingecko CnsTokenQuery: %w", err)
+	}
+	if len(Whitelisttokens) == 0 {
+		return fmt.Errorf("SubscriptionCoingecko CnsTokenQuery: The token does not exist.")
+	}
 
+	cg := gecko.NewClient(nil)
+	vsCurrency := types.USDBasecurrency
+	tickers := map[string]string{
+		"ATOM":  "cosmos",
+		"AKT":   "akash-network",
+		"CRO":   "crypto-com-chain",
+		"IRIS":  "iris-network",
+		"OSMO":  "osmosis",
+		"XPRT":  "persistence",
+		"REGEN": "regen",
+		"DVPN":  "sentinel",
+	}
+	var ids []string
+	for _, ticker := range Whitelisttokens {
+		ids = append(ids, tickers[ticker])
+	}
+	perPage := 1
+	page := 1
+	sparkline := false
+	pcp := geckoTypes.PriceChangePercentageObject
+	priceChangePercentage := []string{pcp.PCP1h}
+	order := geckoTypes.OrderTypeObject.MarketCapDesc
+	market, err := cg.CoinsMarket(vsCurrency, ids, order, perPage, page, sparkline, priceChangePercentage)
+	if err != nil {
+		return fmt.Errorf("SubscriptionCoingecko Market Query: %w", err)
+	}
+
+	for _, token := range *market {
+		tokensum := strings.ToUpper(token.Symbol) + types.USDTBasecurrency
+
+		tx := db.MustBegin()
+		now := time.Now()
+
+		resultsupply := tx.MustExec("UPDATE oracle.coingeckosupply SET supply = ($1) WHERE symbol = ($2)", token.MarketCap, tokensum)
+
+		updateresultsupply, err := resultsupply.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("SubscriptionCoingecko DB UPDATE: %w", err)
+		}
+		if updateresultsupply == 0 {
+			tx.MustExec("INSERT INTO oracle.coingeckosupply VALUES (($1),($2));", tokensum, token.MarketCap)
+		}
+
+		result := tx.MustExec("UPDATE oracle.coingecko SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", token.CurrentPrice, now.Unix(), tokensum)
+
+		updateresult, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("SubscriptionCoingecko DB UPDATE: %w", err)
+		}
+		if updateresult == 0 {
+			tx.MustExec("INSERT INTO oracle.coingecko VALUES (($1),($2),($3));", tokensum, token.CurrentPrice, now.Unix())
+		}
+
+		err = tx.Commit()
+		if err != nil {
+			return fmt.Errorf("SubscriptionCoingecko DB commit: %w", err)
+		}
+		time.Sleep(1 * time.Second)
+	}
+	return nil
+}
 func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
 	client := &http.Client{
 		Timeout: 2 * time.Second,
@@ -259,7 +318,7 @@ func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogg
 	}
 	q := url.Values{}
 	q.Add("access_key", cfg.Fixerapikey)
-	q.Add("base", types.FiatBasecurrency)
+	q.Add("base", types.USDBasecurrency)
 	q.Add("symbols", strings.Join(cfg.Whitelistfiats, ","))
 
 	req.URL.RawQuery = q.Encode()
@@ -276,8 +335,7 @@ func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogg
 	}
 
 	if resp.StatusCode != 200 {
-		logger.Infow("SubscriptionFixer", resp.Status, "Request fail(apikey, symbol, rate-limited check)")
-		return nil
+		return fmt.Errorf("SubscriptionFixer: %s, Status: %s", body, resp.Status)
 	}
 
 	bp := types.Fixer{}
@@ -296,7 +354,7 @@ func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogg
 	}
 
 	for _, fiat := range cfg.Whitelistfiats {
-		fiatsum := types.FiatBasecurrency + fiat
+		fiatsum := types.USDBasecurrency + fiat
 		d, ok := data[fiat]
 		if !ok {
 			logger.Infow("SubscriptionFixer", "From the provider list of deliveries price for symbol not found", fiatsum)
