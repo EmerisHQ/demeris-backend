@@ -183,10 +183,10 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 		return fmt.Errorf("SubscriptionCoinmarketcap: %s, Status: %s", body, resp.Status)
 	}
 	var data map[string]struct {
-		Quote struct {
+		Circulating_supply float64 `json:"circulating_supply"`
+		Quote              struct {
 			USDT struct {
-				Price      float64 `json:"price"`
-				Market_cap float64 `json:"market_cap"`
+				Price float64 `json:"price"`
 			} `json:"USDT"`
 		} `json:"quote"`
 	}
@@ -210,14 +210,14 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 		tx := db.MustBegin()
 		now := time.Now()
 
-		resultsupply := tx.MustExec("UPDATE oracle.coinmarketcapsupply SET supply = ($1) WHERE symbol = ($2)", d.Quote.USDT.Market_cap, tokensum)
+		resultsupply := tx.MustExec("UPDATE oracle.coinmarketcapsupply SET supply = ($1) WHERE symbol = ($2)", d.Circulating_supply, tokensum)
 
 		updateresultsupply, err := resultsupply.RowsAffected()
 		if err != nil {
 			return fmt.Errorf("SubscriptionCoinmarketcap DB UPDATE: %w", err)
 		}
 		if updateresultsupply == 0 {
-			tx.MustExec("INSERT INTO oracle.coinmarketcapsupply VALUES (($1),($2));", tokensum, d.Quote.USDT.Market_cap)
+			tx.MustExec("INSERT INTO oracle.coinmarketcapsupply VALUES (($1),($2));", tokensum, d.Circulating_supply)
 		}
 
 		result := tx.MustExec("UPDATE oracle.coinmarketcap SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", d.Quote.USDT.Price, now.Unix(), tokensum)
@@ -280,14 +280,14 @@ func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.Sugared
 		tx := db.MustBegin()
 		now := time.Now()
 
-		resultsupply := tx.MustExec("UPDATE oracle.coingeckosupply SET supply = ($1) WHERE symbol = ($2)", token.MarketCap, tokensum)
+		resultsupply := tx.MustExec("UPDATE oracle.coingeckosupply SET supply = ($1) WHERE symbol = ($2)", token.CirculatingSupply, tokensum)
 
 		updateresultsupply, err := resultsupply.RowsAffected()
 		if err != nil {
 			return fmt.Errorf("SubscriptionCoingecko DB UPDATE: %w", err)
 		}
 		if updateresultsupply == 0 {
-			tx.MustExec("INSERT INTO oracle.coingeckosupply VALUES (($1),($2));", tokensum, token.MarketCap)
+			tx.MustExec("INSERT INTO oracle.coingeckosupply VALUES (($1),($2));", tokensum, token.CirculatingSupply)
 		}
 
 		result := tx.MustExec("UPDATE oracle.coingecko SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", token.CurrentPrice, now.Unix(), tokensum)
