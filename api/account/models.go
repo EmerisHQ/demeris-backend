@@ -8,7 +8,7 @@ type balancesResponse struct {
 type balance struct {
 	Address   string  `json:"address,omitempty"`
 	BaseDenom string  `json:"base_denom,omitempty"`
-	Verified  bool    `json:"verified,omitempty"`
+	Verified  bool    `json:"verified"`
 	Amount    string  `json:"amount,omitempty"`
 	OnChain   string  `json:"on_chain,omitempty"`
 	Ibc       ibcInfo `json:"ibc,omitempty"`
