@@ -428,12 +428,31 @@ func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
 		chainsMap[chain.NodeInfo.ChainID] = chain
 	}
 
+	result := i.updatePrimaryChannelForChain(chainsMap, relayer)
+
+	for _, chain := range result {
+		if err := i.db.AddChain(chain); err != nil {
+			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
+		}
+	}
+
+	return nil
+}
+
+func (i *Instance) updatePrimaryChannelForChain(chainsMap map[string]models.Chain, relayer v1.Relayer) map[string]models.Chain {
+
 	paths := relayer.Status.Paths
 	for chainID, chain := range chainsMap {
 		i.l.Debugw("iterating chainsmap", "chainID", chainID)
 
 		for _, path := range paths {
 			i.l.Debugw("iterating path", "path", path)
+
+			if _, found := path[chainID]; !found {
+				i.l.Debugw("skipping path since it's not related to me", "chain", chain.ChainName)
+				continue
+			}
+
 			for counterpartyChainID, value := range path {
 				i.l.Debugw("beginning of path iteration", "counterpartyChainID", counterpartyChainID, "chainID", chainID)
 				if counterpartyChainID == chainID {
@@ -449,18 +468,21 @@ func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
 				}
 
 				i.l.Debugw("updating chain", "chain to be update", chainsMap[chainID].ChainName, "counterparty", counterparty.ChainName, "value", value.ChannelID)
-				chain.PrimaryChannel[counterparty.ChainName] = value.ChannelID
+				if _, ok := chain.PrimaryChannel[counterparty.ChainName]; ok {
+					// don't overwrite a primary channel that was set before
+					continue
+				}
+
+				chain.PrimaryChannel[counterparty.ChainName] = path[chainID].ChannelID
 			}
 		}
 
 		i.l.Debugw("new primary channel struct", "data", chain.PrimaryChannel)
 
-		if err := i.db.AddChain(chain); err != nil {
-			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
-		}
+		chainsMap[chainID] = chain
 	}
 
-	return nil
+	return chainsMap
 }
 
 func (i *Instance) relayerDenom(chainName string) (models.Denom, error) {

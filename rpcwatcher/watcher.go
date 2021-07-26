@@ -481,31 +481,41 @@ func (w *Watcher) startChain(ctx context.Context) {
 }
 
 func (w *Watcher) handleBlock(data types.TMEventData) {
+	w.l.Debugw("called handleBlock")
 	realData, ok := data.(types.EventDataNewBlock)
 	if !ok {
 		panic("rpc returned data which is not of expected type")
 	}
 
+	time.Sleep(750 * time.Millisecond) // to handle the time gap between block production and event broadcast
 	newHeight := realData.Block.Header.Height
 
 	u := fmt.Sprintf("http://%s:%d", w.Name, defaultRPCPort)
 
 	ru, err := url.Parse(u)
 	if err != nil {
-		panic(err)
+		w.l.Errorw("cannot parse url", "url_string", u, "error", err)
+		return
 	}
 
 	vals := url.Values{}
 	vals.Set("height", strconv.FormatInt(newHeight, 10))
 
-	ru.Path = "block"
+	w.l.Debugw("asking for block", "height", newHeight)
+
+	ru.Path = "block_results"
 	ru.RawQuery = vals.Encode()
 
 	res := bytes.Buffer{}
 
 	resp, err := http.Get(ru.String())
 	if err != nil {
-		w.l.Errorw("cannot query node for block data", "error", err)
+		w.l.Errorw("cannot query node for block data", "error", err, "height", newHeight)
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		w.l.Errorw("endpoint returned non-200 code", "code", resp.StatusCode, "height", newHeight)
 		return
 	}
 
@@ -513,10 +523,14 @@ func (w *Watcher) handleBlock(data types.TMEventData) {
 		_ = resp.Body.Close()
 	}()
 
-	_, err = res.ReadFrom(resp.Body)
+	read, err := res.ReadFrom(resp.Body)
 	if err != nil {
-		w.l.Errorw("cannot read block data resp body into buffer", "error", err)
+		w.l.Errorw("cannot read block data resp body into buffer", "height", newHeight, "error", err)
 		return
+	}
+
+	if read == 0 {
+		w.l.Errorw("read zero bytes from response body", "height", newHeight)
 	}
 
 	bs := store.NewBlocks(w.store)

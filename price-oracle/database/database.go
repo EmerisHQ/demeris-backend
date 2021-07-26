@@ -51,6 +51,12 @@ func CnsTokenQuery(db *sqlx.DB) ([]string, error) {
 			if ticker[0:1] == "U" {
 				ticker = ticker[1:]
 			}
+			if ticker == "OSMO" {
+				continue
+			}
+			if ticker == "REGEN" {
+				continue
+			}
 			Whitelists = append(Whitelists, ticker)
 		}
 	}

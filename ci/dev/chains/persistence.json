@@ -47,8 +47,8 @@
 	},
 	"node_config": {
 		"name": "persistence",
-		"cli_name": "gaiad",
-		"namespace": "persistenceCore",
+		"cli_name": "persistenceCore",
+		"namespace": "emeris",
 		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
 		"testnet_config": {
 			"chainID": "persistence-testnet",
