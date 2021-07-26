@@ -29,6 +29,7 @@ type Store struct {
 }
 
 type Ticket struct {
+	Owner  string `json:"owner,omitempty"`
 	Info   string `json:"info,omitempty"`
 	Height int64  `json:"height,omitempty"`
 	Status string `json:"status,omitempty"`
@@ -62,7 +63,7 @@ func NewClient(connUrl string) (*Store, error) {
 
 func (s *Store) CreateTicket(chain, txHash, owner string) error {
 	data := Ticket{
-		Owner: owner,
+		Owner:  owner,
 		Status: pending,
 	}
 
@@ -79,9 +80,17 @@ func (s *Store) CreateTicket(chain, txHash, owner string) error {
 }
 
 func (s *Store) SetComplete(key string, height int64) error {
+	ticket, err := s.Get(key)
+	if err != nil {
+		return err
+	}
 
-	return s.SetWithExpiry(key, Ticket{Status: complete,
-		Height: height}, 2)
+	if err := s.SetWithExpiry(key, Ticket{Status: complete,
+		Height: height}, 2); err != nil {
+		return err
+	}
+
+	return s.SRemove(ticket.Owner, key)
 }
 
 func (s *Store) SetIBCReceiveFailed(key string, height int64) error {
@@ -92,36 +101,44 @@ func (s *Store) SetIBCReceiveFailed(key string, height int64) error {
 	return s.SetWithExpiry(key, Ticket{Status: ibcReceiveFailed, Height: height}, 0)
 }
 
-func (s *Store) SetIBCReceiveSuccess(key string, height int64) error {
+func (s *Store) SetIBCReceiveSuccess(key, owner string, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{
 		Status: "IBC_receive_success",
 		Height: height}, 2); err != nil {
 		return err
 	}
 
-	return s.DeleteShadowKey(key)
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
+	return s.SRemove(owner, key)
 }
 
-func (s *Store) SetUnlockTimeout(key string, height int64) error {
+func (s *Store) SetUnlockTimeout(key, owner string, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout,
 		Height: height}, 2); err != nil {
 		return err
 	}
 
-	if err := s.DeleteShadowKey(key); err != nil{
+	if err := s.DeleteShadowKey(key); err != nil {
 		return err
 	}
 
-	return s.SRemove()
+	return s.SRemove(owner, key)
 }
 
-func (s *Store) SetUnlockAck(key string, height int64) error {
+func (s *Store) SetUnlockAck(key, owner string, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck,
 		Height: height}, 2); err != nil {
 		return err
 	}
 
-	return s.DeleteShadowKey(key)
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
+	return s.SRemove(owner, key)
 }
 
 func (s *Store) SetFailedWithErr(key, error string, height int64) error {
@@ -135,14 +152,12 @@ func (s *Store) SetFailedWithErr(key, error string, height int64) error {
 	}
 
 	data := Ticket{
-		Owner: prev.Owner,
 		Height: height,
 		Status: failed,
 		Error:  error,
 	}
 
-
-	if err := s.SetWithExpiry(key, data, 2); err != nil{
+	if err := s.SetWithExpiry(key, data, 2); err != nil {
 		return err
 	}
 
@@ -159,23 +174,20 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 		return err
 	}
 
-	data := Ticket{
-		Status: transit,
-		Height: height,
+	ticket, err := s.Get(key)
+	if err != nil {
+		return err
 	}
 
-	if err := s.SetWithExpiry(key, data, 2); err != nil {
+	ticket.Status = pending
+	if err := s.SetWithExpiry(key, ticket, 2); err != nil {
 		return err
 	}
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
-		Owner: }, 2); err != nil {
-		return err
-	}
-
-	return nil
+	return s.SetWithExpiry(newKey, Ticket{Info: key,
+		Owner: ticket.Owner}, 2)
 }
 
 func (s *Store) SetIbcTimeoutUnlock(key string, height int64) error {
@@ -197,7 +209,7 @@ func (s *Store) SetIbcAckUnlock(key string, height int64) error {
 		return err
 	}
 
-	return s.SetUnlockAck(prev.Info, height)
+	return s.SetUnlockAck(prev.Info, prev.Owner, height)
 }
 
 func (s *Store) SetIbcReceived(key string, height int64) error {
@@ -208,7 +220,7 @@ func (s *Store) SetIbcReceived(key string, height int64) error {
 		return err
 	}
 
-	return s.SetIBCReceiveSuccess(prev.Info, height)
+	return s.SetIBCReceiveSuccess(prev.Info, prev.Owner, height)
 }
 
 func (s *Store) SetIbcFailed(key string, height int64) error {
