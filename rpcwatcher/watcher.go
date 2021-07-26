@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	gaia "github.com/cosmos/gaia/v4/app"
 	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/rpcwatcher/database"
@@ -20,6 +22,8 @@ import (
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
 	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	"github.com/tendermint/tendermint/types"
+
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 )
 
 const ackSuccess = "AQ==" // Packet ack value is true when ibc is success and contains error message in all other cases
@@ -214,6 +218,26 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 	err := w.store.CreateTicket(w.Name, txHash, "cosmos1qpvyulmaxd2zr2avpq20erdyu6w9gy4m558mww")
 	w.l.Debugw("this is key", "key", key)
+
+	c, _ := gaia.MakeCodecs()
+	cdc := c.(codec.ProtoCodecMarshaler)
+	txConfig := authtx.NewTxConfig(cdc, authtx.DefaultSignModes)
+
+	rawTx, err := txConfig.TxDecoder()(eventTx.Tx)
+	if err != nil {
+		// handle err
+	}
+
+	txBuilder, err := txConfig.WrapTxBuilder(rawTx)
+	if err != nil {
+		// handle
+	}
+
+	msgs := txBuilder.GetTx().GetMsgs()
+	if len(msgs) != 1 {
+		// handle
+	}
+
 	if err != nil {
 		w.l.Debugw("this is error", "error", err)
 	}

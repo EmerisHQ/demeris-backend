@@ -62,6 +62,7 @@ func NewClient(connUrl string) (*Store, error) {
 
 func (s *Store) CreateTicket(chain, txHash, owner string) error {
 	data := Ticket{
+		Owner: owner,
 		Status: pending,
 	}
 
@@ -107,7 +108,11 @@ func (s *Store) SetUnlockTimeout(key string, height int64) error {
 		return err
 	}
 
-	return s.DeleteShadowKey(key)
+	if err := s.DeleteShadowKey(key); err != nil{
+		return err
+	}
+
+	return s.SRemove()
 }
 
 func (s *Store) SetUnlockAck(key string, height int64) error {
@@ -120,13 +125,28 @@ func (s *Store) SetUnlockAck(key string, height int64) error {
 }
 
 func (s *Store) SetFailedWithErr(key, error string, height int64) error {
+	if !s.Exists(key) {
+		return fmt.Errorf("key doesn't exists")
+	}
+
+	prev, err := s.Get(key)
+	if err != nil {
+		return err
+	}
+
 	data := Ticket{
+		Owner: prev.Owner,
 		Height: height,
 		Status: failed,
 		Error:  error,
 	}
 
-	return s.SetWithExpiry(key, data, 2)
+
+	if err := s.SetWithExpiry(key, data, 2); err != nil{
+		return err
+	}
+
+	return s.SRemove(prev.Owner, key)
 }
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string, height int64) error {
@@ -139,9 +159,19 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence s
 		return err
 	}
 
+	data := Ticket{
+		Status: transit,
+		Height: height,
+	}
+
+	if err := s.SetWithExpiry(key, data, 2); err != nil {
+		return err
+	}
+
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if err := s.SetWithExpiry(newKey, Ticket{Info: key}, 2); err != nil {
+	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
+		Owner: }, 2); err != nil {
 		return err
 	}
 
@@ -156,7 +186,7 @@ func (s *Store) SetIbcTimeoutUnlock(key string, height int64) error {
 		return err
 	}
 
-	return s.SetUnlockTimeout(prev.Info, height)
+	return s.SetUnlockTimeout(prev.Info, prev.Owner, height)
 }
 
 func (s *Store) SetIbcAckUnlock(key string, height int64) error {
@@ -216,24 +246,13 @@ func (s *Store) Get(key string) (Ticket, error) {
 	return res, nil
 }
 
-func (s *Store) GetUserTickets(user string) ([]Ticket, error) {
+func (s *Store) GetUserTickets(user string) ([]string, error) {
 	var keys []string
 	if err := s.Client.SMembers(context.Background(), user).ScanSlice(&keys); err != nil {
-		return []Ticket{}, err
+		return []string{}, err
 	}
 
-	fmt.Printf("thse are keys %v", keys)
-	var res []Ticket
-	for _, v := range keys {
-		fmt.Printf("this is v value %v", v)
-		value, err := s.Get(v)
-		if err != nil {
-			return []Ticket{}, err
-		}
-		res = append(res, value)
-	}
-
-	return res, nil
+	return keys, nil
 }
 
 func (s *Store) Delete(key string) error {
@@ -243,4 +262,8 @@ func (s *Store) Delete(key string) error {
 func (s *Store) DeleteShadowKey(key string) error {
 	shadowKey := shadow + key
 	return s.Delete(shadowKey)
+}
+
+func (s *Store) SRemove(user, key string) error {
+	return s.Client.SRem(context.Background(), user, key).Err()
 }
