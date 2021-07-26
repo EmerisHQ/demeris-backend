@@ -18,6 +18,7 @@ package docs
 import (
 	_ "github.com/allinbits/demeris-backend/models"
 	_ "github.com/allinbits/demeris-backend/utils/store"
+	_ "github.com/cosmos/cosmos-sdk/x/bank/types"
 	_ "github.com/swaggo/swag"
 	_ "github.com/tendermint/tendermint/proto/tendermint/version"
 	_ "github.com/tendermint/tendermint/rpc/core/types"

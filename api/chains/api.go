@@ -1,19 +1,23 @@
 package chains
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/allinbits/demeris-backend/utils/k8s"
-
-	"github.com/allinbits/demeris-backend/models"
+	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
-	"github.com/gin-gonic/gin"
+	"github.com/allinbits/demeris-backend/models"
+	"github.com/allinbits/demeris-backend/utils/k8s"
+	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
+
+const grpcPort = 9090
 
 func Register(router *gin.Engine) {
 	router.GET("/chains", GetChains)
@@ -27,6 +31,7 @@ func Register(router *gin.Engine) {
 	chain.GET("/primary_channels", GetPrimaryChannels)
 	chain.GET("/primary_channel/:counterparty", GetPrimaryChannelWithCounterparty)
 	chain.GET("/status", GetChainStatus)
+	chain.GET("/supply", GetChainSupply)
 
 	fee := chain.Group("/fee")
 
@@ -807,4 +812,66 @@ func GetChainStatus(c *gin.Context) {
 	res.Online = running
 
 	c.JSON(http.StatusOK, res)
+}
+
+// GetChainSupply returns the total supply of a given chain.
+// @Summary Gets supply of all denoms of a given chain.
+// @Tags Chain
+// @ID supply
+// @Description Gets supply of a given chain.
+// @Param chainName path string true "chain name"
+// @Produce json
+// @Success 200 {object} types.QueryTotalSupplyResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/supply [get]
+func GetChainSupply(c *gin.Context) {
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"supply",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	bankQuery := bank.NewQueryClient(grpcConn)
+
+	suppRes, err := bankQuery.TotalSupply(context.Background(), &bank.QueryTotalSupplyRequest{})
+	if err != nil {
+		e := deps.NewError(
+			"supply",
+			fmt.Errorf("unable to query supply for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"unable to query supply",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, suppRes)
 }
