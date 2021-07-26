@@ -110,7 +110,7 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 		if err != nil {
 			return fmt.Errorf("SubscriptionBinance read body: %w", err)
 		}
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("SubscriptionBinance: %s, Status: %s", body, resp.Status)
 		}
 		bp := types.Binance{}
@@ -179,7 +179,7 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 		return fmt.Errorf("SubscriptionCoinmarketcap read body: %w", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("SubscriptionCoinmarketcap: %s, Status: %s", body, resp.Status)
 	}
 	var data map[string]struct {
@@ -334,7 +334,7 @@ func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogg
 		return fmt.Errorf("SubscriptionFixer read body: %w", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("SubscriptionFixer: %s, Status: %s", body, resp.Status)
 	}
 
