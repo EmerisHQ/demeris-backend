@@ -16,5 +16,3 @@ debug: true
 
 redisUrl: redis-master:6379
 updateInterval: 10s
-coinmarketcapKey: 1254aa0f-9591-4756-8c81-a89f415136a3
-fixerKey: 2d60cac55bd06a2799598f0b1d196942
