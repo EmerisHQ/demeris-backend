@@ -821,7 +821,7 @@ func GetChainStatus(c *gin.Context) {
 // @Description Gets supply of a given chain.
 // @Param chainName path string true "chain name"
 // @Produce json
-// @Success 200 {object} banktypes.QueryTotalSupplyResponse
+// @Success 200 {object} types.QueryTotalSupplyResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /chain/{chainName}/supply [get]
 func GetChainSupply(c *gin.Context) {
