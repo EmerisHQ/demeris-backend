@@ -251,9 +251,6 @@ func GetUserTickets(c *gin.Context) {
 
 	address := c.Param("address")
 
-	dd, err := d.Database.ChainNames()
-	d.Logger.Debugw("chain names", "chain names", dd, "error", err)
-
 	tickets, err := d.Store.GetUserTickets(address)
 	if err != nil {
 		e := deps.NewError(

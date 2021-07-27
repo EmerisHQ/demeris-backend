@@ -200,16 +200,17 @@ func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 		return "", err
 	}
 
-	// TODO pass signer to create key
-
 	if grpcRes.TxResponse.Code != types2.CodeTypeOK {
 		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
 	}
 
 	msgs := grpcRes.TxResponse.GetTx().GetMsgs()
+	if len(msgs) != 1 {
+		return "", fmt.Errorf("unable to fetch messages, messages %v", msgs)
+	}
+
 	signers := msgs[0].GetSigners()
 	if len(signers) != 1 {
-		// TODO: add error
 		return "", fmt.Errorf("unable to fetch signer information, signers %v", signers)
 	}
 
