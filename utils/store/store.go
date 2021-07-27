@@ -250,7 +250,6 @@ func (s *Store) SetWithExpiry(key string, value interface{}, mul int64) error {
 
 func (s *Store) Get(key string) (Ticket, error) {
 	var res Ticket
-	fmt.Printf("\nTHIS IS  KEY %s", key)
 	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
 		return Ticket{}, err
 	}
