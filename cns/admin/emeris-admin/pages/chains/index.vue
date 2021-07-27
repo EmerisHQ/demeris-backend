@@ -1,30 +1,43 @@
 <template>
-  <div class="container">
-    <h1>CNS Chains</h1>
-    <div v-for="chain in chains">
-      {{ chain.chain_name || "no chains" }}
-      <router-link :to="chainlink(chain)"> Edit </router-link>
-    </div>
+  <div>
+    <title-bar :title-stack="titleStack" />
+    <hero-bar>
+      Chains
+      <nuxt-link slot="right" to="/admin" class="button"> Dashboard </nuxt-link>
+    </hero-bar>
+    <section class="section is-main-section">
+      <card-component title="Chains" class="has-table has-mobile-sort-spaced">
+        <chains-table
+          :checkable="true"
+        />
+      </card-component>
+      <hr />
+    </section>
   </div>
 </template>
 
 <script>
+import ChainsTable from '@/components/ChainsTable'
+import CardComponent from '@/components/CardComponent'
+import TitleBar from '@/components/TitleBar'
+import HeroBar from '@/components/HeroBar'
 export default {
-  data() {
-    return {
-      chains: []
-    };
+  name: 'Chains',
+  components: {
+    HeroBar,
+    TitleBar,
+    CardComponent,
+    ChainsTable,
   },
-  methods: {
-    chainlink(chain) {
-      return "/chains/" + chain.chain_name;
+  computed: {
+    titleStack() {
+      return ['Admin', 'Chains']
+    },
+  },
+  head() {
+    return {
+      title: 'Chains',
     }
   },
-  async asyncData({ $axios, $config }) {
-    const { chains } = await $axios.$get("chains");
-    return { chains };
-  }
-};
+}
 </script>
-
-<style lang="scss" scoped></style>

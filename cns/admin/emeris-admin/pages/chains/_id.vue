@@ -138,6 +138,7 @@
 
 <script>
 import axios from "~/plugins/axios";
+import api from "~/sources/api";
 
 export default {
   data() {
@@ -149,6 +150,7 @@ export default {
         primary_channel: {},
         denoms: [{ fee_levels: {} }]
       },
+      supply: [{}],
       errorText: ""
     };
   },
@@ -156,7 +158,11 @@ export default {
     async loadData() {
       let res = await axios.get("/chain/" + this.$route.params.id);
       this.chain = res.data.chain;
-    },
+      let d = await api.get(`/chain/${this.$route.params.id}/supply`)
+      this.supply = res.data.supply;
+
+      console.log(this.chain, this.supply)
+},
     async update() {
       let res = await axios.post("/add", this.chain);
       if (res.status != 200) {
@@ -165,7 +171,7 @@ export default {
         this.$nuxt.refresh();
       }
     },
-  }
+  },
 };
 </script>
 
