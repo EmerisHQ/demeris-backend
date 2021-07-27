@@ -1,68 +1,69 @@
 <template>
-  <div class="container">
-    <div>
-      <h1 class="title">
-        demeris-admin
-      </h1>
-      <div class="links">
-        <a
-          href="/chains"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="button--green"
-        >
-          Chains
-        </a>
-      </div>
-    </div>
+  <div>
+    <title-bar :title-stack="titleStack" />
+    <hero-bar :has-right-visible="false"> Dashboard </hero-bar>
+    <section class="section is-main-section">
+      <tiles>
+        <card-widget
+          class="tile is-child"
+          type="is-primary"
+          icon="account-multiple"
+          :number="512"
+          label="Chains"
+        />
+        <card-widget
+          class="tile is-child"
+          type="is-info"
+          icon="cart-outline"
+          :number="5112362"
+          prefix="$"
+          label="GDEX TVL"
+        />
+        <card-widget
+          class="tile is-child"
+          type="is-success"
+          icon="chart-timeline-variant"
+          :number="256"
+          suffix=""
+          label="IBC transfers"
+        />
+      </tiles>
+
+      <card-component title="Chains" class="has-table has-mobile-sort-spaced">
+        <chains-table
+          :data-url="`${$router.options.base}data-sources/chains.json`"
+        />
+      </card-component>
+    </section>
   </div>
 </template>
 
 <script>
+import TitleBar from '@/components/TitleBar'
+import HeroBar from '@/components/HeroBar'
+import Tiles from '@/components/Tiles'
+import CardWidget from '@/components/CardWidget'
+import CardComponent from '@/components/CardComponent'
+import ChainsTable from '@/components/ChainsTable'
 export default {
-  mounted() {
-    this.$router.push('/chains')
-  }
+  name: 'Home',
+  components: {
+    ChainsTable,
+    CardComponent,
+    CardWidget,
+    Tiles,
+    HeroBar,
+    TitleBar,
+  },
+  computed: {
+    titleStack() {
+      return ['Admin', 'Dashboard']
+    },
+  },
+  head() {
+    return {
+      title: 'Dashboard',
+    }
+  },
 }
 </script>
-
-<style>
-.container {
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.title {
-  font-family:
-    'Quicksand',
-    'Source Sans Pro',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    sans-serif;
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
-}
-
-.subtitle {
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
-
-.links {
-  padding-top: 15px;
-}
-</style>
