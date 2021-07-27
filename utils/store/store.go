@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -67,7 +68,7 @@ func (s *Store) CreateTicket(chain, txHash, owner string) error {
 		Status: pending,
 	}
 
-	key := fmt.Sprintf("%s-%s", chain, txHash)
+	key := fmt.Sprintf("%s/%s", chain, txHash)
 	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
@@ -76,7 +77,7 @@ func (s *Store) CreateTicket(chain, txHash, owner string) error {
 		return err
 	}
 
-	return s.Client.SAdd(context.Background(), owner, key).Err()
+	return s.sAdd(owner, key)
 }
 
 func (s *Store) SetComplete(key string, height int64) error {
@@ -90,7 +91,7 @@ func (s *Store) SetComplete(key string, height int64) error {
 		return err
 	}
 
-	return s.SRemove(ticket.Owner, key)
+	return s.sRemove(ticket.Owner, key)
 }
 
 func (s *Store) SetIBCReceiveFailed(key string, height int64) error {
@@ -112,7 +113,7 @@ func (s *Store) SetIBCReceiveSuccess(key, owner string, height int64) error {
 		return err
 	}
 
-	return s.SRemove(owner, key)
+	return s.sRemove(owner, key)
 }
 
 func (s *Store) SetUnlockTimeout(key, owner string, height int64) error {
@@ -125,7 +126,7 @@ func (s *Store) SetUnlockTimeout(key, owner string, height int64) error {
 		return err
 	}
 
-	return s.SRemove(owner, key)
+	return s.sRemove(owner, key)
 }
 
 func (s *Store) SetUnlockAck(key, owner string, height int64) error {
@@ -138,7 +139,7 @@ func (s *Store) SetUnlockAck(key, owner string, height int64) error {
 		return err
 	}
 
-	return s.SRemove(owner, key)
+	return s.sRemove(owner, key)
 }
 
 func (s *Store) SetFailedWithErr(key, error string, height int64) error {
@@ -161,7 +162,7 @@ func (s *Store) SetFailedWithErr(key, error string, height int64) error {
 		return err
 	}
 
-	return s.SRemove(prev.Owner, key)
+	return s.sRemove(prev.Owner, key)
 }
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence string, height int64) error {
@@ -257,13 +258,28 @@ func (s *Store) Get(key string) (Ticket, error) {
 	return res, nil
 }
 
-func (s *Store) GetUserTickets(user string) ([]string, error) {
+func (s *Store) GetUserTickets(user string) (map[string][]string, error) {
 	var keys []string
-	if err := s.Client.SMembers(context.Background(), user).ScanSlice(&keys); err != nil {
-		return []string{}, err
+	keys, err := s.sMembers(user)
+	if err != nil {
+		return map[string][]string{}, err
 	}
 
-	return keys, nil
+	res := make(map[string][]string)
+	for _, key := range keys {
+		s := strings.Split(key, "/")
+		if len(s) != 2 {
+			return map[string][]string{}, fmt.Errorf("unable to resolve chain name and tx hash")
+		}
+		_, ok := res[s[0]]
+		if !ok {
+			res[s[0]] = res[s[1]]
+		}
+
+		res[s[0]] = append(res[s[0]], s[1])
+	}
+
+	return res, nil
 }
 
 func (s *Store) Delete(key string) error {
@@ -274,7 +290,20 @@ func (s *Store) DeleteShadowKey(key string) error {
 	shadowKey := shadow + key
 	return s.Delete(shadowKey)
 }
+func (s *Store) sAdd(user, key string) error {
+	return s.Client.SAdd(context.Background(), user, key).Err()
+}
 
-func (s *Store) SRemove(user, key string) error {
+func (s *Store) sMembers(user string) ([]string, error) {
+	var keys []string
+	err := s.Client.SMembers(context.Background(), user).ScanSlice(&keys)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return keys, err
+}
+
+func (s *Store) sRemove(user, key string) error {
 	return s.Client.SRem(context.Background(), user, key).Err()
 }

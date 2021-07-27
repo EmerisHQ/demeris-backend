@@ -211,7 +211,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	txHash := txHashSlice[0]
 	eventTx := data.Data.(types.EventDataTx)
 	height := eventTx.Height
-	key := fmt.Sprintf("%s-%s", w.Name, txHash)
+	key := fmt.Sprintf("%s/%s", w.Name, txHash)
 
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
 		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)

@@ -32,3 +32,7 @@ type stakingBalance struct {
 type numbersResponse struct {
 	Numbers []models.AuthRow `json:"numbers"`
 }
+
+type userTicketsResponse struct {
+	Tickets map[string][]string `json:"tickets"`
+}

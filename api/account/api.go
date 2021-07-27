@@ -270,7 +270,7 @@ func GetUserTickets(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, tickets)
+	c.JSON(http.StatusOK, userTicketsResponse{Tickets: tickets})
 }
 
 func fetchNumbers(cns []database.ChainName, account string) ([]models.AuthRow, error) {
