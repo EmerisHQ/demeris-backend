@@ -39,9 +39,15 @@ spec:
             - name: DEMERIS-PRICE-ORACLE_WHITELISTFIATS
               value: "EUR,USD"
             - name: DEMERIS-PRICE-ORACLE_COINMARKETCAPAPIKEY
-              value: "{{ .Values.coinmarketcapKey }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}
+                  key: coinmarketcapKey
             - name: DEMERIS-PRICE-ORACLE_FIXERAPIKEY
-              value: "{{ .Values.fixerKey }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}
+                  key: fixerKey
 
           resources:
 {{ toYaml .Values.resources | indent 12 }}

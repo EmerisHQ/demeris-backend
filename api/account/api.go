@@ -70,15 +70,34 @@ func GetBalancesByAddress(c *gin.Context) {
 		return
 	}
 
+	vd, err := verifiedDenomsMap(d.Database)
+	if err != nil {
+		e := deps.NewError(
+			"account",
+			fmt.Errorf("cannot retrieve account for address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query database verified denoms",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+		)
+		return
+	}
+
 	// TODO: get unique chains
 	// perhaps we can remove this since there will be another endpoint specifically for fee tokens
 
 	for _, b := range balances {
 		balance := balance{
-			Address:  b.Address,
-			Amount:   b.Amount,
-			Verified: true,
-			OnChain:  b.ChainName,
+			Address: b.Address,
+			Amount:  b.Amount,
+			OnChain: b.ChainName,
 		}
 
 		if b.Denom[:4] == "ibc/" {
@@ -112,9 +131,9 @@ func GetBalancesByAddress(c *gin.Context) {
 			}
 			balance.BaseDenom = denomTrace.BaseDenom
 			balance.Ibc.Path = denomTrace.Path
-
+			balance.Verified = vd[denomTrace.BaseDenom]
 		} else {
-			balance.Verified = true
+			balance.Verified = vd[b.Denom]
 			balance.BaseDenom = b.Denom
 		}
 
@@ -122,6 +141,22 @@ func GetBalancesByAddress(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+func verifiedDenomsMap(d *database.Database) (map[string]bool, error) {
+	chains, err := d.Chains()
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make(map[string]bool)
+	for _, cc := range chains {
+		for _, vd := range cc.VerifiedTokens() {
+			ret[vd.Name] = vd.Verified
+		}
+	}
+
+	return ret, err
 }
 
 // GetDelegationsByAddress returns staking account of an address.
