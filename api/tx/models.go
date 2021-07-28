@@ -127,3 +127,4 @@ type TxMeta struct {
 type TxResponse struct {
 	Ticket string `json:"ticket"`
 }
+
