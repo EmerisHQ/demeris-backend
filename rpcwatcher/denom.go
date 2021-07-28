@@ -125,8 +125,8 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 					if !dd.Verified {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
- 					found = true 
- 					break
+					found = true
+					break
 
 				}
 			}
@@ -145,6 +145,7 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 	d.Ticker = fmt.Sprintf("G%s", poolId[0])
 
 	d.Verified = true
+	d.Precision = 6
 
 	w.l.Debugw("verified lp denom", "displayname", d.DisplayName, "ticker", d.Ticker)
 
