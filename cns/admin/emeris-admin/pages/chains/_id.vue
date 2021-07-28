@@ -61,11 +61,7 @@
             />
           </b-field>
           <b-field label="bech32 config" horizontal>
-            <b-input
-              :value="JSON.stringify(chain.node_info.bech32_config)"
-              custom-class="is-static"
-              readonly
-            />
+            {{ JSON.stringify(chain.node_info.bech32_config, "\n", 2) }}
           </b-field>
         </card-component>
       </tiles>
@@ -157,6 +153,8 @@
                 <b-input
                   v-model="props.row.gas_price_levels.low"
                   placeholder="Low"
+                  type="number"
+                  
                   required
                 />
               </b-table-column>
@@ -164,6 +162,7 @@
                 <b-input
                   v-model="props.row.gas_price_levels.average"
                   placeholder="Average"
+                  type="number"
                   required
                 />
               </b-table-column>
@@ -171,6 +170,7 @@
                 <b-input
                   v-model="props.row.gas_price_levels.high"
                   placeholder="High"
+                  type="number"
                   required
                 />
               </b-table-column>
@@ -273,14 +273,8 @@ export default {
       chain: this.emptyChain(),
       supply: [
         {
-          denom:
-            "ibc/07912C24004932CD561B1751562B22EA787F31F9821568B88F55A8F51D326722",
-          amount: "5000"
-        },
-        {
-          denom:
-            "ibc/08834A76F4E5AED08690916F61EA12AA71CFD636BBA328062027DF9FA620B7E3",
-          amount: "1"
+          denom: "",
+          amount: "0"
         }
       ]
     };
@@ -331,15 +325,18 @@ export default {
       this.supply = supply.data.supply;
     },
     async update() {
+
+      this.chain.denoms.forEach(denom => {
+        denom.gas_price_levels.low = parseFloat(denom.gas_price_levels.low)
+        denom.gas_price_levels.average = parseFloat(denom.gas_price_levels.average)
+        denom.gas_price_levels.high = parseFloat(denom.gas_price_levels.high)
+      })
       let res = await axios.post("/add", this.chain);
       if (res.status != 200) {
         this.errorText = res.error;
       } else {
         this.$nuxt.refresh();
       }
-    },
-    input(v) {
-      this.createdReadable = dayjs(v).format("MMM D, YYYY");
     },
     submit() {
       this.isLoading = true;
