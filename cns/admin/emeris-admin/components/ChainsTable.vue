@@ -30,7 +30,7 @@
           {{ props.row.display_name }}
         </b-table-column>
         <b-table-column label="chain_id" field="chain_id" sortable>
-          {{ props.row.node_info.chain_id }} 
+          {{ props.row.node_info.chain_id }}
         </b-table-column>
         <b-table-column label="enabled">
           <small
@@ -47,13 +47,13 @@
             <p>
               <b-icon icon="dots-horizontal" size="is-large" />
             </p>
-            <p>Fetching data...</p>
+            <p>Fetching chains...</p>
           </template>
           <template v-else>
             <p>
               <b-icon icon="emoticon-sad" size="is-large" />
             </p>
-            <p>Nothing's here&hellip;</p>
+            <p>No chains found&hellip;</p>
           </template>
         </div>
       </section>
@@ -128,9 +128,11 @@ export default {
     };
   },
   async mounted() {
+    this.isLoading = true;
     let res = await axios.get("/chains");
     this.chains = res.data.chains;
     console.log(res);
+    this.isLoading = false;
   }
 };
 </script>

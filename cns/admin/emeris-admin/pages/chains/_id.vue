@@ -1,5 +1,45 @@
 <template>
   <div>
+    <b-modal :active.sync="isModalActive" has-modal-card scroll="keep">
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Add denom to CNS</p>
+        </header>
+        <section class="modal-card-body">
+          <form>
+            <b-field label="Denom" horizontal>
+              <b-input
+                v-model="newDenom.name"
+                custom-class="is-static"
+                placeholder="Display Name"
+                readonly
+              />
+            </b-field>
+            <b-field label="Display Name" horizontal>
+              <b-input
+                v-model="newDenom.display_name"
+                placeholder="Display Name"
+                required
+              />
+            </b-field>
+            <b-field label="Ticker" horizontal>
+              <b-input
+                v-model="newDenom.ticker"
+                placeholder="Ticker"
+                required
+              />
+            </b-field>
+            <b-field label="Logo URL" horizontal>
+              <b-input v-model="newDenom.logo" placeholder="Logo" required />
+            </b-field>
+          </form>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button" type="button" @click="cancel">Cancel</button>
+          <button class="button is-danger" @click="add">Add</button>
+        </footer>
+      </div>
+    </b-modal>
     <title-bar :title-stack="titleStack" />
     <hero-bar>
       {{ heroTitle }}
@@ -7,7 +47,7 @@
     <section class="section is-main-section">
       <tiles>
         <card-component :title="formCardTitle" class="tile is-child">
-          <form @submit.prevent="submit">
+          <form>
             <b-field label="Chain Name" horizontal>
               <b-input
                 v-model="chain.chain_name"
@@ -61,7 +101,7 @@
             />
           </b-field>
           <b-field label="bech32 config" horizontal>
-            {{ JSON.stringify(chain.node_info.bech32_config, "\n", 2) }}
+            {{ JSON.stringify(chain.node_info.bech32_config, null, 2) }}
           </b-field>
         </card-component>
       </tiles>
@@ -100,13 +140,13 @@
                   <p>
                     <b-icon icon="dots-horizontal" size="is-large" />
                   </p>
-                  <p>Fetching data...</p>
+                  <p>Fetching primary channels...</p>
                 </template>
                 <template v-else>
                   <p>
                     <b-icon icon="emoticon-sad" size="is-large" />
                   </p>
-                  <p>Nothing's here&hellip;</p>
+                  <p>No primary channels found</p>
                 </template>
               </div>
             </section>
@@ -154,7 +194,6 @@
                   v-model="props.row.gas_price_levels.low"
                   placeholder="Low"
                   type="number"
-                  
                   required
                 />
               </b-table-column>
@@ -176,7 +215,7 @@
               </b-table-column>
 
               <b-table-column label="Verified" field="verified" sortable>
-                {{ props.row.verified }}
+                <b-checkbox v-model="props.row.verified" />
               </b-table-column>
             </template>
 
@@ -186,13 +225,13 @@
                   <p>
                     <b-icon icon="dots-horizontal" size="is-large" />
                   </p>
-                  <p>Fetching data...</p>
+                  <p>Fetching verified denoms...</p>
                 </template>
                 <template v-else>
                   <p>
                     <b-icon icon="emoticon-sad" size="is-large" />
                   </p>
-                  <p>Nothing's here&hellip;</p>
+                  <p>No verified denoms found</p>
                 </template>
               </div>
             </section>
@@ -217,6 +256,15 @@
               <b-table-column label="Amount" field="amount" sortable>
                 {{ props.row.amount }}
               </b-table-column>
+
+              <b-table-column label="Add to CNS" field="cns_add" sortable>
+                <b-button
+                  type="is-primary"
+                  native-type="submit"
+                  v-on:click="setAddingToCNS(props.row.denom)"
+                  >Add</b-button
+                >
+              </b-table-column>
             </template>
 
             <section slot="empty" class="section">
@@ -225,13 +273,13 @@
                   <p>
                     <b-icon icon="dots-horizontal" size="is-large" />
                   </p>
-                  <p>Fetching data...</p>
+                  <p>Fetching supply from api...</p>
                 </template>
                 <template v-else>
                   <p>
                     <b-icon icon="emoticon-sad" size="is-large" />
                   </p>
-                  <p>Nothing's here&hellip;</p>
+                  <p>No supply found</p>
                 </template>
               </div>
             </section>
@@ -252,7 +300,6 @@
 <script>
 import axios from "~/plugins/axios";
 import api from "~/plugins/api";
-import dayjs from "dayjs";
 import TitleBar from "@/components/TitleBar";
 import HeroBar from "@/components/HeroBar";
 import Tiles from "@/components/Tiles";
@@ -271,12 +318,16 @@ export default {
       id: null,
       isLoading: false,
       chain: this.emptyChain(),
-      supply: [
-        {
-          denom: "",
-          amount: "0"
+      supply: [],
+      isModalActive: false,
+      newDenom: {
+        denom: "",
+        gas_price_levels: {
+          low: 0.015,
+          average: 0.022,
+          high: 0.042
         }
-      ]
+      }
     };
   },
   computed: {
@@ -306,7 +357,9 @@ export default {
     }
   },
   async created() {
+    this.isLoading = true;
     await this.loadData();
+    this.isLoading = false;
   },
   methods: {
     emptyChain() {
@@ -325,12 +378,13 @@ export default {
       this.supply = supply.data.supply;
     },
     async update() {
-
       this.chain.denoms.forEach(denom => {
-        denom.gas_price_levels.low = parseFloat(denom.gas_price_levels.low)
-        denom.gas_price_levels.average = parseFloat(denom.gas_price_levels.average)
-        denom.gas_price_levels.high = parseFloat(denom.gas_price_levels.high)
-      })
+        denom.gas_price_levels.low = parseFloat(denom.gas_price_levels.low);
+        denom.gas_price_levels.average = parseFloat(
+          denom.gas_price_levels.average
+        );
+        denom.gas_price_levels.high = parseFloat(denom.gas_price_levels.high);
+      });
       let res = await axios.post("/add", this.chain);
       if (res.status != 200) {
         this.errorText = res.error;
@@ -338,17 +392,35 @@ export default {
         this.$nuxt.refresh();
       }
     },
-    submit() {
-      this.isLoading = true;
-
-      setTimeout(() => {
-        this.isLoading = false;
-
-        this.$buefy.snackbar.open({
-          message: "saved!",
-          queue: false
-        });
-      }, 500);
+    setAddingToCNS(denom) {
+      this.newDenom.name = denom;
+      this.isModalActive = true;
+    },
+    async add() {
+      var overwriting = false;
+      this.chain.denoms.forEach(denom => {
+        if (denom.name == this.newDenom.name) {
+          overwriting = true;
+        }
+      });
+      if (overwriting) {
+        // skip overwrite
+      } else {
+        this.chain.denoms.push(this.newDenom);
+        await this.update();
+      }
+      this.isModalActive = false;
+    },
+    cancel() {
+      this.newDenom = {
+        denom: "",
+        gas_price_levels: {
+          low: 0.015,
+          average: 0.022,
+          high: 0.042
+        }
+      };
+      this.isModalActive = false;
     }
   },
   head() {

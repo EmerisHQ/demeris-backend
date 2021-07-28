@@ -6,9 +6,7 @@
     </hero-bar>
     <section class="section is-main-section">
       <card-component title="Chains" class="has-table has-mobile-sort-spaced">
-        <chains-table
-          :checkable="true"
-        />
+        <chains-table />
       </card-component>
       <hr />
     </section>

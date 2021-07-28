@@ -1,21 +1,21 @@
 <template>
   <div>
     <title-bar :title-stack="titleStack" />
-    <hero-bar :has-right-visible="false"> Dashboard </hero-bar>
+    <hero-bar> Dashboard </hero-bar>
     <section class="section is-main-section">
       <tiles>
         <card-widget
           class="tile is-child"
           type="is-primary"
           icon="account-multiple"
-          :number="512"
+          :number="2125268"
           label="Chains"
         />
         <card-widget
           class="tile is-child"
           type="is-info"
           icon="cart-outline"
-          :number="5112362"
+          :number="5112369420"
           prefix="$"
           label="GDEX TVL"
         />
@@ -23,16 +23,14 @@
           class="tile is-child"
           type="is-success"
           icon="chart-timeline-variant"
-          :number="256"
+          :number="256785653"
           suffix=""
           label="IBC transfers"
         />
       </tiles>
 
       <card-component title="Chains" class="has-table has-mobile-sort-spaced">
-        <chains-table
-          :data-url="`${$router.options.base}data-sources/chains.json`"
-        />
+        <chains-table />
       </card-component>
     </section>
   </div>
