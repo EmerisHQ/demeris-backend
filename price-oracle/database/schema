@@ -11,7 +11,6 @@ INSERT INTO oracle.binance VALUES ('LUNAUSDT','10','1351700038');
 INSERT INTO oracle.binance VALUES ('ETHUSDT','10','1351700038');
 SELECT * FROM oracle.binance;
 
-
 CREATE TABLE oracle.coinmarketcap (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
 GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.coinmarketcap TO testuser;
 INSERT INTO oracle.coinmarketcap VALUES ('ATOMUSDT','10','1351700038');
@@ -19,12 +18,26 @@ INSERT INTO oracle.coinmarketcap VALUES ('LUNAUSDT','10','1351700038');
 INSERT INTO oracle.coinmarketcap VALUES ('ETHUSDT','10','1351700038');
 SELECT * FROM oracle.coinmarketcap;
 
+CREATE TABLE oracle.coingecko (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.coingecko TO testuser;
+INSERT INTO oracle.coingecko VALUES ('ATOMUSDT','10','1351700038');
+INSERT INTO oracle.coingecko VALUES ('LUNAUSDT','10','1351700038');
+INSERT INTO oracle.coingecko VALUES ('ETHUSDT','10','1351700038');
+SELECT * FROM oracle.coingecko;
+
 CREATE TABLE oracle.coinmarketcapsupply (symbol STRING PRIMARY KEY,supply FLOAT);
 GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.coinmarketcapsupply TO testuser;
 INSERT INTO oracle.coinmarketcapsupply VALUES ('ATOMUSDT','10','113563929433.0');
 INSERT INTO oracle.coinmarketcapsupply VALUES ('LUNAUSDT','10','113563929433.0');
 INSERT INTO oracle.coinmarketcapsupply VALUES ('ETHUSDT','10','113563929433.0');
 SELECT * FROM oracle.coinmarketcapsupply;
+
+CREATE TABLE oracle.coingeckosupply (symbol STRING PRIMARY KEY,supply FLOAT);
+GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.coingeckosupply TO testuser;
+INSERT INTO oracle.coingeckosupply VALUES ('ATOMUSDT','10','113563929433.0');
+INSERT INTO oracle.coingeckosupply VALUES ('LUNAUSDT','10','113563929433.0');
+INSERT INTO oracle.coingeckosupply VALUES ('ETHUSDT','10','113563929433.0');
+SELECT * FROM oracle.coingeckosupply;
 
 CREATE TABLE oracle.fixer (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
 GRANT INSERT, DELETE, UPDATE, SELECT ON oracle.fixer TO testuser;

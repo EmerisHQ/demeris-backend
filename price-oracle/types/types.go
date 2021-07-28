@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	TokenBasecurrency = "USDT"
-	FiatBasecurrency  = "USD"
+	USDTBasecurrency = "USDT"
+	USDBasecurrency  = "USD"
 )
 
 type AllPriceResponse struct {
