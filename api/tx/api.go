@@ -204,7 +204,17 @@ func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
 	}
 
-	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash)
+	msgs := grpcRes.TxResponse.GetTx().GetMsgs()
+	if len(msgs) != 1 {
+		return "", fmt.Errorf("unable to fetch messages, messages %v", msgs)
+	}
+
+	signers := msgs[0].GetSigners()
+	if len(signers) != 1 {
+		return "", fmt.Errorf("unable to fetch signer information, signers %v", signers)
+	}
+
+	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash, signers[0].String())
 
 	if err != nil {
 		return grpcRes.TxResponse.TxHash, err
