@@ -379,11 +379,11 @@ export default {
     },
     async update() {
       this.chain.denoms.forEach(denom => {
-        denom.gas_price_levels.low = parseFloat(denom.gas_price_levels.low);
-        denom.gas_price_levels.average = parseFloat(
+        denom.gas_price_levels.low = denom.gas_price_levels.low? parseFloat(denom.gas_price_levels.low): 0.015;
+        denom.gas_price_levels.average = denom.gas_price_levels.average? parseFloat(
           denom.gas_price_levels.average
-        );
-        denom.gas_price_levels.high = parseFloat(denom.gas_price_levels.high);
+        ) : 0.022;
+        denom.gas_price_levels.high = denom.gas_price_levels.high? parseFloat(denom.gas_price_levels.high): 0.042;
       });
       let res = await axios.post("/add", this.chain);
       if (res.status != 200) {
