@@ -271,10 +271,6 @@ func (s *Store) GetUserTickets(user string) (map[string][]string, error) {
 		if len(s) != 2 {
 			return map[string][]string{}, fmt.Errorf("unable to resolve chain name and tx hash")
 		}
-		_, ok := res[s[0]]
-		if !ok {
-			res[s[0]] = res[s[1]]
-		}
 
 		res[s[0]] = append(res[s[0]], s[1])
 	}
