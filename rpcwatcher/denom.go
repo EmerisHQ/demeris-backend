@@ -125,8 +125,8 @@ func formatDenom(w *Watcher, data coretypes.ResultEvent) (models.Denom, error) {
 					if !dd.Verified {
 						return d, fmt.Errorf("denom not verified in source chain")
 					}
-					found = true
-					break
+ 					found = true 
+ 					break
 
 				}
 			}
