@@ -3,7 +3,6 @@
     <title-bar :title-stack="titleStack" />
     <hero-bar>
       Chains
-      <nuxt-link slot="right" to="/admin" class="button"> Dashboard </nuxt-link>
     </hero-bar>
     <section class="section is-main-section">
       <card-component title="Chains" class="has-table has-mobile-sort-spaced">

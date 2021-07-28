@@ -8,9 +8,16 @@
       <tiles>
         <card-component :title="formCardTitle" class="tile is-child">
           <form @submit.prevent="submit">
-            <b-field label="ID" horizontal>
+            <b-field label="Chain Name" horizontal>
               <b-input
                 v-model="chain.chain_name"
+                custom-class="is-static"
+                readonly
+              />
+            </b-field>
+            <b-field label="Genesis Hash" horizontal>
+              <b-input
+                v-model="chain.genesis_hash"
                 custom-class="is-static"
                 readonly
               />
@@ -22,21 +29,40 @@
                 required
               />
             </b-field>
-            <b-field horizontal>
-              <b-button
-                type="is-primary"
-                :loading="isLoading"
-                native-type="submit"
-                >Save</b-button
-              >
-            </b-field>
           </form>
         </card-component>
-        <card-component title="Chain Info" class="tile is-child">
-          <hr />
-          <b-field label="Name">
+        <card-component title="Node Info" class="tile is-child">
+          <b-field label="endpoint" horizontal>
             <b-input
-              :value="chain.display_name"
+              :value="chain.node_info.endpoint"
+              custom-class="is-static"
+              readonly
+            />
+          </b-field>
+          <b-field label="chain_id" horizontal>
+            <b-input
+              :value="chain.node_info.chain_id"
+              custom-class="is-static"
+              readonly
+            />
+          </b-field>
+          <b-field label="valid_block_thresh" horizontal>
+            <b-input
+              :value="chain.valid_block_thresh"
+              custom-class="is-static"
+              readonly
+            />
+          </b-field>
+          <b-field label="derivation_path" horizontal>
+            <b-input
+              :value="chain.derivation_path"
+              custom-class="is-static"
+              readonly
+            />
+          </b-field>
+          <b-field label="bech32 config" horizontal>
+            <b-input
+              :value="JSON.stringify(chain.node_info.bech32_config)"
               custom-class="is-static"
               readonly
             />
@@ -64,11 +90,11 @@
               </b-table-column>
 
               <b-table-column label="Channel" field="channel" sortable>
-              <b-input
-                v-model="chain.primary_channel[props.row.name]"
-                placeholder="channel id"
-                required
-              />
+                <b-input
+                  v-model="chain.primary_channel[props.row.name]"
+                  placeholder="channel id"
+                  required
+                />
               </b-table-column>
             </template>
 
@@ -91,7 +117,88 @@
           </b-table>
         </card-component>
       </tiles>
+      <tiles>
+        <card-component title="CNS Denoms" class="tile is-child">
+          <b-table
+            :paginated="true"
+            :per-page="10"
+            :striped="true"
+            :hoverable="true"
+            default-sort="display_name"
+            :data="chain.denoms"
+          >
+            <template slot-scope="props">
+              <b-table-column label="base_denom" field="name" sortable>
+                {{ props.row.name }}
+              </b-table-column>
 
+              <b-table-column
+                label="Display Name"
+                field="display_name"
+                sortable
+              >
+                <b-input
+                  v-model="props.row.display_name"
+                  placeholder="Display Name"
+                  required
+                />
+              </b-table-column>
+              <b-table-column label="Ticker" field="ticker" sortable>
+                <b-input
+                  v-model="props.row.ticker"
+                  placeholder="Ticker"
+                  required
+                />
+              </b-table-column>
+              <b-table-column label="Logo URL" field="logo_url" sortable>
+                <b-input v-model="props.row.logo" placeholder="Logo" required />
+              </b-table-column>
+              <b-table-column label="Low Gas" field="ticker" sortable>
+                <b-input
+                  v-model="props.row.gas_price_levels.low"
+                  placeholder="Low"
+                  required
+                />
+              </b-table-column>
+              <b-table-column label="Avg Gas" field="ticker" sortable>
+                <b-input
+                  v-model="props.row.gas_price_levels.average"
+                  placeholder="Average"
+                  required
+                />
+              </b-table-column>
+              <b-table-column label="High Gas" field="ticker" sortable>
+                <b-input
+                  v-model="props.row.gas_price_levels.high"
+                  placeholder="High"
+                  required
+                />
+              </b-table-column>
+
+              <b-table-column label="Verified" field="verified" sortable>
+                {{ props.row.verified }}
+              </b-table-column>
+            </template>
+
+            <section slot="empty" class="section">
+              <div class="content has-text-grey has-text-centered">
+                <template v-if="isLoading">
+                  <p>
+                    <b-icon icon="dots-horizontal" size="is-large" />
+                  </p>
+                  <p>Fetching data...</p>
+                </template>
+                <template v-else>
+                  <p>
+                    <b-icon icon="emoticon-sad" size="is-large" />
+                  </p>
+                  <p>Nothing's here&hellip;</p>
+                </template>
+              </div>
+            </section>
+          </b-table>
+        </card-component>
+      </tiles>
       <tiles>
         <card-component title="Supply" class="tile is-child">
           <b-table
@@ -131,6 +238,13 @@
           </b-table>
         </card-component>
       </tiles>
+      <b-button
+        type="is-primary"
+        :loading="isLoading"
+        native-type="submit"
+        v-on:click="update()"
+        >Save</b-button
+      >
     </section>
   </div>
 </template>
@@ -139,7 +253,6 @@
 import axios from "~/plugins/axios";
 import api from "~/plugins/api";
 import dayjs from "dayjs";
-import find from "lodash/find";
 import TitleBar from "@/components/TitleBar";
 import HeroBar from "@/components/HeroBar";
 import Tiles from "@/components/Tiles";
@@ -186,14 +299,14 @@ export default {
     },
     primaryChannels() {
       let a = [];
-      console.log(this.chain.primary_channel)
+      console.log(this.chain.primary_channel);
       if (this.chain.primary_channel) {
-        Object.keys(this.chain.primary_channel).forEach(
-          key => (a.push({ name: key, channel: this.chain.primary_channel[key] }))
+        Object.keys(this.chain.primary_channel).forEach(key =>
+          a.push({ name: key, channel: this.chain.primary_channel[key] })
         );
       }
 
-      console.log(a)
+      console.log(a);
 
       return a;
     }
@@ -207,7 +320,8 @@ export default {
         chain_name: "",
         denoms: [],
         primaryChannels: {},
-        display_name: ""
+        display_name: "",
+        node_info: {}
       };
     },
     async loadData() {
@@ -222,30 +336,6 @@ export default {
         this.errorText = res.error;
       } else {
         this.$nuxt.refresh();
-      }
-    },
-    getData() {
-      if (this.$route.params.id) {
-        axios
-          .get(`${this.$router.options.base}data-sources/chains.json`)
-          .then(r => {
-            const item = find(
-              r.data.chains,
-              item => item.chain_name === this.$route.params.id
-            );
-
-            if (item) {
-              this.chain = item;
-              console.log("found!");
-            }
-          })
-          .catch(e => {
-            this.$buefy.toast.open({
-              message: `Error: ${e.message}`,
-              type: "is-danger",
-              queue: false
-            });
-          });
       }
     },
     input(v) {
