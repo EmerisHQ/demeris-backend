@@ -344,7 +344,7 @@ func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogg
 		return fmt.Errorf("SubscriptionFixer unmarshal body: %w", err)
 	}
 	if bp.Success != true {
-		logger.Infow("SubscriptionFixer", bp.Success, "The status message of the query is fail(Maybe the apikey problem)")
+		logger.Infow("SubscriptionFixer", "The status message of the query is fail(Maybe the apikey problem)", bp.Success)
 		return nil
 	}
 	var data map[string]float64
