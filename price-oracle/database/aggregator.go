@@ -62,9 +62,10 @@ func PricetokenAggregator(ctx context.Context, db *sqlx.DB, logger *zap.SugaredL
 	symbolkv := make(map[string][]float64)
 	var query []string
 	binanceQuery := "SELECT * FROM oracle.binance"
-	coinmarketcapQuery := "SELECT * FROM oracle.coinmarketcap"
+	//coinmarketcapQuery := "SELECT * FROM oracle.coinmarketcap"
+	coinmarketgeckoQuery := "SELECT * FROM oracle.coingecko"
 	query = append(query, binanceQuery)
-	query = append(query, coinmarketcapQuery)
+	query = append(query, coinmarketgeckoQuery)
 
 	whitelist := make(map[string]struct{})
 	cnswhitelist, err := CnsTokenQuery(db)
@@ -72,7 +73,7 @@ func PricetokenAggregator(ctx context.Context, db *sqlx.DB, logger *zap.SugaredL
 		return fmt.Errorf("CnsTokenQuery: %w", err)
 	}
 	for _, token := range cnswhitelist {
-		basetoken := token + types.TokenBasecurrency
+		basetoken := token + types.USDTBasecurrency
 		whitelist[basetoken] = struct{}{}
 	}
 
@@ -132,7 +133,7 @@ func PricefiatAggregator(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 	query = append(query, fixerQuery)
 	whitelist := make(map[string]struct{})
 	for _, fiat := range cfg.Whitelistfiats {
-		basefiat := types.FiatBasecurrency + fiat
+		basefiat := types.USDBasecurrency + fiat
 		whitelist[basefiat] = struct{}{}
 	}
 
