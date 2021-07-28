@@ -62,12 +62,8 @@ export default {
   },
 
   axios: {
-    baseUrl: "http://localhost:8000/v1/cns" || "/v1/cns",
-    apiUrl: "http://localhost:8000/v1" || "/v1",
-    cnsUrl: "http://localhost:8000/v1/cns" || "/v1/cns",
-    // baseUrl: process.env.CNS_URL || "/v1/cns",
-    // cnsUrl: process.env.CNS_URL || "/v1/cns",
-    // apiUrl: process.env.API_URL || "/v1"
+    baseUrl: process.env.CNS_URL || "/v1/cns",
+    apiUrl: process.env.API_URL || "/v1"
   },
 
   router: {
