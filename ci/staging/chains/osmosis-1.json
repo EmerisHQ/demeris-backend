@@ -75,5 +75,11 @@
     },
     "docker_image": "gcr.io/tendermint-dev/osmosis",
     "docker_image_version": "v1.0.2"
+  },
+  "relayer_configuration": {
+    "max_msg_num":12,
+    "max_gas": 1000000,
+    "clock_drift": "1800s",
+    "trusting_period": "14days"
   }
 }
