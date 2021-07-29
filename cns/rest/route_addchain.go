@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	v12 "k8s.io/api/core/v1"
+
 	v1 "github.com/allinbits/starport-operator/api/v1"
 
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
@@ -77,7 +79,7 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			return
 		}
 
-		if newChain.NodeConfig.DisableMinFeeConfig {
+		if !newChain.NodeConfig.DisableMinFeeConfig {
 			minGasPriceVal := newChain.RelayerToken().GasPriceLevels.Low / 2
 			minGasPricesStr := fmt.Sprintf("%v%s", minGasPriceVal, newChain.RelayerToken().Name)
 
@@ -92,6 +94,9 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 				},
 			}
 			node.Spec.Config.Nodes.ConfigOverride = &cfgOverride
+
+			node.Spec.Config.Nodes.TraceStoreContainer.ImagePullPolicy = v12.PullNever
+
 		}
 
 		hasFaucet := false
