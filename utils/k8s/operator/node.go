@@ -38,7 +38,7 @@ var (
 
 	DefaultRelayerConfiguration = RelayerConfiguration{
 		MaxMsgNum:      15,
-		MaxGas:         400000,
+		MaxGas:         500000,
 		ClockDrift:     "1800s",
 		TrustingPeriod: "14days",
 	}
