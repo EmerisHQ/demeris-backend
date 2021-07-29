@@ -234,33 +234,38 @@ func (i *Instance) createRelayer(chain Chain) error {
 
 	relayer.Spec.Chains = append(relayer.Spec.Chains, &relayerConfig)
 
-	ctc, alreadyConnected, err := i.chainsConnectedAndToConnectTo(cfg.NodesetName)
-	if err != nil {
-		i.l.Debugw("cannot query chains to connect to", "error", err)
-		return err
-	}
-
-	i.l.Debugw("chains to connect to", "ctc", ctc)
-	i.l.Debugw("chains already connected", "chains", alreadyConnected, "how many", len(alreadyConnected))
-
-	if len(alreadyConnected) != 0 {
-		if err := i.updateAlreadyConnected(alreadyConnected); err != nil {
-			i.l.Debugw("cannot update already connected chains", "error", err)
+	if !chain.SkipChannelCreation {
+		// if we don't want to skip channel creation, always create new paths
+		ctc, alreadyConnected, err := i.chainsConnectedAndToConnectTo(cfg.NodesetName, true)
+		if err != nil {
+			i.l.Debugw("cannot query chains to connect to", "error", err)
 			return err
 		}
-	}
 
-	for _, ccc := range ctc {
-		newPath := v1.PathConfig{
-			SideA: cfg.NodesetName,
-			SideB: ccc,
+		i.l.Debugw("chains to connect to", "ctc", ctc)
+		i.l.Debugw("chains already connected", "chains", alreadyConnected, "how many", len(alreadyConnected))
+
+		if len(alreadyConnected) != 0 {
+			if err := i.updateAlreadyConnected(alreadyConnected); err != nil {
+				i.l.Debugw("cannot update already connected chains", "error", err)
+				return err
+			}
 		}
 
-		if pathDuplicate(newPath, relayer.Spec.Paths) {
-			continue
-		}
+		for _, ccc := range ctc {
+			newPath := v1.PathConfig{
+				SideA: cfg.NodesetName,
+				SideB: ccc,
+			}
 
-		relayer.Spec.Paths = append(relayer.Spec.Paths, newPath)
+			if pathDuplicate(newPath, relayer.Spec.Paths) {
+				continue
+			}
+
+			relayer.Spec.Paths = append(relayer.Spec.Paths, newPath)
+		}
+	} else {
+		i.l.Debugw("skipping channel creation", "chainName", cfg.NodesetName)
 	}
 
 	var execErr error
@@ -326,7 +331,7 @@ func (c connectedChain) String() string {
 	return fmt.Sprintf("%s, %s, %s, %s", c.chainName, c.counterChainName, c.channel, c.counterChannel)
 }
 
-func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []connectedChain, error) {
+func (i *Instance) chainsConnectedAndToConnectTo(chainName string, alwaysConnect bool) ([]string, []connectedChain, error) {
 	sourceChain, err := i.db.Chain(chainName)
 	if err != nil {
 		return nil, nil, err
@@ -353,8 +358,8 @@ func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []
 
 		i.l.Debugw("chains between", "chainName", chainName, "other", c.ChainName, "conns", conns)
 
-		if conns == nil || len(conns) == 0 {
-			ret = append(ret, c.ChainName) // c.ChainName is not connected to chainName
+		if conns == nil || len(conns) == 0 || alwaysConnect {
+			ret = append(ret, c.ChainName) // c.ChainName is not connected to chainName, or alwaysConnect is true
 		} else {
 			cc := connectedChain{
 				chainName:        chainName,

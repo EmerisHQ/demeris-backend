@@ -25,7 +25,8 @@ const addChainRoute = "/add"
 type addChainRequest struct {
 	models.Chain
 
-	NodeConfig *operator.NodeConfiguration `json:"node_config"`
+	SkipChannelCreation bool                        `json:"skip_channel_creation"`
+	NodeConfig          *operator.NodeConfiguration `json:"node_config"`
 }
 
 func (r *router) addChainHandler(ctx *gin.Context) {
@@ -97,9 +98,6 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 				},
 			}
 			node.Spec.Config.Nodes.ConfigOverride = &cfgOverride
-
-			node.Spec.Config.Nodes.TraceStoreContainer.ImagePullPolicy = v12.PullNever
-
 		}
 
 		hasFaucet := false
@@ -108,10 +106,11 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		}
 
 		if err := r.s.rc.AddChain(chainwatch.Chain{
-			Name:          newChain.ChainName,
-			AddressPrefix: newChain.NodeInfo.Bech32Config.MainPrefix,
-			HasFaucet:     hasFaucet,
-			HDPath:        newChain.DerivationPath,
+			Name:                newChain.ChainName,
+			AddressPrefix:       newChain.NodeInfo.Bech32Config.MainPrefix,
+			HasFaucet:           hasFaucet,
+			SkipChannelCreation: newChain.SkipChannelCreation,
+			HDPath:              newChain.DerivationPath,
 		}); err != nil {
 			e(ctx, http.StatusInternalServerError, err)
 			r.s.l.Error("cannot add chain name to cache", err)

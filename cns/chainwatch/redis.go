@@ -50,10 +50,11 @@ type Connection struct {
 }
 
 type Chain struct {
-	Name          string
-	AddressPrefix string
-	HasFaucet     bool
-	HDPath        string
+	Name                string
+	AddressPrefix       string
+	HasFaucet           bool
+	SkipChannelCreation bool
+	HDPath              string
 }
 
 func (cc Chain) Validate() error {
