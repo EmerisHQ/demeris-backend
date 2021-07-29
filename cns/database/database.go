@@ -3,6 +3,9 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/allinbits/demeris-backend/models"
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
@@ -158,13 +161,35 @@ type channelsBetweenChain struct {
 	ChainBState            int    `db:"chain_b_state"`
 }
 
-func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (map[string]string, error) {
+type ChannelMapping struct {
+	ChannelID        string
+	CounterChannelID string
+}
+
+type ByOldestChannel []ChannelMapping
+
+func (a ByOldestChannel) Len() int      { return len(a) }
+func (a ByOldestChannel) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByOldestChannel) Less(i, j int) bool {
+	chanI, err := strconv.Atoi(strings.TrimPrefix(a[i].ChannelID, "channel-"))
+	if err != nil {
+		panic(err)
+	}
+
+	chanJ, err := strconv.Atoi(strings.TrimPrefix(a[j].ChannelID, "channel-"))
+	if err != nil {
+		panic(err)
+	}
+	return chanI < chanJ
+}
+
+func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) ([]ChannelMapping, error) {
 
 	var c []channelsBetweenChain
 
 	n, err := i.d.DB.PrepareNamed(channelsBetweenChains)
 	if err != nil {
-		return map[string]string{}, err
+		return nil, err
 	}
 
 	if err := n.Select(&c, map[string]interface{}{
@@ -172,15 +197,20 @@ func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (m
 		"destination": destination,
 		"chainID":     chainID,
 	}); err != nil {
-		return map[string]string{}, err
+		return nil, err
 	}
 
-	ret := map[string]string{}
+	var ret []ChannelMapping
 
 	for _, cc := range c {
 		// channel ID destination => channel ID on source
-		ret[cc.ChainAChannelID] = cc.ChainBChannelID
+		ret = append(ret, ChannelMapping{
+			ChannelID:        cc.ChainAChannelID,
+			CounterChannelID: cc.ChainBChannelID,
+		})
 	}
+
+	sort.Sort(ByOldestChannel(ret))
 
 	return ret, nil
 }
@@ -188,4 +218,56 @@ func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (m
 func (i *Instance) ChainAmount() (int, error) {
 	var ret int
 	return ret, i.d.DB.Get(&ret, "select count(id) from cns.chains")
+}
+
+type ClientChannelAssociation struct {
+	ChainAName      string `db:"chain_a_chain_name"`
+	ChainAChannelID string `db:"chain_a_channel_id"`
+	ChainAChainID   string `db:"chain_a_chain_id"`
+	ChainAClientID  string `db:"chain_a_client_id"`
+	ChainBName      string `db:"chain_b_chain_name"`
+	ChainBChannelID string `db:"chain_b_channel_id"`
+	ChainBChainID   string `db:"chain_b_chain_id"`
+	ChainBClientID  string `db:"chain_b_client_id"`
+}
+
+func (i *Instance) ClientByChannelName(chainName, channelName, chainID string) (ClientChannelAssociation, error) {
+	var ret ClientChannelAssociation
+
+	q := clientIDsOnChannel
+
+	n, err := i.d.DB.PrepareNamed(q)
+	if err != nil {
+		return ClientChannelAssociation{}, err
+	}
+
+	if err := n.Get(&ret, map[string]interface{}{
+		"source":    chainName,
+		"channelID": channelName,
+		"chainID":   chainID,
+	}); err != nil {
+		return ClientChannelAssociation{}, err
+	}
+
+	return ret, nil
+}
+
+func (i *Instance) ClientByID(chainName, clientID string) (models.IBCClientStateRow, error) {
+	var ret models.IBCClientStateRow
+
+	q := queryClientByID
+
+	n, err := i.d.DB.PrepareNamed(q)
+	if err != nil {
+		return ret, err
+	}
+
+	if err := n.Get(&ret, map[string]interface{}{
+		"chainName": chainName,
+		"clientID":  clientID,
+	}); err != nil {
+		return ret, err
+	}
+
+	return ret, nil
 }

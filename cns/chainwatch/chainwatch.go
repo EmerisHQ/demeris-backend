@@ -1,6 +1,7 @@
 package chainwatch
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/allinbits/demeris-backend/utils/k8s"
 
+	tmhttp "github.com/tendermint/tendermint/rpc/client/http"
 	"go.uber.org/zap"
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -346,25 +348,45 @@ func (i *Instance) chainsConnectedAndToConnectTo(chainName string) ([]string, []
 		}
 
 		i.l.Debugw("querying channels between chains", "chainName", chainName, "destination", c.ChainName, "chainID", sourceChain.NodeInfo.ChainID)
-		conns, err := i.db.ChannelsBetweenChains(chainName, c.ChainName, sourceChain.NodeInfo.ChainID)
+		connsUnfiltered, err := i.db.ChannelsBetweenChains(chainName, c.ChainName, sourceChain.NodeInfo.ChainID)
 		if err != nil {
 			return nil, nil, fmt.Errorf("cannot scan channels between chain %s and %s, %w", chainName, c.ChainName, err)
 		}
 
+		var conns []database.ChannelMapping
+
+		// filter channels from channelsBetweenChains
+		for _, conn := range connsUnfiltered {
+			// check that the associated client is fresh enough
+			fresh, err := i.chainTuplesClientsFreshEnough(chainName, conn.ChannelID, sourceChain.NodeInfo.ChainID)
+			if err != nil || !fresh {
+				i.l.Warnw(
+					"could not check if clients are fresh enough, or clients are not fresh",
+					"chainName",
+					chainName,
+					"channelID",
+					conn.ChannelID,
+					"chainID",
+					sourceChain.NodeInfo.ChainID,
+					"error",
+					err,
+				)
+				continue
+			}
+
+			conns = append(conns, conn)
+		}
+
 		i.l.Debugw("chains between", "chainName", chainName, "other", c.ChainName, "conns", conns)
 
-		if conns == nil || len(conns) == 0 {
+		if len(conns) == 0 {
 			ret = append(ret, c.ChainName) // c.ChainName is not connected to chainName
 		} else {
 			cc := connectedChain{
 				chainName:        chainName,
 				counterChainName: c.ChainName,
-			}
-
-			for counterChanID, chanID := range conns {
-				cc.channel = chanID
-				cc.counterChannel = counterChanID
-				break
+				channel:          conns[0].ChannelID,
+				counterChannel:   conns[0].CounterChannelID,
 			}
 
 			i.l.Debugw("new connected chain", "chain", cc)
@@ -483,6 +505,163 @@ func (i *Instance) updatePrimaryChannelForChain(chainsMap map[string]models.Chai
 	}
 
 	return chainsMap
+}
+
+func (i *Instance) chainTuplesClientsFreshEnough(chainName, channelName, chainID string) (bool, error) {
+	res, err := i.db.ClientByChannelName(chainName, channelName, chainID)
+	if err != nil {
+		return false, err
+	}
+
+	chainState, err := i.db.ClientByID(chainName, res.ChainAClientID)
+	if err != nil {
+		return false, err
+	}
+
+	i.l.Debugw("chain state", "chainName", chainName, "state", chainState)
+
+	counterpartyChainState, err := i.db.ClientByID(res.ChainBName, res.ChainBClientID)
+	if err != nil {
+		return false, err
+	}
+
+	i.l.Debugw("chain state", "chainName", res.ChainBName, "state", counterpartyChainState)
+
+	chainLatestTime, chainLatestHeight, err := tmBlockLatestTimestamp(chainName)
+	if err != nil {
+		return false, err
+	}
+
+	if uint64(chainLatestHeight) >= chainState.LatestHeight {
+		i.l.Debugw("querying and comparing timestamps", "latest height", chainLatestHeight, "chain state height", chainState.LatestHeight)
+		chainStateHeightTime, err := tmBlockTimestamp(chainName, chainState.LatestHeight)
+		if err != nil {
+			return false, err
+		}
+
+		i.l.Debugw(
+			"chain state time",
+			"chainName",
+			chainName,
+			"chainTimeSub",
+			chainLatestTime.Sub(chainStateHeightTime),
+			"trustingPeriodSeconds",
+			time.Duration(chainState.TrustingPeriod)*time.Second,
+			"time",
+			(time.Duration(chainState.TrustingPeriod)*time.Second - 30*time.Minute).String(),
+		)
+
+		if !timesOkay(chainLatestTime, chainStateHeightTime, chainState) {
+			return false, nil
+		}
+	}
+
+	counterpartyChainLatestTime, counterpartyChainLatestHeight, err := tmBlockLatestTimestamp(res.ChainBName)
+	if err != nil {
+		return false, err
+	}
+
+	if uint64(counterpartyChainLatestHeight) >= counterpartyChainState.LatestHeight {
+		i.l.Debugw("querying and comparing timestamps", "latest height", counterpartyChainLatestHeight, "chain state height", counterpartyChainState.LatestHeight)
+		counterpartyChainStateHeightTime, err := tmBlockTimestamp(res.ChainBName, counterpartyChainState.LatestHeight)
+		if err != nil {
+			return false, err
+		}
+		i.l.Debugw(
+			"chain state time",
+			"chainName",
+			chainName,
+			"chainTimeSub",
+			counterpartyChainLatestTime.Sub(counterpartyChainStateHeightTime),
+			"trustingPeriodSeconds",
+			time.Duration(counterpartyChainState.TrustingPeriod)*time.Second,
+			"time",
+			(time.Duration(chainState.TrustingPeriod)*time.Second - 30*time.Minute).String(),
+		)
+
+		if !timesOkay(counterpartyChainLatestTime, counterpartyChainStateHeightTime, counterpartyChainState) {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func timesOkay(latestTime, timeAtBlock time.Time, chainState models.IBCClientStateRow) bool {
+	chainTimeSub := latestTime.Sub(timeAtBlock)
+	if chainTimeSub > (time.Duration(chainState.TrustingPeriod)*time.Second - 30*time.Minute) {
+		return false
+	}
+
+	return true
+}
+
+func tmBlockTimestampFunc(chainName string, block uint64) (time.Time, error) {
+	u := fmt.Sprintf("http://%s:26657", chainName)
+
+	c, err := tmhttp.New(u, "/websocket")
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	bi := int64(block)
+	bloc, err := c.Block(context.Background(), &bi)
+	if err != nil {
+		return time.Time{}, err
+
+	}
+
+	return bloc.Block.Time, nil
+}
+
+func tmBlockLatestTimestampFunc(chainName string) (time.Time, int64, error) {
+	u := fmt.Sprintf("http://%s:26657", chainName)
+
+	c, err := tmhttp.New(u, "/websocket")
+	if err != nil {
+		return time.Time{}, 0, err
+	}
+
+	bloc, err := c.Block(context.Background(), nil)
+	if err != nil {
+		return time.Time{}, 0, err
+
+	}
+
+	return bloc.Block.Time, bloc.Block.Height, nil
+}
+
+func tmBlockTimestamp(chainName string, block uint64) (time.Time, error) {
+	var res time.Time
+	var e error
+	for i := 0; i < 50; i++ {
+		res, e = tmBlockTimestampFunc(chainName, block)
+		if e != nil {
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		return res, nil
+	}
+
+	return res, e
+}
+
+func tmBlockLatestTimestamp(chainName string) (time.Time, int64, error) {
+	var res time.Time
+	var e error
+	var h int64
+	for i := 0; i < 50; i++ {
+		res, h, e = tmBlockLatestTimestampFunc(chainName)
+		if e != nil {
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+
+		return res, h, nil
+	}
+
+	return res, h, e
 }
 
 func (i *Instance) relayerDenom(chainName string) (models.Denom, error) {
