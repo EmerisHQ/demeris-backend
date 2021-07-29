@@ -22,6 +22,7 @@ import (
 var (
 	relayerDebugLogLevel       = "debug"
 	maxGas               int64 = 6000000
+	clearPacketsInterval int64 = 600
 )
 
 type Instance struct {
@@ -232,6 +233,11 @@ func (i *Instance) createRelayer(chain Chain) error {
 	}
 	relayerConfig.MaxGas = &maxGas
 
+	relayerConfig.MaxMsgNum = &chain.RelayerConfiguration.MaxMsgNum
+	relayerConfig.MaxGas = &chain.RelayerConfiguration.MaxGas
+	relayerConfig.ClockDrift = &chain.RelayerConfiguration.ClockDrift
+	relayerConfig.TrustingPeriod = &chain.RelayerConfiguration.TrustingPeriod
+
 	relayer.Spec.Chains = append(relayer.Spec.Chains, &relayerConfig)
 
 	if !chain.SkipChannelCreation {
@@ -274,6 +280,8 @@ func (i *Instance) createRelayer(chain Chain) error {
 		relayer.Namespace = i.defaultNamespace
 		relayer.Name = "relayer"
 		relayer.ObjectMeta.Name = "relayer"
+		relayer.Spec.Filter = true
+		relayer.Spec.ClearPacketsInterval = &clearPacketsInterval
 
 		if i.relayerDebug {
 			relayer.Spec.LogLevel = &relayerDebugLogLevel

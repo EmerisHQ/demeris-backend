@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/allinbits/demeris-backend/utils/k8s/operator"
+
 	r "github.com/go-redis/redis/v8"
 )
 
@@ -55,6 +57,8 @@ type Chain struct {
 	HasFaucet           bool
 	SkipChannelCreation bool
 	HDPath              string
+
+	RelayerConfiguration operator.RelayerConfiguration
 }
 
 func (cc Chain) Validate() error {
