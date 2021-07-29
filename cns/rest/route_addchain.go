@@ -79,7 +79,10 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			return
 		}
 
-		if !newChain.NodeConfig.DisableMinFeeConfig {
+		switch newChain.NodeConfig.DisableMinFeeConfig {
+		case true:
+			node.Spec.Config.Nodes.TraceStoreContainer.ImagePullPolicy = v12.PullNever
+		default:
 			minGasPriceVal := newChain.RelayerToken().GasPriceLevels.Low / 2
 			minGasPricesStr := fmt.Sprintf("%v%s", minGasPriceVal, newChain.RelayerToken().Name)
 
