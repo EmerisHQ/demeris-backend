@@ -203,6 +203,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	_, IBCAckEventPresent := data.Events["fungible_token_packet.acknowledgement"]
 	_, IBCReceivePacketEventPresent := data.Events["recv_packet.packet_sequence"]
 	_, IBCTimeoutEventPresent := data.Events["timeout.refund_receiver"]
+	_, SwapTransactionEventPresent := data.Events["swap_within_batch.pool_id"]
 
 	if len(txHashSlice) == 0 {
 		return
@@ -212,6 +213,14 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	eventTx := data.Data.(types.EventDataTx)
 	height := eventTx.Height
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
+	err := w.store.CreateTicket(w.Name, txHash)
+	w.l.Debugw("this is key", "key", key)
+	if err != nil{
+		w.l.Debugw("this is error", "error", err)
+	}
+
+	w.l.Debugw("this is data", "swap tx data", data.Events)
+	w.l.Debugw("this is event value", "swap tx event", SwapTransactionEventPresent)
 
 	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
 		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)
@@ -231,10 +240,9 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		return
 	}
-
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
-		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
+		!IBCAckEventPresent && !IBCTimeoutEventPresent && !SwapTransactionEventPresent && w.store.Exists(key) {
 		if err := w.store.SetComplete(key, height); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
 		}
@@ -293,6 +301,35 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		return
+	}
+
+	w.l.Debugw("this is poolId","name",  w.Name )
+
+	if SwapTransactionEventPresent && w.Name == "cosmos-hub"{
+		poolId, ok := data.Events["swap_within_batch.pool_id"]
+		if !ok {
+			w.l.Errorw("pool_id not found")
+			return
+		}
+		w.l.Debugw("this is poolId","pool id ", poolId)
+
+		offerCoinFee, ok := data.Events["swap_within_batch.offer_coin_fee_amount"]
+		if !ok {
+			w.l.Errorw("pool_id not found")
+			return
+		}
+
+		offerCoinfDenom, ok := data.Events["swap_within_batch.offer_coin_fee_denom"]
+		if !ok{
+			w.l.Errorw("offer_coin_fee_denom not found")
+		}
+		w.l.Debugw("this is offerCoinFee","offer coin fee ", offerCoinFee)
+		w.l.Debugw("this is offerCoinDenom","pool id ", offerCoinfDenom)
+
+		err := w.store.SetPoolSwapFees(poolId[0], offerCoinFee[0], offerCoinfDenom[0])
+		if err != nil{
+			w.l.Errorw("unable to store swap fees", "error", err)
+		}
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.

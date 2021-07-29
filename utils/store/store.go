@@ -196,6 +196,11 @@ func (s *Store) SetIbcFailed(key string, height int64) error {
 
 	return s.SetIBCReceiveFailed(prev.Info, height)
 }
+
+func (s *Store) SetPoolSwapFees(poolId, offerCoinDenom, offerCoinAmount string) error {
+	return fmt.Errorf("skip")
+}
+
 func (s *Store) CreateShadowKey(key string) error {
 	shadowKey := shadow + key
 	return s.SetWithExpiry(shadowKey, "", 1)
