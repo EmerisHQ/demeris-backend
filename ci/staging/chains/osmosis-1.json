@@ -80,6 +80,7 @@
     "max_msg_num":12,
     "max_gas": 1000000,
     "clock_drift": "1800s",
-    "trusting_period": "14days"
-  }
+    "trusting_period": "9days"
+  },
+  "skip_channel_creation": true
 }
