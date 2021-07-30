@@ -17,12 +17,11 @@ func Register(router *gin.Engine) {
 	chain.GET("/primary_channel/:counterparty", GetPrimaryChannelWithCounterparty)
 	chain.GET("/status", GetChainStatus)
 	chain.GET("/supply", GetChainSupply)
-	chain.GET("/:tx", GetChainTx)
+	chain.GET("txs/:tx", GetChainTx)
 
 	fee := chain.Group("/fee")
 
 	fee.GET("", GetFee)
 	fee.GET("/address", GetFeeAddress)
 	fee.GET("/token", GetFeeToken)
-
 }
