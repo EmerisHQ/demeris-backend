@@ -45,7 +45,7 @@ func main() {
 	}
 
 	s, err := store.NewClient(cfg.RedisAddr)
-	if err != nil{
+	if err != nil {
 		l.Panicw("unable to start redis client", "error", err)
 	}
 
