@@ -103,7 +103,7 @@ func Tx(c *gin.Context) {
 		return
 	}
 
-	txhash, err := relayTx(d, txRequest.TxBytes, meta)
+	txhash, err := relayTx(d, txRequest.TxBytes, meta, txRequest.Owner)
 
 	if err != nil {
 		e := deps.NewError("tx", fmt.Errorf("relaying tx failed, %w", err), http.StatusBadRequest)
@@ -173,7 +173,7 @@ func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 // RelayTx relays the tx to the specifc endpoint
 // RelayTx will also perform the ticketing mechanism
 // Always expect broadcast mode to be `async`
-func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
+func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta, owner string) (string, error) {
 
 	grpcConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%d", meta.Chain.ChainName, 9090), // Or your gRPC server address.
@@ -204,17 +204,7 @@ func relayTx(d *deps.Deps, txBytes []byte, meta TxMeta) (string, error) {
 		return "", fmt.Errorf("transaction relaying error: code %d, %s", grpcRes.TxResponse.Code, grpcRes.TxResponse.RawLog)
 	}
 
-	msgs := grpcRes.TxResponse.GetTx().GetMsgs()
-	if len(msgs) != 1 {
-		return "", fmt.Errorf("unable to fetch messages, messages %v", msgs)
-	}
-
-	signers := msgs[0].GetSigners()
-	if len(signers) != 1 {
-		return "", fmt.Errorf("unable to fetch signer information, signers %v", signers)
-	}
-
-	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash, signers[0].String())
+	err = d.Store.CreateTicket(meta.Chain.ChainName, grpcRes.TxResponse.TxHash, owner)
 
 	if err != nil {
 		return grpcRes.TxResponse.TxHash, err
