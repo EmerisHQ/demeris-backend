@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -198,6 +199,33 @@ func (s *Store) SetIbcFailed(key string, height int64) error {
 }
 
 func (s *Store) SetPoolSwapFees(poolId, offerCoinDenom, offerCoinAmount string) error {
+	poolTicket := fmt.Sprintf("pool-%s", poolId)
+	amount, ok := sdk.NewIntFromString(offerCoinAmount)
+	if !ok {
+
+	}
+	coin := sdk.Coin{
+		Denom:  offerCoinDenom,
+		Amount: amount,
+	}
+	if !s.Exists(poolTicket) {
+		err := s.SetWithExpiry(poolTicket, []sdk.Coin{coin}, 12) // mul is 12 as default expiry time is 300s
+		if err != nil {
+			return err
+		}
+	}
+
+	swapFees, err := s.GetPoolTicket(poolTicket)
+	if err != nil {
+		return err
+	}
+	newCoins := swapFees.Add(coin)
+
+	err = s.SetWithExpiry(poolTicket, newCoins, 12)
+	if err != nil {
+		return err
+	}
+
 	return fmt.Errorf("skip")
 }
 
@@ -220,6 +248,15 @@ func (s *Store) Get(key string) (Ticket, error) {
 	var res Ticket
 	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
 		return Ticket{}, err
+	}
+
+	return res, nil
+}
+
+func (s *Store) GetPoolTicket(key string) (sdk.Coins, error) {
+	var res []sdk.Coin
+	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
+		return []sdk.Coin{}, err
 	}
 
 	return res, nil
