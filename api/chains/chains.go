@@ -8,12 +8,14 @@ import (
 	"strings"
 	"time"
 
+	gaia "github.com/cosmos/gaia/v4/app"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/k8s"
+	"github.com/cosmos/cosmos-sdk/types/tx"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
@@ -665,4 +667,101 @@ func GetChainSupply(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, suppRes)
+}
+
+// GetChainTx returns the tx info of a given chain.
+// @Summary Gets tx info of a given tx.
+// @Tags Chain
+// @ID tx info
+// @Description Gets tx info of a given tx.
+// @Param chainName path string true "chain name"
+// @Param tx path string true "tx"
+// @Produce json
+// @Success 200 {object} tx.GetTxResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/{txhash} [get]
+func GetChainTx(c *gin.Context) {
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+	txHash := c.Param("tx")
+
+	grpcConn, err := grpc.Dial(
+		fmt.Sprintf("%s:%d", chainName, grpcPort),
+		grpc.WithInsecure(),
+	)
+
+	if err != nil {
+		e := deps.NewError(
+			"tx info",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	defer grpcConn.Close()
+
+	txClient := tx.NewServiceClient(grpcConn)
+
+	grpcRes, err := txClient.GetTx(context.Background(), &tx.GetTxRequest{Hash: txHash})
+	if err != nil {
+		e := deps.NewError(
+			"tx info",
+			fmt.Errorf("unable to fetch tx %s for chain %v", txHash, chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"tx",
+			txHash,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	cdc, _ := gaia.MakeCodecs()
+	bz, err := cdc.MarshalJSON(grpcRes)
+
+	if err != nil {
+		e := deps.NewError(
+			"tx info",
+			fmt.Errorf("unable to unmarshal tx %s for chain %v", txHash, chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot write tx to response",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"tx",
+			txHash,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", bz)
 }

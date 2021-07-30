@@ -17,6 +17,7 @@ func Register(router *gin.Engine) {
 	chain.GET("/primary_channel/:counterparty", GetPrimaryChannelWithCounterparty)
 	chain.GET("/status", GetChainStatus)
 	chain.GET("/supply", GetChainSupply)
+	chain.GET("/:tx", GetChainTx)
 
 	fee := chain.Group("/fee")
 
