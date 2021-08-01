@@ -28,12 +28,17 @@ type Store struct {
 	}
 }
 
+type TxHashEntry struct {
+	Chain  string
+	TxHash string
+}
+
 type Ticket struct {
-	Info     string   `json:"info,omitempty"`
-	Height   int64    `json:"height,omitempty"`
-	Status   string   `json:"status,omitempty"`
-	TxHashes []string `json:"tx_hashes,omitempty"`
-	Error    string   `json:"error,omitempty"`
+	Info     string        `json:"info,omitempty"`
+	Height   int64         `json:"height,omitempty"`
+	Status   string        `json:"status,omitempty"`
+	TxHashes []TxHashEntry `json:"tx_hashes,omitempty"`
+	Error    string        `json:"error,omitempty"`
 }
 
 func (t *Ticket) UnmarshalBinary(data []byte) error {
@@ -80,7 +85,7 @@ func (s *Store) SetComplete(key string, height int64) error {
 		Height: height}, 2)
 }
 
-func (s *Store) SetIBCReceiveFailed(key string, txHashes []string, height int64) error {
+func (s *Store) SetIBCReceiveFailed(key string, txHashes []TxHashEntry, height int64) error {
 	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
@@ -89,7 +94,7 @@ func (s *Store) SetIBCReceiveFailed(key string, txHashes []string, height int64)
 		TxHashes: txHashes, Height: height}, 0)
 }
 
-func (s *Store) SetIBCReceiveSuccess(key string, txHashes []string, height int64) error {
+func (s *Store) SetIBCReceiveSuccess(key string, txHashes []TxHashEntry, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{
 		Status:   "IBC_receive_success",
 		TxHashes: txHashes,
@@ -100,7 +105,7 @@ func (s *Store) SetIBCReceiveSuccess(key string, txHashes []string, height int64
 	return s.DeleteShadowKey(key)
 }
 
-func (s *Store) SetUnlockTimeout(key string, txHashes []string, height int64) error {
+func (s *Store) SetUnlockTimeout(key string, txHashes []TxHashEntry, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout,
 		Height:   height,
 		TxHashes: txHashes}, 2); err != nil {
@@ -110,7 +115,7 @@ func (s *Store) SetUnlockTimeout(key string, txHashes []string, height int64) er
 	return s.DeleteShadowKey(key)
 }
 
-func (s *Store) SetUnlockAck(key string, txHashes []string, height int64) error {
+func (s *Store) SetUnlockAck(key string, txHashes []TxHashEntry, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck,
 		Height:   height,
 		TxHashes: txHashes}, 2); err != nil {
@@ -130,7 +135,7 @@ func (s *Store) SetFailedWithErr(key, error string, height int64) error {
 	return s.SetWithExpiry(key, data, 2)
 }
 
-func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, txHash string, height int64) error {
+func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, txHash, chainName string, height int64) error {
 
 	if !s.Exists(key) {
 		return fmt.Errorf("key doesn't exists")
@@ -152,14 +157,17 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
 	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
-		TxHashes: []string{txHash}}, 2); err != nil {
+		TxHashes: []TxHashEntry{{
+			Chain:  chainName,
+			TxHash: txHash,
+		}}}, 2); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (s *Store) SetIbcTimeoutUnlock(key, txHash string, height int64) error {
+func (s *Store) SetIbcTimeoutUnlock(key, txHash, chainName string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -167,11 +175,15 @@ func (s *Store) SetIbcTimeoutUnlock(key, txHash string, height int64) error {
 		return err
 	}
 
-	txHashes := append(prev.TxHashes, txHash)
+	txHashes := append(prev.TxHashes, TxHashEntry{
+		Chain:  chainName,
+		TxHash: txHash,
+	})
+
 	return s.SetUnlockTimeout(prev.Info, txHashes, height)
 }
 
-func (s *Store) SetIbcAckUnlock(key, txHash string, height int64) error {
+func (s *Store) SetIbcAckUnlock(key, txHash, chainName string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -179,11 +191,15 @@ func (s *Store) SetIbcAckUnlock(key, txHash string, height int64) error {
 		return err
 	}
 
-	txHashes := append(prev.TxHashes, txHash)
+	txHashes := append(prev.TxHashes, TxHashEntry{
+		Chain:  chainName,
+		TxHash: txHash,
+	})
+
 	return s.SetUnlockAck(prev.Info, txHashes, height)
 }
 
-func (s *Store) SetIbcReceived(key, txHash string, height int64) error {
+func (s *Store) SetIbcReceived(key, txHash, chainName string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -191,12 +207,15 @@ func (s *Store) SetIbcReceived(key, txHash string, height int64) error {
 		return err
 	}
 
-	txHashes := append(prev.TxHashes, txHash)
-	fmt.Printf("this is prev %v", prev)
+	txHashes := append(prev.TxHashes, TxHashEntry{
+		Chain:  chainName,
+		TxHash: txHash,
+	})
+
 	return s.SetIBCReceiveSuccess(prev.Info, txHashes, height)
 }
 
-func (s *Store) SetIbcFailed(key, txHash string, height int64) error {
+func (s *Store) SetIbcFailed(key, txHash, chainName string, height int64) error {
 
 	prev, err := s.Get(key)
 
@@ -204,7 +223,10 @@ func (s *Store) SetIbcFailed(key, txHash string, height int64) error {
 		return err
 	}
 
-	txHashes := append(prev.TxHashes, txHash)
+	txHashes := append(prev.TxHashes, TxHashEntry{
+		Chain:  chainName,
+		TxHash: txHash,
+	})
 	return s.SetIBCReceiveFailed(prev.Info, txHashes, height)
 }
 func (s *Store) CreateShadowKey(key string) error {
