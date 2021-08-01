@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -63,6 +64,7 @@ func NewClient(connUrl string) (*Store, error) {
 }
 
 func (s *Store) CreateTicket(chain, txHash, owner string) error {
+	owner = hex.EncodeToString([]byte(owner))
 	data := Ticket{
 		Owner:  owner,
 		Status: pending,
@@ -260,7 +262,7 @@ func (s *Store) Get(key string) (Ticket, error) {
 
 func (s *Store) GetUserTickets(user string) (map[string][]string, error) {
 	var keys []string
-	keys, err := s.sMembers(user)
+	keys, err := s.sMembers(hex.EncodeToString([]byte(user)))
 	if err != nil {
 		return map[string][]string{}, err
 	}

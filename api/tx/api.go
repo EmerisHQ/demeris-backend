@@ -231,7 +231,7 @@ func GetTicket(c *gin.Context) {
 	chainName := c.Param("chain")
 	ticketId := c.Param("ticket")
 
-	ticket, err := d.Store.Get(fmt.Sprintf("%s-%s", chainName, ticketId))
+	ticket, err := d.Store.Get(fmt.Sprintf("%s/%s", chainName, ticketId))
 
 	if err != nil {
 		e := deps.NewError(
