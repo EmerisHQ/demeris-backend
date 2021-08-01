@@ -3,6 +3,7 @@ package operator
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	v1 "github.com/allinbits/starport-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -34,6 +35,13 @@ var (
 	defaultStartupTimeout = "30m"
 	defaultProtocol       = corev1.ProtocolTCP
 	defaultPort           = intstr.FromInt(26257)
+
+	DefaultRelayerConfiguration = RelayerConfiguration{
+		MaxMsgNum:      15,
+		MaxGas:         500000,
+		ClockDrift:     "1800s",
+		TrustingPeriod: "14days",
+	}
 )
 
 type NodeConfiguration struct {
@@ -47,6 +55,30 @@ type NodeConfiguration struct {
 	TracelistenerImage  string                  `json:"tracelistener_image"`
 	DisableMinFeeConfig bool                    `json:"disable_min_fee_config"`
 	TracelistenerDebug  bool
+}
+
+type RelayerConfiguration struct {
+	MaxMsgNum      int64  `json:"max_msg_num"`
+	MaxGas         int64  `json:"max_gas"`
+	ClockDrift     string `json:"clock_drift"`
+	TrustingPeriod string `json:"trusting_period"`
+}
+
+func (r RelayerConfiguration) Validate() error {
+	if r.MaxMsgNum <= 0 {
+		return fmt.Errorf("max msg num can't be less than or equal to zero")
+	}
+
+	if r.MaxGas <= 0 {
+		return fmt.Errorf("max gas can't be less than or equal to zero")
+	}
+
+	if _, err := time.ParseDuration(r.ClockDrift); err != nil {
+		return fmt.Errorf("cannot parse clock drift expression, %w", err)
+	}
+
+	// we can't parse trusting period :/
+	return nil
 }
 
 func (n NodeConfiguration) Validate() error {

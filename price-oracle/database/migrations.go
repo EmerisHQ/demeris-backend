@@ -12,8 +12,14 @@ CREATE TABLE oracle.binance (symbol STRING PRIMARY KEY, price FLOAT, updatedat I
 const createTableCoinmarketcap = `
 CREATE TABLE oracle.coinmarketcap (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
 `
+const createTableCoingecko = `
+CREATE TABLE oracle.coingecko (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
+`
 const createTableCoinmarketcapSupply = `
 CREATE TABLE oracle.coinmarketcapsupply (symbol STRING PRIMARY KEY, supply FLOAT);
+`
+const createTableCoingeckoSupply = `
+CREATE TABLE oracle.coingeckosupply (symbol STRING PRIMARY KEY, supply FLOAT);
 `
 const createTableFixer = `
 CREATE TABLE oracle.fixer (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
@@ -30,6 +36,8 @@ var migrationList = []string{
 	createTableBinance,
 	createTableCoinmarketcap,
 	createTableCoinmarketcapSupply,
+	createTableCoingecko,
+	createTableCoingeckoSupply,
 	createTableFixer,
 	createTableTokens,
 	createTableFiats,
@@ -37,6 +45,16 @@ var migrationList = []string{
 
 func (i *Instance) runMigrations() {
 	if err := database.RunMigrations(i.connString, migrationList); err != nil {
+		panic(err)
+	}
+}
+
+func (i *Instance) runMigrationsCoingecko() {
+	var migrationCoingecko = []string{
+		createTableCoingecko,
+		createTableCoingeckoSupply,
+	}
+	if err := database.RunMigrations(i.connString, migrationCoingecko); err != nil {
 		panic(err)
 	}
 }

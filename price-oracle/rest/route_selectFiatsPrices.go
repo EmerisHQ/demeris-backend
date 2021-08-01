@@ -80,7 +80,7 @@ func (r *router) FiatsPrices(ctx *gin.Context) {
 	}
 	var basefiats []string
 	for _, fiat := range r.s.c.Whitelistfiats {
-		fiats := types.FiatBasecurrency + fiat
+		fiats := types.USDBasecurrency + fiat
 		basefiats = append(basefiats, fiats)
 	}
 	if Diffpair(selectFiat.Fiats, basefiats) == false {

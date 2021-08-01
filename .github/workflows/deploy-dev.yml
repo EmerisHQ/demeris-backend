@@ -107,6 +107,8 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.sha }} \
+              --set coinmarketcapKey=${{ secrets.COIN_MARKET_CAP_KEY }} \
+              --set fixerKey=${{ secrets.FIXER_KEY }} \
               ./helm/emeris-price-oracle-server
 
   admin-ui:

@@ -28,7 +28,10 @@ func New(connString string) (*Instance, error) {
 	if err != nil {
 		ii.runMigrations()
 	}
-
+	_, err = ii.Query("SELECT * FROM oracle.coingecko")
+	if err != nil {
+		ii.runMigrationsCoingecko()
+	}
 	return ii, nil
 }
 
@@ -50,12 +53,6 @@ func CnsTokenQuery(db *sqlx.DB) ([]string, error) {
 			ticker = strings.TrimLeft(ticker, "\"")
 			if ticker[0:1] == "U" {
 				ticker = ticker[1:]
-			}
-			if ticker == "OSMO" {
-				continue
-			}
-			if ticker == "REGEN" {
-				continue
 			}
 			Whitelists = append(Whitelists, ticker)
 		}

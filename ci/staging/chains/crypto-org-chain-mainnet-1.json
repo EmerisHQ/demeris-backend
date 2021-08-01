@@ -52,5 +52,11 @@
         },
 		"docker_image": "gcr.io/tendermint-dev/crypto-com",
 		"docker_image_version": "v2.0.1"
+	},
+	"relayer_configuration": {
+		"max_msg_num":15,
+		"max_gas": 800000,
+		"clock_drift": "1800s",
+		"trusting_period": "14days"
 	}
 }

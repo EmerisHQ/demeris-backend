@@ -108,6 +108,7 @@ docs/docs.go
 
 # demeris config
 demeris-api.toml
+demeris-price-oracle.toml
 
 bin
 .envrc
