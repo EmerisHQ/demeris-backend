@@ -253,25 +253,5 @@ func GetTicket(c *gin.Context) {
 		return
 	}
 
-	bz, err := ticket.MarshalBinary()
-	if err != nil {
-		e := deps.NewError(
-			"tx",
-			fmt.Errorf("cannot marshal ticket with id %v", ticketId),
-			http.StatusBadRequest,
-		)
-
-		d.WriteError(c, e,
-			"cannot marshal ticket",
-			"id",
-			e.ID,
-			"name",
-			ticketId,
-			"error",
-			err,
-		)
-
-		return
-	}
-	c.Data(http.StatusOK, "application/json", bz)
+	c.JSON(http.StatusOK, ticket)
 }
