@@ -243,15 +243,6 @@ func (s *Store) GetSwapFee(key string) (string, error) {
 	return res, nil
 }
 
-func (s *Store) GetPoolTicket(key string) (sdk.Coins, error) {
-	var res []sdk.Coin
-	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
-		return []sdk.Coin{}, err
-	}
-
-	return res, nil
-}
-
 func (s *Store) Delete(key string) error {
 	return s.Client.Del(context.Background(), key).Err()
 }
@@ -262,13 +253,12 @@ func (s *Store) DeleteShadowKey(key string) error {
 }
 
 func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
-	var keys []string
 	keys, err := s.sMembers(poolId)
 	if err != nil {
 		return sdk.Coins{}, err
 	}
 
-	var res sdk.Coins
+	var coins sdk.Coins
 	for _, key := range keys {
 		if !s.Exists(key) {
 			err := s.sRemove(poolId, key)
@@ -284,10 +274,10 @@ func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
 			return sdk.Coins{}, err
 		}
 
-		res = res.Add(coin)
+		coins = coins.Add(coin)
 	}
 
-	return res, nil
+	return coins, nil
 }
 
 func (s *Store) sAdd(user, key string) error {

@@ -180,5 +180,7 @@ func registerRoutes(engine *gin.Engine) {
 	// @tag.description Blocks-related endpoints
 	block.Register(engine)
 
+	// @tag.name Pool
+	// @tag.description Pool-related endpoints
 	pool.Register(engine)
 }

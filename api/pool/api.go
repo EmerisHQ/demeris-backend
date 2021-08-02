@@ -15,8 +15,8 @@ func Register(router *gin.Engine) {
 
 }
 
-// GetSwapFee returns the swap fee of past 1 hour n.
-// @Summary Gets swap fee by id.
+// getSwapFee returns the swap fee of past 1 hour n.
+// @Summary Gets swap fee by pool id.
 // @Tags pool
 // @ID swap fee
 // @Description Gets swap fee of past one hour by pool id.
@@ -24,7 +24,7 @@ func Register(router *gin.Engine) {
 // @Produce json
 // @Success 200 {object} sdk.Coins
 // @Failure 500,403 {object} deps.Error
-// @Router /pool/{poolID}/swapfee [get]
+// @Router /pool/{poolID}/swapfees [get]
 func getSwapFee(c *gin.Context) {
 
 	d := deps.GetDeps(c)
@@ -34,15 +34,17 @@ func getSwapFee(c *gin.Context) {
 	coins, err := d.Store.GetSwapFees(poolId)
 	if err != nil {
 		e := deps.NewError(
-			"status",
-			fmt.Errorf("cannot retrieve relayer status"),
+			"swap fees",
+			fmt.Errorf("cannot get swap fees"),
 			http.StatusBadRequest,
 		)
 
 		d.WriteError(c, e,
-			"cannot retrieve relayer status",
+			"cannot get swap fees",
 			"id",
 			e.ID,
+			"poolId",
+			poolId,
 			"error",
 			err,
 		)
