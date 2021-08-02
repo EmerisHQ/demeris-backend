@@ -1,22 +1,21 @@
+import axios from "~/plugins/axios";
+
 export const state = () => ({
-  /* NavBar */
   isNavBarVisible: true,
 
-  /* FooterBar */
   isFooterBarVisible: true,
 
-  /* Aside */
   isAsideVisible: true,
   isAsideMobileExpanded: false,
+
+  chains: [],
 })
 
 export const mutations = {
-  /* A fit-them-all commit */
   basic(state, payload) {
     state[payload.key] = payload.value
   },
 
-  /* Aside Mobile */
   asideMobileStateToggle(state, payload = null) {
     const htmlClassName = 'has-aside-mobile-expanded'
 
@@ -36,4 +35,14 @@ export const mutations = {
 
     state.isAsideMobileExpanded = isShow
   },
+
+  updateChains(state) {
+    axios.get("/chains").then(res => { 
+      state.chains = res.data.chains; 
+      console.log("fetched chains"); 
+    }).catch((e) => {
+      console.log(e)
+      console.log("failed to fetch chains")
+    })
+  }
 }

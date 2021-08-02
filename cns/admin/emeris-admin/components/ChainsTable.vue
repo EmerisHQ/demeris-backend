@@ -22,9 +22,9 @@
           </div>
         </b-table-column>
         <b-table-column label="Name" field="name" sortable>
-          <a :href="'/chains/' + props.row.chain_name">
+          <router-link :to="'/chains/' + props.row.chain_name">
             {{ props.row.chain_name }}
-          </a>
+          </router-link>
         </b-table-column>
         <b-table-column label="Display name" field="chain_name" sortable>
           {{ props.row.display_name }}
@@ -63,6 +63,7 @@
 
 <script>
 import axios from "~/plugins/axios";
+import { mapGetters, mapMutations } from 'vuex'
 
 export default {
   name: "ChainsTable",
@@ -74,64 +75,23 @@ export default {
   },
   data() {
     return {
-      chains: [
-        {
-          enabled: true,
-          chain_name: "cosmos-hub",
-          logo: "https://storage.googleapis.com/emeris/logos/atom.svg",
-          display_name: "Cosmos Hub Emeris",
-          primary_channel: { cn1: "cn1", cn2: "cn2" },
-          denoms: [
-            {
-              name: "uatom",
-              display_name: "ATOM",
-              logo: "https://storage.googleapis.com/emeris/logos/atom.svg",
-              precision: 6,
-              verified: true,
-              stakable: true,
-              ticker: "ATOM",
-              fee_token: true,
-              gas_price_levels: { low: 0.01, average: 0.022, high: 0.042 },
-              fetch_price: true,
-              relayer_denom: true,
-              minimum_thresh_relayer_balance: 42
-            }
-          ],
-          demeris_addresses: ["feeaddress"],
-          genesis_hash: "genesis_hash",
-          node_info: {
-            endpoint: "cosmos-hub",
-            chain_id: "cosmos-hub-testnet",
-            bech32_config: {
-              main_prefix: "cosmos",
-              prefix_account: "cosmos",
-              prefix_validator: "val",
-              prefix_consensus: "cons",
-              prefix_public: "pub",
-              prefix_operator: "oper",
-              acc_addr: "cosmos",
-              acc_pub: "cosmospub",
-              val_addr: "cosmosvaloper",
-              val_pub: "cosmosvaloperpub",
-              cons_addr: "cosmosvalcons",
-              cons_pub: "cosmosvalconspub"
-            }
-          },
-          valid_block_thresh: "10s",
-          derivation_path: "m/44'/118'/0'/0/0"
-        }
-      ],
       isLoading: false,
       paginated: false,
       perPage: 10,
       checkedRows: []
     };
   },
+  methods: {
+    ...mapMutations([
+      'updateChains'
+    ])
+  },
+  computed: {
+    chains() { return this.$store.state.chains }
+  },
   async mounted() {
     this.isLoading = true;
-    let res = await axios.get("/chains");
-    this.chains = res.data.chains;
-    console.log(res);
+    this.updateChains()
     this.isLoading = false;
   }
 };

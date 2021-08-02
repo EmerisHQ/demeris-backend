@@ -8,7 +8,7 @@
           class="tile is-child"
           type="is-primary"
           icon="account-multiple"
-          :number="2125268"
+          :number="this.$store.state.chains.length"
           label="Chains"
         />
         <card-widget
