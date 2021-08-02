@@ -198,35 +198,17 @@ func (s *Store) SetIbcFailed(key string, height int64) error {
 	return s.SetIBCReceiveFailed(prev.Info, height)
 }
 
-func (s *Store) SetPoolSwapFees(poolId, offerCoinDenom, offerCoinAmount string) error {
-	poolTicket := fmt.Sprintf("pool-%s", poolId)
-	amount, ok := sdk.NewIntFromString(offerCoinAmount)
-	if !ok {
+func (s *Store) SetPoolSwapFees(poolId, offerCoinAmount, offerCoinDenom string) error {
+	poolTicket := fmt.Sprintf("pool-%s-%d", poolId, time.Now().Unix())
 
-	}
-	coin := sdk.Coin{
-		Denom:  offerCoinDenom,
-		Amount: amount,
-	}
-	if !s.Exists(poolTicket) {
-		err := s.SetWithExpiry(poolTicket, []sdk.Coin{coin}, 12) // mul is 12 as default expiry time is 300s
-		if err != nil {
-			return err
-		}
-	}
+	coin := fmt.Sprintf("%s%s", offerCoinAmount, offerCoinDenom)
 
-	swapFees, err := s.GetPoolTicket(poolTicket)
-	if err != nil {
-		return err
-	}
-	newCoins := swapFees.Add(coin)
-
-	err = s.SetWithExpiry(poolTicket, newCoins, 12)
+	err := s.SetWithExpiry(poolTicket, coin, 12) //  mul is 12 as time out is set to 5minutes by default
 	if err != nil {
 		return err
 	}
 
-	return fmt.Errorf("skip")
+	return s.sAdd(poolId, poolTicket)
 }
 
 func (s *Store) CreateShadowKey(key string) error {
@@ -252,6 +234,14 @@ func (s *Store) Get(key string) (Ticket, error) {
 
 	return res, nil
 }
+func (s *Store) GetSwapFee(key string) (string, error) {
+	var res string
+	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
+		return "", err
+	}
+
+	return res, nil
+}
 
 func (s *Store) GetPoolTicket(key string) (sdk.Coins, error) {
 	var res []sdk.Coin
@@ -269,4 +259,51 @@ func (s *Store) Delete(key string) error {
 func (s *Store) DeleteShadowKey(key string) error {
 	shadowKey := shadow + key
 	return s.Delete(shadowKey)
+}
+
+func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
+	var keys []string
+	keys, err := s.sMembers(poolId)
+	if err != nil {
+		return sdk.Coins{}, err
+	}
+
+	var res sdk.Coins
+	for _, key := range keys {
+		if !s.Exists(key) {
+			err := s.sRemove(poolId, key)
+			if err != nil {
+				return sdk.Coins{}, err
+			}
+			continue
+		}
+
+		value, err := s.GetSwapFee(key)
+		coin, err := sdk.ParseCoinNormalized(value)
+		if err != nil {
+			return sdk.Coins{}, err
+		}
+
+		res = res.Add(coin)
+	}
+
+	return res, nil
+}
+
+func (s *Store) sAdd(user, key string) error {
+	return s.Client.SAdd(context.Background(), user, key).Err()
+}
+
+func (s *Store) sMembers(user string) ([]string, error) {
+	var keys []string
+	err := s.Client.SMembers(context.Background(), user).ScanSlice(&keys)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return keys, err
+}
+
+func (s *Store) sRemove(user, key string) error {
+	return s.Client.SRem(context.Background(), user, key).Err()
 }

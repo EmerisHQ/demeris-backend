@@ -215,7 +215,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	key := fmt.Sprintf("%s-%s", w.Name, txHash)
 	err := w.store.CreateTicket(w.Name, txHash)
 	w.l.Debugw("this is key", "key", key)
-	if err != nil{
+	if err != nil {
 		w.l.Debugw("this is error", "error", err)
 	}
 
@@ -303,15 +303,15 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		return
 	}
 
-	w.l.Debugw("this is poolId","name",  w.Name )
+	w.l.Debugw("this is poolId", "name", w.Name)
 
-	if SwapTransactionEventPresent && w.Name == "cosmos-hub"{
+	if SwapTransactionEventPresent && w.Name == "cosmos-hub" {
 		poolId, ok := data.Events["swap_within_batch.pool_id"]
 		if !ok {
 			w.l.Errorw("pool_id not found")
 			return
 		}
-		w.l.Debugw("this is poolId","pool id ", poolId)
+		w.l.Debugw("this is poolId", "pool id ", poolId)
 
 		offerCoinFee, ok := data.Events["swap_within_batch.offer_coin_fee_amount"]
 		if !ok {
@@ -319,15 +319,15 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		offerCoinfDenom, ok := data.Events["swap_within_batch.offer_coin_fee_denom"]
-		if !ok{
+		offerCoinfDenom, ok := data.Events["swap_within_batch.offer_coin_denom"]
+		if !ok {
 			w.l.Errorw("offer_coin_fee_denom not found")
 		}
-		w.l.Debugw("this is offerCoinFee","offer coin fee ", offerCoinFee)
-		w.l.Debugw("this is offerCoinDenom","pool id ", offerCoinfDenom)
+		w.l.Debugw("this is offerCoinFee", "offer coin fee ", offerCoinFee)
+		w.l.Debugw("this is offerCoinDenom", "pool id ", offerCoinfDenom)
 
 		err := w.store.SetPoolSwapFees(poolId[0], offerCoinFee[0], offerCoinfDenom[0])
-		if err != nil{
+		if err != nil {
 			w.l.Errorw("unable to store swap fees", "error", err)
 		}
 	}
