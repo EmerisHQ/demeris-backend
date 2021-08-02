@@ -308,12 +308,12 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		offerCoinfDenom, ok := data.Events["swap_within_batch.offer_coin_denom"]
+		offerCoinDenom, ok := data.Events["swap_within_batch.offer_coin_denom"]
 		if !ok {
 			w.l.Errorw("offer_coin_fee_denom not found")
 		}
 
-		err := w.store.SetPoolSwapFees(poolId[0], offerCoinFee[0], offerCoinfDenom[0])
+		err := w.store.SetPoolSwapFees(poolId[0], offerCoinFee[0], offerCoinDenom[0])
 		if err != nil {
 			w.l.Errorw("unable to store swap fees", "error", err)
 		}
