@@ -22,7 +22,7 @@ func Register(router *gin.Engine) {
 // @Description Gets swap fee of past one hour by pool id.
 // @Param pool path string true "pool id"
 // @Produce json
-// @Success 200 {object} sdk.Coins
+// @Success 200 {object} types.Coins
 // @Failure 500,403 {object} deps.Error
 // @Router /pool/{poolID}/swapfees [get]
 func getSwapFee(c *gin.Context) {
