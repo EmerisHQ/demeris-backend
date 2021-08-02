@@ -52,5 +52,11 @@
     },
     "docker_image": "gcr.io/tendermint-dev/gaia",
     "docker_image_version": "v5.0.1"
+  },
+  "relayer_configuration": {
+    "max_msg_num":12,
+    "max_gas": 1000000,
+    "clock_drift": "1800s",
+    "trusting_period": "14days"
   }
 }
