@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	v12 "k8s.io/api/core/v1"
+
 	v1 "github.com/allinbits/starport-operator/api/v1"
 
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
@@ -23,7 +25,9 @@ const addChainRoute = "/add"
 type addChainRequest struct {
 	models.Chain
 
-	NodeConfig *operator.NodeConfiguration `json:"node_config"`
+	SkipChannelCreation  bool                           `json:"skip_channel_creation"`
+	NodeConfig           *operator.NodeConfiguration    `json:"node_config"`
+	RelayerConfiguration *operator.RelayerConfiguration `json:"relayer_configuration"`
 }
 
 func (r *router) addChainHandler(ctx *gin.Context) {
@@ -77,7 +81,10 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			return
 		}
 
-		if newChain.NodeConfig.DisableMinFeeConfig {
+		switch newChain.NodeConfig.DisableMinFeeConfig {
+		case true:
+			node.Spec.Config.Nodes.TraceStoreContainer.ImagePullPolicy = v12.PullNever
+		default:
 			minGasPriceVal := newChain.RelayerToken().GasPriceLevels.Low / 2
 			minGasPricesStr := fmt.Sprintf("%v%s", minGasPriceVal, newChain.RelayerToken().Name)
 
@@ -99,11 +106,23 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 			hasFaucet = node.Spec.Init.Faucet != nil
 		}
 
+		if newChain.RelayerConfiguration == nil {
+			newChain.RelayerConfiguration = &operator.DefaultRelayerConfiguration
+		}
+
+		if err := newChain.RelayerConfiguration.Validate(); err != nil {
+			e(ctx, http.StatusBadRequest, err)
+			r.s.l.Errorw("cannot validate relayer configuration", "error", err)
+			return
+		}
+
 		if err := r.s.rc.AddChain(chainwatch.Chain{
-			Name:          newChain.ChainName,
-			AddressPrefix: newChain.NodeInfo.Bech32Config.MainPrefix,
-			HasFaucet:     hasFaucet,
-			HDPath:        newChain.DerivationPath,
+			Name:                 newChain.ChainName,
+			AddressPrefix:        newChain.NodeInfo.Bech32Config.MainPrefix,
+			HasFaucet:            hasFaucet,
+			SkipChannelCreation:  newChain.SkipChannelCreation,
+			HDPath:               newChain.DerivationPath,
+			RelayerConfiguration: *newChain.RelayerConfiguration,
 		}); err != nil {
 			e(ctx, http.StatusInternalServerError, err)
 			r.s.l.Error("cannot add chain name to cache", err)

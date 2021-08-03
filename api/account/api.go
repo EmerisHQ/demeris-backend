@@ -130,7 +130,7 @@ func GetBalancesByAddress(c *gin.Context) {
 			}
 			balance.BaseDenom = denomTrace.BaseDenom
 			balance.Ibc.Path = denomTrace.Path
-			balance.Verified = vd[b.Denom]
+			balance.Verified = vd[denomTrace.BaseDenom]
 		} else {
 			balance.Verified = vd[b.Denom]
 			balance.BaseDenom = b.Denom

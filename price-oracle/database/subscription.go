@@ -14,6 +14,8 @@ import (
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	gecko "github.com/superoo7/go-gecko/v3"
+	geckoTypes "github.com/superoo7/go-gecko/v3/types"
 	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/price-oracle/config"
@@ -37,7 +39,8 @@ func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *conf
 	var wg sync.WaitGroup
 	for _, subscriber := range []func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error{
 		SubscriptionBinance,
-		SubscriptionCoinmarketcap,
+		//SubscriptionCoinmarketcap,
+		SubscriptionCoingecko,
 		SubscriptionFixer,
 		//...
 	} {
@@ -53,7 +56,7 @@ func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *conf
 }
 
 func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config, fn func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error) {
-	logger.Infow("INFO", "DB", "Subscription WORK Start")
+	logger.Infow("INFO", "Database", "SubscriptionWorker Start")
 	for {
 		select {
 		case <-ctx.Done():
@@ -62,12 +65,12 @@ func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLog
 		}
 
 		if err := fn(ctx, db, logger, cfg); err != nil {
-			logger.Errorw("DB", "Subscription WORK err", err)
+			logger.Errorw("Database", "SubscriptionWorker", err)
 		}
 
 		interval, err := time.ParseDuration(cfg.Interval)
 		if err != nil {
-			logger.Errorw("DB", "Subscription WORK err", err)
+			logger.Errorw("Database", "SubscriptionWorker", err)
 			return
 		}
 		time.Sleep(interval)
@@ -80,17 +83,17 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 	}
 	Whitelisttokens, err := CnsTokenQuery(db)
 	if err != nil {
-		return fmt.Errorf("CnsTokenQuery: %w", err)
+		return fmt.Errorf("SubscriptionBinance CnsTokenQuery: %w", err)
 	}
 	if len(Whitelisttokens) == 0 {
-		return fmt.Errorf("CnsTokenQuery: The token does not exist.")
+		return fmt.Errorf("SubscriptionBinance CnsTokenQuery: The token does not exist.")
 	}
 	for _, token := range Whitelisttokens {
-		tokensum := token + types.TokenBasecurrency
+		tokensum := token + types.USDTBasecurrency
 
 		req, err := http.NewRequest("GET", BinanceURL, nil)
 		if err != nil {
-			return fmt.Errorf("fetch binance: %w", err)
+			return fmt.Errorf("SubscriptionBinance fetch binance: %w", err)
 		}
 		q := url.Values{}
 		q.Add("symbol", tokensum)
@@ -98,28 +101,28 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 		req.URL.RawQuery = q.Encode()
 
 		resp, err := client.Do(req)
-
 		if err != nil {
-			return fmt.Errorf("fetch binance: %w", err)
+			return fmt.Errorf("SubscriptionBinance fetch binance: %w", err)
 		}
 
 		defer resp.Body.Close()
-
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("read body: %w", err)
+			return fmt.Errorf("SubscriptionBinance read body: %w", err)
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("SubscriptionBinance: %s, Status: %s", body, resp.Status)
 		}
 		bp := types.Binance{}
 		err = json.Unmarshal(body, &bp)
 		if err != nil {
-			return fmt.Errorf("unmarshal body: %w", err)
+			return fmt.Errorf("SubscriptionBinance unmarshal body: %w", err)
 		}
 
 		strToFloat, err := strconv.ParseFloat(bp.Price, 64)
 		if strToFloat == float64(0) {
 			continue
 		}
-		logger.Infow("BinanceSubscription", bp.Symbol, strToFloat)
 
 		tx := db.MustBegin()
 		now := time.Now()
@@ -128,7 +131,7 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 
 		updateresult, err := result.RowsAffected()
 		if err != nil {
-			return fmt.Errorf("DB UPDATE: %w", err)
+			return fmt.Errorf("SubscriptionBinance DB UPDATE: %w", err)
 		}
 		if updateresult == 0 {
 			tx.MustExec("INSERT INTO oracle.binance VALUES (($1),($2),($3));", bp.Symbol, strToFloat, now.Unix())
@@ -136,7 +139,7 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 
 		err = tx.Commit()
 		if err != nil {
-			return fmt.Errorf("DB commit: %w", err)
+			return fmt.Errorf("SubscriptionBinance DB commit: %w", err)
 		}
 		time.Sleep(1 * time.Second)
 	}
@@ -149,10 +152,10 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	}
 	Whitelisttokens, err := CnsTokenQuery(db)
 	if err != nil {
-		return fmt.Errorf("CnsTokenQuery: %w", err)
+		return fmt.Errorf("SubscriptionCoinmarketcap CnsTokenQuery: %w", err)
 	}
 	if len(Whitelisttokens) == 0 {
-		return fmt.Errorf("CnsTokenQuery: The token does not exist.")
+		return fmt.Errorf("SubscriptionCoinmarketcap CnsTokenQuery: The token does not exist.")
 	}
 	req, err := http.NewRequest("GET", CoinmarketcapURL, nil)
 	if err != nil {
@@ -160,67 +163,68 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	}
 	q := url.Values{}
 	q.Add("symbol", strings.Join(Whitelisttokens, ","))
-	q.Add("convert", types.TokenBasecurrency)
+	q.Add("convert", types.USDTBasecurrency)
 	req.Header.Set("Accepts", "application/json")
 	req.Header.Add("X-CMC_PRO_API_KEY", cfg.CoinmarketcapapiKey)
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("fetch coinmaketcap: %w", err)
+		return fmt.Errorf("SubscriptionCoinmarketcap fetch coinmaketcap: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("read body: %w", err)
+		return fmt.Errorf("SubscriptionCoinmarketcap read body: %w", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("SubscriptionCoinmarketcap: %s, Status: %s", body, resp.Status)
+	}
 	var data map[string]struct {
-		Quote struct {
+		Circulating_supply float64 `json:"circulating_supply"`
+		Quote              struct {
 			USDT struct {
-				Price      float64 `json:"price"`
-				Market_cap float64 `json:"market_cap"`
+				Price float64 `json:"price"`
 			} `json:"USDT"`
 		} `json:"quote"`
 	}
-
 	bp := types.Coinmarketcap{}
 	err = json.Unmarshal(body, &bp)
 	if err != nil {
-		return fmt.Errorf("unmarshal body: %w", err)
+		return fmt.Errorf("SubscriptionCoinmarketcap unmarshal body: %w", err)
 	}
 	err = json.Unmarshal(bp.Data, &data)
 	if err != nil {
-		return fmt.Errorf("unmarshal body: %w", err)
+		return fmt.Errorf("SubscriptionCoinmarketcap unmarshal body: %w", err)
 	}
 
 	for _, token := range Whitelisttokens {
-		tokensum := token + types.TokenBasecurrency
+		tokensum := token + types.USDTBasecurrency
 		d, ok := data[token]
 		if !ok {
-			return fmt.Errorf("price for symbol %q not found", tokensum)
+			return fmt.Errorf("SubscriptionCoinmarketcap price for symbol %q not found", tokensum)
 		}
 
-		logger.Infow("CoinmarketcapSubscription", tokensum, d.Quote.USDT.Price)
 		tx := db.MustBegin()
 		now := time.Now()
 
-		resultsupply := tx.MustExec("UPDATE oracle.coinmarketcapsupply SET supply = ($1) WHERE symbol = ($2)", d.Quote.USDT.Market_cap, tokensum)
+		resultsupply := tx.MustExec("UPDATE oracle.coinmarketcapsupply SET supply = ($1) WHERE symbol = ($2)", d.Circulating_supply, tokensum)
 
 		updateresultsupply, err := resultsupply.RowsAffected()
 		if err != nil {
-			return fmt.Errorf("DB UPDATE: %w", err)
+			return fmt.Errorf("SubscriptionCoinmarketcap DB UPDATE: %w", err)
 		}
 		if updateresultsupply == 0 {
-			tx.MustExec("INSERT INTO oracle.coinmarketcapsupply VALUES (($1),($2));", tokensum, d.Quote.USDT.Market_cap)
+			tx.MustExec("INSERT INTO oracle.coinmarketcapsupply VALUES (($1),($2));", tokensum, d.Circulating_supply)
 		}
 
 		result := tx.MustExec("UPDATE oracle.coinmarketcap SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", d.Quote.USDT.Price, now.Unix(), tokensum)
 
 		updateresult, err := result.RowsAffected()
 		if err != nil {
-			return fmt.Errorf("DB UPDATE: %w", err)
+			return fmt.Errorf("SubscriptionCoinmarketcap DB UPDATE: %w", err)
 		}
 		if updateresult == 0 {
 			tx.MustExec("INSERT INTO oracle.coinmarketcap VALUES (($1),($2),($3));", tokensum, d.Quote.USDT.Price, now.Unix())
@@ -228,65 +232,141 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 
 		err = tx.Commit()
 		if err != nil {
-			return fmt.Errorf("DB commit: %w", err)
+			return fmt.Errorf("SubscriptionCoinmarketcap DB commit: %w", err)
 		}
 		time.Sleep(1 * time.Second)
 	}
 	return nil
 }
+func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
+	Whitelisttokens, err := CnsTokenQuery(db)
+	if err != nil {
+		return fmt.Errorf("SubscriptionCoingecko CnsTokenQuery: %w", err)
+	}
+	if len(Whitelisttokens) == 0 {
+		return fmt.Errorf("SubscriptionCoingecko CnsTokenQuery: The token does not exist.")
+	}
 
+	cg := gecko.NewClient(nil)
+	vsCurrency := types.USDBasecurrency
+	tickers := map[string]string{
+		"ATOM":  "cosmos",
+		"AKT":   "akash-network",
+		"CRO":   "crypto-com-chain",
+		"IRIS":  "iris-network",
+		"OSMO":  "osmosis",
+		"XPRT":  "persistence",
+		"REGEN": "regen",
+		"DVPN":  "sentinel",
+	}
+	var ids []string
+	for _, ticker := range Whitelisttokens {
+		ids = append(ids, tickers[ticker])
+	}
+	perPage := 1
+	page := 1
+	sparkline := false
+	pcp := geckoTypes.PriceChangePercentageObject
+	priceChangePercentage := []string{pcp.PCP1h}
+	order := geckoTypes.OrderTypeObject.MarketCapDesc
+	market, err := cg.CoinsMarket(vsCurrency, ids, order, perPage, page, sparkline, priceChangePercentage)
+	if err != nil {
+		return fmt.Errorf("SubscriptionCoingecko Market Query: %w", err)
+	}
+
+	for _, token := range *market {
+		tokensum := strings.ToUpper(token.Symbol) + types.USDTBasecurrency
+
+		tx := db.MustBegin()
+		now := time.Now()
+
+		resultsupply := tx.MustExec("UPDATE oracle.coingeckosupply SET supply = ($1) WHERE symbol = ($2)", token.CirculatingSupply, tokensum)
+
+		updateresultsupply, err := resultsupply.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("SubscriptionCoingecko DB UPDATE: %w", err)
+		}
+		if updateresultsupply == 0 {
+			tx.MustExec("INSERT INTO oracle.coingeckosupply VALUES (($1),($2));", tokensum, token.CirculatingSupply)
+		}
+
+		result := tx.MustExec("UPDATE oracle.coingecko SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", token.CurrentPrice, now.Unix(), tokensum)
+
+		updateresult, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("SubscriptionCoingecko DB UPDATE: %w", err)
+		}
+		if updateresult == 0 {
+			tx.MustExec("INSERT INTO oracle.coingecko VALUES (($1),($2),($3));", tokensum, token.CurrentPrice, now.Unix())
+		}
+
+		err = tx.Commit()
+		if err != nil {
+			return fmt.Errorf("SubscriptionCoingecko DB commit: %w", err)
+		}
+		time.Sleep(1 * time.Second)
+	}
+	return nil
+}
 func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
 	client := &http.Client{
 		Timeout: 2 * time.Second,
 	}
 	req, err := http.NewRequest("GET", FixerURL, nil)
 	if err != nil {
-		return fmt.Errorf("fetch Fixer: %w", err)
+		return fmt.Errorf("SubscriptionFixer fetch Fixer: %w", err)
 	}
 	q := url.Values{}
 	q.Add("access_key", cfg.Fixerapikey)
-	q.Add("base", types.FiatBasecurrency)
+	q.Add("base", types.USDBasecurrency)
 	q.Add("symbols", strings.Join(cfg.Whitelistfiats, ","))
 
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("fetch Fixer: %w", err)
+		return fmt.Errorf("SubscriptionFixer fetch Fixer: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("read body: %w", err)
+		return fmt.Errorf("SubscriptionFixer read body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("SubscriptionFixer: %s, Status: %s", body, resp.Status)
 	}
 
 	bp := types.Fixer{}
-
 	err = json.Unmarshal(body, &bp)
 	if err != nil {
-		return fmt.Errorf("unmarshal body: %w", err)
+		return fmt.Errorf("SubscriptionFixer unmarshal body: %w", err)
 	}
-
+	if bp.Success != true {
+		logger.Infow("SubscriptionFixer", "The status message of the query is fail(Maybe the apikey problem)", bp.Success)
+		return nil
+	}
 	var data map[string]float64
 	err = json.Unmarshal(bp.Rates, &data)
 	if err != nil {
-		return fmt.Errorf("unmarshal body: %w", err)
+		return fmt.Errorf("SubscriptionFixer unmarshal body: %w", err)
 	}
 
 	for _, fiat := range cfg.Whitelistfiats {
-		fiatsum := types.FiatBasecurrency + fiat
+		fiatsum := types.USDBasecurrency + fiat
 		d, ok := data[fiat]
 		if !ok {
-			return fmt.Errorf("price for symbol %q not found", fiatsum)
+			logger.Infow("SubscriptionFixer", "From the provider list of deliveries price for symbol not found", fiatsum)
+			return nil
 		}
-		logger.Infow("FixerSubscription", fiatsum, d)
+
 		tx := db.MustBegin()
 		now := time.Now()
 		result := tx.MustExec("UPDATE oracle.fixer SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", d, now.Unix(), fiatsum)
 		updateresult, err := result.RowsAffected()
 		if err != nil {
-			return fmt.Errorf("DB UPDATE: %w", err)
+			return fmt.Errorf("SubscriptionFixer DB UPDATE: %w", err)
 		}
 		if updateresult == 0 {
 			tx.MustExec("INSERT INTO oracle.fixer VALUES (($1),($2),($3));", fiatsum, d, now.Unix())
@@ -294,7 +374,7 @@ func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogg
 
 		err = tx.Commit()
 		if err != nil {
-			return fmt.Errorf("DB commit: %w", err)
+			return fmt.Errorf("SubscriptionFixer DB commit: %w", err)
 		}
 	}
 	return nil
