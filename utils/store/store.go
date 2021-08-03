@@ -16,6 +16,7 @@ const (
 	failed                = "failed"
 	shadow                = "shadow"
 	ibcReceiveFailed      = "IBC_receive_failed"
+	ibcReceiveSuccess     = "IBC_receive_success"
 	tokensUnlockedTimeout = "Tokens_unlocked_timeout"
 	tokensUnlockedAck     = "Tokens_unlocked_ack"
 )
@@ -30,6 +31,7 @@ type Store struct {
 
 type TxHashEntry struct {
 	Chain  string
+	Status string
 	TxHash string
 }
 
@@ -96,7 +98,7 @@ func (s *Store) SetIBCReceiveFailed(key string, txHashes []TxHashEntry, height i
 
 func (s *Store) SetIBCReceiveSuccess(key string, txHashes []TxHashEntry, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{
-		Status:   "IBC_receive_success",
+		Status:   ibcReceiveSuccess,
 		TxHashes: txHashes,
 		Height:   height}, 2); err != nil {
 		return err
@@ -159,6 +161,7 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, 
 	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
 		TxHashes: []TxHashEntry{{
 			Chain:  chainName,
+			Status: transit,
 			TxHash: txHash,
 		}}}, 2); err != nil {
 		return err
@@ -177,6 +180,7 @@ func (s *Store) SetIbcTimeoutUnlock(key, txHash, chainName string, height int64)
 
 	txHashes := append(prev.TxHashes, TxHashEntry{
 		Chain:  chainName,
+		Status: tokensUnlockedTimeout,
 		TxHash: txHash,
 	})
 
@@ -193,6 +197,7 @@ func (s *Store) SetIbcAckUnlock(key, txHash, chainName string, height int64) err
 
 	txHashes := append(prev.TxHashes, TxHashEntry{
 		Chain:  chainName,
+		Status: tokensUnlockedAck,
 		TxHash: txHash,
 	})
 
@@ -209,6 +214,7 @@ func (s *Store) SetIbcReceived(key, txHash, chainName string, height int64) erro
 
 	txHashes := append(prev.TxHashes, TxHashEntry{
 		Chain:  chainName,
+		Status: ibcReceiveSuccess,
 		TxHash: txHash,
 	})
 
@@ -225,6 +231,7 @@ func (s *Store) SetIbcFailed(key, txHash, chainName string, height int64) error 
 
 	txHashes := append(prev.TxHashes, TxHashEntry{
 		Chain:  chainName,
+		Status: ibcReceiveFailed,
 		TxHash: txHash,
 	})
 	return s.SetIBCReceiveFailed(prev.Info, txHashes, height)
