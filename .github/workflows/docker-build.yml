@@ -4,6 +4,19 @@ on:
   push:
     branches:
       - master
+    paths:
+      - Dockerfile.**
+      - cmd/**
+      - cns/**
+      - api/**
+      - models/**
+      - price-oracle/**
+      - tmwsproxy/**
+      - tracelistener/**
+      - rpcwatcher/**
+      - utils/**
+      - go.mod
+      - go.sum
 
 jobs:
   api-server:

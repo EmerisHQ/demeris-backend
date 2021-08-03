@@ -38,11 +38,6 @@ spec:
               value: "{{ .Values.updateInterval }}"
             - name: DEMERIS-PRICE-ORACLE_WHITELISTFIATS
               value: "EUR,USD"
-            - name: DEMERIS-PRICE-ORACLE_COINMARKETCAPAPIKEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}
-                  key: coinmarketcapKey
             - name: DEMERIS-PRICE-ORACLE_FIXERAPIKEY
               valueFrom:
                 secretKeyRef:
