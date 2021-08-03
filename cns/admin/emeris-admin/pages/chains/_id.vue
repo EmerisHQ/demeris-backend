@@ -71,7 +71,11 @@
             </b-field>
           </form>
         </card-component>
-        <card-component title="Node Info" class="tile is-child">
+        <card-component
+          v-if="chain.node_info != undefined"
+          title="Node Info"
+          class="tile is-child"
+        >
           <b-field label="endpoint" horizontal>
             <b-input
               :value="chain.node_info.endpoint"
@@ -133,7 +137,7 @@
                 />
               </b-table-column>
             </template>
-
+            <!-- 
             <section slot="empty" class="section">
               <div class="content has-text-grey has-text-centered">
                 <template v-if="isLoading">
@@ -149,7 +153,7 @@
                   <p>No primary channels found</p>
                 </template>
               </div>
-            </section>
+            </section> -->
           </b-table>
         </card-component>
       </tiles>
@@ -219,22 +223,6 @@
               </b-table-column>
             </template>
 
-            <section slot="empty" class="section">
-              <div class="content has-text-grey has-text-centered">
-                <template v-if="isLoading">
-                  <p>
-                    <b-icon icon="dots-horizontal" size="is-large" />
-                  </p>
-                  <p>Fetching verified denoms...</p>
-                </template>
-                <template v-else>
-                  <p>
-                    <b-icon icon="emoticon-sad" size="is-large" />
-                  </p>
-                  <p>No verified denoms found</p>
-                </template>
-              </div>
-            </section>
           </b-table>
         </card-component>
       </tiles>
@@ -298,6 +286,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 import axios from "~/plugins/axios";
 import api from "~/plugins/api";
 import TitleBar from "@/components/TitleBar";
@@ -357,9 +346,14 @@ export default {
     }
   },
   async created() {
-    this.isLoading = true;
+    this.$store.state.chains.forEach(chain => {
+      if (chain.chain_name == this.$route.params.id) {
+        this.chain = chain
+      }
+    })
+  },
+  async mounted() {
     await this.loadData();
-    this.isLoading = false;
   },
   methods: {
     emptyChain() {
@@ -372,18 +366,28 @@ export default {
       };
     },
     async loadData() {
-      let res = await axios.get("/chain/" + this.$route.params.id);
-      this.chain = res.data.chain;
-      let supply = await api.get("/chain/" + this.$route.params.id + "/supply");
-      this.supply = supply.data.supply;
+      try {
+        let res = await axios.get("/chain/" + this.$route.params.id);
+        this.chain = res.data.chain;
+        let supply = await api.get(
+          "/chain/" + this.$route.params.id + "/supply"
+        );
+        this.supply = supply.data.supply;
+      } catch (e) {
+        console.log(e);
+      }
     },
     async update() {
       this.chain.denoms.forEach(denom => {
-        denom.gas_price_levels.low = denom.gas_price_levels.low? parseFloat(denom.gas_price_levels.low): 0.015;
-        denom.gas_price_levels.average = denom.gas_price_levels.average? parseFloat(
-          denom.gas_price_levels.average
-        ) : 0.022;
-        denom.gas_price_levels.high = denom.gas_price_levels.high? parseFloat(denom.gas_price_levels.high): 0.042;
+        denom.gas_price_levels.low = denom.gas_price_levels.low
+          ? parseFloat(denom.gas_price_levels.low)
+          : 0.015;
+        denom.gas_price_levels.average = denom.gas_price_levels.average
+          ? parseFloat(denom.gas_price_levels.average)
+          : 0.022;
+        denom.gas_price_levels.high = denom.gas_price_levels.high
+          ? parseFloat(denom.gas_price_levels.high)
+          : 0.042;
       });
       let res = await axios.post("/add", this.chain);
       if (res.status != 200) {
