@@ -210,23 +210,24 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	}
 
 	txHash := txHashSlice[0]
+	chainName := w.Name
 	eventTx := data.Data.(types.EventDataTx)
 	height := eventTx.Height
-	key := fmt.Sprintf("%s-%s", w.Name, txHash)
+	key := fmt.Sprintf("%s-%s", chainName, txHash)
 
-	w.l.Debugw("got message to handle", "chain name", w.Name, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
+	w.l.Debugw("got message to handle", "chain name", chainName, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
 		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)
 
 	w.l.Debugw("is simple ibc transfer"+
 		"", "is it", exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent && w.store.Exists(key))
 
 	if eventTx.Result.Code != 0 {
-		logStr := fmt.Sprintf(nonZeroCodeErrFmt, w.Name, eventTx.Result.Log)
+		logStr := fmt.Sprintf(nonZeroCodeErrFmt, chainName, eventTx.Result.Log)
 
-		w.l.Debugw("transaction error", "chainName", w.Name, "txHash", txHash, "log", eventTx.Result.Log)
+		w.l.Debugw("transaction error", "chainName", chainName, "txHash", txHash, "log", eventTx.Result.Log)
 
 		if err := w.store.SetFailedWithErr(key, logStr, height); err != nil {
-			w.l.Errorw("cannot set failed with err", "chain name", w.Name, "error", err,
+			w.l.Errorw("cannot set failed with err", "chain name", chainName, "error", err,
 				"txHash", txHash, "code", eventTx.Result.Code)
 		}
 
@@ -236,22 +237,22 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
 		!IBCAckEventPresent && !IBCTimeoutEventPresent && !SwapTransactionEventPresent && w.store.Exists(key) {
 		if err := w.store.SetComplete(key, height); err != nil {
-			w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+			w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
 		}
 		return
 	}
 
 	// Handle case where an LP is being created on the Cosmos Hub
-	if createPoolEventPresent && w.Name == "cosmos-hub" {
+	if createPoolEventPresent && chainName == "cosmos-hub" {
 		defer func() {
 			if err := w.store.SetComplete(key, height); err != nil {
-				w.l.Errorw("cannot set complete", "chain name", w.Name, "error", err)
+				w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
 			}
 		}()
 
 		w.l.Debugw("is create lp", "is it", createPoolEventPresent)
 
-		chain, err := w.d.Chain(w.Name)
+		chain, err := w.d.Chain(chainName)
 
 		if err != nil {
 			w.l.Errorw("can't find chain cosmos-hub", "error", err)
@@ -348,13 +349,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c, err := w.d.GetCounterParty(w.Name, sendPacketSourceChannel[0])
+		c, err := w.d.GetCounterParty(chainName, sendPacketSourceChannel[0])
 		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
 			return
 		}
 
-		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0], height); err != nil {
+		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0], txHash, chainName, height); err != nil {
 			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
 		}
 		return
@@ -395,7 +396,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		key := fmt.Sprintf("%s-%s-%s", w.Name, recvPacketSourceChannel[0], recvPacketSequence[0])
+		key := fmt.Sprintf("%s-%s-%s", chainName, recvPacketSourceChannel[0], recvPacketSequence[0])
 		var ack Ack
 		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil {
 			w.l.Errorw("unable to unmarshal packetAck", "err", err)
@@ -403,13 +404,13 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		if ack.Result != ackSuccess {
-			if err := w.store.SetIbcFailed(key, height); err != nil {
+			if err := w.store.SetIbcFailed(key, txHash, chainName, height); err != nil {
 				w.l.Errorw("unable to set status as failed for key", "key", key, "error", err)
 			}
 			return
 		}
 
-		if err := w.store.SetIbcReceived(key, height); err != nil {
+		if err := w.store.SetIbcReceived(key, txHash, chainName, height); err != nil {
 			w.l.Errorw("unable to set status as ibc received for key", "key", key, "error", err)
 		}
 		return
@@ -430,14 +431,14 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c, err := w.d.GetCounterParty(w.Name, timeoutPacketSourceChannel[0])
+		c, err := w.d.GetCounterParty(chainName, timeoutPacketSourceChannel[0])
 		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", err)
 			return
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
-		if err := w.store.SetIbcTimeoutUnlock(key, height); err != nil {
+		if err := w.store.SetIbcTimeoutUnlock(key, txHash, chainName, height); err != nil {
 			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
 		}
 		return
@@ -458,7 +459,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
-		c, err := w.d.GetCounterParty(w.Name, ackPacketSourceChannel[0])
+		c, err := w.d.GetCounterParty(chainName, ackPacketSourceChannel[0])
 		if err != nil {
 			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
 			return
@@ -467,7 +468,7 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
 		_, ok = data.Events["fungible_token_packet.error"]
 		if ok {
-			if err := w.store.SetIbcAckUnlock(key, height); err != nil {
+			if err := w.store.SetIbcAckUnlock(key, txHash, chainName, height); err != nil {
 				w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
 			}
 			return

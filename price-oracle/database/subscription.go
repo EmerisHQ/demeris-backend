@@ -146,6 +146,7 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 	return nil
 }
 
+/*
 func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
 	client := &http.Client{
 		Timeout: 2 * time.Second,
@@ -238,6 +239,8 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	}
 	return nil
 }
+*/
+
 func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
 	Whitelisttokens, err := CnsTokenQuery(db)
 	if err != nil {
