@@ -269,14 +269,6 @@ func (s *Store) Get(key string) (Ticket, error) {
 
 	return res, nil
 }
-func (s *Store) GetSwapFee(key string) (string, error) {
-	var res string
-	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
-		return "", err
-	}
-
-	return res, nil
-}
 
 func (s *Store) Delete(key string) error {
 	return s.Client.Del(context.Background(), key).Err()
