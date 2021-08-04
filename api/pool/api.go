@@ -31,7 +31,7 @@ func getSwapFee(c *gin.Context) {
 
 	poolId := c.Param("poolId")
 
-	coins, err := d.Store.GetSwapFees(poolId)
+	fees, err := d.Store.GetSwapFees(poolId)
 	if err != nil {
 		e := deps.NewError(
 			"swap fees",
@@ -52,5 +52,5 @@ func getSwapFee(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, SwapFeesResponse{Coins: coins})
+	c.JSON(http.StatusOK, SwapFeesResponse{Fees: fees})
 }

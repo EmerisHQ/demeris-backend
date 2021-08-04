@@ -243,12 +243,7 @@ func (s *Store) SetPoolSwapFees(poolId, offerCoinAmount, offerCoinDenom string) 
 
 	coin := fmt.Sprintf("%s%s", offerCoinAmount, offerCoinDenom)
 
-	err := s.SetWithExpiry(poolTicket, coin, 12) //  mul is 12 as time out is set to 5minutes by default
-	if err != nil {
-		return err
-	}
-
-	return s.sAdd(poolId, poolTicket)
+	return s.SetWithExpiry(poolTicket, coin, 12) //  mul is 12 as time out is set to 5minutes by default
 }
 
 func (s *Store) CreateShadowKey(key string) error {
@@ -293,22 +288,13 @@ func (s *Store) DeleteShadowKey(key string) error {
 }
 
 func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
-	keys, err := s.sMembers(poolId)
+	values, err := s.scan(fmt.Sprintf("pool-%s-*", poolId))
 	if err != nil {
 		return sdk.Coins{}, err
 	}
 
 	var coins sdk.Coins
-	for _, key := range keys {
-		if !s.Exists(key) {
-			err := s.sRemove(poolId, key)
-			if err != nil {
-				return sdk.Coins{}, err
-			}
-			continue
-		}
-
-		value, err := s.GetSwapFee(key)
+	for _, value := range values {
 		coin, err := sdk.ParseCoinNormalized(value)
 		if err != nil {
 			return sdk.Coins{}, err
@@ -320,20 +306,47 @@ func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
 	return coins, nil
 }
 
-func (s *Store) sAdd(user, key string) error {
-	return s.Client.SAdd(context.Background(), user, key).Err()
-}
-
-func (s *Store) sMembers(user string) ([]string, error) {
-	var keys []string
-	err := s.Client.SMembers(context.Background(), user).ScanSlice(&keys)
+func (s *Store) scan(prefix string) ([]string, error) {
+	keys, nextCur, err := s.Client.Scan(context.Background(), 0, prefix, 10).Result()
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
-	return keys, err
+	values, err := s.getValues(keys)
+	if err != nil {
+		return nil, err
+	}
+
+	if nextCur == 0 {
+		return values, nil
+	}
+
+	for nextCur != 0 {
+		var nextKeys []string
+		nextKeys, nextCur, err = s.Client.Scan(context.Background(), nextCur, prefix, 100).Result()
+		if err != nil {
+			return nil, err
+		}
+
+		newValues, err := s.getValues(nextKeys)
+		if err != nil {
+			return nil, err
+		}
+
+		values = append(values, newValues...)
+	}
+	return values, nil
 }
 
-func (s *Store) sRemove(user, key string) error {
-	return s.Client.SRem(context.Background(), user, key).Err()
+func (s *Store) getValues(keys []string) ([]string, error) {
+	var values []string
+	for _, k := range keys {
+		value, err := s.Client.Get(context.Background(), k).Result()
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, value)
+	}
+
+	return values, nil
 }
