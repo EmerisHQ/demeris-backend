@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	gaia "github.com/cosmos/gaia/v4/app"
+	gaia "github.com/cosmos/gaia/v5/app"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 
