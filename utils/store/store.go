@@ -246,9 +246,13 @@ func (s *Store) SetIbcFailed(key, txHash, chainName string, height int64) error 
 func (s *Store) SetPoolSwapFees(poolId, offerCoinAmount, offerCoinDenom string) error {
 	poolTicket := fmt.Sprintf("pool/%s/%d", poolId, time.Now().Unix())
 
-	coin := fmt.Sprintf("%s%s", offerCoinAmount, offerCoinDenom)
+	offerCoinAmountInt, ok := sdk.NewIntFromString(offerCoinAmount)
+	if !ok {
+		return fmt.Errorf("unable to convert offerCoinAmout to sdk Int")
+	}
 
-	return s.SetWithExpiry(poolTicket, coin, poolExpiryMul) //  mul is 12 as time out is set to 5minutes by default
+	coin := sdk.NewCoin(offerCoinDenom, offerCoinAmountInt)
+	return s.SetWithExpiry(poolTicket, coin.String(), poolExpiryMul) //  mul is 12 as time out is set to 5minutes by default
 }
 
 func (s *Store) CreateShadowKey(key string) error {
