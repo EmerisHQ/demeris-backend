@@ -20,7 +20,12 @@ const (
 	ibcReceiveSuccess     = "IBC_receive_success"
 	tokensUnlockedTimeout = "Tokens_unlocked_timeout"
 	tokensUnlockedAck     = "Tokens_unlocked_ack"
+
+	// pool swap fees is stored only for one hour(12 * defaultExpiry)
+	poolExpiryMul = 12
 )
+
+var defaultExpiry = 300 * time.Second
 
 type Store struct {
 	Client        *redis.Client
@@ -63,7 +68,7 @@ func NewClient(connUrl string) (*Store, error) {
 
 	store.ConnectionURL = connUrl
 
-	store.Config.ExpiryTime = 300 * time.Second
+	store.Config.ExpiryTime = defaultExpiry
 
 	return &store, nil
 
@@ -243,7 +248,7 @@ func (s *Store) SetPoolSwapFees(poolId, offerCoinAmount, offerCoinDenom string) 
 
 	coin := fmt.Sprintf("%s%s", offerCoinAmount, offerCoinDenom)
 
-	return s.SetWithExpiry(poolTicket, coin, 12) //  mul is 12 as time out is set to 5minutes by default
+	return s.SetWithExpiry(poolTicket, coin, poolExpiryMul) //  mul is 12 as time out is set to 5minutes by default
 }
 
 func (s *Store) CreateShadowKey(key string) error {
