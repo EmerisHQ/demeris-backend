@@ -239,7 +239,7 @@ func (s *Store) SetIbcFailed(key, txHash, chainName string, height int64) error 
 }
 
 func (s *Store) SetPoolSwapFees(poolId, offerCoinAmount, offerCoinDenom string) error {
-	poolTicket := fmt.Sprintf("pool-%s-%d", poolId, time.Now().Unix())
+	poolTicket := fmt.Sprintf("pool/%s/%d", poolId, time.Now().Unix())
 
 	coin := fmt.Sprintf("%s%s", offerCoinAmount, offerCoinDenom)
 
@@ -280,7 +280,7 @@ func (s *Store) DeleteShadowKey(key string) error {
 }
 
 func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
-	values, err := s.scan(fmt.Sprintf("pool-%s-*", poolId))
+	values, err := s.scan(fmt.Sprintf("pool/%s/*", poolId))
 	if err != nil {
 		return sdk.Coins{}, err
 	}
