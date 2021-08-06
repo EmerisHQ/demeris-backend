@@ -71,3 +71,7 @@ type verifiedTraceResponse struct {
 type statusResponse struct {
 	Online bool `json:"online"`
 }
+
+type numbersResponse struct {
+	Numbers models.AuthRow `json:"numbers"`
+}

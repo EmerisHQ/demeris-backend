@@ -789,7 +789,6 @@ func GetNumbersByAddress(c *gin.Context) {
 	chainName := c.Param("chain")
 
 	chainInfo, err := d.Database.Chain(chainName)
-	d.Logger.Infow("this is info", "info", chainInfo)
 	if err != nil {
 		e := deps.NewError(
 			"numbers",
@@ -834,8 +833,8 @@ func GetNumbersByAddress(c *gin.Context) {
 
 		return
 	}
-	d.Logger.Infow("this is res", "res", resp)
-	c.JSON(http.StatusOK, resp)
+
+	c.JSON(http.StatusOK, numbersResponse{Numbers: resp})
 }
 
 func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
