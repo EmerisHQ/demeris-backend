@@ -17,6 +17,7 @@ on:
       - utils/**
       - go.mod
       - go.sum
+      - helm/**
 
 jobs:
   api-server:

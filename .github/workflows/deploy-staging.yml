@@ -94,6 +94,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-ticket-watcher:${{ github.event.inputs.version }} \
+              --set debug=true \
               ./helm/emeris-ticket-watcher
 
   ingress:

@@ -23,8 +23,6 @@ spec:
         - name: ticket-watcher
           image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          ports:
-{{- include "ports.pod" . | indent 8 }}
           env:
             - name: EMERIS-TW_DEBUG
               value: "{{ .Values.debug }}"

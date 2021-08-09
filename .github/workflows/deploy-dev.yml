@@ -125,6 +125,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-ticket-watcher:${{ github.sha }} \
+              --set debug=true \
               ./helm/emeris-ticket-watcher
 
   admin-ui:
