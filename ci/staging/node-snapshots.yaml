@@ -1,7 +1,7 @@
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: cosmos-hub-snapshot-23-07-2021
+  name: cosmos-hub-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:
@@ -10,7 +10,7 @@ spec:
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: akash-snapshot-23-07-2021
+  name: akash-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:
@@ -19,7 +19,7 @@ spec:
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: crypto-org-snapshot-23-07-2021
+  name: crypto-org-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:
@@ -28,7 +28,7 @@ spec:
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: iris-snapshot-23-07-2021
+  name: iris-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:
@@ -37,7 +37,7 @@ spec:
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: osmosis-snapshot-23-07-2021
+  name: osmosis-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:
@@ -46,7 +46,7 @@ spec:
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: persistence-snapshot-23-07-2021
+  name: persistence-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:
@@ -55,7 +55,7 @@ spec:
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: regen-snapshot-23-07-2021
+  name: regen-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:
@@ -64,7 +64,7 @@ spec:
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: sentinel-snapshot-23-07-2021
+  name: sentinel-snapshot-2021-08-06
 spec:
   volumeSnapshotClassName: standard
   source:

@@ -110,6 +110,23 @@ jobs:
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               ./helm/emeris-price-oracle-server
 
+  ticket-watcher:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade ticket-watcher \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-ticket-watcher:${{ github.sha }} \
+              ./helm/emeris-ticket-watcher
+
   admin-ui:
     runs-on: self-hosted
     steps:
