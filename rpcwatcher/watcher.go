@@ -165,6 +165,11 @@ func (w *Watcher) checkError() {
 			select {
 			case err := <-w.ErrorChannel:
 				if err != nil {
+					storeErr := w.store.SetWithExpiry(w.Name, "false", 0)
+					if err != nil {
+						w.l.Errorw("unable to set chain name to false", "store error", storeErr,
+							"error", err)
+					}
 					resubscribe(w)
 					return
 				}
@@ -176,6 +181,11 @@ func (w *Watcher) checkError() {
 func resubscribe(w *Watcher) {
 	count := 0
 	for {
+		err := w.store.SetWithExpiry(w.Name, "resubscribing", 0)
+		if err != nil {
+			w.l.Errorw("unable to set chain name with error", "error", err)
+		}
+
 		time.Sleep(500 * time.Millisecond)
 		count = count + 1
 		w.l.Debugw("this is count", "count", count)
@@ -190,6 +200,10 @@ func resubscribe(w *Watcher) {
 		w = ww
 
 		Start(w, w.runContext)
+		err = w.store.SetWithExpiry(w.Name, "true", 0)
+		if err != nil {
+			w.l.Errorw("unable to set chain name as true", "error", err)
+		}
 
 		w.l.Infow("successfully reconnected", "name", w.Name, "endpoint", w.endpoint)
 		return

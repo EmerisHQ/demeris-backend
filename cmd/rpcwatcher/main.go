@@ -137,8 +137,12 @@ func main() {
 				}
 
 				ctx, cancel := context.WithCancel(context.Background())
-				rpcwatcher.Start(watcher, ctx)
+				err = s.SetWithExpiry(name, "true", 0)
+				if err != nil {
+					l.Errorw("unable to set chain name as true", "error", err)
+				}
 
+				rpcwatcher.Start(watcher, ctx)
 				watchers[name] = watcherInstance{
 					watcher: watcher,
 					cancel:  cancel,
