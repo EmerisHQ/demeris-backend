@@ -7,18 +7,19 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/allinbits/demeris-backend/api/database"
-	"github.com/allinbits/demeris-backend/models"
-	"github.com/cosmos/cosmos-sdk/simapp"
-	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/allinbits/demeris-backend/models"
+	"github.com/cosmos/cosmos-sdk/simapp"
+	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
+
+	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
-	"github.com/gin-gonic/gin"
 )
 
 const (

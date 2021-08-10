@@ -2,15 +2,21 @@ package chains
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/simapp"
+	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	gaia "github.com/cosmos/gaia/v5/app"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/models"
@@ -679,7 +685,7 @@ func GetChainSupply(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} tx.GetTxResponse
 // @Failure 500,403 {object} deps.Error
-// @Router /chain/{chainName}/{txhash} [get]
+// @Router /chain/{chainName}/txs/{txhash} [get]
 func GetChainTx(c *gin.Context) {
 	d := deps.GetDeps(c)
 
@@ -764,4 +770,122 @@ func GetChainTx(c *gin.Context) {
 	}
 
 	c.Data(http.StatusOK, "application/json", bz)
+}
+
+// GetNumbersByAddress returns sequence and account number of an address.
+// @Summary Gets sequence and account number
+// @Description Gets sequence and account number
+// @Tags Account
+// @ID get-numbers-account
+// @Produce json
+// @Param address path string true "address to query numbers for"
+// @Success 200 {object} numbersResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/numbers/{address} [get]
+func GetNumbersByAddress(c *gin.Context) {
+	d := deps.GetDeps(c)
+
+	address := c.Param("address")
+	chainName := c.Param("chain")
+
+	chainInfo, err := d.Database.Chain(chainName)
+	if err != nil {
+		e := deps.NewError(
+			"numbers",
+			fmt.Errorf("cannot retrieve chain data for chain %s", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query chain info for address",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+			"chain",
+			chainName,
+		)
+
+		return
+	}
+
+	resp, err := fetchNumbers(chainInfo, address)
+	if err != nil {
+		e := deps.NewError(
+			"numbers",
+			fmt.Errorf("cannot retrieve account/sequence numbers for address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query nodes auth for address",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+			"chain",
+			chainInfo,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, numbersResponse{Numbers: resp})
+}
+
+func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
+	accBytes, err := hex.DecodeString(account)
+	if err != nil {
+		return models.AuthRow{}, fmt.Errorf("cannot decode hex bytes from account string")
+	}
+
+	cdc, _ := simapp.MakeCodecs()
+
+	addr, err := bech322.ConvertAndEncode(chain.NodeInfo.Bech32Config.PrefixAccount, accBytes)
+	if err != nil {
+		return models.AuthRow{}, fmt.Errorf("cannot encode bytes to %s acc address, %w", chain.ChainName, err)
+	}
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chain.ChainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		return models.AuthRow{}, err
+	}
+
+	authQuery := types.NewQueryClient(grpcConn)
+	resp, err := authQuery.Account(context.Background(), &types.QueryAccountRequest{
+		Address: addr,
+	})
+
+	if status.Code(err) == codes.NotFound {
+		return models.AuthRow{}, nil
+	}
+
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "not found") {
+			return models.AuthRow{}, nil
+		}
+
+		return models.AuthRow{}, fmt.Errorf("cannot query account, %w", err)
+	}
+
+	// get a baseAccount
+	var accountI types.AccountI
+	if err := cdc.UnpackAny(resp.Account, &accountI); err != nil {
+		return models.AuthRow{}, err
+	}
+
+	result := models.AuthRow{
+		TracelistenerDatabaseRow: models.TracelistenerDatabaseRow{
+			ChainName: chain.ChainName,
+		},
+		Address:        addr,
+		SequenceNumber: accountI.GetSequence(),
+		AccountNumber:  accountI.GetAccountNumber(),
+	}
+
+	return result, nil
 }
