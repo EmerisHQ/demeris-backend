@@ -183,7 +183,7 @@ func resubscribe(w *Watcher) {
 	for {
 		err := w.store.SetWithExpiry(w.Name, "resubscribing", 0)
 		if err != nil {
-			w.l.Errorw("unable to set chain name with error", "error", err)
+			w.l.Errorw("unable to set chain name with status resubscribing", "error", err)
 		}
 
 		time.Sleep(500 * time.Millisecond)
