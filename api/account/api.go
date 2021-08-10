@@ -232,13 +232,16 @@ func GetNumbersByAddress(c *gin.Context) {
 	/*
 		PSA: do not remove this comment, this is the proper tracelistener-based implementation of this endpoint,
 		which will  be used some time in the future as soon as we fix the auth mismatch error.
+
 		dl, err := d.Database.Numbers(address)
+
 		if err != nil {
 			e := deps.NewError(
 				"numbers",
 				fmt.Errorf("cannot retrieve account/sequence numbers for address %v", address),
 				http.StatusBadRequest,
 			)
+
 			d.WriteError(c, e,
 				"cannot query database auth for addresses",
 				"id",
@@ -248,6 +251,7 @@ func GetNumbersByAddress(c *gin.Context) {
 				"error",
 				err,
 			)
+
 			return
 		}*/
 
