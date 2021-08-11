@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	gaia "github.com/cosmos/gaia/v5/app"
 	"github.com/go-redis/redis/v8"
+	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 )
 
 const (
@@ -258,6 +260,38 @@ func (s *Store) Get(key string) (Ticket, error) {
 	}
 
 	return res, nil
+}
+
+func (s *Store) GetPools(key string) (liquiditytypes.Pools, error) {
+	var res liquiditytypes.QueryLiquidityPoolsResponse
+	bz, err := s.Client.Get(context.Background(), key).Bytes()
+	if err != nil {
+		return liquiditytypes.Pools{}, err
+	}
+
+	cdc, _ := gaia.MakeCodecs()
+	err = cdc.UnmarshalJSON(bz, &res)
+	if err != nil {
+		return liquiditytypes.Pools{}, err
+	}
+
+	return res.GetPools(), nil
+}
+
+func (s *Store) GetParams(key string) (liquiditytypes.Params, error) {
+	var res liquiditytypes.QueryParamsResponse
+	bz, err := s.Client.Get(context.Background(), key).Bytes()
+	if err != nil {
+		return liquiditytypes.Params{}, err
+	}
+
+	cdc, _ := gaia.MakeCodecs()
+	err = cdc.UnmarshalJSON(bz, &res)
+	if err != nil {
+		return liquiditytypes.Params{}, err
+	}
+
+	return res.GetParams(), nil
 }
 
 func (s *Store) Delete(key string) error {

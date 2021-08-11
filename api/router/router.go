@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/allinbits/demeris-backend/api/block"
+	"github.com/allinbits/demeris-backend/api/liquidity"
 
 	"github.com/allinbits/demeris-backend/utils/logging"
 
@@ -178,4 +179,8 @@ func registerRoutes(engine *gin.Engine) {
 	// @tag.name Block
 	// @tag.description Blocks-related endpoints
 	block.Register(engine)
+
+	// @tag.name liquidity
+	// @tag.description pool-related endpoints
+	liquidity.Register(engine)
 }

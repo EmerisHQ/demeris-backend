@@ -1298,8 +1298,8 @@ github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 h1:hqAk8riJvK4RM
 github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15/go.mod h1:z4YtwM70uOnk8h0pjJYlj3zdYwi9l03By6iAIF5j/Pk=
 github.com/tendermint/go-amino v0.16.0 h1:GyhmgQKvqF82e2oZeuMSp9JTN0N09emoSZlb2lyGa2E=
 github.com/tendermint/go-amino v0.16.0/go.mod h1:TQU0M1i/ImAo+tYpZi73AU3V/dKeCoMC9Sphe2ZwGME=
-github.com/tendermint/liquidity v1.2.4 h1:MTjcEgtdv9RtUhja1oQ5qV4JKHr+rgbyvorJRptY01A=
-github.com/tendermint/liquidity v1.2.4/go.mod h1:giWBVS1/cJN9SYh0KsOVLdIeZzTDi/Cnvb1RcQLnBHE=
+github.com/tendermint/liquidity v1.2.9 h1:wtDBVhkYU1JYGk1UuwW321NQZSFacKgWUTkrc02VT8k=
+github.com/tendermint/liquidity v1.2.9/go.mod h1:FzFpzzuAnmVgxiAvuVyqrgCEtgCIWp12K7hhhxcQmuk=
 github.com/tendermint/spm v0.0.0-20210524110815-6d7452d2dc4a/go.mod h1:Cu18wgpxjFMnVwQA1xBpHE75CfVrle8s1UxuchfzBF0=
 github.com/tendermint/spn v0.0.0-20201215081711-b9ec9286ed83/go.mod h1:OfG8YK8yabQk08QLpneLSMf/FN0d+DmFcQfijTJalA8=
 github.com/tendermint/spn v0.0.0-20210406123257-decaff8dcaf9/go.mod h1:baJaa8BnakMVpYWhNY9YA01IU03td3ykrqE3wj2ixgA=

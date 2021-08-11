@@ -27,6 +27,7 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
+	github.com/gravity-devs/liquidity v1.2.9 // indirect
 	github.com/iamolegga/enviper v1.2.1
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
@@ -43,7 +44,6 @@ require (
 	github.com/superoo7/go-gecko v1.0.0
 	github.com/swaggo/swag v1.7.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954
-	github.com/tendermint/liquidity v1.2.4
 	github.com/tendermint/tendermint v0.34.11
 	github.com/tendermint/tm-db v0.6.4
 	github.com/zsais/go-gin-prometheus v0.1.0
