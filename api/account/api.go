@@ -213,7 +213,7 @@ func GetDelegationsByAddress(c *gin.Context) {
 // @Summary Gets sequence and account number
 // @Description Gets sequence and account number
 // @Tags Account
-// @ID get-numbers-account
+// @ID get-all-numbers-account
 // @Produce json
 // @Param address path string true "address to query numbers for"
 // @Success 200 {object} numbersResponse
