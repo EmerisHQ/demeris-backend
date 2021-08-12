@@ -73,8 +73,12 @@ func main() {
 			continue
 		}
 
-		l.Debugw("connected", "chainName", cn)
+		err = s.SetWithExpiry(cn, "true", 0)
+		if err != nil {
+			l.Errorw("unable to set chain name as true", "error", err)
+		}
 
+		l.Debugw("connected", "chainName", cn)
 		ctx, cancel := context.WithCancel(context.Background())
 		rpcwatcher.Start(watcher, ctx)
 
