@@ -64,6 +64,7 @@ type verifiedTrace struct {
 	Path      string  `json:"path,omitempty"`
 	Trace     []trace `json:"trace,omitempty"`
 }
+
 type verifiedTraceResponse struct {
 	VerifiedTrace verifiedTrace `json:"verify_trace"`
 }
@@ -74,4 +75,8 @@ type statusResponse struct {
 
 type numbersResponse struct {
 	Numbers models.AuthRow `json:"numbers"`
+}
+
+type inflationResponse struct {
+	Inflation string `json:"inflation"`
 }

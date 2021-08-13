@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"encoding/json"
+	"net/url"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
@@ -862,4 +864,135 @@ func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
 	}
 
 	return result, nil
+}
+
+
+
+// GetInflation returns the inflation of a specific chain
+// @Summary Gets the inflation of a chain
+// @Description Gets inflation
+// @Tags Chain
+// @ID get-inflation
+// @Produce json
+// @Success 200 {object} inflationResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/inflation [get]
+func GetInflation(c *gin.Context) {
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	chainInfo, err := d.Database.Chain(chainName)
+	if err != nil {
+		e := deps.NewError(
+			"inflation",
+			fmt.Errorf("cannot retrieve chain data for chain %s", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query chain info for inflation",
+			"id",
+			e.ID,
+			"error",
+			err,
+			"chain",
+			chainName,
+		)
+
+		return
+	}
+
+	// TODO: add mint to tracelistener?
+
+	u := fmt.Sprintf("http://%s:1317/cosmos/mint/v1beta1/inflation", chainInfo.NodeInfo.Endpoint)
+
+	ru, err := url.Parse(u)
+
+	if err != nil {
+
+		e := deps.NewError(
+			"inflation",
+			fmt.Errorf("failed to parse url for chain %s", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e, 
+			"cannot parse url", 
+			"id",
+			e.ID,
+			"url_string", u, "error", err)
+		return
+	}
+
+	res, err := http.Get(ru.String())
+
+	if err != nil {
+		e := deps.NewError(
+			"inflation",
+			fmt.Errorf("cannot retrieve inflation data for chain %s", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query chain inflation",
+			"id",
+			e.ID,
+			"error",
+			err,
+			"chain",
+			chainName,
+		)
+
+		return
+	}
+
+	if res.StatusCode != http.StatusOK {
+
+		e := deps.NewError(
+			"inflation",
+			fmt.Errorf("response was non 200 for chain %s", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"endpoint returned non-200 code",
+			"id",
+			e.ID,
+			"error",
+			err,
+			"code", 
+			res.StatusCode,
+		)
+		return
+	}
+
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	var i inflationResponse
+
+	dc := json.NewDecoder(res.Body)
+	
+	err = dc.Decode(&i)
+
+	if err != nil {
+
+		e := deps.NewError(
+			"inflation",
+			fmt.Errorf("failed to parse response for chain %s", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"failed to unmarshal json",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)	
+	}
+
+	c.JSON(http.StatusOK, i)
 }
