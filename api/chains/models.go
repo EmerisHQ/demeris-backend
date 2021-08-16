@@ -76,7 +76,3 @@ type statusResponse struct {
 type numbersResponse struct {
 	Numbers models.AuthRow `json:"numbers"`
 }
-
-type inflationResponse struct {
-	Inflation string `json:"inflation"`
-}
