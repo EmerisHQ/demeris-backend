@@ -1,71 +1,71 @@
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: cosmos-hub-snapshot-23-07-2021
+  name: cosmos-hub-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: cosmos-hub-0
+    persistentVolumeClaimName: cosmos-hub-2
 ---
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: akash-snapshot-23-07-2021
+  name: akash-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: akash-0
+    persistentVolumeClaimName: akash-1
 ---
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: crypto-org-snapshot-23-07-2021
+  name: crypto-org-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: crypto-org-0
+    persistentVolumeClaimName: crypto-org-1
 ---
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: iris-snapshot-23-07-2021
+  name: iris-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: iris-0
+    persistentVolumeClaimName: iris-1
 ---
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: osmosis-snapshot-23-07-2021
+  name: osmosis-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: osmosis-0
+    persistentVolumeClaimName: osmosis-1
 ---
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: persistence-snapshot-23-07-2021
+  name: persistence-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: persistence-0
+    persistentVolumeClaimName: persistence-1
 ---
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: regen-snapshot-23-07-2021
+  name: regen-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: regen-0
+    persistentVolumeClaimName: regen-1
 ---
 apiVersion: snapshot.storage.k8s.io/v1beta1
 kind: VolumeSnapshot
 metadata:
-  name: sentinel-snapshot-23-07-2021
+  name: sentinel-snapshot-2021-08-17
 spec:
   volumeSnapshotClassName: standard
   source:
-    persistentVolumeClaimName: sentinel-0
+    persistentVolumeClaimName: sentinel-1

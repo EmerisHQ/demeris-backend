@@ -7,9 +7,6 @@ nodeSelector: {}
 
 resources: {}
 
-ports:
-  http: 8000
-
-debug: true
+debug: false
 
 redisUrl: redis-master:6379
