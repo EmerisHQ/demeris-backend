@@ -16,7 +16,7 @@ resources:
 ports:
   http: 8000
 
-databaseConnectionURL: postgres://root@cockroachdb-public:26257?sslmode=disable
+databaseConnectionURL: postgres://root@cockroachdb:26257?sslmode=disable
 
 debug: true
 
