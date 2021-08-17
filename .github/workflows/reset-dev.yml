@@ -84,6 +84,19 @@ jobs:
           exec: |
             helm uninstall price-oracle --namespace emeris
 
+  ticket-watcher:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm uninstall ticket-watcher --namespace emeris
+
   admin-ui:
     runs-on: self-hosted
     steps:
