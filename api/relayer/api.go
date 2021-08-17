@@ -3,6 +3,7 @@ package relayer
 import (
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -42,6 +43,13 @@ func getRelayerStatus(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
+	if d.Store.Exists("relayer") {
+		res.Running = true
+		c.JSON(http.StatusOK, res)
+
+		return
+	}
+
 	running, err := k8s.Querier{
 		Client:    *d.K8S,
 		Namespace: d.KubeNamespace,
@@ -50,12 +58,12 @@ func getRelayerStatus(c *gin.Context) {
 	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
 		e := deps.NewError(
 			"status",
-			fmt.Errorf("cannot retrieve relayer status"),
+			fmt.Errorf("cannot query relayer status"),
 			http.StatusBadRequest,
 		)
 
 		d.WriteError(c, e,
-			"cannot retrieve relayer status",
+			"cannot query relayer status",
 			"id",
 			e.ID,
 			"error",
@@ -66,9 +74,46 @@ func getRelayerStatus(c *gin.Context) {
 	}
 
 	res.Running = true
-
 	if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
 		res.Running = false
+	}
+
+	bz, err := json.Marshal(running)
+	if err != nil {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot retrieve relayer status"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot marshal relayer status",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	err = d.Store.SetWithExpiry("relayer", string(bz), 10)
+	if err != nil {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot retrieve relayer status"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot set relayer status",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)
+
+		return
 	}
 
 	c.JSON(http.StatusOK, res)
@@ -88,12 +133,71 @@ func getRelayerBalance(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	running, err := k8s.Querier{
-		Client:    *d.K8S,
-		Namespace: d.KubeNamespace,
-	}.Relayer()
+	if !d.Store.Exists("relayer") {
+		running, err := k8s.Querier{
+			Client:    *d.K8S,
+			Namespace: d.KubeNamespace,
+		}.Relayer()
+		if err != nil && !errors.Is(err, k8s.ErrNotFound) {
+			e := deps.NewError(
+				"status",
+				fmt.Errorf("cannot retrieve relayer status"),
+				http.StatusBadRequest,
+			)
 
-	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
+			d.WriteError(c, e,
+				"cannot retrieve relayer status",
+				"id",
+				e.ID,
+				"error",
+				err,
+			)
+
+			return
+		}
+
+		bz, err := json.Marshal(running)
+		if err != nil {
+			e := deps.NewError(
+				"status",
+				fmt.Errorf("cannot retrieve relayer status"),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"cannot marshal relayer status",
+				"id",
+				e.ID,
+				"error",
+				err,
+			)
+
+			return
+		}
+
+		err = d.Store.SetWithExpiry("relayer", string(bz), 10)
+		if err != nil {
+			e := deps.NewError(
+				"status",
+				fmt.Errorf("cannot retrieve relayer status"),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"cannot set relayer status",
+				"id",
+				e.ID,
+				"error",
+				err,
+			)
+
+			return
+		}
+
+	}
+
+	relayer, err := d.Store.GetRelayer("relayer")
+	if err != nil {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot retrieve relayer status"),
@@ -101,7 +205,7 @@ func getRelayerBalance(c *gin.Context) {
 		)
 
 		d.WriteError(c, e,
-			"cannot retrieve relayer status",
+			"cannot get relayer status",
 			"id",
 			e.ID,
 			"error",
@@ -114,7 +218,7 @@ func getRelayerBalance(c *gin.Context) {
 	chains := []string{}
 	addresses := []string{}
 
-	for _, cs := range running.Status.ChainStatuses {
+	for _, cs := range relayer.Status.ChainStatuses {
 		chains = append(chains, cs.ID)
 		addresses = append(addresses, cs.AccountAddress)
 	}

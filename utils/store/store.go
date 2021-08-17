@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	v1 "github.com/allinbits/starport-operator/api/v1"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -255,6 +256,21 @@ func (s *Store) Get(key string) (Ticket, error) {
 	var res Ticket
 	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
 		return Ticket{}, err
+	}
+
+	return res, nil
+}
+
+func (s *Store) GetRelayer(key string) (v1.Relayer, error) {
+	var res v1.Relayer
+	bz, err := s.Client.Get(context.Background(), key).Bytes()
+	if err != nil {
+		return v1.Relayer{}, err
+	}
+
+	err = json.Unmarshal(bz, &res)
+	if err != nil {
+		return v1.Relayer{}, err
 	}
 
 	return res, nil
