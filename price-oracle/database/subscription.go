@@ -165,7 +165,7 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	q.Add("symbol", strings.Join(Whitelisttokens, ","))
 	q.Add("convert", types.USDTBasecurrency)
 	req.Header.Set("Accepts", "application/json")
-	req.Header.Add("X-CMC_PRO_API_KEY", cfg.CoinmarketcapapiKey)
+	req.Header.Add("X-CMC_PRO_API_KEY", "")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
