@@ -20,7 +20,6 @@ import (
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/models"
-	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
@@ -583,32 +582,7 @@ func GetChainStatus(c *gin.Context) {
 		return
 	}
 
-	running, err := k8s.Querier{
-		Client:    *d.K8S,
-		Namespace: d.KubeNamespace,
-	}.ChainRunning(chainName)
-
-	if err != nil {
-		e := deps.NewError(
-			"status",
-			fmt.Errorf("cannot retrieve chain status for %v", chainName),
-			http.StatusBadRequest,
-		)
-
-		d.WriteError(c, e,
-			"cannot retrieve chain status",
-			"id",
-			e.ID,
-			"name",
-			chainName,
-			"error",
-			err,
-		)
-
-		return
-	}
-
-	res.Online = running
+	res.Online = true
 
 	c.JSON(http.StatusOK, res)
 }
