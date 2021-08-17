@@ -17,7 +17,7 @@
     "numeral": "^2.0.6",
     "nuxt": "^2.14.12",
     "nuxt-buefy": "^0.3.31",
-    "webpack": "^5.47.0"
+    "webpack": "5.47.0"
   },
   "devDependencies": {
     "@nuxt/types": "^2.14.12",
@@ -37,7 +37,7 @@
     "sass-loader": "^9.0.3"
   },
   "engines": {
-    "node": "14.17.4",
+    "node": "^14.17.4",
     "npm": "6.14.13"
   }
 }
