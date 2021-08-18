@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"time"
@@ -118,9 +120,35 @@ func (r *router) TokensPrices(ctx *gin.Context) {
 		})
 		return
 	}
+	selectTokenkey, err := json.Marshal(selectToken.Tokens)
+	if r.s.ri.Exists(string(selectTokenkey)) {
+		bz, err := r.s.ri.Client.Get(context.Background(), string(selectTokenkey)).Bytes()
+		if err != nil {
+			r.s.l.Error("Error", "Redis-Get", err.Error(), "Duration", time.Second)
+			return
+		}
+		err = json.Unmarshal(bz, &symbols)
+		if err != nil {
+			r.s.l.Error("Error", "Redis-Unmarshal", err.Error(), "Duration", time.Second)
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":  http.StatusOK,
+			"data":    &symbols,
+			"message": nil,
+		})
+
+		return
+	}
 	symbols, err = selectTokensPrices(r, selectToken)
 	if err != nil {
 		e(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	bz, err := json.Marshal(symbols)
+	err = r.s.ri.SetWithExpiryTime(string(selectTokenkey), string(bz), 10*time.Second)
+	if err != nil {
+		r.s.l.Error("Error", "Redis-Set", err.Error(), "Duration", time.Second)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{
