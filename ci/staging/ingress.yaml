@@ -11,6 +11,11 @@ metadata:
     # nginx.ingress.kubernetes.io/limit-connections: "100"
     # nginx.ingress.kubernetes.io/limit-rps: "100"
     # nginx.ingress.kubernetes.io/limit-rpm: "10000"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_cache static-cache;
+      proxy_cache_valid 2s;
+      add_header X-Cache-Status $upstream_cache_status;
 spec:
   rules:
   - host: staging.demeris.io
