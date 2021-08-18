@@ -6,8 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 
 	"github.com/cosmos/cosmos-sdk/types"
 
@@ -19,11 +22,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Register(router *gin.Engine) {
+func Register(router *gin.Engine, store *persistence.InMemoryStore) {
 	rel := router.Group("/relayer")
 
-	rel.GET("/status", getRelayerStatus)
-	rel.GET("/balance", getRelayerBalance)
+	rel.GET("/status", cache.CachePage(store, 10*time.Second, getRelayerStatus))
+	rel.GET("/balance", cache.CachePage(store, 10*time.Second, getRelayerBalance))
 }
 
 // getRelayerStatus returns status of relayer.

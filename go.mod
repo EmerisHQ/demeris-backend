@@ -18,6 +18,7 @@ require (
 	github.com/cosmos/gaia/v5 v5.0.4
 	github.com/cssivision/reverseproxy v0.0.1
 	github.com/ethereum/go-ethereum v1.10.3
+	github.com/gin-contrib/cache v1.1.0
 	github.com/gin-contrib/zap v0.0.1
 	github.com/gin-gonic/gin v1.7.1
 	github.com/go-playground/universal-translator v0.17.0

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/allinbits/demeris-backend/api/block"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	"github.com/allinbits/demeris-backend/utils/validation"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin/binding"
 
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,6 +41,7 @@ type Router struct {
 	k8sNamespace string
 	cdc          codec.Marshaler
 	cnsURL       string
+	cache        *persistence.InMemoryStore
 }
 
 func New(
@@ -59,6 +62,8 @@ func New(
 
 	engine := gin.New()
 
+	store := persistence.NewInMemoryStore(10 * time.Second)
+
 	r := &Router{
 		g:            engine,
 		db:           db,
@@ -68,6 +73,7 @@ func New(
 		k8sNamespace: kubeNamespace,
 		cnsURL:       cnsURL,
 		cdc:          cdc,
+		cache:        store,
 	}
 
 	r.metrics()
@@ -83,7 +89,7 @@ func New(
 	engine.RedirectTrailingSlash = false
 	engine.RedirectFixedPath = false
 
-	registerRoutes(engine)
+	registerRoutes(engine, store)
 
 	return r
 }
@@ -154,18 +160,18 @@ func (r *Router) handleErrors() gin.HandlerFunc {
 	}
 }
 
-func registerRoutes(engine *gin.Engine) {
+func registerRoutes(engine *gin.Engine, store *persistence.InMemoryStore) {
 	// @tag.name Account
 	// @tag.description Account-querying endpoints
 	account.Register(engine)
 
 	// @tag.name Denoms
 	// @tag.description Denoms-related endpoints
-	verifieddenoms.Register(engine)
+	verifieddenoms.Register(engine, store)
 
 	// @tag.name Chain
 	// @tag.description Chain-related endpoints
-	chains.Register(engine)
+	chains.Register(engine, store)
 
 	// @tag.name Transactions
 	// @tag.description Transaction-related endpoints
@@ -173,7 +179,7 @@ func registerRoutes(engine *gin.Engine) {
 
 	// @tag.name Relayer
 	// @tag.description Relayer-related endpoints
-	relayer.Register(engine)
+	relayer.Register(engine, store)
 
 	// @tag.name Block
 	// @tag.description Blocks-related endpoints

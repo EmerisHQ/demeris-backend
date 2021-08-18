@@ -3,13 +3,16 @@ package verifieddenoms
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
+	"github.com/gin-contrib/cache"
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin"
 )
 
-func Register(router *gin.Engine) {
-	router.GET("/verified_denoms", GetVerifiedDenoms)
+func Register(router *gin.Engine, store *persistence.InMemoryStore) {
+	router.GET("/verified_denoms", cache.CachePage(store, 10*time.Second, GetVerifiedDenoms))
 }
 
 // GetVerifiedDenoms returns the list of verified denoms.
