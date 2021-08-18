@@ -7,10 +7,12 @@ import (
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router"
+	"github.com/allinbits/demeris-backend/utils"
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 	gaia "github.com/cosmos/gaia/v5/app"
+	"k8s.io/client-go/rest"
 )
 
 var Version = "not specified"
@@ -53,7 +55,6 @@ func main() {
 	if err != nil {
 		l.Panicw("cannot initialize k8s", "error", err)
 	}
-
 	cdc, _ := gaia.MakeCodecs()
 
 	r := router.New(
@@ -66,6 +67,18 @@ func main() {
 		cdc,
 		cfg.Debug,
 	)
+
+	infConfig, err := rest.InClusterConfig()
+	if err != nil {
+		l.Panicw("k8s server panic", "error", err)
+	}
+
+	informer, err := utils.GetInformer(infConfig, "relayers")
+	if err != nil {
+		l.Panicw("k8s server panic", "error", err)
+	}
+
+	go informer.Informer().Run(make(chan struct{}))
 
 	if err := r.Serve(cfg.ListenAddr); err != nil {
 		l.Panicw("http server panic", "error", err)

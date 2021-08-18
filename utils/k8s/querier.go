@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	v1 "github.com/allinbits/starport-operator/api/v1"
+
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -15,6 +16,10 @@ type Querier struct {
 	Client    kube.Client
 }
 
+//func (q Querier) Config(name string) (bool, error) {
+//	cfg := ctrl.GetConfigOrDie()
+//	informers.GetRelayersInformer(cfg)
+//}
 func (q Querier) ChainRunning(name string) (bool, error) {
 	var chainList v1.NodeSetList
 

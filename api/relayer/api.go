@@ -9,13 +9,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/allinbits/demeris-backend/utils"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/allinbits/demeris-backend/api/database"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/utils/k8s"
@@ -43,6 +48,10 @@ func getRelayerStatus(c *gin.Context) {
 	var res relayerStatusResponse
 
 	d := deps.GetDeps(c)
+	//kubeClient, err := k8s.NewInCluster()
+	//if err != nil {
+	//	l.Panicw("cannot initialize k8s", "error", err)
+	//}
 
 	if d.Store.Exists("relayer") {
 		res.Running = true
@@ -50,13 +59,20 @@ func getRelayerStatus(c *gin.Context) {
 
 		return
 	}
+	relayer := v1.Relayer{}
 
-	running, err := k8s.Querier{
-		Client:    *d.K8S,
+	cfg := ctrl.GetConfigOrDie()
+	informer, err := utils.GetInformer(cfg, "relayers")
+	if err != nil {
+
+	}
+
+	obj, err := informer.Lister().Get(k8stypes.NamespacedName{
 		Namespace: d.KubeNamespace,
-	}.Relayer()
+		Name:      "relayer",
+	}.String())
 
-	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
+	if err != nil {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot query relayer status"),
@@ -69,26 +85,21 @@ func getRelayerStatus(c *gin.Context) {
 			e.ID,
 			"error",
 			err,
+			"obj",
+			obj,
 		)
 
 		return
 	}
-
-	if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
-		res.Running = false
-	}
-	res.Running = true
-
-	bz, err := json.Marshal(running)
-	if err != nil {
+	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.(*unstructured.Unstructured).UnstructuredContent(), relayer); err != nil {
 		e := deps.NewError(
 			"status",
-			fmt.Errorf("cannot retrieve relayer status"),
+			fmt.Errorf("cannot query relayer status"),
 			http.StatusBadRequest,
 		)
 
 		d.WriteError(c, e,
-			"cannot marshal relayer status",
+			"cannot unstructure relayer status",
 			"id",
 			e.ID,
 			"error",
@@ -98,26 +109,68 @@ func getRelayerStatus(c *gin.Context) {
 		return
 	}
 
-	err = d.Store.SetWithExpiryTime("relayer", string(bz), 10*time.Second)
-	if err != nil {
-		e := deps.NewError(
-			"status",
-			fmt.Errorf("cannot retrieve relayer status"),
-			http.StatusBadRequest,
-		)
+	//if err != nil && !errors.Is(err, k8s.ErrNotFound) {
+	//	e := deps.NewError(
+	//		"status",
+	//		fmt.Errorf("cannot query relayer status"),
+	//		http.StatusBadRequest,
+	//	)
+	//
+	//	d.WriteError(c, e,
+	//		"cannot query relayer status",
+	//		"id",
+	//		e.ID,
+	//		"error",
+	//		err,
+	//	)
+	//
+	//	return
+	//}
+	//
+	//if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
+	//	res.Running = false
+	//}
+	//res.Running = true
+	//
+	//bz, err := json.Marshal(running)
+	//if err != nil {
+	//	e := deps.NewError(
+	//		"status",
+	//		fmt.Errorf("cannot retrieve relayer status"),
+	//		http.StatusBadRequest,
+	//	)
+	//
+	//	d.WriteError(c, e,
+	//		"cannot marshal relayer status",
+	//		"id",
+	//		e.ID,
+	//		"error",
+	//		err,
+	//	)
+	//
+	//	return
+	//}
+	//
+	//err = d.Store.SetWithExpiryTime("relayer", string(bz), 10*time.Second)
+	//if err != nil {
+	//	e := deps.NewError(
+	//		"status",
+	//		fmt.Errorf("cannot retrieve relayer status"),
+	//		http.StatusBadRequest,
+	//	)
+	//
+	//	d.WriteError(c, e,
+	//		"cannot set relayer status",
+	//		"id",
+	//		e.ID,
+	//		"error",
+	//		err,
+	//	)
+	//
+	//	return
+	//}
 
-		d.WriteError(c, e,
-			"cannot set relayer status",
-			"id",
-			e.ID,
-			"error",
-			err,
-		)
-
-		return
-	}
-
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, obj)
 }
 
 // getRelayerBalance returns the balance of the various relayer accounts.
