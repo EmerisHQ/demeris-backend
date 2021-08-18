@@ -62,7 +62,7 @@ func getRelayerStatus(c *gin.Context) {
 	relayer := v1.Relayer{}
 
 	cfg := ctrl.GetConfigOrDie()
-	informer, err := utils.GetInformer(cfg, "relayers")
+	informer, err := utils.GetInformer(cfg, d.KubeNamespace, "relayers")
 	if err != nil {
 
 	}

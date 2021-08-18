@@ -73,7 +73,7 @@ func main() {
 		l.Panicw("k8s server panic", "error", err)
 	}
 
-	informer, err := utils.GetInformer(infConfig, "relayers")
+	informer, err := utils.GetInformer(infConfig, cfg.KubernetesNamespace, "relayers")
 	if err != nil {
 		l.Panicw("k8s server panic", "error", err)
 	}
