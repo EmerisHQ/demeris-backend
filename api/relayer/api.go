@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
@@ -73,10 +74,10 @@ func getRelayerStatus(c *gin.Context) {
 		return
 	}
 
-	res.Running = true
 	if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
 		res.Running = false
 	}
+	res.Running = true
 
 	bz, err := json.Marshal(running)
 	if err != nil {
@@ -97,7 +98,7 @@ func getRelayerStatus(c *gin.Context) {
 		return
 	}
 
-	err = d.Store.SetWithExpiry("relayer", string(bz), 10)
+	err = d.Store.SetWithExpiryTime("relayer", string(bz), 10*time.Second)
 	if err != nil {
 		e := deps.NewError(
 			"status",
@@ -175,7 +176,7 @@ func getRelayerBalance(c *gin.Context) {
 			return
 		}
 
-		err = d.Store.SetWithExpiry("relayer", string(bz), 10)
+		err = d.Store.SetWithExpiryTime("relayer", string(bz), 10*time.Second)
 		if err != nil {
 			e := deps.NewError(
 				"status",

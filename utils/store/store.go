@@ -252,6 +252,10 @@ func (s *Store) SetWithExpiry(key string, value interface{}, mul int64) error {
 	return s.Client.Set(context.Background(), key, value, time.Duration(mul)*(s.Config.ExpiryTime)).Err()
 }
 
+func (s *Store) SetWithExpiryTime(key string, value interface{}, duration time.Duration) error {
+	return s.Client.Set(context.Background(), key, value, duration).Err()
+}
+
 func (s *Store) Get(key string) (Ticket, error) {
 	var res Ticket
 	if err := s.Client.Get(context.Background(), key).Scan(&res); err != nil {
