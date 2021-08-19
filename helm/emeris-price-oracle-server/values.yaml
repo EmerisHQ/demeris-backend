@@ -1,7 +1,7 @@
 image: emeris/price-oracle-server:latest
 imagePullPolicy: Always
 
-replicas: 1
+replicas: 3
 
 nodeSelector: {}
 
