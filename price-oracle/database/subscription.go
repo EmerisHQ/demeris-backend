@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	gecko "github.com/superoo7/go-gecko/v3"
 	geckoTypes "github.com/superoo7/go-gecko/v3/types"
 	"go.uber.org/zap"
