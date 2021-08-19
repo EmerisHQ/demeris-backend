@@ -31,12 +31,28 @@ func New(connString string) (*Instance, error) {
 }
 
 func (i *Instance) AddChain(chain models.Chain) error {
-	n, err := i.d.DB.PrepareNamed(insertChain)
+	//n, err := i.d.DB.PrepareNamed(insertChain)
+	//if err != nil {
+	//	return err
+	//}
+
+	newPC, err := chain.PrimaryChannel.Value()
 	if err != nil {
 		return err
 	}
 
-	res, err := n.Exec(chain)
+	denomValue, err := chain.Denoms.Value()
+	if err != nil {
+		return err
+	}
+
+	nodeValue, err := chain.Denoms.Value()
+	if err != nil {
+		return err
+	}
+
+	res, err := i.d.DB.Exec(insertChain, chain.ChainName, chain.Enabled, chain.Logo, chain.DisplayName, chain.ValidBlockThresh,
+		newPC, denomValue, chain.DemerisAddresses, chain.GenesisHash, nodeValue, chain.DerivationPath)
 
 	if err != nil {
 		return err
@@ -77,7 +93,12 @@ func (i *Instance) DeleteChain(chain string) error {
 func (i *Instance) Chain(chain string) (models.Chain, error) {
 	var c models.Chain
 
-	err := i.d.DB.Get(&c, fmt.Sprintf("SELECT * FROM cns.chains WHERE chain_name='%s' limit 1;", chain))
+	row := i.d.DB.QueryRow(`SELECT * FROM cns.chains WHERE chain_name='%s' limit 1;, chain`)
+	//if err != nil {
+	//	return c, err
+	//}
+
+	//err := i.d.DB.Get(&c, fmt.Sprintf("SELECT * FROM cns.chains WHERE chain_name='%s' limit 1;", chain))
 
 	return c, err
 }

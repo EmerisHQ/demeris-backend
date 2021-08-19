@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/tendermint/tendermint/rpc/jsonrpc/types"
 )
 
 // Chain represents CNS chain metadata row on the database.
@@ -126,12 +127,18 @@ type NodeInfo struct {
 
 // Scan is the sql.Scanner implementation for DbStringMap.
 func (a *NodeInfo) Scan(value interface{}) error {
-	b, ok := value.([]byte)
+	b, ok := .([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
 
 	return json.Unmarshal(b, &a)
+}
+
+// Value is the sql.Scanner implementation for NodeInfo.
+func (a *NodeInfo) Value() (driver.Value, error) {
+
+	return json.Marshal(a)
 }
 
 // GasPrice holds gas prices.
@@ -147,6 +154,7 @@ func (a GasPrice) Empty() bool {
 
 // Scan is the sql.Scanner implementation for DbStringMap.
 func (a *GasPrice) Scan(value interface{}) error {
+	pq.``
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
@@ -260,6 +268,12 @@ func (a *DenomList) Scan(value interface{}) error {
 	return json.Unmarshal(b, &a)
 }
 
+// Value is the sql.Scanner implementation for DenomList.
+func (a *DenomList) Value() (driver.Value, error) {
+
+	return json.Marshal(a)
+}
+
 // DbStringMap represent a JSON database-enabled string map.
 type DbStringMap map[string]string
 
@@ -271,6 +285,17 @@ func (a *DbStringMap) Scan(value interface{}) error {
 	}
 
 	return json.Unmarshal(b, &a)
+}
+
+// Returns the JSON-encoded representation
+func (a DbStringMap) Value() (driver.Value, error) {
+	// Convert to map[string]float32 from map[int]float32
+	x := make(map[string]string)
+	for k, v := range a {
+		x[k] = v
+	}
+	// Marshal into json
+	return json.Marshal(x)
 }
 
 // ChannelQuery represents a query to get a specified channel or counterparty data.

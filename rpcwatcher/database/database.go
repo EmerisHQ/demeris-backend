@@ -7,6 +7,7 @@ import (
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/lib/pq"
 )
 
 type Instance struct {
@@ -29,14 +30,12 @@ func New(connString string) (*Instance, error) {
 }
 
 func (i *Instance) UpdateDenoms(chain models.Chain) error {
-	n, err := i.d.DB.PrepareNamed(`UPDATE cns.chains 
-	SET denoms=:denoms 
-	WHERE chain_name=:chain_name;`)
-	if err != nil {
-		return err
-	}
+	n := `UPDATE cns.chains 
+	SET denoms=$1 
+	WHERE chain_name=$2;`
 
-	res, err := n.Exec(chain)
+	array := pq.Array(chain.Denoms)
+	res, err := i.d.DB.Exec(n, array, chain.ChainName)
 
 	if err != nil {
 		return err

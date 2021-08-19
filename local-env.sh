@@ -273,7 +273,7 @@ EOF
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/cns-server"
     helm upgrade cns-server \
         --install \
-        --kube-context kind-$CLUSTER_NAME \
+        --kube-context kind-emeris \
         --namespace emeris \
         --set imagePullPolicy=Never \
         helm/emeris-cns-server \

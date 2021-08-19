@@ -48,17 +48,17 @@ INSERT INTO cns.chains
 	)
 VALUES
 	(
-		:chain_name,
-		:enabled,
-		:logo,
-		:display_name,
-		:valid_block_thresh,
-		:primary_channel,
-		:denoms,
-		:demeris_addresses,
-		:genesis_hash,
-		:node_info,
-		:derivation_path
+		$1,
+		$2,
+		$3,
+		$4,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
+		$10,
+		$11
 	)
 ON CONFLICT
 	(chain_name)

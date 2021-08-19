@@ -11,7 +11,6 @@ import (
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 	gaia "github.com/cosmos/gaia/v5/app"
-	_ "github.com/lib/pq"
 )
 
 var Version = "not specified"
