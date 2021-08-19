@@ -6,8 +6,6 @@ import (
 
 	"github.com/allinbits/demeris-backend/models"
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
-
-	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type Instance struct {
