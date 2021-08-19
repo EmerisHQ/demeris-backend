@@ -121,6 +121,10 @@ func (r *router) TokensPrices(ctx *gin.Context) {
 		return
 	}
 	selectTokenkey, err := json.Marshal(selectToken.Tokens)
+	if err != nil {
+		r.s.l.Error("Error", "Redis-selectTokenkey", err.Error(), "Duration", time.Second)
+		return
+	}
 	if r.s.ri.Exists(string(selectTokenkey)) {
 		bz, err := r.s.ri.Client.Get(context.Background(), string(selectTokenkey)).Bytes()
 		if err != nil {

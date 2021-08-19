@@ -94,6 +94,10 @@ func (r *router) FiatsPrices(ctx *gin.Context) {
 		return
 	}
 	selectFiatkey, err := json.Marshal(selectFiat.Fiats)
+	if err != nil {
+		r.s.l.Error("Error", "Redis-selectFiatkey", err.Error(), "Duration", time.Second)
+		return
+	}
 	if r.s.ri.Exists(string(selectFiatkey)) {
 		bz, err := r.s.ri.Client.Get(context.Background(), string(selectFiatkey)).Bytes()
 		if err != nil {
