@@ -9,23 +9,25 @@ import (
 	"github.com/allinbits/demeris-backend/price-oracle/config"
 	"github.com/allinbits/demeris-backend/price-oracle/database"
 	"github.com/allinbits/demeris-backend/utils/logging"
+	"github.com/allinbits/demeris-backend/utils/store"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	l *zap.SugaredLogger
-	d *database.Instance
-	g *gin.Engine
-	c *config.Config
+	l  *zap.SugaredLogger
+	d  *database.Instance
+	g  *gin.Engine
+	c  *config.Config
+	ri *store.Store
 }
 
 type router struct {
 	s *Server
 }
 
-func NewServer(l *zap.SugaredLogger, d *database.Instance, c *config.Config) *Server {
+func NewServer(ri *store.Store, l *zap.SugaredLogger, d *database.Instance, c *config.Config) *Server {
 	if !c.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -33,10 +35,11 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, c *config.Config) *Se
 	g := gin.New()
 
 	s := &Server{
-		l: l,
-		d: d,
-		g: g,
-		c: c,
+		l:  l,
+		d:  d,
+		g:  g,
+		c:  c,
+		ri: ri,
 	}
 
 	r := &router{s: s}

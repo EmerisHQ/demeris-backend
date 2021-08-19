@@ -11,6 +11,7 @@ import (
 	"github.com/allinbits/demeris-backend/price-oracle/database"
 	"github.com/allinbits/demeris-backend/price-oracle/rest"
 	"github.com/allinbits/demeris-backend/utils/logging"
+	"github.com/allinbits/demeris-backend/utils/store"
 )
 
 var Version = "not specified"
@@ -32,6 +33,10 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
+	ri, err := store.NewClient(config.RedisUrl)
+	if err != nil {
+		logger.Panicw("unable to start redis client", "error", err)
+	}
 
 	var wg sync.WaitGroup
 
@@ -49,6 +54,7 @@ func main() {
 	}()
 
 	restServer := rest.NewServer(
+		ri,
 		logger,
 		di,
 		config,
