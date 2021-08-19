@@ -1,0 +1,13 @@
+tls:
+  enabled: false
+
+statefulset:
+  replicas: 6
+
+  resources:
+    limits:
+      cpu: "4"
+      memory: 16Gi
+    requests:
+      cpu: "4"
+      memory: 16Gi

@@ -41,7 +41,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.event.inputs.version }} \
-              --set replicas=3 \
+              --set replicas=6 \
               ./helm/emeris-api-server
 
   rpcwatcher:
