@@ -32,7 +32,7 @@ spec:
               value: "{{ .Values.databaseConnectionURL }}"
             - name: DEMERIS-PRICE-ORACLE_DEBUG
               value: "{{ .Values.debug }}"
-            - name: DEMERIS-PRICE-ORACLE_REDIS
+            - name: DEMERIS-PRICE-ORACLE_REDISURL
               value: "{{ .Values.redisUrl }}"
             - name: DEMERIS-PRICE-ORACLE_INTERVAL
               value: "{{ .Values.updateInterval }}"
