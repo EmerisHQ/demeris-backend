@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v4/stdlib"
 
 	"github.com/allinbits/demeris-backend/models"
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
