@@ -871,7 +871,7 @@ func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
 // @Tags Chain
 // @ID get-inflation
 // @Produce json
-// @Success 200 {object} mint.QueryInflationResponse
+// @Success 200 {object} inflationResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /chain/{chainName}/mint/inflation [get]
 func GetInflation(c *gin.Context) {
@@ -934,7 +934,7 @@ func GetInflation(c *gin.Context) {
 // @Tags Chain
 // @ID get-mint-params
 // @Produce json
-// @Success 200 {object} mint.QueryParamsResponse
+// @Success 200 {object} paramsResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /chain/{chainName}/mint/params [get]
 func GetMintParams(c *gin.Context) {
@@ -991,13 +991,13 @@ func GetMintParams(c *gin.Context) {
 	c.JSON(http.StatusOK, queryParamsRes)
 }
 
-// GetMintParams returns the minting parameters of a specific chain
-// @Summary Gets the minting params of a chain
-// @Description Gets minting params
+// GetAnnualProvisions returns the annual provisions of a specific chain
+// @Summary Gets the annual provisions of a chain
+// @Description Gets annual provisions
 // @Tags Chain
-// @ID get-mint-params
+// @ID get-annual-provisions
 // @Produce json
-// @Success 200 {object} mint.QueryAnnualProvisionsResponse
+// @Success 200 {object} annualProvisionsResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /chain/{chainName}/mint/annual_provisions [get]
 func GetAnnualProvisions(c *gin.Context) {
