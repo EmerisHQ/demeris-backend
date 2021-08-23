@@ -41,7 +41,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.event.inputs.version }} \
-              --set replicas=3 \
+              --set replicas=6 \
               ./helm/emeris-api-server
 
   rpcwatcher:
@@ -78,6 +78,24 @@ jobs:
               --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.event.inputs.version }} \
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               ./helm/emeris-price-oracle-server
+
+  ticket-watcher:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
+          exec: |
+            helm upgrade ticket-watcher \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-ticket-watcher:${{ github.event.inputs.version }} \
+              --set debug=true \
+              ./helm/emeris-ticket-watcher
 
   ingress:
     runs-on: self-hosted

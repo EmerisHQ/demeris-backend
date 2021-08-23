@@ -6,6 +6,7 @@ type relayerStatusResponse struct {
 
 type relayerBalance struct {
 	Address       string `json:"address"`
+	ChainName     string `json:"chain_name"`
 	EnoughBalance bool   `json:"enough_balance"`
 }
 
