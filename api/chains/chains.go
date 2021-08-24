@@ -38,7 +38,7 @@ func GetChains(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	chains, err := d.Database.Chains()
+	chains, err := d.Database.SimpleChains()
 
 	if err != nil {
 		e := deps.NewError(

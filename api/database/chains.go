@@ -46,6 +46,11 @@ func (d *Database) Chains() ([]models.Chain, error) {
 	return c, d.dbi.Exec("select * from cns.chains where enabled=TRUE", nil, &c)
 }
 
+func (d *Database) SimpleChains() ([]models.Chain, error) {
+	var c []models.Chain
+	return c, d.dbi.Exec("select chain_name, display_name, logo from cns.chains where enabled=TRUE", nil, &c)
+}
+
 func (d *Database) ChainIDs() (map[string]string, error) {
 	type it struct {
 		ChainName string `db:"chain_name"`
