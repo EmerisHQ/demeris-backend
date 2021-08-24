@@ -75,12 +75,12 @@ func New(
 
 	validation.JSONFields(binding.Validator)
 
-	engine.Use(r.catchPanics())
+	engine.Use(r.catchPanicsFunc)
 	if debug {
 		engine.Use(logging.LogRequest(l.Desugar()))
 	}
-	engine.Use(r.decorateCtxWithDeps())
-	engine.Use(r.handleErrors())
+	engine.Use(r.decorateCtxWithDeps)
+	engine.Use(r.handleErrors)
 	engine.RedirectTrailingSlash = false
 	engine.RedirectFixedPath = false
 
@@ -93,66 +93,60 @@ func (r *Router) Serve(address string) error {
 	return r.g.Run(address)
 }
 
-func (r *Router) catchPanics() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-			if rval := recover(); rval != nil {
-				// okay we panic-ed, log it through r's logger and write back internal server error
-				err := deps.NewError(
-					"fatal_error",
-					errors.New("internal server error"),
-					http.StatusInternalServerError)
+func (r *Router) catchPanicsFunc(c *gin.Context) {
+	defer func() {
+		if rval := recover(); rval != nil {
+			// okay we panic-ed, log it through r's logger and write back internal server error
+			err := deps.NewError(
+				"fatal_error",
+				errors.New("internal server error"),
+				http.StatusInternalServerError)
 
-				r.l.Errorw(
-					"panic handler triggered while handling call",
-					"endpoint", c.Request.RequestURI,
-					"error", fmt.Sprint(rval),
-					"error_id", err.ID,
-				)
+			r.l.Errorw(
+				"panic handler triggered while handling call",
+				"endpoint", c.Request.RequestURI,
+				"error", fmt.Sprint(rval),
+				"error_id", err.ID,
+			)
 
-				c.AbortWithStatusJSON(
-					http.StatusInternalServerError,
-					err,
-				)
+			c.AbortWithStatusJSON(
+				http.StatusInternalServerError,
+				err,
+			)
 
-				return
-			}
-		}()
-		c.Next()
-	}
-}
-
-func (r *Router) decorateCtxWithDeps() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("deps", &deps.Deps{
-			Logger:        r.l,
-			Database:      r.db,
-			Store:         r.s,
-			CNSURL:        r.cnsURL,
-			KubeNamespace: r.k8sNamespace,
-			Codec:         r.cdc,
-			K8S:           &r.k8s,
-		})
-	}
-}
-
-func (r *Router) handleErrors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-
-		l := c.Errors.Last()
-		if l == nil {
-			c.Next()
 			return
 		}
+	}()
+	c.Next()
+}
 
-		rerr := deps.Error{}
-		if !errors.As(l, &rerr) {
-			panic(l)
-		}
+func (r *Router) decorateCtxWithDeps(c *gin.Context) {
+	c.Set("deps", &deps.Deps{
+		Logger:        r.l,
+		Database:      r.db,
+		Store:         r.s,
+		CNSURL:        r.cnsURL,
+		KubeNamespace: r.k8sNamespace,
+		Codec:         r.cdc,
+		K8S:           &r.k8s,
+	})
+}
 
-		c.JSON(rerr.StatusCode, rerr)
+func (r *Router) handleErrors(c *gin.Context) {
+	c.Next()
+
+	l := c.Errors.Last()
+	if l == nil {
+		c.Next()
+		return
 	}
+
+	rerr := deps.Error{}
+	if !errors.As(l, &rerr) {
+		panic(l)
+	}
+
+	c.JSON(rerr.StatusCode, rerr)
 }
 
 func registerRoutes(engine *gin.Engine) {
