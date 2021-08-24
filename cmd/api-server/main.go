@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"runtime"
+	"runtime/debug"
 
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
@@ -30,6 +31,10 @@ func main() {
 		runtime.SetCPUProfileRate(500)
 
 		go func() {
+			http.HandleFunc("/freemem", func(_ http.ResponseWriter, _ *http.Request) {
+				debug.FreeOSMemory()
+			})
+
 			l.Debugw("starting profiling server", "port", "6060")
 			err := http.ListenAndServe(":6060", nil)
 			if err != nil {
