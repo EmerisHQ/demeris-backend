@@ -46,6 +46,21 @@ func (d *Database) Chains() ([]models.Chain, error) {
 	return c, d.dbi.Exec("select * from cns.chains where enabled=TRUE", nil, &c)
 }
 
+func (d *Database) VerifiedDenoms() (map[string]models.DenomList, error) {
+	var c []models.Chain
+	if err := d.dbi.Exec("select chain_name, denoms from cns.chains where enabled=TRUE", nil, &c); err != nil {
+		return nil, err
+	}
+
+	ret := make(map[string]models.DenomList)
+
+	for _, cc := range c {
+		ret[cc.ChainName] = cc.VerifiedTokens()
+	}
+
+	return ret, nil
+}
+
 func (d *Database) SimpleChains() ([]models.Chain, error) {
 	var c []models.Chain
 	return c, d.dbi.Exec("select chain_name, display_name, logo from cns.chains where enabled=TRUE", nil, &c)

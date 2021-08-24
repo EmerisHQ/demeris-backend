@@ -144,14 +144,14 @@ func GetBalancesByAddress(c *gin.Context) {
 }
 
 func verifiedDenomsMap(d *database.Database) (map[string]bool, error) {
-	chains, err := d.Chains()
+	chains, err := d.VerifiedDenoms()
 	if err != nil {
 		return nil, err
 	}
 
 	ret := make(map[string]bool)
 	for _, cc := range chains {
-		for _, vd := range cc.VerifiedTokens() {
+		for _, vd := range cc {
 			ret[vd.Name] = vd.Verified
 		}
 	}
