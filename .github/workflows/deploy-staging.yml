@@ -24,6 +24,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.version }} \
+              --set updateInterval=10s \
               ./helm/emeris-cns-server
 
   api-server:
