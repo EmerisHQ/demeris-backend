@@ -9,7 +9,7 @@ metadata:
 spec:
   endpoints:
   - path: /metrics
-    port: 8000
+    port: http
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
