@@ -82,6 +82,8 @@ func (t *Threshold) UnmarshalJSON(bytes []byte) error {
 
 	*t = Threshold(d)
 
+	bytes = nil
+
 	return nil
 }
 
@@ -131,7 +133,15 @@ func (a *NodeInfo) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // GasPrice holds gas prices.
@@ -152,7 +162,15 @@ func (a *GasPrice) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // Bech32Config represents the chain's bech32 configuration
@@ -257,7 +275,15 @@ func (a *DenomList) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // DbStringMap represent a JSON database-enabled string map.
@@ -270,7 +296,15 @@ func (a *DbStringMap) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // ChannelQuery represents a query to get a specified channel or counterparty data.
