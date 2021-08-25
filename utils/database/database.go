@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbsqlx"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
