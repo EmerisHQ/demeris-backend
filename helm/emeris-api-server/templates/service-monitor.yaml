@@ -4,15 +4,15 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
+    {{ toYaml .Values.serviceMonitorLabels }}
     {{- include "chart.labels" . | indent 4 }}
 spec:
   endpoints:
   - path: /metrics
-    port: http
+    port: 8000
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/name: emeris-api-server
+      {{- include "chart.labels" . | indent 6 }}

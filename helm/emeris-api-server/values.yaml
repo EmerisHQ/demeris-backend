@@ -23,3 +23,6 @@ databaseConnectionURL: postgres://root@cockroachdb:26257?sslmode=disable
 redisUrl: redis-master:6379
 
 debug: true
+
+serviceMonitorLabels:
+  release: monitoring-stack
