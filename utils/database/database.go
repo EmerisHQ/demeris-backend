@@ -13,7 +13,7 @@ import (
 
 const (
 	DriverPGX = "pgx"
-	DriverPG  = "postgres"
+	DriverPQ  = "postgres"
 )
 
 // Instance contains a database connection instance.

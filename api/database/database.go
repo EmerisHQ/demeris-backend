@@ -12,7 +12,7 @@ type Database struct {
 
 // Init initializes a connection to the database.
 func Init(c *config.Config) (*Database, error) {
-	i, err := database.NewWithDriver(c.DatabaseConnectionURL, database.DriverPG)
+	i, err := database.NewWithDriver(c.DatabaseConnectionURL, database.DriverPQ)
 	if err != nil {
 		return nil, err
 	}
