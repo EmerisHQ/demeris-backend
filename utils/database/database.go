@@ -22,24 +22,7 @@ type Instance struct {
 
 // New returns an Instance connected to the database pointed by connString.
 func New(connString string) (*Instance, error) {
-	db, err := sqlx.Connect(DriverPGX, connString)
-	if err != nil {
-		return nil, err
-	}
-
-	i := &Instance{
-		DB: db,
-	}
-
-	if err := i.DB.Ping(); err != nil {
-		return nil, fmt.Errorf("cannot ping db, %w", err)
-	}
-
-	i.DB.DB.SetMaxOpenConns(25)
-	i.DB.DB.SetMaxIdleConns(25)
-	i.DB.DB.SetConnMaxLifetime(5 * time.Minute)
-
-	return i, nil
+	return NewWithDriver(connString, DriverPGX)
 }
 
 // NewWithDriver returns an Instance connected to the database pointed by connString with the given driver.
