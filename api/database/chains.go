@@ -10,6 +10,13 @@ func (d *Database) Chain(name string) (models.Chain, error) {
 		return models.Chain{}, err
 	}
 
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	return c, n.Get(&c, map[string]interface{}{
 		"name": name,
 	})
@@ -23,6 +30,13 @@ func (d *Database) ChainFromChainID(chainID string) (models.Chain, error) {
 		return models.Chain{}, err
 	}
 
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	return c, n.Get(&c, map[string]interface{}{
 		"chainID": chainID,
 	})
@@ -35,6 +49,13 @@ func (d *Database) ChainLastBlock(name string) (models.BlockTimeRow, error) {
 	if err != nil {
 		return models.BlockTimeRow{}, err
 	}
+
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return c, n.Get(&c, map[string]interface{}{
 		"name": name,
@@ -93,6 +114,13 @@ func (d *Database) PrimaryChannelCounterparty(chainName, counterparty string) (m
 	if err != nil {
 		return models.ChannelQuery{}, err
 	}
+
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return c, n.Get(&c, map[string]interface{}{
 		"chain_name":   chainName,
