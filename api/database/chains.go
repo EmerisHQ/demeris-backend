@@ -136,6 +136,13 @@ func (d *Database) PrimaryChannels(chainName string) ([]models.ChannelQuery, err
 		return nil, err
 	}
 
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	return c, n.Select(&c, map[string]interface{}{
 		"chain_name": chainName,
 	})
