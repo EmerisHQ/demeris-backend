@@ -32,6 +32,7 @@ func main() {
 
 		go func() {
 			http.HandleFunc("/freemem", func(_ http.ResponseWriter, _ *http.Request) {
+				runtime.GC()
 				debug.FreeOSMemory()
 			})
 
