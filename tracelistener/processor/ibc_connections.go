@@ -1,10 +1,11 @@
-package gaia_processor
+package processor
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/allinbits/demeris-backend/models"
 	"strings"
+
+	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/03-connection/types"
 

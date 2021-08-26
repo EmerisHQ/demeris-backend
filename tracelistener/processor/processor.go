@@ -1,7 +1,11 @@
-package gaia_processor
+package processor
 
 import (
 	"fmt"
+
+	"github.com/allinbits/demeris-backend/tracelistener/processor/sdk/bank"
+
+	"github.com/allinbits/demeris-backend/tracelistener/processor/sdk"
 
 	"github.com/allinbits/demeris-backend/models"
 
@@ -67,11 +71,16 @@ func New(logger *zap.SugaredLogger, cfg *config.Config) (tracelistener.DataProce
 		c.ProcessorsEnabled = defaultProcessors
 	}
 
+	preset, err := sdk.GetPreset(cfg.SDKVersion)
+	if err != nil {
+		return nil, err
+	}
+
 	var mp []Module
 	var tableSchemas []string
 
 	for _, ep := range c.ProcessorsEnabled {
-		p, err := processorByName(ep, logger)
+		p, err := processorByName(ep, preset, logger)
 		if err != nil {
 			return nil, err
 		}
@@ -113,18 +122,36 @@ func (p *Processor) AddModule(m Module) error {
 	return nil
 }
 
-func processorByName(name string, logger *zap.SugaredLogger) (Module, error) {
+func processorByName(name string, preset sdk.Preset, logger *zap.SugaredLogger) (Module, error) {
+	parser, err := preset.Module(name)
+	if err != nil {
+		return nil, err
+	}
+
 	switch name {
 	default:
 		return nil, fmt.Errorf("unkonwn Processor %s", name)
 	case (&bankProcessor{}).ModuleName():
-		return &bankProcessor{heightCache: map[bankCacheEntry]models.BalanceRow{}, l: logger}, nil
+		return &bankProcessor{
+			heightCache: map[bankCacheEntry]models.BalanceRow{},
+			l:           logger,
+			parser:      parser.(bank.Parser),
+		}, nil
 	case (&ibcConnectionsProcessor{}).ModuleName():
-		return &ibcConnectionsProcessor{connectionsCache: map[connectionCacheEntry]models.IBCConnectionRow{}, l: logger}, nil
+		return &ibcConnectionsProcessor{
+			connectionsCache: map[connectionCacheEntry]models.IBCConnectionRow{},
+			l:                logger,
+		}, nil
 	case (&liquidityPoolProcessor{}).ModuleName():
-		return &liquidityPoolProcessor{poolsCache: map[uint64]models.PoolRow{}, l: logger}, nil
+		return &liquidityPoolProcessor{
+			poolsCache: map[uint64]models.PoolRow{},
+			l:          logger,
+		}, nil
 	case (&liquiditySwapsProcessor{}).ModuleName():
-		return &liquiditySwapsProcessor{swapsCache: map[uint64]models.SwapRow{}, l: logger}, nil
+		return &liquiditySwapsProcessor{
+			swapsCache: map[uint64]models.SwapRow{},
+			l:          logger,
+		}, nil
 	case (&delegationsProcessor{}).ModuleName():
 		return &delegationsProcessor{
 			insertHeightCache: map[delegationCacheEntry]models.DelegationRow{},
@@ -137,7 +164,10 @@ func processorByName(name string, logger *zap.SugaredLogger) (Module, error) {
 			denomTracesCache: map[string]models.IBCDenomTraceRow{},
 		}, nil
 	case (&ibcChannelsProcessor{}).ModuleName():
-		return &ibcChannelsProcessor{channelsCache: map[channelCacheEntry]models.IBCChannelRow{}, l: logger}, nil
+		return &ibcChannelsProcessor{
+			channelsCache: map[channelCacheEntry]models.IBCChannelRow{},
+			l:             logger,
+		}, nil
 	case (&ibcClientsProcessor{}).ModuleName():
 		return &ibcClientsProcessor{
 			l:            logger,

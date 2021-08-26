@@ -1,7 +1,8 @@
-package gaia_processor
+package processor
 
 import (
 	"bytes"
+
 	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/allinbits/demeris-backend/tracelistener"

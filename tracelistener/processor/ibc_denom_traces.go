@@ -1,9 +1,10 @@
-package gaia_processor
+package processor
 
 import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+
 	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/allinbits/demeris-backend/tracelistener"

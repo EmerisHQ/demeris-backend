@@ -6,6 +6,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/allinbits/demeris-backend/tracelistener/processor"
+
 	"github.com/allinbits/demeris-backend/tracelistener/bulk"
 
 	"github.com/allinbits/demeris-backend/tracelistener/blocktime"
@@ -15,7 +17,6 @@ import (
 	"github.com/allinbits/demeris-backend/tracelistener"
 	"github.com/allinbits/demeris-backend/tracelistener/config"
 	"github.com/allinbits/demeris-backend/tracelistener/database"
-	"github.com/allinbits/demeris-backend/tracelistener/gaia_processor"
 	"github.com/containerd/fifo"
 	"go.uber.org/zap"
 )
@@ -34,16 +35,7 @@ func main() {
 
 	logger.Infow("tracelistener", "version", Version)
 
-	var processorFunc tracelistener.DataProcessorFunc
-
-	switch cfg.Type {
-	case "gaia":
-		processorFunc = gaia_processor.New
-	default:
-		logger.Panicw("no processor associated with type", "type", cfg.Type)
-	}
-
-	dpi, err := processorFunc(logger, cfg)
+	dpi, err := processor.New(logger, cfg)
 	if err != nil {
 		logger.Fatal(err)
 	}

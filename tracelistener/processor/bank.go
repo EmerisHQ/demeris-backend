@@ -1,18 +1,15 @@
-package gaia_processor
+package processor
 
 import (
-	"bytes"
 	"encoding/hex"
+
+	"github.com/allinbits/demeris-backend/tracelistener/processor/sdk/bank"
 
 	"github.com/allinbits/demeris-backend/models"
 
 	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/tracelistener"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 type bankCacheEntry struct {
@@ -23,6 +20,7 @@ type bankCacheEntry struct {
 type bankProcessor struct {
 	l           *zap.SugaredLogger
 	heightCache map[bankCacheEntry]models.BalanceRow
+	parser      bank.Parser
 }
 
 func (*bankProcessor) TableSchema() string {
@@ -55,27 +53,16 @@ func (b *bankProcessor) FlushCache() []tracelistener.WritebackOp {
 }
 
 func (b *bankProcessor) OwnsKey(key []byte) bool {
-	return bytes.HasPrefix(key, types.BalancesPrefix)
+	return b.parser.OwnsKey(key)
 }
 
 func (b *bankProcessor) Process(data tracelistener.TraceOperation) error {
-	addrBytes := data.Key
-	pLen := len(types.BalancesPrefix)
-	addr := addrBytes[pLen : pLen+20]
-
-	coins := sdk.Coin{
-		Amount: sdk.NewInt(0),
-	}
-
-	if err := p.cdc.UnmarshalBinaryBare(data.Value, &coins); err != nil {
+	addr, coins, err := b.parser.Process(p.cdc, data)
+	if err != nil {
 		return err
 	}
 
-	if !coins.IsValid() {
-		return nil
-	}
-
-	hAddr := hex.EncodeToString(addr)
+	hAddr := hex.EncodeToString([]byte(addr))
 	b.l.Debugw("new bank store write",
 		"operation", data.Operation,
 		"address", hAddr,
@@ -84,14 +71,16 @@ func (b *bankProcessor) Process(data tracelistener.TraceOperation) error {
 		"txHash", data.TxHash,
 	)
 
-	b.heightCache[bankCacheEntry{
-		address: hAddr,
-		denom:   coins.Denom,
-	}] = models.BalanceRow{
-		Address:     hAddr,
-		Amount:      coins.String(),
-		Denom:       coins.Denom,
-		BlockHeight: data.BlockHeight,
+	for _, coin := range coins {
+		b.heightCache[bankCacheEntry{
+			address: hAddr,
+			denom:   coin.Denom,
+		}] = models.BalanceRow{
+			Address:     hAddr,
+			Amount:      coin.String(),
+			Denom:       coin.Denom,
+			BlockHeight: data.BlockHeight,
+		}
 	}
 
 	return nil
