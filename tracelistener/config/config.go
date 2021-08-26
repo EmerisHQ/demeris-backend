@@ -13,14 +13,14 @@ type Config struct {
 	ChainName             string `validate:"required"`
 	DatabaseConnectionURL string `validate:"required"`
 	LogPath               string
-	Type                  string `validate:"required"`
+	SDKVersion            string `validate:"required"`
 	Debug                 bool
 
 	// Processors configs
-	Gaia GaiaConfig
+	ProcessorConfig ProcessorConfig
 }
 
-type GaiaConfig struct {
+type ProcessorConfig struct {
 	ProcessorsEnabled []string
 }
 

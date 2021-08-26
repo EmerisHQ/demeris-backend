@@ -65,7 +65,7 @@ func (p *Processor) ErrorsChan() chan error {
 }
 
 func New(logger *zap.SugaredLogger, cfg *config.Config) (tracelistener.DataProcessor, error) {
-	c := cfg.Gaia
+	c := cfg.ProcessorConfig
 
 	if c.ProcessorsEnabled == nil {
 		c.ProcessorsEnabled = defaultProcessors
