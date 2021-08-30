@@ -42,7 +42,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.event.inputs.version }} \
-              --set replicas=6 \
+              --set replicas=3 \
               ./helm/emeris-api-server
 
   rpcwatcher:
@@ -78,6 +78,7 @@ jobs:
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.event.inputs.version }} \
               --set fixerKey=${{ secrets.FIXER_KEY }} \
+              --set replicas=3 \
               ./helm/emeris-price-oracle-server
 
   ticket-watcher:
