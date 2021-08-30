@@ -1,17 +1,17 @@
 image: emeris/api-server:latest
 imagePullPolicy: Always
 
-replicas: 1
+replicas: 3
 
 nodeSelector: {}
 
 resources:
   requests:
-    cpu: 500m
-    memory: 2Gi
+    cpu: 200m
+    memory: 256Mi
   limits:
-    cpu: 500m
-    memory: 2Gi
+    cpu: 200m
+    memory: 256Mi
 
 ports:
   http: 8000
