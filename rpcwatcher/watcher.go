@@ -332,6 +332,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		if err != nil {
 			w.l.Errorw("unable to store swap fees", "error", err)
 		}
+
+		if err := w.store.SetComplete(key, height); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
+		}
+		return
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
