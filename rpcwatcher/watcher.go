@@ -512,7 +512,13 @@ func (w *Watcher) startChain(ctx context.Context) {
 				case EventsTx:
 					w.handleMessage(data)
 				case EventsBlock:
-					w.handleBlock(data.Data)
+					// TODO: instead of doing this we might pass a map of event -> function
+					// so that the caller can decide what to do with said event.
+					w.l.Debugw("new block received", "chain_name", w.Name)
+
+					if w.Name == "cosmos-hub" {
+						w.handleBlock(data.Data)
+					}
 				}
 			}
 		}

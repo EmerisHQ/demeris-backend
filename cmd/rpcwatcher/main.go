@@ -59,11 +59,7 @@ func main() {
 	chainsMap := mapChains(chains)
 
 	for cn := range chainsMap {
-		subEvents := []string{rpcwatcher.EventsTx}
-
-		if cn == "cosmos-hub" { // special case, needs to observe new blocks too
-			subEvents = append(subEvents, rpcwatcher.EventsBlock)
-		}
+		subEvents := []string{rpcwatcher.EventsTx, rpcwatcher.EventsBlock}
 
 		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, c.ApiURL, db, s, subEvents)
 
