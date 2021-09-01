@@ -16,6 +16,8 @@ import (
 	"github.com/allinbits/demeris-backend/api/database"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
+	"github.com/allinbits/demeris-backend/utils/k8s"
+	v1 "github.com/allinbits/starport-operator/api/v1"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,13 +40,36 @@ func Register(router *gin.Engine) {
 func getRelayerStatus(c *gin.Context) {
 	var res relayerStatusResponse
 
-	//d := deps.GetDeps(c)
+	d := deps.GetDeps(c)
+
+	running, err := k8s.Querier{
+		Client:    *d.K8S,
+		Namespace: d.KubeNamespace,
+	}.Relayer()
+
+	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot retrieve relayer status"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve relayer status",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)
+
+		return
+	}
 
 	res.Running = true
 
-	//if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
-	//	res.Running = false
-	//}
+	if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
+		res.Running = false
+	}
 
 	c.JSON(http.StatusOK, res)
 }
@@ -63,10 +88,36 @@ func getRelayerBalance(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	chains := []string{"irishub-1", "akashnet-2", "regen-1", "sentinelhub-2", "crypto-org-chain-mainnet-1", "cosmoshub-4", "core-1", "osmosis-1"}
-	addresses := []string{"iaa1nl68echj5q5xqmelt9njaz82ehe7dgre2vfu93", "akash1da0ad723jhv0k7zgrv3szupngdmtqhkkad6dkz", "regen1uft3gakywrrw52qafu7ej8cl0avd308qraqg89",
-		"sent13t6r4eczclzce75y99haetc787dxnr6zg3sfmn", "cro18llfnp6sd9qwhc4km0cf6e043jjr30lpkd4akh", "cosmos19nwjcna4vc7nf5f5ykfnkenvpj7cng3drcejkt",
-		"persistence1l0u02hdzl27rf00707vqaat7tswpxqewc9zkw8", "osmo1kcm2rgsk5q9cj72y2wfuym4a9ka96njxx85zlp"}
+	running, err := k8s.Querier{
+		Client:    *d.K8S,
+		Namespace: d.KubeNamespace,
+	}.Relayer()
+
+	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot retrieve relayer status"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve relayer status",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	chains := []string{}
+	addresses := []string{}
+
+	for _, cs := range running.Status.ChainStatuses {
+		chains = append(chains, cs.ID)
+		addresses = append(addresses, cs.AccountAddress)
+	}
 
 	thresh, err := relayerThresh(chains, d.Database)
 	if err != nil {
