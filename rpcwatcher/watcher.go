@@ -248,9 +248,13 @@ func (w *Watcher) startChain(ctx context.Context) {
 		default:
 			select {
 			case data := <-w.DataChannel:
+				if data.Query == "" {
+					continue
+				}
+
 				handlers, ok := w.eventTypeMappings[data.Query]
 				if !ok {
-					w.l.Warnw("got event subscribed that didn't have a event mapping associated", "chain", w.Name)
+					w.l.Warnw("got event subscribed that didn't have a event mapping associated", "chain", w.Name, "eventName", data.Query)
 					continue
 				}
 
