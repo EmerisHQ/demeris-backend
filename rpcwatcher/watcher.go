@@ -612,11 +612,3 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 
 	return
 }
-
-type watchdog struct {
-	lastTimestamp time.Time
-}
-
-func HandleBlockWatchdog(w *Watcher, data coretypes.ResultEvent) {
-
-}
