@@ -25,7 +25,7 @@ func (c *Config) Validate() error {
 func ReadConfig() (*Config, error) {
 	var c Config
 	return &c, configuration.ReadConfig(&c, "rpcwatcher", map[string]string{
-		"RedisURL": "http://redis-master:6379",
+		"RedisURL": "redis-master:6379",
 		"ApiURL":   "http://api-server:8000",
 	})
 }
