@@ -111,18 +111,19 @@ func NewWatcher(
 	}
 
 	w := &Watcher{
-		apiUrl:           apiUrl,
-		d:                db,
-		client:           ws,
-		l:                logger,
-		store:            s,
-		Name:             chainName,
-		endpoint:         endpoint,
-		subs:             subscriptions,
-		stopReadChannel:  make(chan struct{}),
-		DataChannel:      make(chan coretypes.ResultEvent),
-		stopErrorChannel: make(chan struct{}),
-		ErrorChannel:     make(chan *jsonrpctypes.RPCError),
+		apiUrl:            apiUrl,
+		d:                 db,
+		client:            ws,
+		l:                 logger,
+		store:             s,
+		Name:              chainName,
+		endpoint:          endpoint,
+		subs:              subscriptions,
+		eventTypeMappings: eventTypeMappings,
+		stopReadChannel:   make(chan struct{}),
+		DataChannel:       make(chan coretypes.ResultEvent),
+		stopErrorChannel:  make(chan struct{}),
+		ErrorChannel:      make(chan *jsonrpctypes.RPCError),
 	}
 
 	w.l.Debugw("creating rpcwatcher with config", "apiurl", apiUrl)
