@@ -19,6 +19,25 @@ import (
 
 var Version = "not specified"
 
+var (
+	eventsToSubTo = []string{rpcwatcher.EventsTx, rpcwatcher.EventsBlock}
+
+	standardMappings = map[string][]rpcwatcher.DataHandler{
+		rpcwatcher.EventsTx: {
+			rpcwatcher.HandleMessage,
+		},
+		rpcwatcher.EventsBlock: {},
+	}
+	cosmosHubMappings = map[string][]rpcwatcher.DataHandler{
+		rpcwatcher.EventsTx: {
+			rpcwatcher.HandleMessage,
+		},
+		rpcwatcher.EventsBlock: {
+			rpcwatcher.HandleCosmosHubBlock,
+		},
+	}
+)
+
 type watcherInstance struct {
 	watcher *rpcwatcher.Watcher
 	cancel  context.CancelFunc
@@ -59,9 +78,13 @@ func main() {
 	chainsMap := mapChains(chains)
 
 	for cn := range chainsMap {
-		subEvents := []string{rpcwatcher.EventsTx, rpcwatcher.EventsBlock}
+		eventMappings := standardMappings
 
-		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, c.ApiURL, db, s, subEvents)
+		if cn == "cosmos-hub" { // special case, needs to observe new blocks too
+			eventMappings = cosmosHubMappings
+		}
+
+		watcher, err := rpcwatcher.NewWatcher(endpoint(cn), cn, l, c.ApiURL, db, s, eventsToSubTo, eventMappings)
 
 		if err != nil {
 			l.Errorw("cannot create chain", "error", err)
@@ -117,13 +140,13 @@ func main() {
 			case diff.CREATE:
 				name := d.Path[0]
 
-				subEvents := []string{rpcwatcher.EventsTx}
+				eventMappings := standardMappings
 
 				if name == "cosmos-hub" { // special case, needs to observe new blocks too
-					subEvents = append(subEvents, rpcwatcher.EventsBlock)
+					eventMappings = cosmosHubMappings
 				}
 
-				watcher, err := rpcwatcher.NewWatcher(endpoint(name), name, l, c.ApiURL, db, s, subEvents)
+				watcher, err := rpcwatcher.NewWatcher(endpoint(name), name, l, c.ApiURL, db, s, eventsToSubTo, eventMappings)
 
 				if err != nil {
 					var dnsErr *net.DNSError

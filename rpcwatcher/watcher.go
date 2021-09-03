@@ -31,21 +31,7 @@ const (
 	defaultRPCPort = 26657
 )
 
-type Watcher struct {
-	Name             string
-	apiUrl           string
-	client           *client.WSClient
-	d                *database.Instance
-	l                *zap.SugaredLogger
-	store            *store.Store
-	runContext       context.Context
-	endpoint         string
-	subs             []string
-	stopReadChannel  chan struct{}
-	DataChannel      chan coretypes.ResultEvent
-	stopErrorChannel chan struct{}
-	ErrorChannel     chan *jsonrpctypes.RPCError
-}
+type DataHandler func(watcher *Watcher, event coretypes.ResultEvent)
 
 type WsResponse struct {
 	Event coretypes.ResultEvent `json:"result"`
@@ -72,7 +58,43 @@ type Ack struct {
 	Result string `json:"result"`
 }
 
-func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl string, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+type Watcher struct {
+	Name         string
+	DataChannel  chan coretypes.ResultEvent
+	ErrorChannel chan *jsonrpctypes.RPCError
+
+	eventTypeMappings map[string][]DataHandler
+	apiUrl            string
+	client            *client.WSClient
+	d                 *database.Instance
+	l                 *zap.SugaredLogger
+	store             *store.Store
+	runContext        context.Context
+	endpoint          string
+	subs              []string
+	stopReadChannel   chan struct{}
+	stopErrorChannel  chan struct{}
+}
+
+func NewWatcher(
+	endpoint, chainName string,
+	logger *zap.SugaredLogger,
+	apiUrl string,
+	db *database.Instance,
+	s *store.Store,
+	subscriptions []string,
+	eventTypeMappings map[string][]DataHandler,
+) (*Watcher, error) {
+	if eventTypeMappings == nil || len(eventTypeMappings) == 0 {
+		return nil, fmt.Errorf("event type mappings cannot be empty")
+	}
+
+	for _, eventKind := range subscriptions {
+		handlers, ok := eventTypeMappings[eventKind]
+		if !ok || len(handlers) == 0 {
+			return nil, fmt.Errorf("event %s found in subscriptions but no handler defined for it", eventKind)
+		}
+	}
 
 	ws, err := client.NewWS(endpoint, "/websocket")
 	if err != nil {
@@ -190,7 +212,7 @@ func resubscribe(w *Watcher) {
 		count = count + 1
 		w.l.Debugw("this is count", "count", count)
 
-		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.apiUrl, w.d, w.store, w.subs)
+		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.apiUrl, w.d, w.store, w.subs, w.eventTypeMappings)
 		if err != nil {
 			w.l.Errorw("cannot resubscribe to chain", "name", w.Name, "endpoint", w.endpoint, "error", err)
 			continue
@@ -210,7 +232,33 @@ func resubscribe(w *Watcher) {
 	}
 }
 
-func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
+func (w *Watcher) startChain(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			w.stopReadChannel <- struct{}{}
+			w.stopErrorChannel <- struct{}{}
+			w.l.Infof("watcher %s has been canceled", w.Name)
+			return
+		default:
+			select {
+			case data := <-w.DataChannel:
+				handlers, ok := w.eventTypeMappings[data.Query]
+				if !ok {
+					w.l.Warnw("got event subscribed that didn't have a event mapping associated", "chain", w.Name)
+					continue
+				}
+
+				for _, handler := range handlers {
+					handler(w, data)
+				}
+			}
+		}
+
+	}
+}
+
+func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
 	_, createPoolEventPresent := data.Events["create_pool.pool_name"]
 	_, IBCSenderEventPresent := data.Events["ibc_transfer.sender"]
@@ -497,38 +545,9 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 }
 
-func (w *Watcher) startChain(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			w.stopReadChannel <- struct{}{}
-			w.stopErrorChannel <- struct{}{}
-			w.l.Infof("watcher %s has been canceled", w.Name)
-			return
-		default:
-			select {
-			case data := <-w.DataChannel:
-				switch data.Query {
-				case EventsTx:
-					w.handleMessage(data)
-				case EventsBlock:
-					// TODO: instead of doing this we might pass a map of event -> function
-					// so that the caller can decide what to do with said event.
-					w.l.Debugw("new block received", "chain_name", w.Name)
-
-					if w.Name == "cosmos-hub" {
-						w.handleBlock(data.Data)
-					}
-				}
-			}
-		}
-
-	}
-}
-
-func (w *Watcher) handleBlock(data types.TMEventData) {
-	w.l.Debugw("called handleBlock")
-	realData, ok := data.(types.EventDataNewBlock)
+func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
+	w.l.Debugw("called HandleCosmosHubBlock")
+	realData, ok := data.Data.(types.EventDataNewBlock)
 	if !ok {
 		panic("rpc returned data which is not of expected type")
 	}
