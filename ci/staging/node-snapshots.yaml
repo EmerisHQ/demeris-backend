@@ -69,3 +69,13 @@ spec:
   volumeSnapshotClassName: standard
   source:
     persistentVolumeClaimName: sentinel-1
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: microtick-snapshot-2021-09-03
+  namespace: emeris
+spec:
+  source:
+    persistentVolumeClaimName: microtick-0
+  volumeSnapshotClassName: standard

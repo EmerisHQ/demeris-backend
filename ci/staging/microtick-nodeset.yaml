@@ -1,0 +1,53 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: microtick
+  namespace: emeris
+spec:
+  app:
+    cliName: mtm
+    daemonName: mtm
+    name: mtm
+  image:
+    name: gcr.io/tendermint-dev/mtm
+    version: mtm-v2.0.2
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/microtick/stargate-genesis/master/genesis.json
+    persistentPeers:
+    - address: 45.79.207.112
+      id: e8466c961788f68803d873c28b6a0f843b36ba3e
+      port: 26656
+    - address: 104.237.158.143
+      id: e800651612bb546c1c71d338e963ebdede65758e
+      port: 26656
+    seeds:
+    - address: 45.79.207.112
+      id: e8466c961788f68803d873c28b6a0f843b36ba3e
+      port: 26656
+    - address: 168.119.231.242
+      id: f1b27c43f32b68710de06d8e0fb13e7c9cc21ed2
+      port: 26656
+    - address: 5.189.132.164
+      id: 885cc6b8bcc36d9fd0489f4bfa2d845c9b60f354
+      port: 26656
+  moniker: emeris
+  persistence:
+    autoResize:
+      enabled: true
+      increment: 5G
+      threshold: 80
+    size: 100Gi
+    storageClass: premium-rwo
+  replicas: 2
+  resources:
+    restServer: {}
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi
+    validator: {}
+  sdkVersion: stargate
