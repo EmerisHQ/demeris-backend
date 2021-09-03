@@ -96,7 +96,12 @@ func NewWatcher(
 		}
 	}
 
-	ws, err := client.NewWS(endpoint, "/websocket")
+	ws, err := client.NewWS(
+		endpoint,
+		"/websocket",
+		client.ReadWait(30*time.Second),
+		client.PingPeriod(5*time.Second),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -606,4 +611,12 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 	}
 
 	return
+}
+
+type watchdog struct {
+	lastTimestamp time.Time
+}
+
+func HandleBlockWatchdog(w *Watcher, data coretypes.ResultEvent) {
+
 }
