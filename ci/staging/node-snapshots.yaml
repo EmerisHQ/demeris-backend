@@ -79,3 +79,23 @@ spec:
   source:
     persistentVolumeClaimName: microtick-0
   volumeSnapshotClassName: standard
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: starname-snapshot-2021-09-03
+  namespace: emeris
+spec:
+  source:
+    persistentVolumeClaimName: starname-0
+  volumeSnapshotClassName: standard
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: ixo-snapshot-2021-09-04
+  namespace: emeris
+spec:
+  source:
+    persistentVolumeClaimName: ixo-0
+  volumeSnapshotClassName: standard
