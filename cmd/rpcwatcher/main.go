@@ -26,13 +26,16 @@ var (
 		rpcwatcher.EventsTx: {
 			rpcwatcher.HandleMessage,
 		},
-		rpcwatcher.EventsBlock: {},
+		rpcwatcher.EventsBlock: {
+			rpcwatcher.HandleNewBlock,
+		},
 	}
 	cosmosHubMappings = map[string][]rpcwatcher.DataHandler{
 		rpcwatcher.EventsTx: {
 			rpcwatcher.HandleMessage,
 		},
 		rpcwatcher.EventsBlock: {
+			rpcwatcher.HandleNewBlock,
 			rpcwatcher.HandleCosmosHubBlock,
 		},
 	}

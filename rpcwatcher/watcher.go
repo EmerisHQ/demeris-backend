@@ -612,3 +612,7 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 
 	return
 }
+
+func HandleNewBlock(w *Watcher, _ coretypes.ResultEvent) {
+	w.l.Debugw("new block", "chain_name", w.Name)
+}
