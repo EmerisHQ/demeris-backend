@@ -74,6 +74,7 @@ type Watcher struct {
 	subs              []string
 	stopReadChannel   chan struct{}
 	stopErrorChannel  chan struct{}
+	watchdog          *watchdog
 }
 
 func NewWatcher(
@@ -110,6 +111,8 @@ func NewWatcher(
 		return nil, err
 	}
 
+	wd := newWatchdog(10 * time.Second)
+
 	w := &Watcher{
 		apiUrl:            apiUrl,
 		d:                 db,
@@ -124,6 +127,7 @@ func NewWatcher(
 		DataChannel:       make(chan coretypes.ResultEvent),
 		stopErrorChannel:  make(chan struct{}),
 		ErrorChannel:      make(chan *jsonrpctypes.RPCError),
+		watchdog:          wd,
 	}
 
 	w.l.Debugw("creating rpcwatcher with config", "apiurl", apiUrl)
@@ -133,6 +137,10 @@ func NewWatcher(
 			return nil, fmt.Errorf("failed to subscribe, %w", err)
 		}
 	}
+
+	go wd.Start()
+
+	go wd.ReadTimeout(w)
 
 	go w.readChannel()
 
@@ -619,5 +627,7 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 }
 
 func HandleNewBlock(w *Watcher, _ coretypes.ResultEvent) {
+	w.watchdog.Ping()
+	w.l.Debugw("performed watchdog ping")
 	w.l.Debugw("new block", "chain_name", w.Name)
 }
