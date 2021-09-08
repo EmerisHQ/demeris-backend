@@ -140,8 +140,6 @@ func NewWatcher(
 
 	go wd.Start()
 
-	go wd.ReadTimeout(w)
-
 	go w.readChannel()
 
 	go w.checkError()
@@ -197,6 +195,8 @@ func (w *Watcher) checkError() {
 		select {
 		case <-w.stopErrorChannel:
 			return
+		case <-w.watchdog.timeout:
+			resubscribe(w)
 		default:
 			select {
 			case err := <-w.ErrorChannel:

@@ -5,7 +5,7 @@ import (
 )
 
 type watchdog struct {
-	timeout       chan bool
+	timeout       chan struct{}
 	ping          chan struct{}
 	timer         *time.Timer
 	timeoutAmount time.Duration
@@ -13,7 +13,7 @@ type watchdog struct {
 
 func newWatchdog(timeoutAmount time.Duration) *watchdog {
 	return &watchdog{
-		timeout:       make(chan bool),
+		timeout:       make(chan struct{}),
 		ping:          make(chan struct{}),
 		timeoutAmount: timeoutAmount,
 	}
@@ -27,7 +27,7 @@ func (w watchdog) Ping() {
 
 func (w *watchdog) Start() {
 	w.timer = time.AfterFunc(w.timeoutAmount, func() {
-		w.timeout <- false
+		w.timeout <- struct{}{}
 	})
 
 	go func() {
@@ -39,18 +39,9 @@ func (w *watchdog) Start() {
 				}
 
 				w.timer = time.AfterFunc(w.timeoutAmount, func() {
-					w.timeout <- true
+					w.timeout <- struct{}{}
 				})
 			}
 		}
 	}()
-}
-
-func (w watchdog) ReadTimeout(watcher *Watcher) {
-	for {
-		select {
-		case <-w.timeout:
-			resubscribe(watcher)
-		}
-	}
 }
