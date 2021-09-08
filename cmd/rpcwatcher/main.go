@@ -54,6 +54,7 @@ func main() {
 
 	l := logging.New(logging.LoggingConfig{
 		Debug: c.Debug,
+		JSON:  c.JSONLogs,
 	})
 
 	l.Infow("rpcwatcher", "version", Version)

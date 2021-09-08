@@ -11,6 +11,7 @@ type Config struct {
 	RedisURL              string `validate:"required,url"`
 	ApiURL                string `validate:"required,url"`
 	Debug                 bool
+	JSONLogs              bool
 }
 
 func (c *Config) Validate() error {
