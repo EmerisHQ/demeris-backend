@@ -111,7 +111,7 @@ func NewWatcher(
 		return nil, err
 	}
 
-	wd := newWatchdog(10 * time.Second)
+	wd := newWatchdog(20 * time.Second)
 
 	w := &Watcher{
 		apiUrl:            apiUrl,
@@ -197,6 +197,7 @@ func (w *Watcher) checkError() {
 			return
 		case <-w.watchdog.timeout:
 			resubscribe(w)
+			w.l.Warnw("resubscribed to websocket", "chain", w.Name)
 		default:
 			select {
 			case err := <-w.ErrorChannel:
