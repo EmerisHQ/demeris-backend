@@ -197,7 +197,7 @@ func (w *Watcher) checkError() {
 			return
 		case <-w.watchdog.timeout:
 			resubscribe(w)
-			w.l.Warnw("resubscribed to websocket", "chain", w.Name)
+			w.l.Warnw("resubscribed to websocket due to timeout", "chain", w.Name)
 		default:
 			select {
 			case err := <-w.ErrorChannel:
