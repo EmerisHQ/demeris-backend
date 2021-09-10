@@ -261,6 +261,7 @@ func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.Sugared
 		"XPRT":  "persistence",
 		"REGEN": "regen",
 		"DVPN":  "sentinel",
+		"IOV":   "starname",
 	}
 	var ids []string
 	for _, ticker := range Whitelisttokens {
