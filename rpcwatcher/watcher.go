@@ -483,6 +483,11 @@ func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", chainName, recvPacketSourceChannel[0], recvPacketSequence[0])
+		if !w.store.Exists(key) {
+			w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_receive")
+			return
+		}
+
 		var ack Ack
 		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil {
 			w.l.Errorw("unable to unmarshal packetAck", "err", err)
@@ -524,6 +529,11 @@ func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
+		if !w.store.Exists(key) {
+			w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "timeout")
+			return
+		}
+
 		if err := w.store.SetIbcTimeoutUnlock(key, txHash, chainName, height); err != nil {
 			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
 		}
@@ -554,6 +564,11 @@ func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
 		_, ok = data.Events["fungible_token_packet.error"]
 		if ok {
+			if !w.store.Exists(key) {
+				w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_ack")
+				return
+			}
+
 			if err := w.store.SetIbcAckUnlock(key, txHash, chainName, height); err != nil {
 				w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
 			}
