@@ -258,6 +258,7 @@ type Denom struct {
 	Verified                    bool     `db:"verified" json:"verified,omitempty"`
 	Stakable                    bool     `db:"stakable" json:"stakable,omitempty"`
 	Ticker                      string   `db:"ticker" json:"ticker,omitempty"`
+	PriceID                     string   `db:"price_id" json:"price_id,omitempty"`
 	FeeToken                    bool     `db:"fee_token" json:"fee_token,omitempty"`
 	GasPriceLevels              GasPrice `db:"gas_price_levels" json:"gas_price_levels"`
 	FetchPrice                  bool     `db:"fetch_price" json:"fetch_price"`
