@@ -11,6 +11,7 @@ type Config struct {
 	RedisURL              string `validate:"required,url"`
 	ApiURL                string `validate:"required,url"`
 	Debug                 bool
+	JSONLogs              bool
 }
 
 func (c *Config) Validate() error {
@@ -25,7 +26,7 @@ func (c *Config) Validate() error {
 func ReadConfig() (*Config, error) {
 	var c Config
 	return &c, configuration.ReadConfig(&c, "rpcwatcher", map[string]string{
-		"RedisURL": "http://redis-master:6379",
+		"RedisURL": "redis-master:6379",
 		"ApiURL":   "http://api-server:8000",
 	})
 }

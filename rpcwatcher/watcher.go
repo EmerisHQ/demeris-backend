@@ -35,21 +35,7 @@ const (
 	grpcPort       = 9090
 )
 
-type Watcher struct {
-	Name             string
-	apiUrl           string
-	client           *client.WSClient
-	d                *database.Instance
-	l                *zap.SugaredLogger
-	store            *store.Store
-	runContext       context.Context
-	endpoint         string
-	subs             []string
-	stopReadChannel  chan struct{}
-	DataChannel      chan coretypes.ResultEvent
-	stopErrorChannel chan struct{}
-	ErrorChannel     chan *jsonrpctypes.RPCError
-}
+type DataHandler func(watcher *Watcher, event coretypes.ResultEvent)
 
 type WsResponse struct {
 	Event coretypes.ResultEvent `json:"result"`
@@ -76,9 +62,51 @@ type Ack struct {
 	Result string `json:"result"`
 }
 
-func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl string, db *database.Instance, s *store.Store, subscriptions []string) (*Watcher, error) {
+type Watcher struct {
+	Name         string
+	DataChannel  chan coretypes.ResultEvent
+	ErrorChannel chan *jsonrpctypes.RPCError
 
-	ws, err := client.NewWS(endpoint, "/websocket")
+	eventTypeMappings map[string][]DataHandler
+	apiUrl            string
+	client            *client.WSClient
+	d                 *database.Instance
+	l                 *zap.SugaredLogger
+	store             *store.Store
+	runContext        context.Context
+	endpoint          string
+	subs              []string
+	stopReadChannel   chan struct{}
+	stopErrorChannel  chan struct{}
+	watchdog          *watchdog
+}
+
+func NewWatcher(
+	endpoint, chainName string,
+	logger *zap.SugaredLogger,
+	apiUrl string,
+	db *database.Instance,
+	s *store.Store,
+	subscriptions []string,
+	eventTypeMappings map[string][]DataHandler,
+) (*Watcher, error) {
+	if eventTypeMappings == nil || len(eventTypeMappings) == 0 {
+		return nil, fmt.Errorf("event type mappings cannot be empty")
+	}
+
+	for _, eventKind := range subscriptions {
+		handlers, ok := eventTypeMappings[eventKind]
+		if !ok || len(handlers) == 0 {
+			return nil, fmt.Errorf("event %s found in subscriptions but no handler defined for it", eventKind)
+		}
+	}
+
+	ws, err := client.NewWS(
+		endpoint,
+		"/websocket",
+		client.ReadWait(30*time.Second),
+		client.PingPeriod(5*time.Second),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -87,19 +115,23 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl st
 		return nil, err
 	}
 
+	wd := newWatchdog(20 * time.Second)
+
 	w := &Watcher{
-		apiUrl:           apiUrl,
-		d:                db,
-		client:           ws,
-		l:                logger,
-		store:            s,
-		Name:             chainName,
-		endpoint:         endpoint,
-		subs:             subscriptions,
-		stopReadChannel:  make(chan struct{}),
-		DataChannel:      make(chan coretypes.ResultEvent),
-		stopErrorChannel: make(chan struct{}),
-		ErrorChannel:     make(chan *jsonrpctypes.RPCError),
+		apiUrl:            apiUrl,
+		d:                 db,
+		client:            ws,
+		l:                 logger,
+		store:             s,
+		Name:              chainName,
+		endpoint:          endpoint,
+		subs:              subscriptions,
+		eventTypeMappings: eventTypeMappings,
+		stopReadChannel:   make(chan struct{}),
+		DataChannel:       make(chan coretypes.ResultEvent),
+		stopErrorChannel:  make(chan struct{}),
+		ErrorChannel:      make(chan *jsonrpctypes.RPCError),
+		watchdog:          wd,
 	}
 
 	w.l.Debugw("creating rpcwatcher with config", "apiurl", apiUrl)
@@ -109,6 +141,8 @@ func NewWatcher(endpoint, chainName string, logger *zap.SugaredLogger, apiUrl st
 			return nil, fmt.Errorf("failed to subscribe, %w", err)
 		}
 	}
+
+	go wd.Start()
 
 	go w.readChannel()
 
@@ -165,6 +199,9 @@ func (w *Watcher) checkError() {
 		select {
 		case <-w.stopErrorChannel:
 			return
+		case <-w.watchdog.timeout:
+			resubscribe(w)
+			w.l.Warnw("resubscribed to websocket due to timeout", "chain", w.Name)
 		default:
 			select {
 			case err := <-w.ErrorChannel:
@@ -194,7 +231,7 @@ func resubscribe(w *Watcher) {
 		count = count + 1
 		w.l.Debugw("this is count", "count", count)
 
-		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.apiUrl, w.d, w.store, w.subs)
+		ww, err := NewWatcher(w.endpoint, w.Name, w.l, w.apiUrl, w.d, w.store, w.subs, w.eventTypeMappings)
 		if err != nil {
 			w.l.Errorw("cannot resubscribe to chain", "name", w.Name, "endpoint", w.endpoint, "error", err)
 			continue
@@ -214,13 +251,44 @@ func resubscribe(w *Watcher) {
 	}
 }
 
-func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
+func (w *Watcher) startChain(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			w.stopReadChannel <- struct{}{}
+			w.stopErrorChannel <- struct{}{}
+			w.l.Infof("watcher %s has been canceled", w.Name)
+			return
+		default:
+			select {
+			case data := <-w.DataChannel:
+				if data.Query == "" {
+					continue
+				}
+
+				handlers, ok := w.eventTypeMappings[data.Query]
+				if !ok {
+					w.l.Warnw("got event subscribed that didn't have a event mapping associated", "chain", w.Name, "eventName", data.Query)
+					continue
+				}
+
+				for _, handler := range handlers {
+					handler(w, data)
+				}
+			}
+		}
+
+	}
+}
+
+func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 	txHashSlice, exists := data.Events["tx.hash"]
 	_, createPoolEventPresent := data.Events["create_pool.pool_name"]
 	_, IBCSenderEventPresent := data.Events["ibc_transfer.sender"]
 	_, IBCAckEventPresent := data.Events["fungible_token_packet.acknowledgement"]
 	_, IBCReceivePacketEventPresent := data.Events["recv_packet.packet_sequence"]
 	_, IBCTimeoutEventPresent := data.Events["timeout.refund_receiver"]
+	_, SwapTransactionEventPresent := data.Events["swap_within_batch.pool_id"]
 
 	if len(txHashSlice) == 0 {
 		return
@@ -250,10 +318,9 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 		return
 	}
-
 	// Handle case where a simple non-IBC transfer is being used.
 	if exists && !createPoolEventPresent && !IBCSenderEventPresent && !IBCReceivePacketEventPresent &&
-		!IBCAckEventPresent && !IBCTimeoutEventPresent && w.store.Exists(key) {
+		!IBCAckEventPresent && !IBCTimeoutEventPresent && !SwapTransactionEventPresent && w.store.Exists(key) {
 		if err := w.store.SetComplete(key, height); err != nil {
 			w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
 		}
@@ -311,6 +378,35 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 			return
 		}
 
+		return
+	}
+
+	if SwapTransactionEventPresent && w.Name == "cosmos-hub" {
+		poolId, ok := data.Events["swap_within_batch.pool_id"]
+		if !ok {
+			w.l.Errorw("pool_id not found")
+			return
+		}
+
+		offerCoinFee, ok := data.Events["swap_within_batch.offer_coin_fee_amount"]
+		if !ok {
+			w.l.Errorw("offer_coin_fee_amount not found")
+			return
+		}
+
+		offerCoinDenom, ok := data.Events["swap_within_batch.offer_coin_denom"]
+		if !ok {
+			w.l.Errorw("offer_coin_fee_denom not found")
+		}
+
+		err := w.store.SetPoolSwapFees(poolId[0], offerCoinFee[0], offerCoinDenom[0])
+		if err != nil {
+			w.l.Errorw("unable to store swap fees", "error", err)
+		}
+
+		if err := w.store.SetComplete(key, height); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
+		}
 		return
 	}
 
@@ -391,6 +487,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", chainName, recvPacketSourceChannel[0], recvPacketSequence[0])
+		if !w.store.Exists(key) {
+			w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_receive")
+			return
+		}
+
 		var ack Ack
 		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil {
 			w.l.Errorw("unable to unmarshal packetAck", "err", err)
@@ -432,6 +533,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		}
 
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
+		if !w.store.Exists(key) {
+			w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "timeout")
+			return
+		}
+
 		if err := w.store.SetIbcTimeoutUnlock(key, txHash, chainName, height); err != nil {
 			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
 		}
@@ -462,6 +568,11 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
 		_, ok = data.Events["fungible_token_packet.error"]
 		if ok {
+			if !w.store.Exists(key) {
+				w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_ack")
+				return
+			}
+
 			if err := w.store.SetIbcAckUnlock(key, txHash, chainName, height); err != nil {
 				w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
 			}
@@ -472,32 +583,9 @@ func (w *Watcher) handleMessage(data coretypes.ResultEvent) {
 
 }
 
-func (w *Watcher) startChain(ctx context.Context) {
-	for {
-		select {
-		case <-ctx.Done():
-			w.stopReadChannel <- struct{}{}
-			w.stopErrorChannel <- struct{}{}
-			w.l.Infof("watcher %s has been canceled", w.Name)
-			return
-		default:
-			select {
-			case data := <-w.DataChannel:
-				switch data.Query {
-				case EventsTx:
-					w.handleMessage(data)
-				case EventsBlock:
-					w.handleBlock(data.Data)
-				}
-			}
-		}
-
-	}
-}
-
-func (w *Watcher) handleBlock(data types.TMEventData) {
-	w.l.Debugw("called handleBlock")
-	realData, ok := data.(types.EventDataNewBlock)
+func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
+	w.l.Debugw("called HandleCosmosHubBlock")
+	realData, ok := data.Data.(types.EventDataNewBlock)
 	if !ok {
 		panic("rpc returned data which is not of expected type")
 	}
@@ -593,4 +681,10 @@ func (w *Watcher) handleBlock(data types.TMEventData) {
 	}
 
 	return
+}
+
+func HandleNewBlock(w *Watcher, _ coretypes.ResultEvent) {
+	w.watchdog.Ping()
+	w.l.Debugw("performed watchdog ping")
+	w.l.Debugw("new block", "chain_name", w.Name)
 }

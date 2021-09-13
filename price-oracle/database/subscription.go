@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	gecko "github.com/superoo7/go-gecko/v3"
 	geckoTypes "github.com/superoo7/go-gecko/v3/types"
 	"go.uber.org/zap"
@@ -166,7 +166,7 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 	q.Add("symbol", strings.Join(Whitelisttokens, ","))
 	q.Add("convert", types.USDTBasecurrency)
 	req.Header.Set("Accepts", "application/json")
-	req.Header.Add("X-CMC_PRO_API_KEY", cfg.CoinmarketcapapiKey)
+	req.Header.Add("X-CMC_PRO_API_KEY", "")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
@@ -261,6 +261,7 @@ func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.Sugared
 		"XPRT":  "persistence",
 		"REGEN": "regen",
 		"DVPN":  "sentinel",
+		"IOV":   "starname",
 	}
 	var ids []string
 	for _, ticker := range Whitelisttokens {

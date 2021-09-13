@@ -7,6 +7,7 @@ import (
 	"time"
 
 	gaia "github.com/cosmos/gaia/v5/app"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/go-redis/redis/v8"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 )
@@ -21,7 +22,12 @@ const (
 	ibcReceiveSuccess     = "IBC_receive_success"
 	tokensUnlockedTimeout = "Tokens_unlocked_timeout"
 	tokensUnlockedAck     = "Tokens_unlocked_ack"
+
+	// pool swap fees is stored only for one hour(12 * defaultExpiry)
+	poolExpiryMul = 12
 )
+
+var defaultExpiry = 300 * time.Second
 
 type Store struct {
 	Client        *redis.Client
@@ -64,7 +70,7 @@ func NewClient(connUrl string) (*Store, error) {
 
 	store.ConnectionURL = connUrl
 
-	store.Config.ExpiryTime = 300 * time.Second
+	store.Config.ExpiryTime = defaultExpiry
 
 	return &store, nil
 
@@ -238,6 +244,19 @@ func (s *Store) SetIbcFailed(key, txHash, chainName string, height int64) error 
 	})
 	return s.SetIBCReceiveFailed(prev.Info, txHashes, height)
 }
+
+func (s *Store) SetPoolSwapFees(poolId, offerCoinAmount, offerCoinDenom string) error {
+	poolTicket := fmt.Sprintf("pool/%s/%d", poolId, time.Now().Unix())
+
+	offerCoinAmountInt, ok := sdk.NewIntFromString(offerCoinAmount)
+	if !ok {
+		return fmt.Errorf("unable to convert offerCoinAmout to sdk Int")
+	}
+
+	coin := sdk.NewCoin(offerCoinDenom, offerCoinAmountInt)
+	return s.SetWithExpiry(poolTicket, coin.String(), poolExpiryMul) //  mul is 12 as time out is set to 5minutes by default
+}
+
 func (s *Store) CreateShadowKey(key string) error {
 	shadowKey := shadow + key
 	return s.SetWithExpiry(shadowKey, "", 1)
@@ -251,6 +270,10 @@ func (s *Store) Exists(key string) bool {
 
 func (s *Store) SetWithExpiry(key string, value interface{}, mul int64) error {
 	return s.Client.Set(context.Background(), key, value, time.Duration(mul)*(s.Config.ExpiryTime)).Err()
+}
+
+func (s *Store) SetWithExpiryTime(key string, value interface{}, duration time.Duration) error {
+	return s.Client.Set(context.Background(), key, value, duration).Err()
 }
 
 func (s *Store) Get(key string) (Ticket, error) {
@@ -301,4 +324,68 @@ func (s *Store) Delete(key string) error {
 func (s *Store) DeleteShadowKey(key string) error {
 	shadowKey := shadow + key
 	return s.Delete(shadowKey)
+}
+
+func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
+	values, err := s.scan(fmt.Sprintf("pool/%s/*", poolId))
+	if err != nil {
+		return sdk.Coins{}, err
+	}
+
+	var coins sdk.Coins
+	for _, value := range values {
+		coin, err := sdk.ParseCoinNormalized(value)
+		if err != nil {
+			return sdk.Coins{}, err
+		}
+
+		coins = coins.Add(coin)
+	}
+
+	return coins, nil
+}
+
+func (s *Store) scan(prefix string) ([]string, error) {
+	keys, nextCur, err := s.Client.Scan(context.Background(), 0, prefix, 10).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	values, err := s.getValues(keys)
+	if err != nil {
+		return nil, err
+	}
+
+	if nextCur == 0 {
+		return values, nil
+	}
+
+	for nextCur != 0 {
+		var nextKeys []string
+		nextKeys, nextCur, err = s.Client.Scan(context.Background(), nextCur, prefix, 100).Result()
+		if err != nil {
+			return nil, err
+		}
+
+		newValues, err := s.getValues(nextKeys)
+		if err != nil {
+			return nil, err
+		}
+
+		values = append(values, newValues...)
+	}
+	return values, nil
+}
+
+func (s *Store) getValues(keys []string) ([]string, error) {
+	var values []string
+	for _, k := range keys {
+		value, err := s.Client.Get(context.Background(), k).Result()
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, value)
+	}
+
+	return values, nil
 }

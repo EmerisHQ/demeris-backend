@@ -165,6 +165,7 @@ func getRelayerBalance(c *gin.Context) {
 
 		res.Balances = append(res.Balances, relayerBalance{
 			Address:       addresses[i],
+			ChainName:     chains[i],
 			EnoughBalance: enough,
 		})
 

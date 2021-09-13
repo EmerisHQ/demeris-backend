@@ -18,6 +18,7 @@ package docs
 import (
 	_ "github.com/allinbits/demeris-backend/models"
 	_ "github.com/allinbits/demeris-backend/utils/store"
+	_ "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/tx"
 	_ "github.com/cosmos/cosmos-sdk/x/bank/types"
 	_ "github.com/gravity-devs/liquidity/x/liquidity/types"
