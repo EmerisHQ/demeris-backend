@@ -103,9 +103,15 @@ func NewWatcher(
 		client.ReadWait(30*time.Second),
 		client.PingPeriod(5*time.Second),
 	)
+
 	if err != nil {
 		return nil, err
 	}
+
+	ws.SetLogger(zapLogger{
+		z:         logger,
+		chainName: chainName,
+	})
 
 	if err := ws.OnStart(); err != nil {
 		return nil, err
