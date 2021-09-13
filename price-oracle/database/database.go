@@ -61,6 +61,31 @@ func CnsTokenQuery(db *sqlx.DB) ([]string, error) {
 	return Whitelists, nil
 }
 
+func CnsPriceIdQuery(db *sqlx.DB) ([]string, error) {
+	var Whitelists []string
+	q, err := db.Queryx("SELECT  y.x->'price_id',y.x->'fetch_price' FROM cns.chains jt, LATERAL (SELECT json_array_elements(jt.denoms) x) y")
+	if err != nil {
+		return nil, err
+	}
+	for q.Next() {
+		var price_id string
+		var fetch_price bool
+		err := q.Scan(&price_id, &fetch_price)
+		if err != nil {
+			return nil, err
+		}
+		if fetch_price == true {
+			price_id = strings.TrimRight(price_id, "\"")
+			price_id = strings.TrimLeft(price_id, "\"")
+			if price_id[0:1] == "U" {
+				price_id = price_id[1:]
+			}
+			Whitelists = append(Whitelists, price_id)
+		}
+	}
+	return Whitelists, nil
+}
+
 func (i *Instance) Query(query string, args ...interface{}) (*sqlx.Rows, error) {
 	q, err := i.d.DB.Queryx(query, args...)
 	if err != nil {
