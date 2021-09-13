@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"runtime/debug"
 
+	_ "net/http/pprof"
+
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router"
