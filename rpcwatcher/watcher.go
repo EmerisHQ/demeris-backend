@@ -648,6 +648,6 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 
 func HandleNewBlock(w *Watcher, _ coretypes.ResultEvent) {
 	w.watchdog.Ping()
-	w.l.Debugw("performed watchdog ping")
+	w.l.Debugw("performed watchdog ping", "chain_name", w.Name)
 	w.l.Debugw("new block", "chain_name", w.Name)
 }
