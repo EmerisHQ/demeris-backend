@@ -210,6 +210,7 @@ func (w *Watcher) checkError() {
 						w.l.Errorw("unable to set chain name to false", "store error", storeErr,
 							"error", err)
 					}
+					w.l.Errorw("detected error", "chain_name", w.Name, "error", err)
 					resubscribe(w)
 					return
 				}
