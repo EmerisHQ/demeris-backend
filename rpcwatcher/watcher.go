@@ -166,6 +166,8 @@ func (w *Watcher) readChannel() {
 		select {
 		case <-w.stopReadChannel:
 			return
+		case <-w.watchdog.timeout:
+			w.ErrorChannel <- fmt.Errorf("watchdog ticked, reconnect to websocket")
 		default:
 			select {
 			case data := <-w.client.ResponsesCh:
@@ -199,9 +201,6 @@ func (w *Watcher) checkError() {
 		select {
 		case <-w.stopErrorChannel:
 			return
-		case <-w.watchdog.timeout:
-			resubscribe(w)
-			w.l.Warnw("resubscribed to websocket due to timeout", "chain", w.Name)
 		default:
 			select {
 			case err := <-w.ErrorChannel:
