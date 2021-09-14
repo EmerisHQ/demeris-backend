@@ -18,7 +18,6 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
-	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	"github.com/tendermint/tendermint/types"
 )
 
@@ -61,7 +60,7 @@ type Ack struct {
 type Watcher struct {
 	Name         string
 	DataChannel  chan coretypes.ResultEvent
-	ErrorChannel chan *jsonrpctypes.RPCError
+	ErrorChannel chan error
 
 	eventTypeMappings map[string][]DataHandler
 	apiUrl            string
@@ -132,7 +131,7 @@ func NewWatcher(
 		stopReadChannel:   make(chan struct{}),
 		DataChannel:       make(chan coretypes.ResultEvent),
 		stopErrorChannel:  make(chan struct{}),
-		ErrorChannel:      make(chan *jsonrpctypes.RPCError),
+		ErrorChannel:      make(chan error),
 		watchdog:          wd,
 	}
 
