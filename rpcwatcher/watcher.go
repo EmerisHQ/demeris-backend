@@ -142,7 +142,7 @@ func NewWatcher(
 		}
 	}
 
-	go wd.Start()
+	wd.Start()
 
 	go w.readChannel()
 
