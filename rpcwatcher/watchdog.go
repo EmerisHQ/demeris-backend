@@ -25,10 +25,12 @@ func (w watchdog) Ping() {
 	}()
 }
 
+func (w *watchdog) fireTimeoutSignal() {
+	w.timeout <- struct{}{}
+}
+
 func (w *watchdog) Start() {
-	w.timer = time.AfterFunc(w.timeoutAmount, func() {
-		w.timeout <- struct{}{}
-	})
+	w.timer = time.AfterFunc(w.timeoutAmount, w.fireTimeoutSignal)
 
 	go func() {
 		for {
@@ -38,9 +40,7 @@ func (w *watchdog) Start() {
 					<-w.timer.C
 				}
 
-				w.timer = time.AfterFunc(w.timeoutAmount, func() {
-					w.timeout <- struct{}{}
-				})
+				w.timer = time.AfterFunc(w.timeoutAmount, w.fireTimeoutSignal)
 			}
 		}
 	}()
