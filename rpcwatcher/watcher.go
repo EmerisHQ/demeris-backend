@@ -100,7 +100,6 @@ func NewWatcher(
 		endpoint,
 		"/websocket",
 		client.ReadWait(30*time.Second),
-		client.PingPeriod(5*time.Second),
 	)
 
 	if err != nil {
