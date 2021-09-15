@@ -1,0 +1,112 @@
+name: Deploy on Emeris Staging Environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Branch, tag or commit to deploy
+        required: true
+        default: master
+
+jobs:
+  cns-server:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
+          exec: |
+            helm upgrade cns-server \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.version }} \
+              --set updateInterval=10s \
+              ./helm/emeris-cns-server
+
+  api-server:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
+          exec: |
+            helm upgrade api-server \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.event.inputs.version }} \
+              --set replicas=3 \
+              ./helm/emeris-api-server
+
+  rpcwatcher:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
+          exec: |
+            helm upgrade rpcwatcher \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-rpcwatcher:${{ github.event.inputs.version }} \
+              ./helm/emeris-rpcwatcher
+
+  price-oracle:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
+          exec: |
+            helm upgrade price-oracle \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.event.inputs.version }} \
+              --set fixerKey=${{ secrets.FIXER_KEY }} \
+              --set replicas=3 \
+              ./helm/emeris-price-oracle-server
+
+  ticket-watcher:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
+          exec: |
+            helm upgrade ticket-watcher \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/emeris-ticket-watcher:${{ github.event.inputs.version }} \
+              --set debug=true \
+              ./helm/emeris-ticket-watcher
+
+  ingress:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_STAGING_B64 }}
+          command: apply -n emeris -f ci/staging/ingress.yaml

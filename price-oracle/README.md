@@ -22,6 +22,7 @@ Debug = true
 LogPath = "/home/ubuntu/log"
 interval = "10s"
 whitelistfiats = ["EUR","KRW","CHF"]
+#Not currently used, but may be used in the future
 coinmarketcapapikey =""
 fixerapikey = ""
 ```

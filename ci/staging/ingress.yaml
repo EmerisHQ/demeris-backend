@@ -1,0 +1,86 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emeris
+  namespace: emeris
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # nginx.ingress.kubernetes.io/limit-connections: "100"
+    # nginx.ingress.kubernetes.io/limit-rps: "100"
+    # nginx.ingress.kubernetes.io/limit-rpm: "10000"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_cache static-cache;
+      proxy_cache_valid 2s;
+      add_header X-Cache-Status $upstream_cache_status;
+spec:
+  rules:
+  - host: staging.demeris.io
+    http:
+      paths:
+      - backend:
+          service:
+            name: liquidity
+            port:
+              number: 1317
+        path: /v1/liquidity(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
+            name: price-oracle
+            port:
+              number: 8000
+        path: /v1/oracle(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
+            name: api-server
+            port:
+              number: 8000
+        path: /v1(/|$)(.*)
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - staging.demeris.io
+    secretName: emeris-cert
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emeris-admin
+  namespace: emeris
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-realm: Authentication Required - Demeris Admin
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # nginx.ingress.kubernetes.io/limit-connections: "15"
+    # nginx.ingress.kubernetes.io/limit-rps: "15"
+    # nginx.ingress.kubernetes.io/limit-rpm: "1000"
+spec:
+  rules:
+  - host: staging.demeris.io
+    http:
+      paths:
+      - backend:
+          service:
+            name: cns-server
+            port:
+              number: 8000
+        path: /v1/cns(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
+            name: admin-ui
+            port:
+              number: 80
+        path: /()(.*)
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - staging.demeris.io
+    secretName: emeris-cert

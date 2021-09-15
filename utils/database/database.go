@@ -3,11 +3,17 @@ package database
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/cockroachdb/cockroach-go/v2/crdb/crdbsqlx"
-
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
+)
+
+const (
+	DriverPGX = "pgx"
+	DriverPQ  = "postgres"
 )
 
 // Instance contains a database connection instance.
@@ -17,7 +23,12 @@ type Instance struct {
 
 // New returns an Instance connected to the database pointed by connString.
 func New(connString string) (*Instance, error) {
-	db, err := sqlx.Connect("pgx", connString)
+	return NewWithDriver(connString, DriverPGX)
+}
+
+// NewWithDriver returns an Instance connected to the database pointed by connString with the given driver.
+func NewWithDriver(connString string, driver string) (*Instance, error) {
+	db, err := sqlx.Connect(driver, connString)
 	if err != nil {
 		return nil, err
 	}
@@ -29,6 +40,10 @@ func New(connString string) (*Instance, error) {
 	if err := i.DB.Ping(); err != nil {
 		return nil, fmt.Errorf("cannot ping db, %w", err)
 	}
+
+	i.DB.DB.SetMaxOpenConns(25)
+	i.DB.DB.SetMaxIdleConns(25)
+	i.DB.DB.SetConnMaxLifetime(5 * time.Minute)
 
 	return i, nil
 }

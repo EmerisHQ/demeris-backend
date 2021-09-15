@@ -6,7 +6,7 @@ import (
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
 	"github.com/jmoiron/sqlx"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
+	_ "github.com/lib/pq"
 )
 
 type Instance struct {
@@ -28,10 +28,11 @@ func New(connString string) (*Instance, error) {
 	if err != nil {
 		ii.runMigrations()
 	}
-	_, err = ii.Query("SELECT * FROM oracle.coingecko")
-	if err != nil {
-		ii.runMigrationsCoingecko()
-	}
+	//interim measures
+	//_, err = ii.Query("SELECT * FROM oracle.coingecko")
+	//if err != nil {
+	//	ii.runMigrationsCoingecko()
+	//}
 	return ii, nil
 }
 

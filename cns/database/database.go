@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	_ "github.com/lib/pq"
+
 	"github.com/allinbits/demeris-backend/models"
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
-
-	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type Instance struct {
@@ -48,6 +48,11 @@ func (i *Instance) AddChain(chain models.Chain) error {
 		return fmt.Errorf("database delete statement had no effect")
 	}
 
+	err = n.Close()
+	if err != nil {
+		return nil
+	}
+
 	return nil
 }
 
@@ -69,6 +74,11 @@ func (i *Instance) DeleteChain(chain string) error {
 
 	if rows == 0 {
 		return fmt.Errorf("database delete statement had no effect")
+	}
+
+	err = n.Close()
+	if err != nil {
+		return nil
 	}
 
 	return nil
@@ -180,6 +190,11 @@ func (i *Instance) ChannelsBetweenChains(source, destination, chainID string) (m
 	for _, cc := range c {
 		// channel ID destination => channel ID on source
 		ret[cc.ChainAChannelID] = cc.ChainBChannelID
+	}
+
+	err = n.Close()
+	if err != nil {
+		return nil, nil
 	}
 
 	return ret, nil

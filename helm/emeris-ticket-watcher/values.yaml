@@ -5,11 +5,14 @@ replicas: 1
 
 nodeSelector: {}
 
-resources: {}
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
 
-ports:
-  http: 8000
-
-debug: true
+debug: false
 
 redisUrl: redis-master:6379

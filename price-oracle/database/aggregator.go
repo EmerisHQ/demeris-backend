@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 
 	"github.com/allinbits/demeris-backend/price-oracle/config"
