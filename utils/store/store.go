@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	gaia "github.com/cosmos/gaia/v5/app"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	gaia "github.com/cosmos/gaia/v5/app"
 	"github.com/go-redis/redis/v8"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 )
