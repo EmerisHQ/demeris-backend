@@ -52,9 +52,6 @@ func CnsTokenQuery(db *sqlx.DB) ([]string, error) {
 		if fetch_price == true {
 			ticker = strings.TrimRight(ticker, "\"")
 			ticker = strings.TrimLeft(ticker, "\"")
-			if ticker[0:1] == "U" {
-				ticker = ticker[1:]
-			}
 			Whitelists = append(Whitelists, ticker)
 		}
 	}
@@ -77,9 +74,6 @@ func CnsPriceIdQuery(db *sqlx.DB) ([]string, error) {
 		if fetch_price == true {
 			price_id = strings.TrimRight(price_id, "\"")
 			price_id = strings.TrimLeft(price_id, "\"")
-			if price_id[0:1] == "U" {
-				price_id = price_id[1:]
-			}
 			Whitelists = append(Whitelists, price_id)
 		}
 	}
