@@ -21,7 +21,6 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
-	jsonrpctypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	"github.com/tendermint/tendermint/types"
 )
 
@@ -65,7 +64,7 @@ type Ack struct {
 type Watcher struct {
 	Name         string
 	DataChannel  chan coretypes.ResultEvent
-	ErrorChannel chan *jsonrpctypes.RPCError
+	ErrorChannel chan error
 
 	eventTypeMappings map[string][]DataHandler
 	apiUrl            string
@@ -105,11 +104,16 @@ func NewWatcher(
 		endpoint,
 		"/websocket",
 		client.ReadWait(30*time.Second),
-		client.PingPeriod(5*time.Second),
 	)
+
 	if err != nil {
 		return nil, err
 	}
+
+	ws.SetLogger(zapLogger{
+		z:         logger,
+		chainName: chainName,
+	})
 
 	if err := ws.OnStart(); err != nil {
 		return nil, err
@@ -130,7 +134,7 @@ func NewWatcher(
 		stopReadChannel:   make(chan struct{}),
 		DataChannel:       make(chan coretypes.ResultEvent),
 		stopErrorChannel:  make(chan struct{}),
-		ErrorChannel:      make(chan *jsonrpctypes.RPCError),
+		ErrorChannel:      make(chan error),
 		watchdog:          wd,
 	}
 
@@ -142,7 +146,7 @@ func NewWatcher(
 		}
 	}
 
-	go wd.Start()
+	wd.Start()
 
 	go w.readChannel()
 
@@ -166,6 +170,8 @@ func (w *Watcher) readChannel() {
 		select {
 		case <-w.stopReadChannel:
 			return
+		case <-w.watchdog.timeout:
+			w.ErrorChannel <- fmt.Errorf("watchdog ticked, reconnect to websocket")
 		default:
 			select {
 			case data := <-w.client.ResponsesCh:
@@ -199,9 +205,6 @@ func (w *Watcher) checkError() {
 		select {
 		case <-w.stopErrorChannel:
 			return
-		case <-w.watchdog.timeout:
-			resubscribe(w)
-			w.l.Warnw("resubscribed to websocket due to timeout", "chain", w.Name)
 		default:
 			select {
 			case err := <-w.ErrorChannel:
@@ -211,6 +214,7 @@ func (w *Watcher) checkError() {
 						w.l.Errorw("unable to set chain name to false", "store error", storeErr,
 							"error", err)
 					}
+					w.l.Errorw("detected error", "chain_name", w.Name, "error", err)
 					resubscribe(w)
 					return
 				}
@@ -685,6 +689,6 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 
 func HandleNewBlock(w *Watcher, _ coretypes.ResultEvent) {
 	w.watchdog.Ping()
-	w.l.Debugw("performed watchdog ping")
+	w.l.Debugw("performed watchdog ping", "chain_name", w.Name)
 	w.l.Debugw("new block", "chain_name", w.Name)
 }
