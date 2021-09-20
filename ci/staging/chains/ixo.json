@@ -1,0 +1,63 @@
+{
+  "chain_name": "ixo",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "IXO",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "IXO",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.01, "average": 0.025, "high": 0.04},
+      "name": "uixo",
+      "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "IXO"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "ixo",
+    "chain_id": "impacthub-3",
+    "bech32_config": {
+      "main_prefix": "ixo",
+      "prefix_account": "ixo",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "ixo",
+    "cli_name": "ixo",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/ixofoundation/genesis/master/impacthub-3/genesis.json"
+      },
+      "seeds": [
+        {"id": "cbe8c6a5a77f861db8edb1426b734f2cf1fa4020", "address": "18.166.133.210", "port": 26656},
+        {"id": "36e4738c7efcf353d3048e5e6073406d045bae9d", "address": "80.64.208.42", "port": 26656},
+        {"id": "f0d4546fa5e0c2d84a4244def186b9da3c12ba1a", "address": "46.166.138.214", "port": 26656},
+        {"id": "c95af93f0386f8e19e65997262c9f874d1901dc5", "address": "18.163.242.188", "port": 26656}
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/ixo",
+    "docker_image_version": "v1.6.0"
+  },
+  "relayer_configuration": {
+    "max_msg_num":12,
+    "max_gas": 5000000,
+    "clock_drift": "1800s",
+    "trusting_period": "14days"
+  }
+}
