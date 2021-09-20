@@ -206,6 +206,7 @@ EOF
     helm repo update &> /dev/null
     helm upgrade cockroachdb \
         --install \
+        --version 6.0.8 \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set tls.enabled=false \

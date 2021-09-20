@@ -1,24 +1,24 @@
 image: emeris/price-oracle-server:latest
 imagePullPolicy: Always
 
-replicas: 1
+replicas: 3
 
 nodeSelector: {}
 
 resources:
   requests:
     cpu: 100m
-    memory: 100Mi
+    memory: 128Mi
   limits:
-    cpu: 200m
-    memory: 200Mi
+    cpu: 100m
+    memory: 128Mi
 
 ports:
   http: 8000
 
-databaseConnectionURL: postgres://root@cockroachdb-public:26257?sslmode=disable
+databaseConnectionURL: postgres://root@cockroachdb:26257?sslmode=disable
 
 debug: true
 
 redisUrl: redis-master:6379
-updateInterval: 10s
+updateInterval: 20s

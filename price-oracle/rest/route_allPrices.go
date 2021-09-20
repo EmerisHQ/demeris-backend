@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -90,11 +92,36 @@ func allPrices(r *router) ([]types.TokenPriceResponse, []types.FiatPriceResponse
 
 func (r *router) allPricesHandler(ctx *gin.Context) {
 	var AllPriceResponse types.AllPriceResponse
+	if r.s.ri.Exists("prices") {
+		bz, err := r.s.ri.Client.Get(context.Background(), "prices").Bytes()
+		if err != nil {
+			r.s.l.Error("Error", "Redis-Get", err.Error(), "Duration", time.Second)
+			return
+		}
+		err = json.Unmarshal(bz, &AllPriceResponse)
+		if err != nil {
+			r.s.l.Error("Error", "Redis-Unmarshal", err.Error(), "Duration", time.Second)
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"status":  http.StatusOK,
+			"data":    &AllPriceResponse,
+			"message": nil,
+		})
+
+		return
+	}
 	Tokens, Fiats, err := allPrices(r)
 	AllPriceResponse.Tokens = Tokens
 	AllPriceResponse.Fiats = Fiats
 	if err != nil {
 		e(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	bz, err := json.Marshal(AllPriceResponse)
+	err = r.s.ri.SetWithExpiryTime("prices", string(bz), 10*time.Second)
+	if err != nil {
+		r.s.l.Error("Error", "Redis-Set", err.Error(), "Duration", time.Second)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{

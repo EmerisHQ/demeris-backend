@@ -3,6 +3,9 @@ package main
 import (
 	"net/http"
 	"runtime"
+	"runtime/debug"
+
+	_ "net/http/pprof"
 
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
@@ -11,6 +14,7 @@ import (
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
 	gaia "github.com/cosmos/gaia/v5/app"
+	_ "github.com/lib/pq"
 )
 
 var Version = "not specified"
@@ -29,6 +33,11 @@ func main() {
 		runtime.SetCPUProfileRate(500)
 
 		go func() {
+			http.HandleFunc("/freemem", func(_ http.ResponseWriter, _ *http.Request) {
+				runtime.GC()
+				debug.FreeOSMemory()
+			})
+
 			l.Debugw("starting profiling server", "port", "6060")
 			err := http.ListenAndServe(":6060", nil)
 			if err != nil {
