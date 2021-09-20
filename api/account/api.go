@@ -31,6 +31,7 @@ func Register(router *gin.Engine) {
 	group.GET("/balance", GetBalancesByAddress)
 	group.GET("/stakingbalances", GetDelegationsByAddress)
 	group.GET("/numbers", GetNumbersByAddress)
+	group.GET("/tickets", GetUserTickets)
 }
 
 // GetBalancesByAddress returns account of an address.
@@ -279,6 +280,33 @@ func GetNumbersByAddress(c *gin.Context) {
 	res.Numbers = resp
 
 	c.JSON(http.StatusOK, res)
+}
+
+func GetUserTickets(c *gin.Context) {
+	d := deps.GetDeps(c)
+
+	address := c.Param("address")
+
+	tickets, err := d.Store.GetUserTickets(address)
+	if err != nil {
+		e := deps.NewError(
+			"tickets",
+			fmt.Errorf("cannot retrieve tickets for address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query store for tickets",
+			"address",
+			address,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, userTicketsResponse{Tickets: tickets})
 }
 
 func fetchNumbers(cns []database.ChainName, account string) ([]models.AuthRow, error) {

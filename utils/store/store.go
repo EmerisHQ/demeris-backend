@@ -2,8 +2,10 @@ package store
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,6 +44,7 @@ type TxHashEntry struct {
 }
 
 type Ticket struct {
+	Owner  string `json:"owner,omitempty"`
 	Info     string        `json:"info,omitempty"`
 	Height   int64         `json:"height,omitempty"`
 	Status   string        `json:"status,omitempty"`
@@ -74,23 +77,37 @@ func NewClient(connUrl string) (*Store, error) {
 
 }
 
-func (s *Store) CreateTicket(chain, txHash string) error {
+func (s *Store) CreateTicket(chain, txHash, owner string) error {
+	owner = hex.EncodeToString([]byte(owner))
 	data := Ticket{
+		Owner:  owner,
 		Status: pending,
 	}
 
-	key := fmt.Sprintf("%s-%s", chain, txHash)
+	key := fmt.Sprintf("%s/%s", chain, txHash)
 	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
 
-	return s.SetWithExpiry(key, data, 0)
+	if err := s.SetWithExpiry(key, data, 0); err != nil {
+		return err
+	}
+
+	return s.sAdd(owner, key)
 }
 
 func (s *Store) SetComplete(key string, height int64) error {
+	ticket, err := s.Get(key)
+	if err != nil {
+		return err
+	}
 
-	return s.SetWithExpiry(key, Ticket{Status: complete,
-		Height: height}, 2)
+	if err := s.SetWithExpiry(key, Ticket{Status: complete,
+		Height: height}, 2); err != nil {
+		return err
+	}
+
+	return s.sRemove(ticket.Owner, key)
 }
 
 func (s *Store) SetIBCReceiveFailed(key string, txHashes []TxHashEntry, height int64) error {
@@ -102,7 +119,7 @@ func (s *Store) SetIBCReceiveFailed(key string, txHashes []TxHashEntry, height i
 		TxHashes: txHashes, Height: height}, 0)
 }
 
-func (s *Store) SetIBCReceiveSuccess(key string, txHashes []TxHashEntry, height int64) error {
+func (s *Store) SetIBCReceiveSuccess(key, owner string, txHashes []TxHashEntry, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{
 		Status:   ibcReceiveSuccess,
 		TxHashes: txHashes,
@@ -110,37 +127,62 @@ func (s *Store) SetIBCReceiveSuccess(key string, txHashes []TxHashEntry, height 
 		return err
 	}
 
-	return s.DeleteShadowKey(key)
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
+	return s.sRemove(owner, key)
 }
 
-func (s *Store) SetUnlockTimeout(key string, txHashes []TxHashEntry, height int64) error {
+func (s *Store) SetUnlockTimeout(key, owner string, txHashes []TxHashEntry, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedTimeout,
 		Height:   height,
 		TxHashes: txHashes}, 2); err != nil {
 		return err
 	}
 
-	return s.DeleteShadowKey(key)
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
+	return s.sRemove(owner, key)
 }
 
-func (s *Store) SetUnlockAck(key string, txHashes []TxHashEntry, height int64) error {
+func (s *Store) SetUnlockAck(key, owner string, txHashes []TxHashEntry, height int64) error {
 	if err := s.SetWithExpiry(key, Ticket{Status: tokensUnlockedAck,
 		Height:   height,
 		TxHashes: txHashes}, 2); err != nil {
 		return err
 	}
 
-	return s.DeleteShadowKey(key)
+	if err := s.DeleteShadowKey(key); err != nil {
+		return err
+	}
+
+	return s.sRemove(owner, key)
 }
 
 func (s *Store) SetFailedWithErr(key, error string, height int64) error {
+	if !s.Exists(key) {
+		return fmt.Errorf("key doesn't exists")
+	}
+
+	prev, err := s.Get(key)
+	if err != nil {
+		return err
+	}
+
 	data := Ticket{
 		Height: height,
 		Status: failed,
 		Error:  error,
 	}
 
-	return s.SetWithExpiry(key, data, 2)
+	if err := s.SetWithExpiry(key, data, 2); err != nil {
+		return err
+	}
+
+	return s.sRemove(prev.Owner, key)
 }
 
 func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, txHash, chainName string, height int64) error {
@@ -153,18 +195,20 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, 
 		return err
 	}
 
-	data := Ticket{
-		Status: transit,
-		Height: height,
+	ticket, err := s.Get(key)
+	if err != nil {
+		return err
 	}
 
-	if err := s.SetWithExpiry(key, data, 2); err != nil {
+	ticket.Status = transit
+	if err := s.SetWithExpiry(key, ticket, 2); err != nil {
 		return err
 	}
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
 	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
+		Owner: ticket.Owner,
 		TxHashes: []TxHashEntry{{
 			Chain:  chainName,
 			Status: transit,
@@ -190,7 +234,7 @@ func (s *Store) SetIbcTimeoutUnlock(key, txHash, chainName string, height int64)
 		TxHash: txHash,
 	})
 
-	return s.SetUnlockTimeout(prev.Info, txHashes, height)
+	return s.SetUnlockTimeout(prev.Info, prev.Owner, txHashes, height)
 }
 
 func (s *Store) SetIbcAckUnlock(key, txHash, chainName string, height int64) error {
@@ -207,7 +251,7 @@ func (s *Store) SetIbcAckUnlock(key, txHash, chainName string, height int64) err
 		TxHash: txHash,
 	})
 
-	return s.SetUnlockAck(prev.Info, txHashes, height)
+	return s.SetUnlockAck(prev.Info, prev.Owner, txHashes, height)
 }
 
 func (s *Store) SetIbcReceived(key, txHash, chainName string, height int64) error {
@@ -224,7 +268,7 @@ func (s *Store) SetIbcReceived(key, txHash, chainName string, height int64) erro
 		TxHash: txHash,
 	})
 
-	return s.SetIBCReceiveSuccess(prev.Info, txHashes, height)
+	return s.SetIBCReceiveSuccess(prev.Info, prev.Owner, txHashes, height)
 }
 
 func (s *Store) SetIbcFailed(key, txHash, chainName string, height int64) error {
@@ -283,6 +327,26 @@ func (s *Store) Get(key string) (Ticket, error) {
 	return res, nil
 }
 
+func (s *Store) GetUserTickets(user string) (map[string][]string, error) {
+	var keys []string
+	keys, err := s.sMembers(hex.EncodeToString([]byte(user)))
+	if err != nil {
+		return map[string][]string{}, err
+	}
+
+	res := make(map[string][]string)
+	for _, key := range keys {
+		s := strings.Split(key, "/")
+		if len(s) != 2 {
+			return map[string][]string{}, fmt.Errorf("unable to resolve chain name and tx hash")
+		}
+
+		res[s[0]] = append(res[s[0]], s[1])
+	}
+
+	return res, nil
+}
+
 func (s *Store) Delete(key string) error {
 	return s.Client.Del(context.Background(), key).Err()
 }
@@ -290,6 +354,23 @@ func (s *Store) Delete(key string) error {
 func (s *Store) DeleteShadowKey(key string) error {
 	shadowKey := shadow + key
 	return s.Delete(shadowKey)
+}
+func (s *Store) sAdd(user, key string) error {
+	return s.Client.SAdd(context.Background(), user, key).Err()
+}
+
+func (s *Store) sMembers(user string) ([]string, error) {
+	var keys []string
+	err := s.Client.SMembers(context.Background(), user).ScanSlice(&keys)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return keys, err
+}
+
+func (s *Store) sRemove(user, key string) error {
+	return s.Client.SRem(context.Background(), user, key).Err()
 }
 
 func (s *Store) GetSwapFees(poolId string) (sdk.Coins, error) {
