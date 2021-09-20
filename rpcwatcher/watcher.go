@@ -16,7 +16,6 @@ import (
 	"github.com/allinbits/demeris-backend/rpcwatcher/database"
 
 	"github.com/allinbits/demeris-backend/utils/store"
-	gaia "github.com/cosmos/gaia/v5/app"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -647,6 +646,7 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 		return
 	}
 
+	// creating a grpc ClientConn to perform RPCs
 	grpcConn, err := grpc.Dial(
 		fmt.Sprintf("%s:%d", w.Name, grpcPort),
 		grpc.WithInsecure(),
@@ -658,12 +658,12 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 		w.l.Errorw("cannot get liquidity pools in blocks", "error", err, "height", newHeight)
 	}
 
-	cdc, _ := gaia.MakeCodecs()
-	bz, err := cdc.MarshalJSON(poolsRes)
+	bz, err := w.store.Cdc.MarshalJSON(poolsRes)
 	if err != nil {
 		w.l.Errorw("cannot marshal liquidity pools", "error", err, "height", newHeight)
 	}
 
+	// caching pools info
 	err = w.store.SetWithExpiry("pools", string(bz), 0)
 	if err != nil {
 		w.l.Errorw("cannot set liquidity pools", "error", err, "height", newHeight)
@@ -674,11 +674,12 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 		w.l.Errorw("cannot get liquidity params", "error", err, "height", newHeight)
 	}
 
-	bz, err = cdc.MarshalJSON(paramsRes)
+	bz, err = w.store.Cdc.MarshalJSON(paramsRes)
 	if err != nil {
 		w.l.Errorw("cannot unmarshal liquidity params", "error", err, "height", newHeight)
 	}
 
+	// caching liquidity params
 	err = w.store.SetWithExpiry("params", string(bz), 0)
 	if err != nil {
 		w.l.Errorw("cannot set liquidity params", "error", err, "height", newHeight)
