@@ -33,10 +33,8 @@ var defaultExpiry = 300 * time.Second
 type Store struct {
 	Client        *redis.Client
 	ConnectionURL string
-	Config        struct {
-		ExpiryTime time.Duration
-	}
-	Cdc codec.Marshaler
+	Config        struct{ ExpiryTime time.Duration }
+	Cdc           codec.Marshaler
 }
 
 type TxHashEntry struct {
