@@ -1,7 +1,7 @@
 {
   "chain_name": "ixo",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
+  "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
   "enabled": false,
   "valid_block_thresh": "20s",
   "display_name": "IXO",
