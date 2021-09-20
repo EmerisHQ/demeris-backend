@@ -56,7 +56,7 @@
   },
   "relayer_configuration": {
     "max_msg_num":12,
-    "max_gas": 5000000,
+    "max_gas": 500000,
     "clock_drift": "1800s",
     "trusting_period": "14days"
   }
