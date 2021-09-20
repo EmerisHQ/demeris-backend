@@ -111,6 +111,10 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 			return fmt.Errorf("SubscriptionBinance read body: %w", err)
 		}
 		if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode == 400 {
+				logger.Infof("SubscriptionBinance: %s, Status: %s", body, resp.Status)
+				continue
+			}
 			return fmt.Errorf("SubscriptionBinance: %s, Status: %s", body, resp.Status)
 		}
 		bp := types.Binance{}
@@ -242,38 +246,23 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 */
 
 func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
-	Whitelisttokens, err := CnsTokenQuery(db)
+	Whitelisttokens, err := CnsPriceIdQuery(db)
 	if err != nil {
-		return fmt.Errorf("SubscriptionCoingecko CnsTokenQuery: %w", err)
+		return fmt.Errorf("SubscriptionCoingecko CnsPriceIdQuery: %w", err)
 	}
 	if len(Whitelisttokens) == 0 {
-		return fmt.Errorf("SubscriptionCoingecko CnsTokenQuery: The token does not exist.")
+		return fmt.Errorf("SubscriptionCoingecko CnsPriceIdQuery: The token does not exist.")
 	}
 
 	cg := gecko.NewClient(nil)
 	vsCurrency := types.USDBasecurrency
-	tickers := map[string]string{
-		"ATOM":  "cosmos",
-		"AKT":   "akash-network",
-		"CRO":   "crypto-com-chain",
-		"IRIS":  "iris-network",
-		"OSMO":  "osmosis",
-		"XPRT":  "persistence",
-		"REGEN": "regen",
-		"DVPN":  "sentinel",
-		"IOV":   "starname",
-	}
-	var ids []string
-	for _, ticker := range Whitelisttokens {
-		ids = append(ids, tickers[ticker])
-	}
 	perPage := 1
 	page := 1
 	sparkline := false
 	pcp := geckoTypes.PriceChangePercentageObject
 	priceChangePercentage := []string{pcp.PCP1h}
 	order := geckoTypes.OrderTypeObject.MarketCapDesc
-	market, err := cg.CoinsMarket(vsCurrency, ids, order, perPage, page, sparkline, priceChangePercentage)
+	market, err := cg.CoinsMarket(vsCurrency, Whitelisttokens, order, perPage, page, sparkline, priceChangePercentage)
 	if err != nil {
 		return fmt.Errorf("SubscriptionCoingecko Market Query: %w", err)
 	}

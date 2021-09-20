@@ -52,10 +52,29 @@ func CnsTokenQuery(db *sqlx.DB) ([]string, error) {
 		if fetch_price == true {
 			ticker = strings.TrimRight(ticker, "\"")
 			ticker = strings.TrimLeft(ticker, "\"")
-			if ticker[0:1] == "U" {
-				ticker = ticker[1:]
-			}
 			Whitelists = append(Whitelists, ticker)
+		}
+	}
+	return Whitelists, nil
+}
+
+func CnsPriceIdQuery(db *sqlx.DB) ([]string, error) {
+	var Whitelists []string
+	q, err := db.Queryx("SELECT  y.x->'price_id',y.x->'fetch_price' FROM cns.chains jt, LATERAL (SELECT json_array_elements(jt.denoms) x) y")
+	if err != nil {
+		return nil, err
+	}
+	for q.Next() {
+		var price_id string
+		var fetch_price bool
+		err := q.Scan(&price_id, &fetch_price)
+		if err != nil {
+			return nil, err
+		}
+		if fetch_price == true {
+			price_id = strings.TrimRight(price_id, "\"")
+			price_id = strings.TrimLeft(price_id, "\"")
+			Whitelists = append(Whitelists, price_id)
 		}
 	}
 	return Whitelists, nil
