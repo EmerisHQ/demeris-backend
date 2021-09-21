@@ -207,7 +207,7 @@ func (w *Watcher) checkError() {
 			case err := <-w.ErrorChannel:
 				if err != nil {
 					storeErr := w.store.SetWithExpiry(w.Name, "false", 0)
-					if err != nil {
+					if storeErr != nil {
 						w.l.Errorw("unable to set chain name to false", "store error", storeErr,
 							"error", err)
 					}
