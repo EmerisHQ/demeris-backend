@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 
@@ -15,6 +16,8 @@ import (
 	"github.com/allinbits/demeris-backend/rpcwatcher/database"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
+
+	_ "net/http/pprof"
 )
 
 var Version = "not specified"
@@ -58,6 +61,16 @@ func main() {
 	})
 
 	l.Infow("rpcwatcher", "version", Version)
+
+	if c.Debug {
+		go func() {
+			l.Debugw("starting profiling server", "port", "6060")
+			err := http.ListenAndServe(":6060", nil)
+			if err != nil {
+				l.Panicw("cannot run profiling server", "error", err)
+			}
+		}()
+	}
 
 	db, err := database.New(c.DatabaseConnectionURL)
 

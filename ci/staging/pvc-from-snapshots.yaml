@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cosmos-hub-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: cosmos-hub-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 400Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: akash-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: akash-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 476Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: crypto-org-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: crypto-org-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 379Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: iris-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: iris-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 306Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: osmosis-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: osmosis-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 254Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: persistence-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: persistence-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 329Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: regen-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: regen-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 147Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sentinel-0
+  namespace: emeris
+spec:
+  storageClassName: premium-rwo
+  dataSource:
+    name: sentinel-snapshot-2021-08-30
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 150Gi
