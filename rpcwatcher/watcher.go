@@ -192,6 +192,9 @@ func (w *Watcher) readChannel() {
 				go func() {
 					w.DataChannel <- e
 				}()
+			case <-time.After(15 * time.Second):
+				w.ErrorChannel <- fmt.Errorf("tendermint websocket hang, triggering reconnection")
+				return
 			}
 		}
 	}
