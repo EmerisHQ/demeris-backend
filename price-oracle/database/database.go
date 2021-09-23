@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"strings"
 
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
@@ -65,16 +66,20 @@ func CnsPriceIdQuery(db *sqlx.DB) ([]string, error) {
 		return nil, err
 	}
 	for q.Next() {
-		var price_id string
+		var price_id sql.NullString
 		var fetch_price bool
 		err := q.Scan(&price_id, &fetch_price)
 		if err != nil {
 			return nil, err
 		}
-		if fetch_price == true {
-			price_id = strings.TrimRight(price_id, "\"")
-			price_id = strings.TrimLeft(price_id, "\"")
-			Whitelists = append(Whitelists, price_id)
+		if price_id.Valid {
+			if fetch_price == true {
+				price_id.String = strings.TrimRight(price_id.String, "\"")
+				price_id.String = strings.TrimLeft(price_id.String, "\"")
+				Whitelists = append(Whitelists, price_id.String)
+			}
+		} else {
+			continue
 		}
 	}
 	return Whitelists, nil
