@@ -62,5 +62,6 @@
     },
     "docker_image": "gcr.io/tendermint-dev/persistence",
     "docker_image_version": "v0.1.3"
-  }
+  },
+  "supported_wallets": ["keplr"]
 }

@@ -82,5 +82,6 @@
     "clock_drift": "1800s",
     "trusting_period": "9days"
   },
-  "skip_channel_creation": true
+  "skip_channel_creation": true,
+  "supported_wallets": ["keplr"]
 }
