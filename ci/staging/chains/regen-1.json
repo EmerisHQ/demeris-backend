@@ -52,6 +52,5 @@
     },
     "docker_image": "gcr.io/tendermint-dev/regen",
     "docker_image_version": "v1.0.0"
-  },
-  "block_explorer": "https://www.mintscan.io/regen"
+  }
 }
