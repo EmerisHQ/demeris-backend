@@ -883,7 +883,7 @@ func GetInflation(c *gin.Context) {
 	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
 	if err != nil {
 		e := deps.NewError(
-			"supply",
+			"mint/inflation",
 			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
 			http.StatusBadRequest,
 		)
@@ -907,7 +907,7 @@ func GetInflation(c *gin.Context) {
 
 	if err != nil {
 		e := deps.NewError(
-			"mint inflation",
+			"mint/inflation",
 			fmt.Errorf("unable to query inflation for chain %v", chainName),
 			http.StatusBadRequest,
 		)
@@ -946,7 +946,7 @@ func GetMintParams(c *gin.Context) {
 	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
 	if err != nil {
 		e := deps.NewError(
-			"mint params",
+			"mint/params",
 			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
 			http.StatusBadRequest,
 		)
@@ -970,7 +970,7 @@ func GetMintParams(c *gin.Context) {
 
 	if err != nil {
 		e := deps.NewError(
-			"mint-params",
+			"mint/params",
 			fmt.Errorf("unable to query params for chain %v", chainName),
 			http.StatusBadRequest,
 		)
@@ -1033,7 +1033,7 @@ func GetAnnualProvisions(c *gin.Context) {
 
 	if err != nil {
 		e := deps.NewError(
-			"mint annual provisions",
+			"mint/annual-provisions",
 			fmt.Errorf("unable to query annual provisions for chain %v", chainName),
 			http.StatusBadRequest,
 		)
