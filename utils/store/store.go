@@ -44,7 +44,7 @@ type TxHashEntry struct {
 }
 
 type Ticket struct {
-	Owner  string `json:"owner,omitempty"`
+	Owner    string        `json:"owner,omitempty"`
 	Info     string        `json:"info,omitempty"`
 	Height   int64         `json:"height,omitempty"`
 	Status   string        `json:"status,omitempty"`
@@ -104,6 +104,10 @@ func (s *Store) SetComplete(key string, height int64) error {
 
 	if err := s.SetWithExpiry(key, Ticket{Status: complete,
 		Height: height}, 2); err != nil {
+		return err
+	}
+
+	if err := s.DeleteShadowKey(key); err != nil {
 		return err
 	}
 
