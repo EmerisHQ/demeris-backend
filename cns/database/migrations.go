@@ -45,7 +45,8 @@ INSERT INTO cns.chains
 		genesis_hash,
 		node_info,
 		derivation_path,
-		supported_wallets
+		supported_wallets,
+		block_explorer
 	)
 VALUES
 	(
@@ -60,7 +61,8 @@ VALUES
 		:genesis_hash,
 		:node_info,
 		:derivation_path,
-		:supported_wallets
+		:supported_wallets,
+		:block_explorer
 	)
 ON CONFLICT
 	(chain_name)
@@ -76,7 +78,8 @@ DO UPDATE SET
 		genesis_hash=EXCLUDED.genesis_hash,
 		node_info=EXCLUDED.node_info,
 		derivation_path=EXCLUDED.derivation_path,
-		supported_wallets=EXCLUDED.supported_wallets;
+		supported_wallets=EXCLUDED.supported_wallets,
+		block_explorer=EXCLUDED.block_explorer;
 `
 
 const getAllChains = `
@@ -158,11 +161,15 @@ WHERE
 const addColumnSupportedWallets = `
 ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS supported_wallets text[];
 `
+const addColumnBlockExplorer = `
+ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS block_explorer string;
+`
 
 var migrationList = []string{
 	createDatabase,
 	createTableChains,
 	addColumnSupportedWallets,
+	addColumnBlockExplorer,
 }
 
 func (i *Instance) runMigrations() {

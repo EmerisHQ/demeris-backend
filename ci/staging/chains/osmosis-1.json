@@ -83,5 +83,6 @@
     "trusting_period": "9days"
   },
   "skip_channel_creation": true,
-  "supported_wallets": ["keplr"]
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/osmosis"
 }

@@ -25,6 +25,7 @@ type Chain struct {
 	ValidBlockThresh Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
 	DerivationPath   string         `diff:"-" db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                        // chain derivation path
 	SupportedWallets pq.StringArray `diff:"-" db:"supported_wallets" binding:"required" json:"supported_wallets"`                                   // the list of supported wallets
+	BlockExplorer 	 string 		    `diff:"-" db:"block_explorer" json:"block_explorer"`															                              // block explorer url
 }
 
 // VerifiedTokens returns a DenomList of native denoms that are verified.
