@@ -1009,7 +1009,7 @@ func GetAnnualProvisions(c *gin.Context) {
 	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
 	if err != nil {
 		e := deps.NewError(
-			"supply",
+			"mint/supply",
 			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
 			http.StatusBadRequest,
 		)
