@@ -159,7 +159,7 @@ WHERE
 `
 
 const addColumnSupportedWallets = `
-ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS supported_wallets text[];
+ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS supported_wallets text[] NOT NULL DEFAULT '{}';
 `
 const addColumnBlockExplorer = `
 ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS block_explorer string;
