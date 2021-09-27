@@ -1,0 +1,64 @@
+{
+  "chain_name": "emoney",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://app.osmosis.zone/public/assets/tokens/ngm.png",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "e-Money",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "NGM",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.2, "average": 0.3, "high": 0.4 },
+      "name": "ungm",
+      "logo": "https://app.osmosis.zone/public/assets/tokens/ngm.png",
+      "verified": true,
+      "precision": 6,
+      "ticker": "NGM"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "emoney",
+    "chain_id": "emoney-3",
+    "bech32_config": {
+      "main_prefix": "emoney",
+      "prefix_account": "emoney",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "emoney",
+    "cli_name": "emd",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/e-money/networks/master/emoney-3/genesis.json"
+      },
+      "seeds": [
+        {
+          "id": "0ad7bc7687112e212bac404670aa24cd6116d097",
+          "address": "50.18.83.75",
+          "port": 26656
+        },
+        {
+          "id": "170255a4a9b120786d2d6c3931ebf0125087cca0",
+          "address": "62.171.171.139",
+          "port": 26656
+        }
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/e-money",
+    "docker_image_version": "v1.1.2"
+  },
+  "block_explorer": "https://www.mintscan.io/emoney"
+}
