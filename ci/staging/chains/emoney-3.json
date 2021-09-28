@@ -60,5 +60,6 @@
     "docker_image": "gcr.io/tendermint-dev/e-money",
     "docker_image_version": "v1.1.2"
   },
+  "skip_channel_creation": true,
   "block_explorer": "https://www.mintscan.io/emoney"
 }
