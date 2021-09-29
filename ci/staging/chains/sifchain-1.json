@@ -1,7 +1,7 @@
 {
   "chain_name": "sifchain",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://assets.coingecko.com/coins/images/14044/large/EROWAN.png",
+  "logo": "https://storage.googleapis.com/emeris/logos/rowan.svg",
   "enabled": false,
   "valid_block_thresh": "20s",
   "display_name": "Sifchain",
@@ -16,7 +16,7 @@
       "minimum_thresh_relayer_balance": 42,
       "gas_price_levels": { "low": 0.5, "average": 1, "high": 2 },
       "name": "urowan",
-      "logo": "https://assets.coingecko.com/coins/images/14044/large/EROWAN.png",
+      "logo": "https://storage.googleapis.com/emeris/logos/rowan.svg",
       "verified": true,
       "precision": 6,
       "ticker": "ROWAN"
