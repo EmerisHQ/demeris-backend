@@ -44,7 +44,7 @@
       "genesis": {
         "url": "https://raw.githubusercontent.com/e-money/networks/master/emoney-3/genesis.json"
       },
-      "seeds": [
+      "persistentPeers": [
         {
           "id": "0ad7bc7687112e212bac404670aa24cd6116d097",
           "address": "50.18.83.75",
