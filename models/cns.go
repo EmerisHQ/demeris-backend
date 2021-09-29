@@ -24,7 +24,7 @@ type Chain struct {
 	NodeInfo         NodeInfo       `diff:"-" db:"node_info" binding:"required,dive" json:"node_info"`                                              // info required to query full-node (e.g. to submit tx)
 	ValidBlockThresh Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
 	DerivationPath   string         `diff:"-" db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                        // chain derivation path
-	BlockExplorer 	 string 		`diff:"-" db:"block_explorer" json:"block_explorer"`															// block explorer url
+	BlockExplorer    string         `diff:"-" db:"block_explorer" json:"block_explorer"`                                                            // block explorer url
 }
 
 // VerifiedTokens returns a DenomList of native denoms that are verified.
