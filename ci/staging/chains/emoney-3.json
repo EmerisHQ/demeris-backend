@@ -1,7 +1,7 @@
 {
   "chain_name": "emoney",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://app.osmosis.zone/public/assets/tokens/ngm.png",
+  "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
   "enabled": false,
   "valid_block_thresh": "20s",
   "display_name": "e-Money",
@@ -16,7 +16,7 @@
       "minimum_thresh_relayer_balance": 42,
       "gas_price_levels": { "low": 0.2, "average": 0.3, "high": 0.4 },
       "name": "ungm",
-      "logo": "https://app.osmosis.zone/public/assets/tokens/ngm.png",
+      "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
       "verified": true,
       "precision": 6,
       "ticker": "NGM"
