@@ -13,7 +13,7 @@ import (
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
-	gaia "github.com/cosmos/gaia/v5/app"
+	gaia "github.com/cosmos/gaia/v6/app"
 	_ "github.com/lib/pq"
 )
 
@@ -63,7 +63,7 @@ func main() {
 		l.Panicw("cannot initialize k8s", "error", err)
 	}
 
-	cdc, _ := gaia.MakeCodecs()
+	encConfig := gaia.MakeEncodingConfig()
 
 	r := router.New(
 		dbi,
@@ -72,7 +72,7 @@ func main() {
 		kubeClient,
 		cfg.KubernetesNamespace,
 		cfg.CNSAddr,
-		cdc,
+		encConfig.Marshaler,
 		cfg.Debug,
 	)
 

@@ -6,27 +6,27 @@ import (
 	"testing"
 	"time"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener44"
 
 	"go.uber.org/zap"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/allinbits/demeris-backend/tracelistener/gaia_processor"
+	"github.com/allinbits/demeris-backend/tracelistener44/gaia_processor"
 
-	"github.com/allinbits/demeris-backend/tracelistener/config"
+	"github.com/allinbits/demeris-backend/tracelistener44/config"
 )
 
 type dumbModule struct {
-	wbOp          []tracelistener.WritebackOp
+	wbOp          []tracelistener44.WritebackOp
 	key           []byte
 	alwaysOwnsKey bool
-	processFunc   func(data tracelistener.TraceOperation) error
+	processFunc   func(data tracelistener44.TraceOperation) error
 	tableSchema   string
 	moduleName    string
 }
 
-func (d dumbModule) FlushCache() []tracelistener.WritebackOp {
+func (d dumbModule) FlushCache() []tracelistener44.WritebackOp {
 	return d.wbOp
 }
 
@@ -38,7 +38,7 @@ func (d dumbModule) OwnsKey(key []byte) bool {
 	return bytes.Equal(key, d.key)
 }
 
-func (d dumbModule) Process(data tracelistener.TraceOperation) error {
+func (d dumbModule) Process(data tracelistener44.TraceOperation) error {
 	return d.processFunc(data)
 }
 
@@ -103,22 +103,22 @@ func TestNew(t *testing.T) {
 func TestLifecycle(t *testing.T) {
 	tests := []struct {
 		name            string
-		presentMessages []tracelistener.TraceOperation
-		newMessage      tracelistener.TraceOperation
-		processorFunc   func(data tracelistener.TraceOperation) error
+		presentMessages []tracelistener44.TraceOperation
+		newMessage      tracelistener44.TraceOperation
+		processorFunc   func(data tracelistener44.TraceOperation) error
 		wantErr         bool
 		shouldSendWb    bool
 	}{
 		{
 			"no error when queueing new message accepted by the processor",
 			nil,
-			tracelistener.TraceOperation{
-				Operation:   string(tracelistener.WriteOp),
+			tracelistener44.TraceOperation{
+				Operation:   string(tracelistener44.WriteOp),
 				Key:         []byte("key"),
 				Value:       []byte("key"),
 				BlockHeight: 0,
 			},
-			func(_ tracelistener.TraceOperation) error {
+			func(_ tracelistener44.TraceOperation) error {
 				return nil
 			},
 			false,
@@ -127,13 +127,13 @@ func TestLifecycle(t *testing.T) {
 		{
 			"error when queueing new message accepted by the processor",
 			nil,
-			tracelistener.TraceOperation{
-				Operation:   string(tracelistener.WriteOp),
+			tracelistener44.TraceOperation{
+				Operation:   string(tracelistener44.WriteOp),
 				Key:         []byte("key"),
 				Value:       []byte("key"),
 				BlockHeight: 0,
 			},
-			func(_ tracelistener.TraceOperation) error {
+			func(_ tracelistener44.TraceOperation) error {
 				return fmt.Errorf("oh no, error")
 			},
 			true,
@@ -141,21 +141,21 @@ func TestLifecycle(t *testing.T) {
 		},
 		{
 			"new message, block different re: last height",
-			[]tracelistener.TraceOperation{
+			[]tracelistener44.TraceOperation{
 				{
-					Operation:   string(tracelistener.WriteOp),
+					Operation:   string(tracelistener44.WriteOp),
 					Key:         []byte("key"),
 					Value:       []byte("key"),
 					BlockHeight: 0,
 				},
 			},
-			tracelistener.TraceOperation{
-				Operation:   string(tracelistener.WriteOp),
+			tracelistener44.TraceOperation{
+				Operation:   string(tracelistener44.WriteOp),
 				Key:         []byte("key"),
 				Value:       []byte("key"),
 				BlockHeight: 1,
 			},
-			func(_ tracelistener.TraceOperation) error {
+			func(_ tracelistener44.TraceOperation) error {
 				return nil
 			},
 			false,

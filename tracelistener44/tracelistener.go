@@ -1,4 +1,4 @@
-package tracelistener
+package tracelistener44
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/nxadm/tail"
 
-	"github.com/allinbits/demeris-backend/tracelistener/config"
+	"github.com/allinbits/demeris-backend/tracelistener44/config"
 
 	"go.uber.org/zap"
 )

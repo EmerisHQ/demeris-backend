@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
+	"github.com/cosmos/ibc-go/modules/core/exported"
 
-	tmIBCTypes "github.com/cosmos/cosmos-sdk/x/ibc/light-clients/07-tendermint/types"
+	tmIBCTypes "github.com/cosmos/ibc-go/modules/light-clients/07-tendermint/types"
 
 	"github.com/allinbits/demeris-backend/models"
 
-	host "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	host "github.com/cosmos/ibc-go/modules/core/24-host"
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener44"
 )
 
 type clientCacheEntry struct {
@@ -35,7 +35,7 @@ func (b *ibcClientsProcessor) ModuleName() string {
 	return "ibc_clients"
 }
 
-func (b *ibcClientsProcessor) FlushCache() []tracelistener.WritebackOp {
+func (b *ibcClientsProcessor) FlushCache() []tracelistener44.WritebackOp {
 	if len(b.clientsCache) == 0 {
 		return nil
 	}
@@ -48,7 +48,7 @@ func (b *ibcClientsProcessor) FlushCache() []tracelistener.WritebackOp {
 
 	b.clientsCache = map[clientCacheEntry]models.IBCClientStateRow{}
 
-	return []tracelistener.WritebackOp{
+	return []tracelistener44.WritebackOp{
 		{
 			DatabaseExec: insertClient,
 			Data:         l,
@@ -60,7 +60,7 @@ func (b *ibcClientsProcessor) OwnsKey(key []byte) bool {
 	return bytes.Contains(key, []byte(host.KeyClientState))
 }
 
-func (b *ibcClientsProcessor) Process(data tracelistener.TraceOperation) error {
+func (b *ibcClientsProcessor) Process(data tracelistener44.TraceOperation) error {
 	b.l.Debugw("ibc client key", "key", string(data.Key), "raw value", string(data.Value))
 	var result exported.ClientState
 	var dest *tmIBCTypes.ClientState

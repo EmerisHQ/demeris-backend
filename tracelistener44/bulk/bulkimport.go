@@ -10,7 +10,7 @@ import (
 
 	types3 "github.com/gogo/protobuf/types"
 
-	"github.com/allinbits/demeris-backend/tracelistener/database"
+	"github.com/allinbits/demeris-backend/tracelistener44/database"
 
 	types2 "github.com/cosmos/cosmos-sdk/store/types"
 
@@ -21,7 +21,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener44"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 )
 
@@ -31,8 +31,8 @@ var (
 
 type Importer struct {
 	Path         string
-	TraceWatcher tracelistener.TraceWatcher
-	Processor    tracelistener.DataProcessor
+	TraceWatcher tracelistener44.TraceWatcher
+	Processor    tracelistener44.DataProcessor
 	Logger       *zap.SugaredLogger
 	Database     *database.Instance
 }
@@ -45,7 +45,7 @@ func (i *Importer) Do() error {
 		for {
 			select {
 			case e := <-i.Processor.ErrorsChan():
-				te := e.(tracelistener.TracingError)
+				te := e.(tracelistener44.TracingError)
 				i.Logger.Errorw(
 					"error while processing data",
 					"error", te.InnerError,
@@ -115,8 +115,8 @@ func (i *Importer) Do() error {
 		for ; ii.Valid(); ii.Next() {
 			writtenIdx++
 
-			to := tracelistener.TraceOperation{
-				Operation: tracelistener.WriteOp.String(),
+			to := tracelistener44.TraceOperation{
+				Operation: tracelistener44.WriteOp.String(),
 				Key:       ii.Key(),
 				Value:     ii.Value(),
 			}

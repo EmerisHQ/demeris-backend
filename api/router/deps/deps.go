@@ -18,7 +18,7 @@ type Deps struct {
 	Database      *database.Database
 	Store         *store.Store
 	K8S           *kube.Client
-	Codec         codec.Marshaler
+	Codec         codec.Codec
 	CNSURL        string
 	KubeNamespace string
 }

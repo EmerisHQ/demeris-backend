@@ -38,7 +38,7 @@ type Router struct {
 	s            *store.Store
 	k8s          kube.Client
 	k8sNamespace string
-	cdc          codec.Marshaler
+	cdc          codec.Codec
 	cnsURL       string
 }
 
@@ -49,7 +49,7 @@ func New(
 	kubeClient kube.Client,
 	kubeNamespace string,
 	cnsURL string,
-	cdc codec.Marshaler,
+	cdc codec.Codec,
 	debug bool,
 ) *Router {
 	gin.SetMode(gin.ReleaseMode)

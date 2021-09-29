@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	gaia "github.com/cosmos/gaia/v5/app"
+	gaia "github.com/cosmos/gaia/v6/app"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -718,8 +718,8 @@ func GetChainTx(c *gin.Context) {
 		return
 	}
 
-	cdc, _ := gaia.MakeCodecs()
-	bz, err := cdc.MarshalJSON(grpcRes)
+	encConfig := gaia.MakeEncodingConfig()
+	bz, err := encConfig.Marshaler.MarshalJSON(grpcRes)
 
 	if err != nil {
 		e := deps.NewError(
@@ -817,7 +817,7 @@ func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
 		return models.AuthRow{}, fmt.Errorf("cannot decode hex bytes from account string")
 	}
 
-	cdc, _ := simapp.MakeCodecs()
+	encConfig := simapp.MakeTestEncodingConfig()
 
 	addr, err := bech322.ConvertAndEncode(chain.NodeInfo.Bech32Config.PrefixAccount, accBytes)
 	if err != nil {
@@ -848,7 +848,7 @@ func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
 
 	// get a baseAccount
 	var accountI types.AccountI
-	if err := cdc.UnpackAny(resp.Account, &accountI); err != nil {
+	if err := encConfig.Marshaler.UnpackAny(resp.Account, &accountI); err != nil {
 		return models.AuthRow{}, err
 	}
 

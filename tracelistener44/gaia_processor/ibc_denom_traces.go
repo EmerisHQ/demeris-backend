@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+
 	"github.com/allinbits/demeris-backend/models"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
-	transferTypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	"github.com/allinbits/demeris-backend/tracelistener44"
+	transferTypes "github.com/cosmos/ibc-go/modules/apps/transfer/types"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +25,7 @@ func (b *ibcDenomTracesProcessor) ModuleName() string {
 	return "ibc_denom_traces"
 }
 
-func (b *ibcDenomTracesProcessor) FlushCache() []tracelistener.WritebackOp {
+func (b *ibcDenomTracesProcessor) FlushCache() []tracelistener44.WritebackOp {
 	if len(b.denomTracesCache) == 0 {
 		return nil
 	}
@@ -37,7 +38,7 @@ func (b *ibcDenomTracesProcessor) FlushCache() []tracelistener.WritebackOp {
 
 	b.denomTracesCache = map[string]models.IBCDenomTraceRow{}
 
-	return []tracelistener.WritebackOp{
+	return []tracelistener44.WritebackOp{
 		{
 			DatabaseExec: insertDenomTrace,
 			Data:         l,
@@ -49,11 +50,11 @@ func (b *ibcDenomTracesProcessor) OwnsKey(key []byte) bool {
 	return bytes.HasPrefix(key, transferTypes.DenomTraceKey)
 }
 
-func (b *ibcDenomTracesProcessor) Process(data tracelistener.TraceOperation) error {
+func (b *ibcDenomTracesProcessor) Process(data tracelistener44.TraceOperation) error {
 	b.l.Debugw("beginning denom trace processor", "key", string(data.Key), "value", string(data.Value))
 
 	dt := transferTypes.DenomTrace{}
-	if err := p.cdc.UnmarshalBinaryBare(data.Value, &dt); err != nil {
+	if err := p.cdc.Unmarshal(data.Value, &dt); err != nil {
 		return err
 	}
 

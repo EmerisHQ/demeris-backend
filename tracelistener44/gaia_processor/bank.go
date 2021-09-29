@@ -5,10 +5,9 @@ import (
 	"encoding/hex"
 
 	"github.com/allinbits/demeris-backend/models"
-
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener44"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -33,7 +32,7 @@ func (b *bankProcessor) ModuleName() string {
 	return "bank"
 }
 
-func (b *bankProcessor) FlushCache() []tracelistener.WritebackOp {
+func (b *bankProcessor) FlushCache() []tracelistener44.WritebackOp {
 	if len(b.heightCache) == 0 {
 		return nil
 	}
@@ -46,7 +45,7 @@ func (b *bankProcessor) FlushCache() []tracelistener.WritebackOp {
 
 	b.heightCache = map[bankCacheEntry]models.BalanceRow{}
 
-	return []tracelistener.WritebackOp{
+	return []tracelistener44.WritebackOp{
 		{
 			DatabaseExec: insertBalance,
 			Data:         l,
@@ -58,7 +57,7 @@ func (b *bankProcessor) OwnsKey(key []byte) bool {
 	return bytes.HasPrefix(key, types.BalancesPrefix)
 }
 
-func (b *bankProcessor) Process(data tracelistener.TraceOperation) error {
+func (b *bankProcessor) Process(data tracelistener44.TraceOperation) error {
 	addrBytes := data.Key
 	pLen := len(types.BalancesPrefix)
 	addr := addrBytes[pLen : pLen+20]
@@ -67,7 +66,7 @@ func (b *bankProcessor) Process(data tracelistener.TraceOperation) error {
 		Amount: sdk.NewInt(0),
 	}
 
-	if err := p.cdc.UnmarshalBinaryBare(data.Value, &coins); err != nil {
+	if err := p.cdc.Unmarshal(data.Value, &coins); err != nil {
 		return err
 	}
 

@@ -319,7 +319,7 @@ func fetchNumbers(cns []database.ChainName, account string) ([]models.AuthRow, e
 
 	results := make([]models.AuthRow, len(cns))
 
-	cdc, _ := simapp.MakeCodecs()
+	encConfig := simapp.MakeTestEncodingConfig()
 
 	for i, chain := range cns {
 		addr, err := bech322.ConvertAndEncode(chain.AccountPrefix, accBytes)
@@ -342,7 +342,7 @@ func fetchNumbers(cns []database.ChainName, account string) ([]models.AuthRow, e
 			// get a baseAccount
 			var accountI types.AccountI
 
-			if err := cdc.UnpackAny(resp.Account, &accountI); err != nil {
+			if err := encConfig.Marshaler.UnpackAny(resp.Account, &accountI); err != nil {
 				return err
 			}
 

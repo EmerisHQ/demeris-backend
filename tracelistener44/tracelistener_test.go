@@ -1,4 +1,4 @@
-package tracelistener_test
+package tracelistener44_test
 
 import (
 	"fmt"
@@ -10,12 +10,12 @@ import (
 
 	"github.com/allinbits/demeris-backend/models"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener44"
 	"github.com/stretchr/testify/require"
 )
 
 func TestOperation_String(t *testing.T) {
-	require.Equal(t, "write", tracelistener.WriteOp.String())
+	require.Equal(t, "write", tracelistener44.WriteOp.String())
 }
 
 type testDatabaseEntrier struct {
@@ -61,7 +61,7 @@ func TestWritebackOp_InterfaceSlice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			wb := tracelistener.WritebackOp{
+			wb := tracelistener44.WritebackOp{
 				Data: tt.fields,
 			}
 
@@ -73,7 +73,7 @@ func TestWritebackOp_InterfaceSlice(t *testing.T) {
 func TestTraceWatcher_Watch(t *testing.T) {
 	tests := []struct {
 		name        string
-		ops         []tracelistener.Operation
+		ops         []tracelistener44.Operation
 		data        string
 		wantErr     bool
 		differentOp bool
@@ -82,8 +82,8 @@ func TestTraceWatcher_Watch(t *testing.T) {
 	}{
 		{
 			"write operation is configured and read accordingly",
-			[]tracelistener.Operation{
-				tracelistener.WriteOp,
+			[]tracelistener44.Operation{
+				tracelistener44.WriteOp,
 			},
 			writeOp,
 			false,
@@ -93,8 +93,8 @@ func TestTraceWatcher_Watch(t *testing.T) {
 		},
 		{
 			"write operation is not configured and not read",
-			[]tracelistener.Operation{
-				tracelistener.ReadOp,
+			[]tracelistener44.Operation{
+				tracelistener44.ReadOp,
 			},
 			writeOp,
 			false,
@@ -104,7 +104,7 @@ func TestTraceWatcher_Watch(t *testing.T) {
 		},
 		{
 			"any operation is configured and read accordingly",
-			[]tracelistener.Operation{},
+			[]tracelistener44.Operation{},
 			writeOp,
 			false,
 			false,
@@ -113,7 +113,7 @@ func TestTraceWatcher_Watch(t *testing.T) {
 		},
 		{
 			"an EOF doesn't impact anything",
-			[]tracelistener.Operation{},
+			[]tracelistener44.Operation{},
 			writeOp,
 			false,
 			false,
@@ -122,7 +122,7 @@ func TestTraceWatcher_Watch(t *testing.T) {
 		},
 		{
 			"a random error panics",
-			[]tracelistener.Operation{},
+			[]tracelistener44.Operation{},
 			writeOp,
 			true,
 			false,
@@ -134,15 +134,15 @@ func TestTraceWatcher_Watch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			read, write := io.Pipe()
 
-			dataChan := make(chan tracelistener.TraceOperation)
+			dataChan := make(chan tracelistener44.TraceOperation)
 			errChan := make(chan error)
 			l, _ := zap.NewDevelopment()
-			tw := tracelistener.TraceWatcher{
-				DataSource: read,
-				WatchedOps: tt.ops,
-				DataChan:   dataChan,
-				ErrorChan:  errChan,
-				Logger:     l.Sugar(),
+			tw := tracelistener44.TraceWatcher{
+				DataSourcePath: read,
+				WatchedOps:     tt.ops,
+				DataChan:       dataChan,
+				ErrorChan:      errChan,
+				Logger:         l.Sugar(),
 			}
 
 			go func() {

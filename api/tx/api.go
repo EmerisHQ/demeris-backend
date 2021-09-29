@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"strings"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	types2 "github.com/tendermint/tendermint/abci/types"
 
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
-	"github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	"github.com/cosmos/ibc-go/modules/apps/transfer/types"
 	"google.golang.org/grpc"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
@@ -62,7 +63,7 @@ func Tx(c *gin.Context) {
 	tx := sdktx.Tx{}
 
 	mustCheckTx := true
-	if err := d.Codec.UnmarshalBinaryBare(txRequest.TxBytes, &tx); err != nil {
+	if err := d.Codec.Unmarshal(txRequest.TxBytes, &tx); err != nil {
 		mustCheckTx = false
 		d.Logger.Warnw("cannot decode transaction with the codec we have, bypassing transaction checking", "error", err)
 	}
@@ -132,7 +133,7 @@ func validateTx(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 // validateBody validates the data inside the body and populates the relevant metadata
 func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 	for _, m := range tx.GetMsgs() {
-		if m.Type() == "transfer" {
+		if sdk.MsgTypeURL(m) == sdk.MsgTypeURL(&types.MsgTransfer{}) {
 
 			msg, ok := m.(*types.MsgTransfer)
 

@@ -65,7 +65,7 @@ func (w *Watcher) Connect() error {
 		return err
 	}
 
-	resChan, err := wsc.Subscribe(context.Background(), "tracelistener", blEvents)
+	resChan, err := wsc.Subscribe(context.Background(), "tracelistener44", blEvents)
 	if err != nil {
 		return err
 	}

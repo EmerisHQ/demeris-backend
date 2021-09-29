@@ -36,7 +36,7 @@ func (c Config) Validate() error {
 func Read() (*Config, error) {
 	var c Config
 
-	return &c, configuration.ReadConfig(&c, "tracelistener", map[string]string{
-		"FIFOPath": "./.tracelistener.fifo",
+	return &c, configuration.ReadConfig(&c, "tracelistener44", map[string]string{
+		"FIFOPath": "./.tracelistener44.fifo",
 	})
 }

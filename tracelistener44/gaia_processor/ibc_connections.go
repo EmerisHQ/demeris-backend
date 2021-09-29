@@ -3,15 +3,16 @@ package gaia_processor
 import (
 	"bytes"
 	"fmt"
-	"github.com/allinbits/demeris-backend/models"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/x/ibc/core/03-connection/types"
+	"github.com/allinbits/demeris-backend/models"
 
-	host "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
+	"github.com/cosmos/ibc-go/modules/core/03-connection/types"
+
+	host "github.com/cosmos/ibc-go/modules/core/24-host"
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener44"
 )
 
 type connectionCacheEntry struct {
@@ -36,7 +37,7 @@ func (b *ibcConnectionsProcessor) ModuleName() string {
 	return "ibc_connections"
 }
 
-func (b *ibcConnectionsProcessor) FlushCache() []tracelistener.WritebackOp {
+func (b *ibcConnectionsProcessor) FlushCache() []tracelistener44.WritebackOp {
 	if len(b.connectionsCache) == 0 {
 		return nil
 	}
@@ -49,7 +50,7 @@ func (b *ibcConnectionsProcessor) FlushCache() []tracelistener.WritebackOp {
 
 	b.connectionsCache = map[connectionCacheEntry]models.IBCConnectionRow{}
 
-	return []tracelistener.WritebackOp{
+	return []tracelistener44.WritebackOp{
 		{
 			DatabaseExec: insertConnection,
 			Data:         l,
@@ -67,7 +68,7 @@ func (b *ibcConnectionsProcessor) OwnsKey(key []byte) bool {
 	return false
 }
 
-func (b *ibcConnectionsProcessor) Process(data tracelistener.TraceOperation) error {
+func (b *ibcConnectionsProcessor) Process(data tracelistener44.TraceOperation) error {
 	keyFields := strings.FieldsFunc(string(data.Key), func(r rune) bool {
 		return r == '/'
 	})
@@ -79,7 +80,7 @@ func (b *ibcConnectionsProcessor) Process(data tracelistener.TraceOperation) err
 	case 2:
 		if keyFields[0] == host.KeyConnectionPrefix { // this is a ConnectionEnd
 			ce := types.ConnectionEnd{}
-			if err := p.cdc.UnmarshalBinaryBare(data.Value, &ce); err != nil {
+			if err := p.cdc.Unmarshal(data.Value, &ce); err != nil {
 				return fmt.Errorf("cannot unmarshal connection end, %w", err)
 			}
 

@@ -7,7 +7,7 @@ import (
 
 	"github.com/allinbits/demeris-backend/models"
 
-	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener44"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	"go.uber.org/zap"
@@ -32,7 +32,7 @@ func (b *delegationsProcessor) ModuleName() string {
 	return "delegations"
 }
 
-func (b *delegationsProcessor) FlushCache() []tracelistener.WritebackOp {
+func (b *delegationsProcessor) FlushCache() []tracelistener44.WritebackOp {
 	insert := make([]models.DatabaseEntrier, 0, len(b.insertHeightCache))
 	deleteEntries := make([]models.DatabaseEntrier, 0, len(b.deleteHeightCache))
 
@@ -54,7 +54,7 @@ func (b *delegationsProcessor) FlushCache() []tracelistener.WritebackOp {
 
 	b.deleteHeightCache = map[delegationCacheEntry]models.DelegationRow{}
 
-	return []tracelistener.WritebackOp{
+	return []tracelistener44.WritebackOp{
 		{
 			DatabaseExec: insertDelegation,
 			Data:         insert,
@@ -70,8 +70,8 @@ func (b *delegationsProcessor) OwnsKey(key []byte) bool {
 	return bytes.HasPrefix(key, types.DelegationKey)
 }
 
-func (b *delegationsProcessor) Process(data tracelistener.TraceOperation) error {
-	if data.Operation == tracelistener.DeleteOp.String() {
+func (b *delegationsProcessor) Process(data tracelistener44.TraceOperation) error {
+	if data.Operation == tracelistener44.DeleteOp.String() {
 		if len(data.Key) < 41 { // 20 bytes by address, 1 prefix = 2*20 + 1
 			return nil // found probably liquidity stuff being deleted
 		}
@@ -93,7 +93,7 @@ func (b *delegationsProcessor) Process(data tracelistener.TraceOperation) error 
 
 	delegation := types.Delegation{}
 
-	if err := p.cdc.UnmarshalBinaryBare(data.Value, &delegation); err != nil {
+	if err := p.cdc.Unmarshal(data.Value, &delegation); err != nil {
 		return err
 	}
 

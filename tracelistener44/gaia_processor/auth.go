@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/allinbits/demeris-backend/models"
-	"github.com/allinbits/demeris-backend/tracelistener"
-	types3 "github.com/cosmos/cosmos-sdk/types"
+	"github.com/allinbits/demeris-backend/tracelistener44"
+	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"go.uber.org/zap"
@@ -32,7 +32,7 @@ func (b *authProcessor) ModuleName() string {
 	return "auth"
 }
 
-func (b *authProcessor) FlushCache() []tracelistener.WritebackOp {
+func (b *authProcessor) FlushCache() []tracelistener44.WritebackOp {
 	if len(b.heightCache) == 0 {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (b *authProcessor) FlushCache() []tracelistener.WritebackOp {
 
 	b.heightCache = map[authCacheEntry]models.AuthRow{}
 
-	return []tracelistener.WritebackOp{
+	return []tracelistener44.WritebackOp{
 		{
 			DatabaseExec: insertAuth,
 			Data:         l,
@@ -57,9 +57,9 @@ func (b *authProcessor) OwnsKey(key []byte) bool {
 	return bytes.HasPrefix(key, types.AddressStoreKeyPrefix)
 }
 
-func (b *authProcessor) Process(data tracelistener.TraceOperation) error {
+func (b *authProcessor) Process(data tracelistener44.TraceOperation) error {
 	b.l.Debugw("auth processor entered", "key", string(data.Key), "value", string(data.Value))
-	if len(data.Key) != types3.AddrLen+1 {
+	if len(data.Key) > address.MaxAddrLen+1 {
 		b.l.Debugw("auth got key that isn't supposed to")
 		// key len must be len(account bytes) + 1
 		return nil
