@@ -88,7 +88,7 @@
       ]
     },
     "docker_image": "gcr.io/tendermint-dev/sifchain",
-    "docker_image_version": "betanet-0.9.8"
+    "docker_image_version": "betanet-0.9.7"
   },
   "relayer_configuration": {
     "max_msg_num":12,
