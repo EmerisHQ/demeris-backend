@@ -48,7 +48,7 @@
 	"node_config": {
 		"name": "akash",
 		"namespace": "emeris",
-		"tracelistener_image": "gcr.io/tendermint-dev/emeris-traceclistener:latest",
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:develop",
 		"disable_min_fee_config": true,
 		"testnet_config": {
 			"chainID": "akash-testnet",
