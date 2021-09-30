@@ -7,7 +7,7 @@ import (
 	"github.com/allinbits/demeris-backend/models"
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener44"
+	"github.com/allinbits/demeris-backend/tracelistener"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -32,7 +32,7 @@ func (b *bankProcessor) ModuleName() string {
 	return "bank"
 }
 
-func (b *bankProcessor) FlushCache() []tracelistener44.WritebackOp {
+func (b *bankProcessor) FlushCache() []tracelistener.WritebackOp {
 	if len(b.heightCache) == 0 {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (b *bankProcessor) FlushCache() []tracelistener44.WritebackOp {
 
 	b.heightCache = map[bankCacheEntry]models.BalanceRow{}
 
-	return []tracelistener44.WritebackOp{
+	return []tracelistener.WritebackOp{
 		{
 			DatabaseExec: insertBalance,
 			Data:         l,
@@ -57,7 +57,7 @@ func (b *bankProcessor) OwnsKey(key []byte) bool {
 	return bytes.HasPrefix(key, types.BalancesPrefix)
 }
 
-func (b *bankProcessor) Process(data tracelistener44.TraceOperation) error {
+func (b *bankProcessor) Process(data tracelistener.TraceOperation) error {
 	addrBytes := data.Key
 	pLen := len(types.BalancesPrefix)
 	addr := addrBytes[pLen : pLen+20]

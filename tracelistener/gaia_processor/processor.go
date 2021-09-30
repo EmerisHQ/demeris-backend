@@ -4,17 +4,17 @@ import (
 	"fmt"
 
 	"github.com/allinbits/demeris-backend/models"
-	"github.com/allinbits/demeris-backend/tracelistener44"
-	"github.com/allinbits/demeris-backend/tracelistener44/config"
+	"github.com/allinbits/demeris-backend/tracelistener"
+	"github.com/allinbits/demeris-backend/tracelistener/config"
 	"github.com/cosmos/cosmos-sdk/codec"
 	gaia "github.com/cosmos/gaia/v6/app"
 	"go.uber.org/zap"
 )
 
 type Module interface {
-	FlushCache() []tracelistener44.WritebackOp
+	FlushCache() []tracelistener.WritebackOp
 	OwnsKey(key []byte) bool
-	Process(data tracelistener44.TraceOperation) error
+	Process(data tracelistener.TraceOperation) error
 	ModuleName() string
 	TableSchema() string
 }
@@ -23,19 +23,19 @@ type Module interface {
 var p Processor
 
 var defaultProcessors = []string{
-	"auth",
+	//"auth",
 	"bank",
-	"delegations",
-	"ibc_clients",
-	"ibc_channels",
-	"ibc_connections",
-	"ibc_denom_traces",
+	//"delegations",
+	//"ibc_clients",
+	//"ibc_channels",
+	//"ibc_connections",
+	//"ibc_denom_traces",
 }
 
 type Processor struct {
 	l                *zap.SugaredLogger
-	writeChan        chan tracelistener44.TraceOperation
-	writebackChan    chan []tracelistener44.WritebackOp
+	writeChan        chan tracelistener.TraceOperation
+	writebackChan    chan []tracelistener.WritebackOp
 	errorsChan       chan error
 	cdc              codec.Codec
 	migrations       []string
@@ -44,11 +44,11 @@ type Processor struct {
 	moduleProcessors []Module
 }
 
-func (p *Processor) OpsChan() chan tracelistener44.TraceOperation {
+func (p *Processor) OpsChan() chan tracelistener.TraceOperation {
 	return p.writeChan
 }
 
-func (p *Processor) WritebackChan() chan []tracelistener44.WritebackOp {
+func (p *Processor) WritebackChan() chan []tracelistener.WritebackOp {
 	return p.writebackChan
 }
 
@@ -60,7 +60,7 @@ func (p *Processor) ErrorsChan() chan error {
 	return p.errorsChan
 }
 
-func New(logger *zap.SugaredLogger, cfg *config.Config) (tracelistener44.DataProcessor, error) {
+func New(logger *zap.SugaredLogger, cfg *config.Config) (tracelistener.DataProcessor, error) {
 	c := cfg.Gaia
 
 	if c.ProcessorsEnabled == nil {
@@ -85,8 +85,8 @@ func New(logger *zap.SugaredLogger, cfg *config.Config) (tracelistener44.DataPro
 	p = Processor{
 		chainName:        cfg.ChainName,
 		l:                logger,
-		writeChan:        make(chan tracelistener44.TraceOperation),
-		writebackChan:    make(chan []tracelistener44.WritebackOp),
+		writeChan:        make(chan tracelistener.TraceOperation),
+		writebackChan:    make(chan []tracelistener.WritebackOp),
 		errorsChan:       make(chan error),
 		moduleProcessors: mp,
 		migrations:       tableSchemas,
@@ -148,7 +148,7 @@ func processorByName(name string, logger *zap.SugaredLogger) (Module, error) {
 }
 
 func (p *Processor) Flush() error {
-	wb := make([]tracelistener44.WritebackOp, 0, len(p.moduleProcessors))
+	wb := make([]tracelistener.WritebackOp, 0, len(p.moduleProcessors))
 
 	for _, mp := range p.moduleProcessors {
 		cd := mp.FlushCache()
@@ -192,7 +192,7 @@ func (p *Processor) lifecycle() {
 			}
 
 			if err := mp.Process(data); err != nil {
-				p.errorsChan <- tracelistener44.TracingError{
+				p.errorsChan <- tracelistener.TracingError{
 					InnerError: err,
 					Module:     mp.ModuleName(),
 					Data:       data,

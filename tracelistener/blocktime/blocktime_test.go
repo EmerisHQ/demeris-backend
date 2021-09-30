@@ -15,7 +15,7 @@ import (
 
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 
-	"github.com/allinbits/demeris-backend/tracelistener44/blocktime"
+	"github.com/allinbits/demeris-backend/tracelistener/blocktime"
 
 	"github.com/allinbits/demeris-backend/utils/database"
 	"github.com/cockroachdb/cockroach-go/v2/testserver"
@@ -85,7 +85,7 @@ func TestWatcher_ParseBlockData(t *testing.T) {
 			i, err := database.New(connString)
 
 			require.NoError(t, database.RunMigrations(connString, []string{
-				"CREATE DATABASE tracelistener44;",
+				"CREATE DATABASE tracelistener;",
 				blocktime.CreateTable,
 			}))
 

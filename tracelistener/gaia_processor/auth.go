@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/allinbits/demeris-backend/models"
-	"github.com/allinbits/demeris-backend/tracelistener44"
+	"github.com/allinbits/demeris-backend/tracelistener"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -32,7 +32,7 @@ func (b *authProcessor) ModuleName() string {
 	return "auth"
 }
 
-func (b *authProcessor) FlushCache() []tracelistener44.WritebackOp {
+func (b *authProcessor) FlushCache() []tracelistener.WritebackOp {
 	if len(b.heightCache) == 0 {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (b *authProcessor) FlushCache() []tracelistener44.WritebackOp {
 
 	b.heightCache = map[authCacheEntry]models.AuthRow{}
 
-	return []tracelistener44.WritebackOp{
+	return []tracelistener.WritebackOp{
 		{
 			DatabaseExec: insertAuth,
 			Data:         l,
@@ -57,7 +57,7 @@ func (b *authProcessor) OwnsKey(key []byte) bool {
 	return bytes.HasPrefix(key, types.AddressStoreKeyPrefix)
 }
 
-func (b *authProcessor) Process(data tracelistener44.TraceOperation) error {
+func (b *authProcessor) Process(data tracelistener.TraceOperation) error {
 	b.l.Debugw("auth processor entered", "key", string(data.Key), "value", string(data.Value))
 	if len(data.Key) > address.MaxAddrLen+1 {
 		b.l.Debugw("auth got key that isn't supposed to")
@@ -92,10 +92,10 @@ func (b *authProcessor) Process(data tracelistener44.TraceOperation) error {
 		return fmt.Errorf("cannot cast account to BaseAccount, type %T, account object type %T", baseAcc, acc)
 	}
 
-	if err := baseAcc.Validate(); err != nil {
-		b.l.Debugw("found invalid base account", "account", baseAcc, "error", err)
-		return fmt.Errorf("non compliant auth account, %w", err)
-	}
+	//if err := baseAcc.Validate(); err != nil {
+	//	b.l.Debugw("found invalid base account", "account", baseAcc, "error", err)
+	//	return fmt.Errorf("non compliant auth account, %w", err)
+	//}
 
 	_, bz, err := bech32.DecodeAndConvert(baseAcc.Address)
 	if err != nil {

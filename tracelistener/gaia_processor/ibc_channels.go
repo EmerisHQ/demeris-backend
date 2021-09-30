@@ -11,7 +11,7 @@ import (
 	host "github.com/cosmos/ibc-go/modules/core/24-host"
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener44"
+	"github.com/allinbits/demeris-backend/tracelistener"
 )
 
 type channelCacheEntry struct {
@@ -32,7 +32,7 @@ func (b *ibcChannelsProcessor) ModuleName() string {
 	return "ibc_channels"
 }
 
-func (b *ibcChannelsProcessor) FlushCache() []tracelistener44.WritebackOp {
+func (b *ibcChannelsProcessor) FlushCache() []tracelistener.WritebackOp {
 	if len(b.channelsCache) == 0 {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (b *ibcChannelsProcessor) FlushCache() []tracelistener44.WritebackOp {
 
 	b.channelsCache = map[channelCacheEntry]models.IBCChannelRow{}
 
-	return []tracelistener44.WritebackOp{
+	return []tracelistener.WritebackOp{
 		{
 			DatabaseExec: insertChannel,
 			Data:         l,
@@ -57,7 +57,7 @@ func (b *ibcChannelsProcessor) OwnsKey(key []byte) bool {
 	return bytes.HasPrefix(key, []byte(host.KeyChannelEndPrefix))
 }
 
-func (b *ibcChannelsProcessor) Process(data tracelistener44.TraceOperation) error {
+func (b *ibcChannelsProcessor) Process(data tracelistener.TraceOperation) error {
 	b.l.Debugw("ibc channel key", "key", string(data.Key), "raw value", string(data.Value))
 	var result types.Channel
 	if err := p.cdc.Unmarshal(data.Value, &result); err != nil {

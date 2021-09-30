@@ -14,7 +14,7 @@ import (
 	host "github.com/cosmos/ibc-go/modules/core/24-host"
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener44"
+	"github.com/allinbits/demeris-backend/tracelistener"
 )
 
 type clientCacheEntry struct {
@@ -35,7 +35,7 @@ func (b *ibcClientsProcessor) ModuleName() string {
 	return "ibc_clients"
 }
 
-func (b *ibcClientsProcessor) FlushCache() []tracelistener44.WritebackOp {
+func (b *ibcClientsProcessor) FlushCache() []tracelistener.WritebackOp {
 	if len(b.clientsCache) == 0 {
 		return nil
 	}
@@ -48,7 +48,7 @@ func (b *ibcClientsProcessor) FlushCache() []tracelistener44.WritebackOp {
 
 	b.clientsCache = map[clientCacheEntry]models.IBCClientStateRow{}
 
-	return []tracelistener44.WritebackOp{
+	return []tracelistener.WritebackOp{
 		{
 			DatabaseExec: insertClient,
 			Data:         l,
@@ -60,7 +60,7 @@ func (b *ibcClientsProcessor) OwnsKey(key []byte) bool {
 	return bytes.Contains(key, []byte(host.KeyClientState))
 }
 
-func (b *ibcClientsProcessor) Process(data tracelistener44.TraceOperation) error {
+func (b *ibcClientsProcessor) Process(data tracelistener.TraceOperation) error {
 	b.l.Debugw("ibc client key", "key", string(data.Key), "raw value", string(data.Value))
 	var result exported.ClientState
 	var dest *tmIBCTypes.ClientState

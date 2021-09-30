@@ -12,7 +12,7 @@ import (
 	host "github.com/cosmos/ibc-go/modules/core/24-host"
 	"go.uber.org/zap"
 
-	"github.com/allinbits/demeris-backend/tracelistener44"
+	"github.com/allinbits/demeris-backend/tracelistener"
 )
 
 type connectionCacheEntry struct {
@@ -37,7 +37,7 @@ func (b *ibcConnectionsProcessor) ModuleName() string {
 	return "ibc_connections"
 }
 
-func (b *ibcConnectionsProcessor) FlushCache() []tracelistener44.WritebackOp {
+func (b *ibcConnectionsProcessor) FlushCache() []tracelistener.WritebackOp {
 	if len(b.connectionsCache) == 0 {
 		return nil
 	}
@@ -50,7 +50,7 @@ func (b *ibcConnectionsProcessor) FlushCache() []tracelistener44.WritebackOp {
 
 	b.connectionsCache = map[connectionCacheEntry]models.IBCConnectionRow{}
 
-	return []tracelistener44.WritebackOp{
+	return []tracelistener.WritebackOp{
 		{
 			DatabaseExec: insertConnection,
 			Data:         l,
@@ -68,7 +68,7 @@ func (b *ibcConnectionsProcessor) OwnsKey(key []byte) bool {
 	return false
 }
 
-func (b *ibcConnectionsProcessor) Process(data tracelistener44.TraceOperation) error {
+func (b *ibcConnectionsProcessor) Process(data tracelistener.TraceOperation) error {
 	keyFields := strings.FieldsFunc(string(data.Key), func(r rune) bool {
 		return r == '/'
 	})
