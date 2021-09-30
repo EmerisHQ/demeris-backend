@@ -75,6 +75,12 @@
     "docker_image": "gcr.io/tendermint-dev/e-money",
     "docker_image_version": "v1.1.2"
   },
+  "relayer_configuration": {
+    "max_msg_num":12,
+    "max_gas": 500000,
+    "clock_drift": "70s",
+    "trusting_period": "14days"
+  },
   "skip_channel_creation": true,
   "block_explorer": "https://www.mintscan.io/emoney"
 }
