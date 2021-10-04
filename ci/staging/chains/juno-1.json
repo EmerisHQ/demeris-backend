@@ -1,0 +1,86 @@
+{
+  "chain_name": "juno",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://firebasestorage.googleapis.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-MZiFiIZH5IkEYsWMUO4%2F-MiMePnaIrP7sur_mMUW%2F-MiMe_5htMHVa2Pk850L%2FJUNO%20Logo%20(Red).svg?alt=media&token=873db37c-7381-4bad-a069-fd7b5bac2acc",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "juno",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "JUNO",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 1, "average": 1, "high": 1 },
+      "name": "ujuno",
+      "logo": "https://firebasestorage.googleapis.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-MZiFiIZH5IkEYsWMUO4%2F-MiMePnaIrP7sur_mMUW%2F-MiMe_5htMHVa2Pk850L%2FJUNO%20Logo%20(Red).svg?alt=media&token=873db37c-7381-4bad-a069-fd7b5bac2acc",
+      "verified": true,
+      "precision": 6,
+      "ticker": "JUNO"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "juno",
+    "chain_id": "juno-1",
+    "bech32_config": {
+      "main_prefix": "juno",
+      "prefix_account": "juno",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "juno",
+    "cli_name": "junod",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/CosmosContracts/mainnet/main/juno-1/genesis.json"
+      },
+      "persistentPeers": [
+        {
+          "id": "b1f46f1a1955fc773d3b73180179b0e0a07adce1",
+          "address": "162.55.244.250",
+          "port": 39656
+        },
+        {
+          "id": "7f593757c0cde8972ce929381d8ac8e446837811",
+          "address": "178.18.255.244",
+          "port": 26656
+        },
+        {
+          "id": "7b22dfc605989d66b89d2dfe118d799ea5abc2f0",
+          "address": "167.99.210.65",
+          "port": 26656
+        },
+        {
+          "id": "4bd9cac019775047d27f9b9cea66b25270ab497d",
+          "address": "137.184.7.164",
+          "port": 26656
+        },
+        {
+          "id": "bd822a8057902fbc80fd9135e335f0dfefa32342",
+          "address": "65.21.202.159",
+          "port": 38656
+        }
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/juno",
+    "docker_image_version": "v1.0.0"
+  },
+  "relayer_configuration": {
+    "max_msg_num":12,
+    "max_gas": 500000,
+    "clock_drift": "70s",
+    "trusting_period": "14days"
+  },
+  "skip_channel_creation": true,
+  "block_explorer": "https://junoscan.com/"
+}
