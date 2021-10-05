@@ -22,7 +22,7 @@ The Emeris backend can be summarised as *a multi-blockchain indexer*.
 * [cns-server](./cns)
 * [price-oracle](./price-oracle)
 * [rpc-watcher](./rpcwatcher)
-* [trace-listener](./tracelistener)
+* [trace-listener](https://github.com/allinbits/tracelistener/)
 * [ticket-watcher](./cmd/ticket-watcher)
 * [sdk-service](https://github.com/allinbits/sdk-service-meta)
 
