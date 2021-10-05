@@ -69,5 +69,6 @@
     },
     "docker_image": "gcr.io/tendermint-dev/sentinel",
     "docker_image_version": "v0.7.0"
-  }
+  },
+  "block_explorer": "https://www.mintscan.io/sentinel"
 }

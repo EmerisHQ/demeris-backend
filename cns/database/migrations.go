@@ -44,7 +44,8 @@ INSERT INTO cns.chains
 		demeris_addresses,
 		genesis_hash,
 		node_info,
-		derivation_path
+		derivation_path,
+		block_explorer
 	)
 VALUES
 	(
@@ -58,7 +59,8 @@ VALUES
 		:demeris_addresses,
 		:genesis_hash,
 		:node_info,
-		:derivation_path
+		:derivation_path,
+		:block_explorer
 	)
 ON CONFLICT
 	(chain_name)
@@ -73,7 +75,8 @@ DO UPDATE SET
 		demeris_addresses=EXCLUDED.demeris_addresses, 
 		genesis_hash=EXCLUDED.genesis_hash,
 		node_info=EXCLUDED.node_info,
-		derivation_path=EXCLUDED.derivation_path;
+		derivation_path=EXCLUDED.derivation_path,
+		block_explorer=EXCLUDED.block_explorer;
 `
 
 const getAllChains = `
@@ -152,9 +155,14 @@ WHERE
 	AND c2.chain_id = :chainID
 `
 
+const addColumnBlockExplorer = `
+ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS block_explorer string;
+`
+
 var migrationList = []string{
 	createDatabase,
 	createTableChains,
+	addColumnBlockExplorer,
 }
 
 func (i *Instance) runMigrations() {

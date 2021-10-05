@@ -1,11 +1,11 @@
 {
-	"chain_name": "akash",
-	"derivation_path": "m/44'/118'/0'/0/0",
-	"logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
+	"chain_name": "terra",
+	"derivation_path": "m/44'/330'/0'/0/0",
+	"logo": "https://storage.googleapis.com/emeris/logos/terra.svg",
 	"enabled": true,
 	"valid_block_thresh": "10s",
 	"minimum_thresh_relayer_balance": 42,
-	"display_name": "Akash Emeris",
+	"display_name": "Terra Emeris",
 	"counterparty_names": {
 		"cn1": "cn1",
 		"cn2": "cn2"
@@ -17,28 +17,28 @@
 	"demeris_addresses": ["feeaddress"],
 	"denoms": [
 		{
-			"display_name": "AKT",
-			"name": "uakt",
-			"ticker": "AKT",
-			"verified": true,
+			"display_name": "LUNA",
 			"stakable": true,
+			"ticker": "LUNA",
 			"fee_token": true,
 			"fetch_price": true,
 			"relayer_denom": true,
 			"minimum_thresh_relayer_balance": 42,
 			"gas_price_levels": { "low": 0.01, "average": 0.022, "high": 0.042 },
+			"name": "uluna",
+			"verified": true,
 			"precision": 6,
-			"logo": "https://storage.googleapis.com/emeris/logos/akash.svg"
+			"logo": "https://storage.googleapis.com/emeris/logos/luna.svg"
 		}
 	],
 	"base_ibc_fee": 1,
 	"genesis_hash": "genesis_hash",
 	"node_info": {
-		"endpoint": "akash",
-		"chain_id": "akash-testnet",
+		"endpoint": "terra",
+		"chain_id": "terra-testnet",
 		"bech32_config": {
-			"main_prefix": "akash",
-			"prefix_account": "akash",
+			"main_prefix": "terra",
+			"prefix_account": "terra",
 			"prefix_validator": "val",
 			"prefix_consensus": "cons",
 			"prefix_public": "pub",
@@ -46,21 +46,22 @@
 		}
 	},
 	"node_config": {
-		"name": "akash",
+		"name": "terra",
+		"cli_name": "terrad",
 		"namespace": "emeris",
-		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:develop",
 		"disable_min_fee_config": true,
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-traceclistener44:latest",
 		"testnet_config": {
-			"chainID": "akash-testnet",
-			"stakeAmount": "10000000000uakt",
-			"bondDenom": "uakt",
-			"assets": ["10000000000000000000000uakt"],
+			"chainID": "terra-testnet",
+			"stake_amount": "10000000000uluna",
+			"bondDenom": "uluna",
+			"assets": ["10000000000000000000uluna"],
 			"faucet": {
-				"funds": "10000000000000000000000uakt",
-				"denoms": ["uakt"]
+				"funds": "10000000000000000000uluna",
+				"denoms": ["uluna"]
 			}
 		},
-		"docker_image": "gcr.io/tendermint-dev/akash",
-		"docker_image_version": "v0.12.1"
+		"docker_image": "terramoney/core",
+		"docker_image_version": "v0.5.5"
 	}
 }
