@@ -1,3 +1,7 @@
+# price-oracle 
+
+Aggregates and caches price data feeds from external data providers. 
+
 ## Usage
 
 ### Configuration
