@@ -81,6 +81,5 @@
     "clock_drift": "70s",
     "trusting_period": "14days"
   },
-  "skip_channel_creation": true,
   "block_explorer": "https://junoscan.com/"
 }
