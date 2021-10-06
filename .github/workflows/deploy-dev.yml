@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows: ["Build docker images"]
-    branches: [master]
-    types: 
+    branches: [master, develop]
+    types:
       - completed
 
 jobs:
