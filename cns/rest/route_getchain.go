@@ -1,18 +1,18 @@
 package rest
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
-	"github.com/allinbits/demeris-backend/models"
-
+	"github.com/allinbits/demeris-backend/cns/cnsdb"
 	"github.com/gin-gonic/gin"
 )
 
 const getChainRoute = "/chain/:chain"
 
 type getChainResp struct {
-	Chain models.Chain `json:"chain"`
+	Chain cnsdb.Chain `json:"chain"`
 }
 
 func (r *router) getChainHandler(ctx *gin.Context) {
@@ -23,7 +23,7 @@ func (r *router) getChainHandler(ctx *gin.Context) {
 		e(ctx, http.StatusBadRequest, fmt.Errorf("chain not supplied"))
 	}
 
-	data, err := r.s.d.Chain(chain)
+	data, err := r.s.d.Chain(context.Background(), chain)
 
 	if err != nil {
 		e(ctx, http.StatusInternalServerError, err)

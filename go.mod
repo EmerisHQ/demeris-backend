@@ -38,6 +38,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nxadm/tail v1.4.8
 	github.com/r3labs/diff v1.1.0
+	github.com/rubenv/sql-migrate v0.0.0-20210614095031-55d5740dbbcc // indirect
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.1-0.20210427113832-6241f9ab9942

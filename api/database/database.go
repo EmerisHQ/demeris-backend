@@ -22,13 +22,3 @@ func Init(c *config.Config) (*Database, error) {
 		connectionURL: c.DatabaseConnectionURL,
 	}, nil
 }
-
-// Close closes the connections to the database.
-func (d *Database) Close() error {
-	return d.dbi.Close()
-}
-
-// Q queries the DB.
-func (d *Database) Q(sql string, dest interface{}, args ...interface{}) error {
-	return d.dbi.Exec(sql, args, dest)
-}

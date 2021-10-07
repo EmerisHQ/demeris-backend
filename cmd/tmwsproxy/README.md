@@ -5,7 +5,7 @@ A websocket event proxy for Tendermint RPC.
 ## Building
 
 ```shell
-go build -v --ldflags="-s -w"
+cnsdb build -v --ldflags="-s -w"
 ```
 
 To compile a debug build, remove `ldflags` parameter.

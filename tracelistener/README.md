@@ -54,7 +54,7 @@ The list of processors for **gaia** is the following:
 
 2. build it:
     ```shell
-    go build -v --ldflags="-s -w"  github.com/allinbits/tracelistener/cmd/tracelistener
+    cnsdb build -v --ldflags="-s -w"  github.com/allinbits/tracelistener/cmd/tracelistener
     ```
 3. run it:
     ```shell

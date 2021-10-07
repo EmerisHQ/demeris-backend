@@ -1,0 +1,31 @@
+{
+  "version": "1",
+  "packages": [
+    {
+      "path": "../cns/cnsdb",
+      "engine": "postgresql",
+      "sql_package": "pgx/v4",
+      "name": "cnsdb",
+      "schema": "query/schema.sql",
+      "queries": "query/cns.sql"
+    }
+  ],
+  "overrides": [
+  {
+    "column": "chains.denoms",
+    "go_type": "github.com/allinbits/demeris-backend/models.DenomList"
+  },
+    {
+      "column": "chains.primary_channel",
+      "go_type": "github.com/allinbits/demeris-backend/models.DbStringMap"
+    },
+    {
+      "column": "chains.node_info",
+      "go_type": "github.com/allinbits/demeris-backend/models.NodeInfo"
+    },
+    {
+      "column": "chains.valid_block_thresh",
+      "go_type": "github.com/allinbits/demeris-backend/models.Threshold"
+    }
+  ]
+}

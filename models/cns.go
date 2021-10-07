@@ -274,7 +274,7 @@ type DenomList []Denom
 func (a *DenomList) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {
-		return errors.New("type assertion to []byte failed")
+		return errors.New("tyxpe assertion to []byte failed")
 	}
 
 	err := json.Unmarshal(b, &a)

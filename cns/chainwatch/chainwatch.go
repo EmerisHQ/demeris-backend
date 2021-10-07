@@ -1,13 +1,14 @@
 package chainwatch
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/allinbits/demeris-backend/cns/cnsdb"
 	"github.com/allinbits/demeris-backend/models"
-
-	"github.com/allinbits/demeris-backend/cns/database"
+	"github.com/allinbits/demeris-backend/utils"
 
 	"github.com/allinbits/demeris-backend/utils/k8s/operator"
 
@@ -30,7 +31,7 @@ type Instance struct {
 	k                kube.Client
 	defaultNamespace string
 	c                *Connection
-	db               *database.Instance
+	db               *cnsdb.Queries
 	relayerDebug     bool
 }
 
@@ -39,7 +40,7 @@ func New(
 	k kube.Client,
 	defaultNamespace string,
 	c *Connection,
-	db *database.Instance,
+	db *cnsdb.Queries,
 	relayerDebug bool,
 ) *Instance {
 	return &Instance{
@@ -130,7 +131,7 @@ func (i *Instance) Run() {
 					continue
 				}
 
-				amt, err := i.db.ChainAmount()
+				amt, err := i.db.ChainAmount(context.Background())
 				if err != nil {
 					i.l.Errorw("cannot get amount of chains", "error", err)
 					continue
@@ -138,7 +139,7 @@ func (i *Instance) Run() {
 
 				chainStatuses := relayer.Status.ChainStatuses
 
-				if amt != len(chainStatuses) {
+				if amt != int64(len(chainStatuses)) {
 					continue // corner case where the chain gets added, previous chains are already connected, but the operator still reports "Running" because the
 					// reconcile cycle didn't get up yet.
 				}
@@ -340,12 +341,12 @@ func (c connectedChain) String() string {
 }
 
 func (i *Instance) chainsConnectedAndToConnectTo(chainName string, alwaysConnect bool) ([]string, []connectedChain, error) {
-	sourceChain, err := i.db.Chain(chainName)
+	sourceChain, err := i.db.Chain(context.Background(), chainName)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	chains, err := i.db.Chains()
+	chains, err := i.db.Chains(context.Background())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -392,12 +393,12 @@ func (i *Instance) chainsConnectedAndToConnectTo(chainName string, alwaysConnect
 }
 
 func (i *Instance) updateAlreadyConnected(connected []connectedChain) error {
-	chains, err := i.db.Chains()
+	chains, err := i.db.Chains(context.Background())
 	if err != nil {
 		return err
 	}
 
-	chainsMap := map[string]models.Chain{}
+	chainsMap := map[string]cnsdb.Chain{}
 	for _, c := range chains {
 		chainsMap[c.ChainName] = c
 	}
@@ -416,11 +417,11 @@ func (i *Instance) updateAlreadyConnected(connected []connectedChain) error {
 		chain.PrimaryChannel[c.counterChainName] = c.counterChannel
 		counterChain.PrimaryChannel[c.chainName] = c.channel
 
-		if err := i.db.AddChain(chain); err != nil {
+		if err := i.db.AddChain(context.Background(), utils.GetAddChainParams(chain)); err != nil {
 			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
 		}
 
-		if err := i.db.AddChain(counterChain); err != nil {
+		if err := i.db.AddChain(context.Background(), utils.GetAddChainParams(counterChain)); err != nil {
 			return fmt.Errorf("error while updating chain %s, %w", counterChain.ChainName, err)
 		}
 	}
@@ -429,9 +430,9 @@ func (i *Instance) updateAlreadyConnected(connected []connectedChain) error {
 }
 
 func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
-	chainsMap := map[string]models.Chain{}
+	chainsMap := map[string]cnsdb.Chain{}
 
-	chains, err := i.db.Chains()
+	chains, err := i.db.Chains(context.Background())
 	if err != nil {
 		return err
 	}
@@ -444,7 +445,7 @@ func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
 	result := i.updatePrimaryChannelForChain(chainsMap, relayer)
 
 	for _, chain := range result {
-		if err := i.db.AddChain(chain); err != nil {
+		if err := i.db.AddChain(context.Background(), utils.GetAddChainParams(chain)); err != nil {
 			return fmt.Errorf("error while updating chain %s, %w", chain.ChainName, err)
 		}
 	}
@@ -452,7 +453,7 @@ func (i *Instance) setPrimaryChannel(_ Chain, relayer v1.Relayer) error {
 	return nil
 }
 
-func (i *Instance) updatePrimaryChannelForChain(chainsMap map[string]models.Chain, relayer v1.Relayer) map[string]models.Chain {
+func (i *Instance) updatePrimaryChannelForChain(chainsMap map[string]cnsdb.Chain, relayer v1.Relayer) map[string]cnsdb.Chain {
 
 	paths := relayer.Status.Paths
 	for chainID, chain := range chainsMap {
@@ -499,7 +500,7 @@ func (i *Instance) updatePrimaryChannelForChain(chainsMap map[string]models.Chai
 }
 
 func (i *Instance) relayerDenom(chainName string) (models.Denom, error) {
-	chain, err := i.db.Chain(chainName)
+	chain, err := i.db.Chain(context.Background(), chainName)
 	if err != nil {
 		return models.Denom{}, err
 	}

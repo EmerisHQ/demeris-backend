@@ -2,8 +2,9 @@ package main
 
 import (
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
-	"github.com/allinbits/demeris-backend/cns/database"
+	"github.com/allinbits/demeris-backend/cns/cnsdb"
 	"github.com/allinbits/demeris-backend/cns/rest"
+	dbutils "github.com/allinbits/demeris-backend/utils/database"
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 )
@@ -23,7 +24,7 @@ func main() {
 
 	logger.Infow("cns-server", "version", Version)
 
-	di, err := database.New(config.DatabaseConnectionURL)
+	di, err := dbutils.New(config.DatabaseConnectionURL)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -38,12 +39,14 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	queries := cnsdb.New(di)
 	ci := chainwatch.New(
 		logger,
 		kube,
 		config.KubernetesNamespace,
 		rc,
 		di,
+		queries,
 		config.RelayerDebug,
 	)
 
@@ -51,7 +54,7 @@ func main() {
 
 	restServer := rest.NewServer(
 		logger,
-		di,
+		queries,
 		&kube,
 		rc,
 		config.KubernetesNamespace,

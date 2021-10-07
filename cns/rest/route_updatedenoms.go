@@ -1,8 +1,10 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 
+	cnsdb2 "github.com/allinbits/demeris-backend/cns/cnsdb"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/gin-gonic/gin"
 )
@@ -21,10 +23,13 @@ func (r *router) updateDenomsHandler(ctx *gin.Context) {
 		e(ctx, http.StatusBadRequest, err)
 		r.s.l.Error("cannot bind json to updateDenomsRequest", err)
 		return
-
 	}
 
-	if err := r.s.d.UpdateDenoms(req.Chain, req.Denoms); err != nil {
+	if err := r.s.d.UpdateDenoms(context.Background(),
+		cnsdb2.UpdateDenomsParams{
+			Denoms:    req.Denoms,
+			ChainName: req.Chain,
+		}); err != nil {
 		e(ctx, http.StatusInternalServerError, err)
 		r.s.l.Error("cannot update denoms", err)
 		return

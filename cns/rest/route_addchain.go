@@ -1,10 +1,13 @@
 package rest
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
+	cnsdb2 "github.com/allinbits/demeris-backend/cns/cnsdb"
+	"github.com/allinbits/demeris-backend/utils"
 	v12 "k8s.io/api/core/v1"
 
 	v1 "github.com/allinbits/starport-operator/api/v1"
@@ -15,7 +18,6 @@ import (
 
 	"github.com/allinbits/demeris-backend/utils/k8s"
 
-	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/k8s/operator"
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +25,7 @@ import (
 const addChainRoute = "/add"
 
 type addChainRequest struct {
-	models.Chain
+	cnsdb2.Chain
 
 	SkipChannelCreation  bool                           `json:"skip_channel_creation"`
 	NodeConfig           *operator.NodeConfiguration    `json:"node_config"`
@@ -138,7 +140,7 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		}
 	}
 
-	if err := r.s.d.AddChain(newChain.Chain); err != nil {
+	if err := r.s.d.AddChain(context.Background(), utils.GetAddChainParams(newChain.Chain)); err != nil {
 		e(ctx, http.StatusInternalServerError, err)
 		r.s.l.Error("cannot add chain", err)
 		return
@@ -150,7 +152,7 @@ func (r *router) addChain() (string, gin.HandlerFunc) {
 	return addChainRoute, r.addChainHandler
 }
 
-func validateFees(c models.Chain) error {
+func validateFees(c cnsdb2.Chain) error {
 	ft := c.FeeTokens()
 	if len(ft) == 0 {
 		return fmt.Errorf("no fee token specified")
@@ -165,7 +167,7 @@ func validateFees(c models.Chain) error {
 	return nil
 }
 
-func validateDenoms(c models.Chain) error {
+func validateDenoms(c cnsdb2.Chain) error {
 	foundRelayerDenom := false
 	for _, d := range c.Denoms {
 		if d.RelayerDenom {

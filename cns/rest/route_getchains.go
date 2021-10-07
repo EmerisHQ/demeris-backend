@@ -1,20 +1,21 @@
 package rest
 
 import (
-	"github.com/allinbits/demeris-backend/models"
+	"context"
 	"net/http"
 
+	cnsdb2 "github.com/allinbits/demeris-backend/cns/cnsdb"
 	"github.com/gin-gonic/gin"
 )
 
 const getChainsRoute = "/chains"
 
 type getChainsResp struct {
-	Chains []models.Chain `json:"chains"`
+	Chains []cnsdb2.Chain `json:"chains"`
 }
 
 func (r *router) getChainsHandler(ctx *gin.Context) {
-	data, err := r.s.d.Chains()
+	data, err := r.s.d.Chains(context.Background())
 
 	if err != nil {
 		e(ctx, http.StatusInternalServerError, err)

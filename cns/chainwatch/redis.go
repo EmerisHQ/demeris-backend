@@ -10,7 +10,7 @@ import (
 
 	"github.com/allinbits/demeris-backend/utils/k8s/operator"
 
-	r "github.com/go-redis/redis/v8"
+	r "github.com/cnsdb-redis/redis/v8"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 	chainStatusPrefixFmt = "cns/ChainStatus/%s"
 )
 
-//go:generate stringer -type=ChainStatus
+//cnsdb:generate stringer -type=ChainStatus
 type ChainStatus uint
 
 func (cs *ChainStatus) UnmarshalBinary(data []byte) error {

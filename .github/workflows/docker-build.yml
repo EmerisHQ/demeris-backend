@@ -16,8 +16,8 @@ on:
       - tracelistener/**
       - rpcwatcher/**
       - utils/**
-      - go.mod
-      - go.sum
+      - cnsdb.mod
+      - cnsdb.sum
       - helm/**
 
 jobs:

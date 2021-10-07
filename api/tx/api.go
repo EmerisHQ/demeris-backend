@@ -158,7 +158,7 @@ func validateBody(tx *sdktx.Tx, meta *TxMeta, d *deps.Deps) error {
 					return fmt.Errorf("Invalid denom trace")
 				}
 
-				// TODO: move this to the chains/chains.go.path() function
+				// TODO: move this to the chains/chains.cnsdb.path() function
 				channels := strings.Split(denomTrace.Path, "/")
 				if channels[1] != sourceChannel {
 					return fmt.Errorf("IBC forward is disabled for multi-hop tokens. Try sending it back through the original channel.")

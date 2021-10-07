@@ -20,7 +20,7 @@ type Module interface {
 	TableSchema() string
 }
 
-// TODO: this singleton MUST go away.
+// TODO: this singleton MUST cnsdb away.
 var p Processor
 
 var defaultProcessors = []string{

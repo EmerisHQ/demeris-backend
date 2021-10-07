@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	ut "github.com/go-playground/universal-translator"
+	ut "github.com/cnsdb-playground/universal-translator"
 
 	"github.com/go-playground/validator/v10"
 

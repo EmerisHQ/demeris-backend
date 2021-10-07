@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/cns/cnsdb"
 	"github.com/allinbits/demeris-backend/utils/validation"
 	"github.com/gin-gonic/gin/binding"
 
@@ -13,7 +14,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
-	"github.com/allinbits/demeris-backend/cns/database"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -23,7 +23,7 @@ import (
 type Server struct {
 	l                   *zap.SugaredLogger
 	gl                  *zap.Logger
-	d                   *database.Instance
+	d                   *cnsdb.Queries
 	g                   *gin.Engine
 	k                   *kube.Client
 	rc                  *chainwatch.Connection
@@ -35,7 +35,7 @@ type router struct {
 	s *Server
 }
 
-func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc *chainwatch.Connection, defaultK8SNamespace string, debug bool) *Server {
+func NewServer(l *zap.SugaredLogger, d *cnsdb.Queries, kube *kube.Client, rc *chainwatch.Connection, defaultK8SNamespace string, debug bool) *Server {
 	if !debug {
 		gin.SetMode(gin.ReleaseMode)
 	}

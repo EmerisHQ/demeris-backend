@@ -37,7 +37,7 @@ Set the cockroach DB to the local cluster, connect to the local DB, and run sche
 
 ```bash
 # build
-go build
+cnsdb build
 
 # executable
 ./navigator-price-oracle
