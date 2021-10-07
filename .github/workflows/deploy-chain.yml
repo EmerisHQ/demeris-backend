@@ -136,4 +136,27 @@ jobs:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: patch -n emeris nodeset terra --type merge --patch "$(cat ci/dev/chains/terra-patch.yaml)"
 
+      - name: Install PostgreSQL
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm repo add bitnami https://charts.bitnami.com/bitnami;
+            helm upgrade terra \
+              --install \
+              --namespace emeris \
+              --set postgresqlPassword=postgres \
+              --set postgresqlDatabase=fcd \
+              bitnami/postgresqs
+
+      - name: Install Terra FCD
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade terra-fcd \
+              --install \
+              --namespace emeris \
+              ./helm/terra-fcd
+
 

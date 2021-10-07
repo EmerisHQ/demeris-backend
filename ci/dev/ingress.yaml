@@ -22,6 +22,13 @@ spec:
         pathType: ImplementationSpecific
       - backend:
           service:
+            name: fcd
+            port:
+              number: 3060
+        path: /v1/chain/terra/fcd(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
             name: price-oracle
             port:
               number: 8000
