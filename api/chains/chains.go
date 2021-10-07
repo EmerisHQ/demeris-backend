@@ -537,7 +537,6 @@ func GetChainStatus(c *gin.Context) {
 
 		d.WriteError(c, e,
 			"cannot retrieve chain last block time",
-			"cannot retrieve chain last block time",
 			"id",
 			e.ID,
 			"name",
