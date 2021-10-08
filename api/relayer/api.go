@@ -218,7 +218,13 @@ func enoughBalance(address string, denom models.Denom, db *database.Database) (b
 			return false, fmt.Errorf("found relayeramount denom but failed to parse amount, %w", err)
 		}
 
-		status = parsedAmt.Amount.Int64() >= *denom.MinimumThreshRelayerBalance
+		rThresStr := fmt.Sprintf("%v%s", *denom.MinimumThreshRelayerBalance, parsedAmt.Denom)
+		rThresAmt, err := types.ParseCoinNormalized(rThresStr)
+		if err != nil {
+			return false, fmt.Errorf("cannot ParseCoinNormalized() %s", rThresStr)
+		}
+
+		status = parsedAmt.IsGTE(rThresAmt)
 		break
 	}
 
