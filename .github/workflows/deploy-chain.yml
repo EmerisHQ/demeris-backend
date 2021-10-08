@@ -147,7 +147,7 @@ jobs:
               --namespace emeris \
               --set postgresqlPassword=postgres \
               --set postgresqlDatabase=fcd \
-              bitnami/postgresqs
+              bitnami/postgresql
 
       - name: Install Terra FCD
         uses: WyriHaximus/github-action-helm3@v2

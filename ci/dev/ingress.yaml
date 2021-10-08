@@ -22,10 +22,10 @@ spec:
         pathType: ImplementationSpecific
       - backend:
           service:
-            name: fcd
+            name: terra-fcd
             port:
               number: 3060
-        path: /v1/chain/terra/fcd(/|$)(.*)
+        path: /v1/services/terra/fcd(/|$)(.*)
         pathType: ImplementationSpecific
       - backend:
           service:
