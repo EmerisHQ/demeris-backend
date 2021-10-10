@@ -75,3 +75,7 @@ type statusResponse struct {
 type numbersResponse struct {
 	Numbers models.AuthRow `json:"numbers"`
 }
+
+type validatorsResponse struct {
+	Validators []models.ValidatorRow `json:"validators"`
+}
