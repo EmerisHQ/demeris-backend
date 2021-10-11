@@ -20,6 +20,9 @@ func Register(router *gin.Engine) {
 	chain.GET("/txs/:tx", GetChainTx)
 	chain.GET("/numbers/:address", GetNumbersByAddress)
 	chain.GET("/validators", GetValidators)
+	chain.GET("/mint/inflation", GetInflation)
+	chain.GET("/mint/params", GetMintParams)
+	chain.GET("/mint/annual_provisions", GetAnnualProvisions)
 
 	fee := chain.Group("/fee")
 

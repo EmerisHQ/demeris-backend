@@ -64,6 +64,7 @@ type verifiedTrace struct {
 	Path      string  `json:"path,omitempty"`
 	Trace     []trace `json:"trace,omitempty"`
 }
+
 type verifiedTraceResponse struct {
 	VerifiedTrace verifiedTrace `json:"verify_trace"`
 }
@@ -78,4 +79,22 @@ type numbersResponse struct {
 
 type validatorsResponse struct {
 	Validators []models.ValidatorRow `json:"validators"`
+
+type inflationResponse struct {
+	Inflation string `json:"inflation"`
+}
+
+type paramsResponse struct {
+	Params struct {
+		MintDenom           string `json:"mint_denom"`
+		InflationRateChange string `json:"inflation_rate_change"`
+		InflationMax        string `json:"inflation_max"`
+		InflationMin        string `json:"inflation_min"`
+		GoalBonded          string `json:"goal_bonded"`
+		BlocksPerYear       string `json:"blocks_per_year"`
+	} `json:"params"`
+}
+
+type annualProvisionsResponse struct {
+	AnnualProvisions string `json:"annual_provisions"`
 }

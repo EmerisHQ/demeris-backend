@@ -45,6 +45,7 @@ INSERT INTO cns.chains
 		genesis_hash,
 		node_info,
 		derivation_path,
+		supported_wallets,
 		block_explorer
 	)
 VALUES
@@ -60,6 +61,7 @@ VALUES
 		:genesis_hash,
 		:node_info,
 		:derivation_path,
+		:supported_wallets,
 		:block_explorer
 	)
 ON CONFLICT
@@ -76,6 +78,7 @@ DO UPDATE SET
 		genesis_hash=EXCLUDED.genesis_hash,
 		node_info=EXCLUDED.node_info,
 		derivation_path=EXCLUDED.derivation_path,
+		supported_wallets=EXCLUDED.supported_wallets,
 		block_explorer=EXCLUDED.block_explorer;
 `
 
@@ -155,6 +158,9 @@ WHERE
 	AND c2.chain_id = :chainID
 `
 
+const addColumnSupportedWallets = `
+ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS supported_wallets text[] NOT NULL DEFAULT '{}';
+`
 const addColumnBlockExplorer = `
 ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS block_explorer string;
 `
@@ -162,6 +168,7 @@ ALTER TABLE cns.chains ADD COLUMN IF NOT EXISTS block_explorer string;
 var migrationList = []string{
 	createDatabase,
 	createTableChains,
+	addColumnSupportedWallets,
 	addColumnBlockExplorer,
 }
 
