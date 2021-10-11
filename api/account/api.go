@@ -17,6 +17,7 @@ func Register(router *gin.Engine) {
 	group := router.Group("/account/:address")
 	group.GET("/balance", GetBalancesByAddress)
 	group.GET("/stakingbalances", GetDelegationsByAddress)
+	group.GET("/unbondingdelegations", GetUnbondingDelegationsByAddress)
 	group.GET("/numbers", GetNumbersByAddress)
 	group.GET("/tickets", GetUserTickets)
 }
@@ -191,6 +192,56 @@ func GetDelegationsByAddress(c *gin.Context) {
 			ValidatorAddress: del.Validator,
 			Amount:           del.Amount,
 			ChainName:        del.ChainName,
+		})
+	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+// GetUnbondingDelegationsByAddress returns the unbonding delegations of an address
+// @Summary Gets unbonding delegations
+// @Description gets unbonding delegations
+// @Tags Account
+// @ID get-unbonding-delegations-account
+// @Produce json
+// @Param address path string true "address to query unbonding delegations for"
+// @Success 200 {object} unbondingDelegationsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /account/{address}/unbondingdelegations [get]
+func GetUnbondingDelegationsByAddress(c *gin.Context) {
+	var res unbondingDelegationsResponse
+
+	d := deps.GetDeps(c)
+
+	address := c.Param("address")
+
+	unbondings, err := d.Database.UnbondingDelegations(address)
+
+	if err != nil {
+		e := deps.NewError(
+			"unbonding delegations",
+			fmt.Errorf("cannot retrieve unbonding delegations for address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query database unbonding delegations for addresses",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	for _, unbonding := range unbondings {
+		res.UnbondingDelegations = append(res.UnbondingDelegations, unbondingDelegation{
+			ValidatorAddress: unbonding.Validator,
+			Entries:          unbonding.Entries,
+			ChainName:        unbonding.ChainName,
 		})
 	}
 
