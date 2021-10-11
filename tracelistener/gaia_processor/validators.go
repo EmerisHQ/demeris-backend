@@ -11,9 +11,13 @@ import (
 	"go.uber.org/zap"
 )
 
+type validatorCacheEntry struct {
+	operator string
+}
 type validatorsProcessor struct {
-	l               *zap.SugaredLogger
-	validatorsCache map[string]models.ValidatorRow
+	l                     *zap.SugaredLogger
+	insertValidatorsCache map[validatorCacheEntry]models.ValidatorRow
+	deleteValidatorsCache map[validatorCacheEntry]models.ValidatorRow
 }
 
 func (*validatorsProcessor) TableSchema() string {
@@ -25,22 +29,38 @@ func (p *validatorsProcessor) ModuleName() string {
 }
 
 func (p *validatorsProcessor) FlushCache() []tracelistener.WritebackOp {
-	if len(p.validatorsCache) == 0 {
+
+	if len(p.insertValidatorsCache) == 0 && len(p.deleteValidatorsCache) == 0 {
 		return nil
 	}
 
-	l := make([]models.DatabaseEntrier, 0, len(p.validatorsCache))
+	insertValidators := make([]models.DatabaseEntrier, 0, len(p.insertValidatorsCache))
+	deleteValidators := make([]models.DatabaseEntrier, 0, len(p.deleteValidatorsCache))
 
-	for _, c := range p.validatorsCache {
-		l = append(l, c)
+	if len(p.insertValidatorsCache) != 0 {
+		for _, v := range p.insertValidatorsCache {
+			insertValidators = append(insertValidators, v)
+		}
 	}
 
-	p.validatorsCache = map[string]models.ValidatorRow{}
+	p.insertValidatorsCache = map[validatorCacheEntry]models.ValidatorRow{}
+
+	if len(p.deleteValidatorsCache) != 0 {
+		for _, v := range p.deleteValidatorsCache {
+			deleteValidators = append(deleteValidators, v)
+		}
+	}
+
+	p.deleteValidatorsCache = map[validatorCacheEntry]models.ValidatorRow{}
 
 	return []tracelistener.WritebackOp{
 		{
 			DatabaseExec: insertValidator,
-			Data:         l,
+			Data:         insertValidators,
+		},
+		{
+			DatabaseExec: deleteValidator,
+			Data:         deleteValidators,
 		},
 	}
 }
@@ -49,6 +69,23 @@ func (b *validatorsProcessor) OwnsKey(key []byte) bool {
 }
 
 func (b *validatorsProcessor) Process(data tracelistener.TraceOperation) error {
+
+	if data.Operation == tracelistener.DeleteOp.String() {
+		if len(data.Key) < 21 {
+			return nil
+		}
+
+		operatorAddress := hex.EncodeToString(data.Key[1:21])
+		b.l.Debugw("new validator delete", "operator address", operatorAddress)
+
+		b.deleteValidatorsCache[validatorCacheEntry{
+			operator: operatorAddress,
+		}] = models.ValidatorRow{
+			OperatorAddress: operatorAddress,
+		}
+
+		return nil
+	}
 
 	v := types.Validator{}
 
@@ -69,7 +106,9 @@ func (b *validatorsProcessor) Process(data tracelistener.TraceOperation) error {
 		"key", k,
 	)
 
-	b.validatorsCache[val] = models.ValidatorRow{
+	b.insertValidatorsCache[validatorCacheEntry{
+		operator: v.OperatorAddress,
+	}] = models.ValidatorRow{
 		OperatorAddress:      v.OperatorAddress,
 		ConsensusPubKeyType:  v.ConsensusPubkey.GetTypeUrl(),
 		ConsensusPubKeyValue: v.ConsensusPubkey.Value,

@@ -396,4 +396,12 @@ DO UPDATE SET
 	update_time = EXCLUDED.update_time,
     min_self_delegation = EXCLUDED.min_self_delegation
 `
+
+	deleteValidator = `
+	DELETE from tracelistener.validators 
+	WHERE 
+		chain_name = :chain_name
+		AND
+		operator_address = :operator_address
+`
 )

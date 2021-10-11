@@ -151,8 +151,9 @@ func processorByName(name string, logger *zap.SugaredLogger) (Module, error) {
 		}, nil
 	case (&validatorsProcessor{}).ModuleName():
 		return &validatorsProcessor{
-			l:               logger,
-			validatorsCache: map[string]models.ValidatorRow{},
+			l:                     logger,
+			insertValidatorsCache: map[validatorCacheEntry]models.ValidatorRow{},
+			deleteValidatorsCache: map[validatorCacheEntry]models.ValidatorRow{},
 		}, nil
 	}
 }
