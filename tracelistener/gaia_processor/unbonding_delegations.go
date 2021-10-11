@@ -114,7 +114,7 @@ func (b *unbondingDelegationsProcessor) Process(data tracelistener.TraceOperatio
 	b.l.Debugw("new unbondingDelegation write",
 		"operation", data.Operation,
 		"delegator", delegator,
-		"validator", "validator",
+		"validator", validator,
 		"entries", string(entries),
 		"height", data.BlockHeight,
 		"txHash", data.TxHash,
