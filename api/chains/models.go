@@ -75,3 +75,26 @@ type statusResponse struct {
 type numbersResponse struct {
 	Numbers models.AuthRow `json:"numbers"`
 }
+
+type validatorsResponse struct {
+	Validators []models.ValidatorRow `json:"validators"`
+}
+
+type inflationResponse struct {
+	Inflation string `json:"inflation"`
+}
+
+type paramsResponse struct {
+	Params struct {
+		MintDenom           string `json:"mint_denom"`
+		InflationRateChange string `json:"inflation_rate_change"`
+		InflationMax        string `json:"inflation_max"`
+		InflationMin        string `json:"inflation_min"`
+		GoalBonded          string `json:"goal_bonded"`
+		BlocksPerYear       string `json:"blocks_per_year"`
+	} `json:"params"`
+}
+
+type annualProvisionsResponse struct {
+	AnnualProvisions string `json:"annual_provisions"`
+}
