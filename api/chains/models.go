@@ -79,6 +79,7 @@ type numbersResponse struct {
 
 type validatorsResponse struct {
 	Validators []models.ValidatorRow `json:"validators"`
+}
 
 type inflationResponse struct {
 	Inflation string `json:"inflation"`
