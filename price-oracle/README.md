@@ -76,3 +76,10 @@ The same must be done for FIAT currencies on `POST /fiats`:
 	]
 }
 ```
+
+### Possible Problems
+If you have multiple copy of in-memory cockroach db, it can happen that when you run
+
+`testserver.NewTestServer()` it can stuck at `waiting for download of SOME TMP DIR`
+
+**Solution:** if this happens manually delete **ALL** instances of test server from your machine.
