@@ -31,6 +31,7 @@ var defaultProcessors = []string{
 	"ibc_channels",
 	"ibc_connections",
 	"ibc_denom_traces",
+	"validators",
 }
 
 type Processor struct {
@@ -154,6 +155,12 @@ func processorByName(name string, logger *zap.SugaredLogger) (Module, error) {
 		return &authProcessor{
 			l:           logger,
 			heightCache: map[authCacheEntry]models.AuthRow{},
+		}, nil
+	case (&validatorsProcessor{}).ModuleName():
+		return &validatorsProcessor{
+			l:                     logger,
+			insertValidatorsCache: map[validatorCacheEntry]models.ValidatorRow{},
+			deleteValidatorsCache: map[validatorCacheEntry]models.ValidatorRow{},
 		}, nil
 	}
 }
