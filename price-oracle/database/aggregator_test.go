@@ -29,10 +29,45 @@ func TestMain(m *testing.M) {
 func TestStartAggregate(t *testing.T) {
 	ctx, cancel, logger, cfg, tDown := setupAgg(t)
 	defer tDown()
-
-	database.StartAggregate(ctx, logger, cfg)
-	// Validate data updated on DB ..
 	defer cancel()
+
+	instance, err := database.New(cfg.DatabaseConnectionURL)
+	require.NoError(t, err)
+
+	tokenPrice := make(map[string]float64)
+	rows, err := instance.Query("SELECT * FROM oracle.tokens")
+	require.NoError(t, err)
+	for rows.Next() {
+		var tokenName string
+		var price float64
+		err := rows.Scan(&tokenName, &price)
+		require.NoError(t, err)
+		tokenPrice[tokenName] = price
+	}
+	err = rows.Close()
+	require.NoError(t, err)
+
+	require.Equal(t, tokenPrice["ATOMUSDT"], 10.0)
+	require.Equal(t, tokenPrice["LUNAUSDT"], 10.0)
+
+	go database.StartAggregate(ctx, logger, cfg)
+	// Validate data updated on DB ..
+	time.Sleep(5 * time.Second)
+
+	rows, err = instance.Query("SELECT * FROM oracle.tokens")
+	require.NoError(t, err)
+	for rows.Next() {
+		var tokenName string
+		var price float64
+		err := rows.Scan(&tokenName, &price)
+		require.NoError(t, err)
+		tokenPrice[tokenName] = price
+	}
+	err = rows.Close()
+	require.NoError(t, err)
+
+	require.Equal(t, tokenPrice["ATOMUSDT"], 15.0)
+	require.Equal(t, tokenPrice["LUNAUSDT"], 16.0)
 }
 
 func setupAgg(t *testing.T) (context.Context, func(), *zap.SugaredLogger, *config.Config, func()) {
@@ -101,7 +136,7 @@ func setupAgg(t *testing.T) (context.Context, func(), *zap.SugaredLogger, *confi
 	require.NoError(t, err)
 	require.Equal(t, 1, len(cc))
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	return ctx, cancel, logger, cfg, func() { testServer.Stop() }
 }
 

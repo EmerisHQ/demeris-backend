@@ -1,20 +1,20 @@
 CREATE DATABASE oracle;
 
 CREATE TABLE oracle.binance (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
-INSERT INTO oracle.binance VALUES ('ATOMUSDT','10','9351700038');
-INSERT INTO oracle.binance VALUES ('LUNAUSDT','10','9351700038');
+INSERT INTO oracle.binance VALUES ('ATOMUSDT','5','9351700038');
+INSERT INTO oracle.binance VALUES ('LUNAUSDT','20','9351700038');
 INSERT INTO oracle.binance VALUES ('ETHUSDT','10','9351700038');
 SELECT * FROM oracle.binance;
 
 CREATE TABLE oracle.coinmarketcap (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
 INSERT INTO oracle.coinmarketcap VALUES ('ATOMUSDT','10','1351700038');
-INSERT INTO oracle.coinmarketcap VALUES ('LUNAUSDT','10','1351700038');
+INSERT INTO oracle.coinmarketcap VALUES ('LUNAUSDT','5','1351700038');
 INSERT INTO oracle.coinmarketcap VALUES ('ETHUSDT','10','1351700038');
 SELECT * FROM oracle.coinmarketcap;
 
 CREATE TABLE oracle.coingecko (symbol STRING PRIMARY KEY, price FLOAT, updatedat INT);
-INSERT INTO oracle.coingecko VALUES ('ATOMUSDT','10','9351700038');
-INSERT INTO oracle.coingecko VALUES ('LUNAUSDT','10','9351700038');
+INSERT INTO oracle.coingecko VALUES ('ATOMUSDT','25','9351700038');
+INSERT INTO oracle.coingecko VALUES ('LUNAUSDT','12','9351700038');
 INSERT INTO oracle.coingecko VALUES ('ETHUSDT','10','9351700038');
 SELECT * FROM oracle.coingecko;
 
