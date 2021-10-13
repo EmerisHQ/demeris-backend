@@ -28,7 +28,16 @@ const (
 	FixerURL         = "https://data.fixer.io/api/latest"
 )
 
+type Api struct {
+	Client *http.Client
+}
+
 func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config) {
+	api := Api{
+		Client: &http.Client{
+			Timeout: 2 * time.Second,
+		},
+	}
 
 	d, err := New(cfg.DatabaseConnectionURL)
 	if err != nil {
@@ -38,10 +47,10 @@ func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *conf
 
 	var wg sync.WaitGroup
 	for _, subscriber := range []func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error{
-		SubscriptionBinance,
+		api.SubscriptionBinance,
 		//SubscriptionCoinmarketcap,
-		SubscriptionCoingecko,
-		SubscriptionFixer,
+		api.SubscriptionCoingecko,
+		api.SubscriptionFixer,
 		//...
 	} {
 		subscriber := subscriber
@@ -77,10 +86,8 @@ func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLog
 	}
 }
 
-func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
-	client := http.Client{
-		Timeout: 2 * time.Second,
-	}
+func (api *Api) SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
+	client := api.Client
 	Whitelisttokens, err := CnsTokenQuery(db)
 	if err != nil {
 		return fmt.Errorf("SubscriptionBinance CnsTokenQuery: %w", err)
@@ -245,7 +252,7 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 }
 */
 
-func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
+func (api *Api) SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
 	Whitelisttokens, err := CnsPriceIdQuery(db)
 	if err != nil {
 		return fmt.Errorf("SubscriptionCoingecko CnsPriceIdQuery: %w", err)
@@ -254,7 +261,7 @@ func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.Sugared
 		return fmt.Errorf("SubscriptionCoingecko CnsPriceIdQuery: The token does not exist.")
 	}
 
-	cg := gecko.NewClient(nil)
+	cg := gecko.NewClient(api.Client)
 	vsCurrency := types.USDBasecurrency
 	perPage := 1
 	page := 1
@@ -301,10 +308,9 @@ func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.Sugared
 	}
 	return nil
 }
-func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
-	client := &http.Client{
-		Timeout: 2 * time.Second,
-	}
+
+func (api *Api) SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
+	client := api.Client
 	req, err := http.NewRequest("GET", FixerURL, nil)
 	if err != nil {
 		return fmt.Errorf("SubscriptionFixer fetch Fixer: %w", err)
