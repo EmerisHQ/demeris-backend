@@ -36,10 +36,18 @@ func TestStartAggregate(t *testing.T) {
 	require.Equal(t, lunaPrice, 10.0)
 
 	go database.StartAggregate(ctx, logger, cfg)
-	// Validate data updated on DB ..
+
+	// TODO: Comeback here again once the aggregator is refactored
+	// and sending heart bit as pulse. Use that heart bit to determine
+	// that aggregation has done one iteration.
+	//
+	// We can also try to capture the log output. But don't see how we
+	// can achieve that with small refactoring. So, I am sleeping for
+	// 5 seconds. It's nondeterministic, but good enough for now!
 	time.Sleep(5 * time.Second)
 
 	atomPrice, lunaPrice = getTokenPrice(t, cfg.DatabaseConnectionURL)
+	// Validate data updated on DB ..
 	require.Equal(t, atomPrice, 15.0)
 	require.Equal(t, lunaPrice, 16.0)
 }
