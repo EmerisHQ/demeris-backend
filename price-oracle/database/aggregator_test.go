@@ -31,43 +31,17 @@ func TestStartAggregate(t *testing.T) {
 	defer tDown()
 	defer cancel()
 
-	instance, err := database.New(cfg.DatabaseConnectionURL)
-	require.NoError(t, err)
-
-	tokenPrice := make(map[string]float64)
-	rows, err := instance.Query("SELECT * FROM oracle.tokens")
-	require.NoError(t, err)
-	for rows.Next() {
-		var tokenName string
-		var price float64
-		err := rows.Scan(&tokenName, &price)
-		require.NoError(t, err)
-		tokenPrice[tokenName] = price
-	}
-	err = rows.Close()
-	require.NoError(t, err)
-
-	require.Equal(t, tokenPrice["ATOMUSDT"], 10.0)
-	require.Equal(t, tokenPrice["LUNAUSDT"], 10.0)
+	atomPrice, lunaPrice := getTokenPrice(t, cfg.DatabaseConnectionURL)
+	require.Equal(t, atomPrice, 10.0)
+	require.Equal(t, lunaPrice, 10.0)
 
 	go database.StartAggregate(ctx, logger, cfg)
 	// Validate data updated on DB ..
 	time.Sleep(5 * time.Second)
 
-	rows, err = instance.Query("SELECT * FROM oracle.tokens")
-	require.NoError(t, err)
-	for rows.Next() {
-		var tokenName string
-		var price float64
-		err := rows.Scan(&tokenName, &price)
-		require.NoError(t, err)
-		tokenPrice[tokenName] = price
-	}
-	err = rows.Close()
-	require.NoError(t, err)
-
-	require.Equal(t, tokenPrice["ATOMUSDT"], 15.0)
-	require.Equal(t, tokenPrice["LUNAUSDT"], 16.0)
+	atomPrice, lunaPrice = getTokenPrice(t, cfg.DatabaseConnectionURL)
+	require.Equal(t, atomPrice, 15.0)
+	require.Equal(t, lunaPrice, 16.0)
 }
 
 func setupAgg(t *testing.T) (context.Context, func(), *zap.SugaredLogger, *config.Config, func()) {
@@ -138,6 +112,25 @@ func setupAgg(t *testing.T) (context.Context, func(), *zap.SugaredLogger, *confi
 
 	ctx, cancel := context.WithCancel(context.Background())
 	return ctx, cancel, logger, cfg, func() { testServer.Stop() }
+}
+
+func getTokenPrice(t *testing.T, connStr string) (float64, float64) {
+	instance, err := database.New(connStr)
+	require.NoError(t, err)
+
+	tokenPrice := make(map[string]float64)
+	rows, err := instance.Query("SELECT * FROM oracle.tokens")
+	require.NoError(t, err)
+	defer func() { _ = rows.Close() }()
+
+	for rows.Next() {
+		var tokenName string
+		var price float64
+		err := rows.Scan(&tokenName, &price)
+		require.NoError(t, err)
+		tokenPrice[tokenName] = price
+	}
+	return tokenPrice["ATOMUSDT"], tokenPrice["LUNAUSDT"]
 }
 
 func readLinesFromFile(t *testing.T, s string) []string {
