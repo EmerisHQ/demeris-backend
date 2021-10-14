@@ -15,7 +15,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
-	"time"
 )
 
 func TestStartSubscription(t *testing.T) {
@@ -44,18 +43,9 @@ func TestStartSubscription(t *testing.T) {
 		Instance: instance,
 	}
 
-	go func() {
-		err = api.SubscriptionBinance(ctx, logger, cfg)
-		require.NoError(t, err)
-	}()
-	// TODO: Comeback here again once the aggregator is refactored
-	// and sending heart bit as pulse. Use that heart bit to determine
-	// that aggregation has done one iteration.
-	//
-	// We can also try to capture the log output. But don't see how we
-	// can achieve that with small refactoring. So, I am sleeping for
-	// 10 seconds. It's nondeterministic, but good enough for now!
-	time.Sleep(10 * time.Second)
+	err = api.SubscriptionBinance(ctx, logger, cfg)
+	require.NoError(t, err)
+
 	price := getTokenPrices(t, cfg.DatabaseConnectionURL, "oracle.binance", []string{"ATOMUSDT"})
 	require.Equal(t, price["ATOMUSDT"], -50.0)
 }
