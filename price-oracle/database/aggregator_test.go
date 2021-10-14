@@ -31,7 +31,7 @@ func TestStartAggregate(t *testing.T) {
 	defer tDown()
 	defer cancel()
 
-	atomPrice, lunaPrice := getTokenPrice(t, cfg.DatabaseConnectionURL)
+	atomPrice, lunaPrice := getAggTokenPrice(t, cfg.DatabaseConnectionURL)
 	require.Equal(t, atomPrice, 10.0)
 	require.Equal(t, lunaPrice, 10.0)
 
@@ -46,7 +46,7 @@ func TestStartAggregate(t *testing.T) {
 	// 5 seconds. It's nondeterministic, but good enough for now!
 	time.Sleep(5 * time.Second)
 
-	atomPrice, lunaPrice = getTokenPrice(t, cfg.DatabaseConnectionURL)
+	atomPrice, lunaPrice = getAggTokenPrice(t, cfg.DatabaseConnectionURL)
 	// Validate data updated on DB ..
 	require.Equal(t, atomPrice, 15.0)
 	require.Equal(t, lunaPrice, 16.0)
@@ -79,6 +79,12 @@ func setupAgg(t *testing.T) (context.Context, func(), *zap.SugaredLogger, *confi
 		Debug:   cfg.Debug,
 	})
 
+	insertToken(t, connStr)
+	ctx, cancel := context.WithCancel(context.Background())
+	return ctx, cancel, logger, cfg, func() { testServer.Stop() }
+}
+
+func insertToken(t *testing.T, connStr string) {
 	chain := models.Chain{
 		ChainName:        "cosmos-hub",
 		DemerisAddresses: []string{"addr1"},
@@ -117,12 +123,9 @@ func setupAgg(t *testing.T) (context.Context, func(), *zap.SugaredLogger, *confi
 	cc, err := cnsInstanceDB.Chains()
 	require.NoError(t, err)
 	require.Equal(t, 1, len(cc))
-
-	ctx, cancel := context.WithCancel(context.Background())
-	return ctx, cancel, logger, cfg, func() { testServer.Stop() }
 }
 
-func getTokenPrice(t *testing.T, connStr string) (float64, float64) {
+func getAggTokenPrice(t *testing.T, connStr string) (float64, float64) {
 	instance, err := database.New(connStr)
 	require.NoError(t, err)
 
