@@ -9,9 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
-	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	gaia "github.com/cosmos/gaia/v6/app"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
