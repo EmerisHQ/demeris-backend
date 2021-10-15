@@ -171,6 +171,7 @@ func (w *Watcher) readChannel() {
 			return
 		case <-w.watchdog.timeout:
 			w.ErrorChannel <- fmt.Errorf("watchdog ticked, reconnect to websocket")
+			return
 		default:
 			select {
 			case data := <-w.client.ResponsesCh:
@@ -194,6 +195,9 @@ func (w *Watcher) readChannel() {
 				go func() {
 					w.DataChannel <- e
 				}()
+			case <-time.After(15 * time.Second):
+				w.ErrorChannel <- fmt.Errorf("tendermint websocket hang, triggering reconnection")
+				return
 			}
 		}
 	}
@@ -209,7 +213,7 @@ func (w *Watcher) checkError() {
 			case err := <-w.ErrorChannel:
 				if err != nil {
 					storeErr := w.store.SetWithExpiry(w.Name, "false", 0)
-					if err != nil {
+					if storeErr != nil {
 						w.l.Errorw("unable to set chain name to false", "store error", storeErr,
 							"error", err)
 					}
@@ -301,7 +305,7 @@ func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 	chainName := w.Name
 	eventTx := data.Data.(types.EventDataTx)
 	height := eventTx.Height
-	key := fmt.Sprintf("%s-%s", chainName, txHash)
+	key := fmt.Sprintf("%s/%s", chainName, txHash)
 
 	w.l.Debugw("got message to handle", "chain name", chainName, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
 		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)

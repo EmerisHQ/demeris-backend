@@ -253,3 +253,99 @@ spec:
       volumeMounts:
         - mountPath: /home/nonroot/data
           name: data
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: starname-tracelistener-bulk-import
+  namespace: emeris
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: starname-0
+  containers:
+    - name: tracelistener
+      image: gcr.io/tendermint-dev/emeris-tracelistener:master
+      imagePullPolicy: Always
+      command: ["tracelistener"]
+      args: ["-import", "/home/nonroot/data/application.db"]
+      env:
+        - name: TRACELISTENER_DATABASECONNECTIONURL
+          value: postgres://root@cockroachdb-public:26257?sslmode=disable
+        - name: TRACELISTENER_TYPE
+          value: gaia
+        - name: TRACELISTENER_CHAINNAME
+          value: starname
+      volumeMounts:
+        - mountPath: /home/nonroot/data
+          name: data
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: microtick-tracelistener-bulk-import
+  namespace: emeris
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: microtick-0
+  containers:
+    - name: tracelistener
+      image: gcr.io/tendermint-dev/emeris-tracelistener:master
+      imagePullPolicy: Always
+      command: ["tracelistener"]
+      args: ["-import", "/home/nonroot/data/application.db"]
+      env:
+        - name: TRACELISTENER_DATABASECONNECTIONURL
+          value: postgres://root@cockroachdb-public:26257?sslmode=disable
+        - name: TRACELISTENER_TYPE
+          value: gaia
+        - name: TRACELISTENER_CHAINNAME
+          value: microtick
+      volumeMounts:
+        - mountPath: /home/nonroot/data
+          name: data
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ixo-tracelistener-bulk-import
+  namespace: emeris
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: ixo-0
+  containers:
+    - name: tracelistener
+      image: gcr.io/tendermint-dev/emeris-tracelistener:master
+      imagePullPolicy: Always
+      command: ["tracelistener"]
+      args: ["-import", "/home/nonroot/data/application.db"]
+      env:
+        - name: TRACELISTENER_DATABASECONNECTIONURL
+          value: postgres://root@cockroachdb-public:26257?sslmode=disable
+        - name: TRACELISTENER_TYPE
+          value: gaia
+        - name: TRACELISTENER_CHAINNAME
+          value: ixo
+      volumeMounts:
+        - mountPath: /home/nonroot/data
+          name: data
