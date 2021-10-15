@@ -24,20 +24,27 @@ import (
 func TestAllPricesHandler(t *testing.T) {
 	router, ctx, w, tDown := setup(t)
 	defer tDown()
-	wantFiats := []types.FiatPriceResponse{
-		{Symbol: "USDCHF", Price: 10},
-		{Symbol: "USDEUR", Price: 20},
-		{Symbol: "USDKRW", Price: 5},
-	}
-	wantToken := []types.TokenPriceResponse{
-		{Price: 10, Symbol: "ATOMUSDT", Supply: 113563929433.0},
-		{Price: 10, Symbol: "LUNAUSDT", Supply: 113563929433.0},
-	}
+
 	router.allPricesHandler(ctx)
-	gotFiats := getFiatsFromResponseWriter(t, w)
-	require.Equal(t, wantFiats, gotFiats)
-	gotToken := getCryptoFromResponseWriter(t, w)
-	require.Equal(t, wantToken, gotToken)
+
+	var got struct {
+		Data types.AllPriceResponse `json:"data"`
+	}
+	err := json.Unmarshal(w.Body.Bytes(), &got)
+	require.NoError(t, err)
+
+	wantData := types.AllPriceResponse{
+		Fiats: []types.FiatPriceResponse{
+			{Symbol: "USDCHF", Price: 10},
+			{Symbol: "USDEUR", Price: 20},
+			{Symbol: "USDKRW", Price: 5},
+		},
+		Tokens: []types.TokenPriceResponse{
+			{Price: 10, Symbol: "ATOMUSDT", Supply: 113563929433.0},
+			{Price: 10, Symbol: "LUNAUSDT", Supply: 113563929433.0},
+		},
+	}
+	require.Equal(t, got.Data, wantData)
 }
 
 func setup(t *testing.T) (router, *gin.Context, *httptest.ResponseRecorder, func()) {
@@ -134,41 +141,6 @@ func insertToken(t *testing.T, connStr string) {
 	cc, err := cnsInstanceDB.Chains()
 	require.NoError(t, err)
 	require.Equal(t, 1, len(cc))
-}
-
-func getFiatsFromResponseWriter(t *testing.T, w *httptest.ResponseRecorder) []types.FiatPriceResponse {
-	var h gin.H
-	err := json.Unmarshal(w.Body.Bytes(), &h)
-	require.NoError(t, err)
-
-	x := h["data"].(map[string]interface{})
-	fiats := make([]types.FiatPriceResponse, 0)
-
-	for _, ff := range x["Fiats"].([]interface{}) {
-		fiats = append(fiats, types.FiatPriceResponse{
-			Price:  ff.(map[string]interface{})["Price"].(float64),
-			Symbol: ff.(map[string]interface{})["Symbol"].(string),
-		})
-	}
-	return fiats
-}
-
-func getCryptoFromResponseWriter(t *testing.T, w *httptest.ResponseRecorder) []types.TokenPriceResponse {
-	var h gin.H
-	err := json.Unmarshal(w.Body.Bytes(), &h)
-	require.NoError(t, err)
-
-	x := h["data"].(map[string]interface{})
-	tokens := make([]types.TokenPriceResponse, 0)
-
-	for _, ff := range x["Tokens"].([]interface{}) {
-		tokens = append(tokens, types.TokenPriceResponse{
-			Price:  ff.(map[string]interface{})["Price"].(float64),
-			Supply: ff.(map[string]interface{})["Supply"].(float64),
-			Symbol: ff.(map[string]interface{})["Symbol"].(string),
-		})
-	}
-	return tokens
 }
 
 func readLinesFromFile(t *testing.T, s string) []string {
