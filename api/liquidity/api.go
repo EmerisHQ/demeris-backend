@@ -14,7 +14,7 @@ const (
 )
 
 func Register(router *gin.Engine) {
-	group := router.Group("liquidity")
+	group := router.Group("/v1/cached/cosmos/liquidity/v1beta1")
 
 	group.GET("/swapfees", getSwapFee)
 	group.GET("/pools", GetPools)
@@ -25,7 +25,7 @@ func Register(router *gin.Engine) {
 // @Summary Gets pools info.
 // @Tags pools
 // @ID pools
-// @Description Gets info of all pools.
+// @Description Gets info of all pools.`10
 // @Produce json
 // @Success 200 {object} types.Pools
 // @Failure 500,403 {object} deps.Error
