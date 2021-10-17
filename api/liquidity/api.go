@@ -19,6 +19,7 @@ func Register(router *gin.Engine) {
 	group.GET("/swapfees", getSwapFee)
 	group.GET("/pools", GetPools)
 	group.GET("/params", GetParams)
+	group.GET("/supply", getSupply)
 }
 
 // GetPools returns the of all pools.
@@ -127,4 +128,38 @@ func getSwapFee(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, SwapFeesResponse{Fees: fees})
+}
+
+// getSupply returns the total supply.
+// @Summary Gets total supply of cosmos-hub
+// @Tags supply
+// @ID supply
+// @Description Gets total supply of cosmos hub.
+// @Produce json
+// @Success 200 {object} types.Coins
+// @Failure 500,403 {object} deps.Error
+// @Router / [get]
+func getSupply(c *gin.Context) {
+	d := deps.GetDeps(c)
+
+	res, err := d.Store.GetParams("supply")
+	if err != nil {
+		e := deps.NewError(
+			"params",
+			fmt.Errorf("cannot retrieve params"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve params",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
 }

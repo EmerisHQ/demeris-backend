@@ -14,8 +14,9 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/allinbits/demeris-backend/rpcwatcher/database"
-
 	"github.com/allinbits/demeris-backend/utils/store"
+
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -687,6 +688,23 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 	err = w.store.SetWithExpiry("params", string(bz), 0)
 	if err != nil {
 		w.l.Errorw("cannot set liquidity params", "error", err, "height", newHeight)
+	}
+
+	supplyQuery := banktypes.NewQueryClient(grpcConn)
+	supplyRes, err := supplyQuery.TotalSupply(context.Background(), &banktypes.QueryTotalSupplyRequest{})
+	if err != nil {
+		w.l.Errorw("cannot get liquidity pools in blocks", "error", err, "height", newHeight)
+	}
+
+	bz, err = w.store.Cdc.MarshalJSON(supplyRes)
+	if err != nil {
+		w.l.Errorw("cannot unmarshal total supply", "error", err, "height", newHeight)
+	}
+
+	// caching total supply
+	err = w.store.SetWithExpiry("supply", string(bz), 0)
+	if err != nil {
+		w.l.Errorw("cannot set total supply", "error", err, "height", newHeight)
 	}
 
 	return
