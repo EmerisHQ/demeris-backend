@@ -3,7 +3,6 @@ package chains
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -279,20 +278,16 @@ func VerifyTrace(c *gin.Context) {
 
 	hash = strings.ToLower(hash)
 
+	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
+
 	denomTrace, err := d.Database.DenomTrace(chain, hash)
 
 	if err != nil {
 
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("cannot query token hash %v on chain %v", hash, chain),
-			http.StatusBadRequest,
-		)
+		cause := fmt.Sprintf("token hash %v not found on chain %v", hash, chain)
 
-		d.WriteError(c, e,
-			"cannot query database for denom",
-			"id",
-			e.ID,
+		d.LogError(
+			cause,
 			"hash",
 			hash,
 			"chain",
@@ -301,61 +296,60 @@ func VerifyTrace(c *gin.Context) {
 			err,
 		)
 
+		res.VerifiedTrace.Verified = false
+		res.VerifiedTrace.Cause = cause
+
+		c.JSON(http.StatusOK, res)
+
 		return
 
 	}
 
-	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
 	res.VerifiedTrace.Path = denomTrace.Path
 	res.VerifiedTrace.BaseDenom = denomTrace.BaseDenom
 
 	pathsElements, err := paths(res.VerifiedTrace.Path)
 
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
-			http.StatusBadRequest,
-		)
+		cause := fmt.Sprintf("unsupported path %s", res.VerifiedTrace.Path)
 
-		d.WriteError(c, e,
+		d.LogError(
 			"invalid denom",
-			"id",
-			e.ID,
 			"hash",
 			hash,
 			"path",
 			res.VerifiedTrace.Path,
 			"err",
-			err,
+			cause,
 		)
+
+		res.VerifiedTrace.Verified = false
+		res.VerifiedTrace.Cause = cause
+
+		c.JSON(http.StatusOK, res)
 
 		return
 	}
 
 	chainIDsMap, err := d.Database.ChainIDs()
 	if err != nil {
-		err = fmt.Errorf("cannot query list of chain ids, %w", err)
+		cause := fmt.Sprintf("cannot query list of chain ids, %s", err)
 
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("cannot query list of chain ids"),
-			http.StatusBadRequest,
-		)
-
-		d.WriteError(c, e,
+		d.LogError(
 			"cannot query list of chain ids",
-			"id",
-			e.ID,
 			"hash",
 			hash,
 			"path",
 			res.VerifiedTrace.Path,
 			"err",
-			err,
+			cause,
 		)
+
+		res.VerifiedTrace.Verified = false
+		res.VerifiedTrace.Cause = cause
+
+		c.JSON(http.StatusOK, res)
 
 		return
 	}
@@ -364,25 +358,22 @@ func VerifyTrace(c *gin.Context) {
 	for _, element := range pathsElements {
 		// otherwise, check that it has a transfer prefix
 		if !strings.HasPrefix(element, "transfer/") {
-			err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
+			cause := fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path)
 
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
-				http.StatusBadRequest,
-			)
-
-			d.WriteError(c, e,
+			d.LogError(
 				"invalid denom",
-				"id",
-				e.ID,
 				"hash",
 				hash,
 				"path",
 				res.VerifiedTrace.Path,
 				"err",
-				err,
+				cause,
 			)
+
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = cause
+
+			c.JSON(http.StatusOK, res)
 
 			return
 		}
@@ -394,16 +385,9 @@ func VerifyTrace(c *gin.Context) {
 
 		chainID, ok := chainIDsMap[nextChain]
 		if !ok {
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("cannot check path element during path resolution"),
-				http.StatusBadRequest,
-			)
 
-			d.WriteError(c, e,
+			d.LogError(
 				"cannot check path element during path resolution",
-				"id",
-				e.ID,
 				"hash",
 				hash,
 				"path",
@@ -412,21 +396,21 @@ func VerifyTrace(c *gin.Context) {
 				fmt.Errorf("cannot find %s in chainIDs map", nextChain),
 			)
 
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = "cannot check path element during path resolution"
+
+			c.JSON(http.StatusOK, res)
+
 			return
 		}
 		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel, chainID)
 
 		if err != nil {
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("failed querying for %s", hash),
-				http.StatusBadRequest,
-			)
 
-			d.WriteError(c, e,
-				"invalid number of query responses",
-				"id",
-				e.ID,
+			cause := fmt.Sprintf("no matching channels found for %s -> %s -> %s", chainID, channel, nextChain)
+
+			d.LogError(
+				cause,
 				"hash",
 				hash,
 				"path",
@@ -436,6 +420,11 @@ func VerifyTrace(c *gin.Context) {
 				"err",
 				err,
 			)
+
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = cause
+
+			c.JSON(http.StatusOK, res)
 
 			return
 		}
@@ -452,16 +441,9 @@ func VerifyTrace(c *gin.Context) {
 
 	nextChainData, err := d.Database.Chain(nextChain)
 	if err != nil {
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("cannot query chain %s", nextChain),
-			http.StatusBadRequest,
-		)
 
-		d.WriteError(c, e,
+		d.LogError(
 			"cannot query chain",
-			"id",
-			e.ID,
 			"hash",
 			hash,
 			"path",
