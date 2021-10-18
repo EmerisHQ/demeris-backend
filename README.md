@@ -25,6 +25,8 @@ The Emeris backend can be summarised as *a multi-blockchain indexer*.
 * [trace-listener](https://github.com/allinbits/tracelistener/)
 * [ticket-watcher](./cmd/ticket-watcher)
 * [sdk-service](https://github.com/allinbits/sdk-service-meta)
+* [models](https://github.com/allinbits/demeris-backend-models) (shared library)
+* [utils](./utils) (shared library)
 
 ## Generating API documentation
 
