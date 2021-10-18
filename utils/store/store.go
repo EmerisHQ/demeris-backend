@@ -10,6 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	gaia "github.com/cosmos/gaia/v5/app"
 	"github.com/go-redis/redis/v8"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
@@ -355,9 +356,9 @@ func (s *Store) GetUserTickets(user string) (map[string][]string, error) {
 	return res, nil
 }
 
-func (s *Store) GetPools(key string) (liquiditytypes.Pools, error) {
+func (s *Store) GetPools() (liquiditytypes.Pools, error) {
 	var res liquiditytypes.QueryLiquidityPoolsResponse
-	bz, err := s.Client.Get(context.Background(), key).Bytes()
+	bz, err := s.Client.Get(context.Background(), "pools").Bytes()
 	if err != nil {
 		return liquiditytypes.Pools{}, err
 	}
@@ -371,9 +372,9 @@ func (s *Store) GetPools(key string) (liquiditytypes.Pools, error) {
 	return res.GetPools(), nil
 }
 
-func (s *Store) GetParams(key string) (liquiditytypes.Params, error) {
+func (s *Store) GetParams() (liquiditytypes.Params, error) {
 	var res liquiditytypes.QueryParamsResponse
-	bz, err := s.Client.Get(context.Background(), key).Bytes()
+	bz, err := s.Client.Get(context.Background(), "params").Bytes()
 	if err != nil {
 		return liquiditytypes.Params{}, err
 	}
@@ -384,6 +385,21 @@ func (s *Store) GetParams(key string) (liquiditytypes.Params, error) {
 	}
 
 	return res.GetParams(), nil
+}
+
+func (s *Store) GetSupply() (sdk.Coins, error) {
+	var res banktypes.QueryTotalSupplyResponse
+	bz, err := s.Client.Get(context.Background(), "supply").Bytes()
+	if err != nil {
+		return sdk.Coins{}, err
+	}
+
+	err = s.Cdc.UnmarshalJSON(bz, &res)
+	if err != nil {
+		return sdk.Coins{}, err
+	}
+
+	return res.GetSupply(), nil
 }
 
 func (s *Store) Delete(key string) error {

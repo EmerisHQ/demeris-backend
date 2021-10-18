@@ -14,7 +14,7 @@ const (
 )
 
 func Register(router *gin.Engine) {
-	group := router.Group("/v1/cached/cosmos/liquidity/v1beta1")
+	group := router.Group("/cached/cosmos/v1beta1")
 
 	group.GET("/swapfees", getSwapFee)
 	group.GET("/pools", GetPools)
@@ -34,7 +34,7 @@ func Register(router *gin.Engine) {
 func GetPools(c *gin.Context) {
 	d := deps.GetDeps(c)
 
-	res, err := d.Store.GetPools("pools")
+	res, err := d.Store.GetPools()
 	if err != nil {
 		e := deps.NewError(
 			"pools",
@@ -68,7 +68,7 @@ func GetPools(c *gin.Context) {
 func GetParams(c *gin.Context) {
 	d := deps.GetDeps(c)
 
-	res, err := d.Store.GetParams("params")
+	res, err := d.Store.GetParams()
 	if err != nil {
 		e := deps.NewError(
 			"params",
@@ -142,16 +142,16 @@ func getSwapFee(c *gin.Context) {
 func getSupply(c *gin.Context) {
 	d := deps.GetDeps(c)
 
-	res, err := d.Store.GetParams("supply")
+	res, err := d.Store.GetSupply()
 	if err != nil {
 		e := deps.NewError(
-			"params",
-			fmt.Errorf("cannot retrieve params"),
+			"supply",
+			fmt.Errorf("cannot retrieve total supply"),
 			http.StatusBadRequest,
 		)
 
 		d.WriteError(c, e,
-			"cannot retrieve params",
+			"cannot retrieve total supply",
 			"id",
 			e.ID,
 			"error",

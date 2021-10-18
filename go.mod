@@ -29,6 +29,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/gravity-devs/liquidity v1.2.9
 	github.com/iamolegga/enviper v1.2.1
+	github.com/jackc/pgconn v1.8.0
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jmoiron/sqlx v1.3.3
 	github.com/leodido/go-urn v1.2.1 // indirect
