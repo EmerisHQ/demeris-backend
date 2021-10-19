@@ -14,9 +14,9 @@ const (
 )
 
 func Register(router *gin.Engine) {
-	group := router.Group("/liquidity")
+	group := router.Group("/pool")
 
-	group.GET("/:pooliD/swapfees", getSwapFee)
+	group.GET("/:poolId/swapfees", getSwapFee)
 }
 
 // getSwapFee returns the swap fee of past 1 hour n.
