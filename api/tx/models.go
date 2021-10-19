@@ -5,6 +5,7 @@ import (
 )
 
 type TxRequest struct {
+	Owner   string `json:"owner"`
 	TxBytes []byte `json:"tx_bytes"`
 }
 

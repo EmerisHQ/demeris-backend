@@ -1,4 +1,4 @@
-FROM node:14 as builder
+FROM node:14.17.4 as builder
 
 WORKDIR /usr/src/app
 

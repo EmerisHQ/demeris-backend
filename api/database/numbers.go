@@ -18,6 +18,20 @@ func (d *Database) Numbers(address string) ([]models.AuthRow, error) {
 	return numbers, d.dbi.DB.Select(&numbers, q, args...)
 }
 
+func (d *Database) Number(address, chainName string) (models.AuthRow, error) {
+	var numbers []models.AuthRow
+
+	q := "SELECT * FROM tracelistener.auth WHERE address=? and chain_name=?;"
+
+	q = d.dbi.DB.Rebind(q)
+
+	if err := d.dbi.DB.Select(&numbers, q, address, chainName); err != nil {
+		return models.AuthRow{}, err
+	}
+
+	return numbers[0], nil
+}
+
 type ChainName struct {
 	ChainName     string `db:"chain_name"`
 	AccountPrefix string `db:"account_prefix"`

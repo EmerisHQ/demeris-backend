@@ -9,17 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
-	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	gaia "github.com/cosmos/gaia/v5/app"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/models"
+	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
@@ -38,7 +34,7 @@ func GetChains(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	chains, err := d.Database.Chains()
+	chains, err := d.Database.SimpleChains()
 
 	if err != nil {
 		e := deps.NewError(
@@ -541,7 +537,6 @@ func GetChainStatus(c *gin.Context) {
 
 		d.WriteError(c, e,
 			"cannot retrieve chain last block time",
-			"cannot retrieve chain last block time",
 			"id",
 			e.ID,
 			"name",
@@ -784,8 +779,8 @@ func GetNumbersByAddress(c *gin.Context) {
 
 		return
 	}
+	number, err := d.Database.Number(address, chainName)
 
-	resp, err := fetchNumbers(chainInfo, address)
 	if err != nil {
 		e := deps.NewError(
 			"numbers",
@@ -794,72 +789,53 @@ func GetNumbersByAddress(c *gin.Context) {
 		)
 
 		d.WriteError(c, e,
-			"cannot query nodes auth for address",
+			"cannot query database auth for address",
 			"id",
 			e.ID,
 			"address",
 			address,
 			"error",
 			err,
-			"chain",
-			chainInfo,
 		)
 
 		return
 	}
 
-	c.JSON(http.StatusOK, numbersResponse{Numbers: resp})
+	addr, err := getAddress(chainInfo, address)
+	if err != nil {
+		e := deps.NewError(
+			"numbers",
+			fmt.Errorf("cannot convert address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot encode address to bech32",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+		)
+
+		return
+	}
+	number.Address = addr
+
+	c.JSON(http.StatusOK, numbersResponse{Numbers: number})
 }
 
-func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
+func getAddress(chain models.Chain, account string) (string, error) {
 	accBytes, err := hex.DecodeString(account)
 	if err != nil {
-		return models.AuthRow{}, fmt.Errorf("cannot decode hex bytes from account string")
+		return "", fmt.Errorf("cannot decode hex bytes from account string")
 	}
-
-	cdc, _ := simapp.MakeCodecs()
 
 	addr, err := bech322.ConvertAndEncode(chain.NodeInfo.Bech32Config.PrefixAccount, accBytes)
 	if err != nil {
-		return models.AuthRow{}, fmt.Errorf("cannot encode bytes to %s acc address, %w", chain.ChainName, err)
+		return "", nil
 	}
 
-	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chain.ChainName, grpcPort), grpc.WithInsecure())
-	if err != nil {
-		return models.AuthRow{}, err
-	}
-
-	authQuery := types.NewQueryClient(grpcConn)
-	resp, err := authQuery.Account(context.Background(), &types.QueryAccountRequest{
-		Address: addr,
-	})
-
-	if status.Code(err) == codes.NotFound {
-		return models.AuthRow{}, nil
-	}
-
-	if err != nil {
-		if strings.Contains(strings.ToLower(err.Error()), "not found") {
-			return models.AuthRow{}, nil
-		}
-
-		return models.AuthRow{}, fmt.Errorf("cannot query account, %w", err)
-	}
-
-	// get a baseAccount
-	var accountI types.AccountI
-	if err := cdc.UnpackAny(resp.Account, &accountI); err != nil {
-		return models.AuthRow{}, err
-	}
-
-	result := models.AuthRow{
-		TracelistenerDatabaseRow: models.TracelistenerDatabaseRow{
-			ChainName: chain.ChainName,
-		},
-		Address:        addr,
-		SequenceNumber: accountI.GetSequence(),
-		AccountNumber:  accountI.GetAccountNumber(),
-	}
-
-	return result, nil
+	return addr, nil
 }

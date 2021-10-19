@@ -1,23 +1,28 @@
 image: emeris/api-server:latest
 imagePullPolicy: Always
 
-replicas: 1
+replicas: 3
 
 nodeSelector: {}
 
 resources:
   requests:
-    cpu: 250m
-    memory: 500Mi
+    cpu: 200m
+    memory: 256Mi
   limits:
-    cpu: 500m
-    memory: 1Gi
+    cpu: 200m
+    memory: 256Mi
 
 ports:
   http: 8000
 
 cnsAddress: cns-server:8000
 
-databaseConnectionURL: postgres://root@cockroachdb-public:26257?sslmode=disable
+databaseConnectionURL: postgres://root@cockroachdb:26257?sslmode=disable
 
 redisUrl: redis-master:6379
+
+debug: true
+
+serviceMonitorLabels:
+  release: monitoring-stack

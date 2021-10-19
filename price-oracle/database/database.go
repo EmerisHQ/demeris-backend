@@ -1,12 +1,13 @@
 package database
 
 import (
+	"database/sql"
 	"strings"
 
 	dbutils "github.com/allinbits/demeris-backend/utils/database"
 	"github.com/jmoiron/sqlx"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
+	_ "github.com/lib/pq"
 )
 
 type Instance struct {
@@ -28,10 +29,11 @@ func New(connString string) (*Instance, error) {
 	if err != nil {
 		ii.runMigrations()
 	}
-	_, err = ii.Query("SELECT * FROM oracle.coingecko")
-	if err != nil {
-		ii.runMigrationsCoingecko()
-	}
+	//interim measures
+	//_, err = ii.Query("SELECT * FROM oracle.coingecko")
+	//if err != nil {
+	//	ii.runMigrationsCoingecko()
+	//}
 	return ii, nil
 }
 
@@ -51,10 +53,33 @@ func CnsTokenQuery(db *sqlx.DB) ([]string, error) {
 		if fetch_price == true {
 			ticker = strings.TrimRight(ticker, "\"")
 			ticker = strings.TrimLeft(ticker, "\"")
-			if ticker[0:1] == "U" {
-				ticker = ticker[1:]
-			}
 			Whitelists = append(Whitelists, ticker)
+		}
+	}
+	return Whitelists, nil
+}
+
+func CnsPriceIdQuery(db *sqlx.DB) ([]string, error) {
+	var Whitelists []string
+	q, err := db.Queryx("SELECT  y.x->'price_id',y.x->'fetch_price' FROM cns.chains jt, LATERAL (SELECT json_array_elements(jt.denoms) x) y")
+	if err != nil {
+		return nil, err
+	}
+	for q.Next() {
+		var price_id sql.NullString
+		var fetch_price bool
+		err := q.Scan(&price_id, &fetch_price)
+		if err != nil {
+			return nil, err
+		}
+		if price_id.Valid {
+			if fetch_price == true {
+				price_id.String = strings.TrimRight(price_id.String, "\"")
+				price_id.String = strings.TrimLeft(price_id.String, "\"")
+				Whitelists = append(Whitelists, price_id.String)
+			}
+		} else {
+			continue
 		}
 	}
 	return Whitelists, nil

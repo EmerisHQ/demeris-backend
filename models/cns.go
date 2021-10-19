@@ -24,6 +24,7 @@ type Chain struct {
 	NodeInfo         NodeInfo       `diff:"-" db:"node_info" binding:"required,dive" json:"node_info"`                                              // info required to query full-node (e.g. to submit tx)
 	ValidBlockThresh Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
 	DerivationPath   string         `diff:"-" db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                        // chain derivation path
+	BlockExplorer    string         `diff:"-" db:"block_explorer" json:"block_explorer"`                                                            // block explorer url
 }
 
 // VerifiedTokens returns a DenomList of native denoms that are verified.
@@ -82,6 +83,8 @@ func (t *Threshold) UnmarshalJSON(bytes []byte) error {
 
 	*t = Threshold(d)
 
+	bytes = nil
+
 	return nil
 }
 
@@ -131,7 +134,15 @@ func (a *NodeInfo) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // GasPrice holds gas prices.
@@ -152,7 +163,15 @@ func (a *GasPrice) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // Bech32Config represents the chain's bech32 configuration
@@ -240,6 +259,7 @@ type Denom struct {
 	Verified                    bool     `db:"verified" json:"verified,omitempty"`
 	Stakable                    bool     `db:"stakable" json:"stakable,omitempty"`
 	Ticker                      string   `db:"ticker" json:"ticker,omitempty"`
+	PriceID                     string   `db:"price_id" json:"price_id,omitempty"`
 	FeeToken                    bool     `db:"fee_token" json:"fee_token,omitempty"`
 	GasPriceLevels              GasPrice `db:"gas_price_levels" json:"gas_price_levels"`
 	FetchPrice                  bool     `db:"fetch_price" json:"fetch_price"`
@@ -257,7 +277,15 @@ func (a *DenomList) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // DbStringMap represent a JSON database-enabled string map.
@@ -270,7 +298,15 @@ func (a *DbStringMap) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	return json.Unmarshal(b, &a)
+	err := json.Unmarshal(b, &a)
+	if err != nil {
+		return err
+	}
+
+	b = nil
+	value = nil
+
+	return nil
 }
 
 // ChannelQuery represents a query to get a specified channel or counterparty data.

@@ -10,6 +10,13 @@ func (d *Database) Chain(name string) (models.Chain, error) {
 		return models.Chain{}, err
 	}
 
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	return c, n.Get(&c, map[string]interface{}{
 		"name": name,
 	})
@@ -22,6 +29,13 @@ func (d *Database) ChainFromChainID(chainID string) (models.Chain, error) {
 	if err != nil {
 		return models.Chain{}, err
 	}
+
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return c, n.Get(&c, map[string]interface{}{
 		"chainID": chainID,
@@ -36,6 +50,13 @@ func (d *Database) ChainLastBlock(name string) (models.BlockTimeRow, error) {
 		return models.BlockTimeRow{}, err
 	}
 
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	return c, n.Get(&c, map[string]interface{}{
 		"name": name,
 	})
@@ -44,6 +65,26 @@ func (d *Database) ChainLastBlock(name string) (models.BlockTimeRow, error) {
 func (d *Database) Chains() ([]models.Chain, error) {
 	var c []models.Chain
 	return c, d.dbi.Exec("select * from cns.chains where enabled=TRUE", nil, &c)
+}
+
+func (d *Database) VerifiedDenoms() (map[string]models.DenomList, error) {
+	var c []models.Chain
+	if err := d.dbi.Exec("select chain_name, denoms from cns.chains where enabled=TRUE", nil, &c); err != nil {
+		return nil, err
+	}
+
+	ret := make(map[string]models.DenomList)
+
+	for _, cc := range c {
+		ret[cc.ChainName] = cc.VerifiedTokens()
+	}
+
+	return ret, nil
+}
+
+func (d *Database) SimpleChains() ([]models.Chain, error) {
+	var c []models.Chain
+	return c, d.dbi.Exec("select chain_name, display_name, logo from cns.chains where enabled=TRUE", nil, &c)
 }
 
 func (d *Database) ChainIDs() (map[string]string, error) {
@@ -74,6 +115,13 @@ func (d *Database) PrimaryChannelCounterparty(chainName, counterparty string) (m
 		return models.ChannelQuery{}, err
 	}
 
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
 	return c, n.Get(&c, map[string]interface{}{
 		"chain_name":   chainName,
 		"counterparty": counterparty,
@@ -87,6 +135,13 @@ func (d *Database) PrimaryChannels(chainName string) ([]models.ChannelQuery, err
 	if err != nil {
 		return nil, err
 	}
+
+	defer func() {
+		err := n.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	return c, n.Select(&c, map[string]interface{}{
 		"chain_name": chainName,

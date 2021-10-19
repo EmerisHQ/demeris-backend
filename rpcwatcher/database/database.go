@@ -48,6 +48,11 @@ func (i *Instance) UpdateDenoms(chain models.Chain) error {
 		return fmt.Errorf("database update statement had no effect")
 	}
 
+	err = n.Close()
+	if err != nil {
+		return nil
+	}
+
 	return nil
 }
 
@@ -82,6 +87,11 @@ func (i *Instance) GetCounterParty(chain, srcChannel string) ([]models.ChannelQu
 
 	if len(c) == 0 {
 		return nil, fmt.Errorf("no counterparty found for chain %s on channel %s", chain, srcChannel)
+	}
+
+	err = q.Close()
+	if err != nil {
+		return nil, nil
 	}
 
 	return c, nil
