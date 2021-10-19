@@ -20,8 +20,6 @@ import (
 	"github.com/allinbits/demeris-backend/models"
 
 	"github.com/allinbits/demeris-backend/api/database"
-	k8stypes "k8s.io/apimachinery/pkg/types"
-
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	v1 "github.com/allinbits/starport-operator/api/v1"
@@ -62,15 +60,27 @@ func getRelayerStatus(c *gin.Context) {
 	relayer := v1.Relayer{}
 
 	cfg := ctrl.GetConfigOrDie()
-	informer, err := utils.GetInformer(cfg, d.KubeNamespace, "relayers")
+	informer, err := utils.GetInformer(cfg, "emeris", "relayers")
 	if err != nil {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot query relayer status"),
+			http.StatusBadRequest,
+		)
 
+		d.WriteError(c, e,
+			"cannot query relayer status",
+			"id",
+			e.ID,
+			"error",
+			err,
+		)
+
+		return
 	}
 
-	obj, err := informer.Lister().Get(k8stypes.NamespacedName{
-		Namespace: d.KubeNamespace,
-		Name:      "relayer",
-	}.String())
+	ns := informer.Lister().ByNamespace("emeris")
+	obj, _ := ns.Get("relayer")
 
 	if err != nil {
 		e := deps.NewError(
@@ -91,6 +101,7 @@ func getRelayerStatus(c *gin.Context) {
 
 		return
 	}
+
 	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.(*unstructured.Unstructured).UnstructuredContent(), relayer); err != nil {
 		e := deps.NewError(
 			"status",
@@ -108,67 +119,6 @@ func getRelayerStatus(c *gin.Context) {
 
 		return
 	}
-
-	//if err != nil && !errors.Is(err, k8s.ErrNotFound) {
-	//	e := deps.NewError(
-	//		"status",
-	//		fmt.Errorf("cannot query relayer status"),
-	//		http.StatusBadRequest,
-	//	)
-	//
-	//	d.WriteError(c, e,
-	//		"cannot query relayer status",
-	//		"id",
-	//		e.ID,
-	//		"error",
-	//		err,
-	//	)
-	//
-	//	return
-	//}
-	//
-	//if errors.Is(err, k8s.ErrNotFound) || running.Status.Phase != v1.RelayerPhaseRunning {
-	//	res.Running = false
-	//}
-	//res.Running = true
-	//
-	//bz, err := json.Marshal(running)
-	//if err != nil {
-	//	e := deps.NewError(
-	//		"status",
-	//		fmt.Errorf("cannot retrieve relayer status"),
-	//		http.StatusBadRequest,
-	//	)
-	//
-	//	d.WriteError(c, e,
-	//		"cannot marshal relayer status",
-	//		"id",
-	//		e.ID,
-	//		"error",
-	//		err,
-	//	)
-	//
-	//	return
-	//}
-	//
-	//err = d.Store.SetWithExpiryTime("relayer", string(bz), 10*time.Second)
-	//if err != nil {
-	//	e := deps.NewError(
-	//		"status",
-	//		fmt.Errorf("cannot retrieve relayer status"),
-	//		http.StatusBadRequest,
-	//	)
-	//
-	//	d.WriteError(c, e,
-	//		"cannot set relayer status",
-	//		"id",
-	//		e.ID,
-	//		"error",
-	//		err,
-	//	)
-	//
-	//	return
-	//}
 
 	c.JSON(http.StatusOK, obj)
 }
