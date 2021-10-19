@@ -6,11 +6,6 @@ import (
 
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/gin-gonic/gin"
-	_ "github.com/gravity-devs/liquidity/x/liquidity/types"
-)
-
-const (
-	grpcPort = 9090
 )
 
 func Register(router *gin.Engine) {

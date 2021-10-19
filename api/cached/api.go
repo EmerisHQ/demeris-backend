@@ -22,7 +22,7 @@ func Register(router *gin.Engine) {
 // @ID pools
 // @Description Gets info of all pools.`10
 // @Produce json
-// @Success 200 {object} types.Pools
+// @Success 200 {object} types.QueryLiquidityPoolsResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /cosmos/liquidity/v1beta1/pools [get]
 func getPools(c *gin.Context) {
@@ -56,7 +56,7 @@ func getPools(c *gin.Context) {
 // @ID params
 // @Description Gets params of liquidity module.
 // @Produce json
-// @Success 200 {object} types.Params
+// @Success 200 {object} types.QueryParamsResponse
 // @Failure 500,403 {object} deps.Error
 // @Router /cosmos/liquidity/v1beta1/params [get]
 func getParams(c *gin.Context) {
@@ -87,10 +87,10 @@ func getParams(c *gin.Context) {
 // getSupply returns the total supply.
 // @Summary Gets total supply of cosmos-hub
 // @Tags supply
-// @ID supply
+// @ID total-supply
 // @Description Gets total supply of cosmos hub.
 // @Produce json
-// @Success 200 {object} types.Coins
+// @Success 200 {object} types.QueryTotalSupplyResponse
 // @Failure 500,403 {object} deps.Error
 // @Router / [get]
 func getSupply(c *gin.Context) {
