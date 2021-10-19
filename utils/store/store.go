@@ -356,50 +356,50 @@ func (s *Store) GetUserTickets(user string) (map[string][]string, error) {
 	return res, nil
 }
 
-func (s *Store) GetPools() (liquiditytypes.Pools, error) {
+func (s *Store) GetPools() (liquiditytypes.QueryLiquidityPoolsResponse, error) {
 	var res liquiditytypes.QueryLiquidityPoolsResponse
 	bz, err := s.Client.Get(context.Background(), "pools").Bytes()
 	if err != nil {
-		return liquiditytypes.Pools{}, err
+		return liquiditytypes.QueryLiquidityPoolsResponse{}, err
 	}
 
 	cdc, _ := gaia.MakeCodecs()
 	err = cdc.UnmarshalJSON(bz, &res)
 	if err != nil {
-		return liquiditytypes.Pools{}, err
+		return liquiditytypes.QueryLiquidityPoolsResponse{}, err
 	}
 
-	return res.GetPools(), nil
+	return res, nil
 }
 
-func (s *Store) GetParams() (liquiditytypes.Params, error) {
+func (s *Store) GetParams() (liquiditytypes.QueryParamsResponse, error) {
 	var res liquiditytypes.QueryParamsResponse
 	bz, err := s.Client.Get(context.Background(), "params").Bytes()
 	if err != nil {
-		return liquiditytypes.Params{}, err
+		return liquiditytypes.QueryParamsResponse{}, err
 	}
 
 	err = s.Cdc.UnmarshalJSON(bz, &res)
 	if err != nil {
-		return liquiditytypes.Params{}, err
+		return liquiditytypes.QueryParamsResponse{}, err
 	}
 
-	return res.GetParams(), nil
+	return res, nil
 }
 
-func (s *Store) GetSupply() (sdk.Coins, error) {
+func (s *Store) GetSupply() (banktypes.QueryTotalSupplyResponse, error) {
 	var res banktypes.QueryTotalSupplyResponse
 	bz, err := s.Client.Get(context.Background(), "supply").Bytes()
 	if err != nil {
-		return sdk.Coins{}, err
+		return banktypes.QueryTotalSupplyResponse{}, err
 	}
 
 	err = s.Cdc.UnmarshalJSON(bz, &res)
 	if err != nil {
-		return sdk.Coins{}, err
+		return banktypes.QueryTotalSupplyResponse{}, err
 	}
 
-	return res.GetSupply(), nil
+	return res, nil
 }
 
 func (s *Store) Delete(key string) error {

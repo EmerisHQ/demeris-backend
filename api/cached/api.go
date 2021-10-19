@@ -11,12 +11,12 @@ import (
 func Register(router *gin.Engine) {
 	group := router.Group("/cached/cosmos/v1beta1")
 
-	group.GET("/pools", GetPools)
-	group.GET("/params", GetParams)
+	group.GET("/pools", getPools)
+	group.GET("/params", getParams)
 	group.GET("/supply", getSupply)
 }
 
-// GetPools returns the of all pools.
+// getPools returns the of all pools.
 // @Summary Gets pools info.
 // @Tags pools
 // @ID pools
@@ -25,7 +25,7 @@ func Register(router *gin.Engine) {
 // @Success 200 {object} types.Pools
 // @Failure 500,403 {object} deps.Error
 // @Router /cosmos/liquidity/v1beta1/pools [get]
-func GetPools(c *gin.Context) {
+func getPools(c *gin.Context) {
 	d := deps.GetDeps(c)
 
 	res, err := d.Store.GetPools()
@@ -50,7 +50,7 @@ func GetPools(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-// GetParams returns the params of liquidity module.
+// getParams returns the params of liquidity module.
 // @Summary Gets params of liquidity module.
 // @Tags params
 // @ID params
@@ -59,7 +59,7 @@ func GetPools(c *gin.Context) {
 // @Success 200 {object} types.Params
 // @Failure 500,403 {object} deps.Error
 // @Router /cosmos/liquidity/v1beta1/params [get]
-func GetParams(c *gin.Context) {
+func getParams(c *gin.Context) {
 	d := deps.GetDeps(c)
 
 	res, err := d.Store.GetParams()
