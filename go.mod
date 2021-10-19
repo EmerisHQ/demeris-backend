@@ -14,7 +14,6 @@ require (
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/containerd/fifo v1.0.0
 	github.com/cosmos/cosmos-sdk v0.42.8
-	github.com/cosmos/gaia/v4 v4.2.1
 	github.com/cosmos/gaia/v5 v5.0.4
 	github.com/cssivision/reverseproxy v0.0.1
 	github.com/ethereum/go-ethereum v1.10.3
