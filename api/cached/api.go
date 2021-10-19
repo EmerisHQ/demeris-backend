@@ -9,11 +9,11 @@ import (
 )
 
 func Register(router *gin.Engine) {
-	group := router.Group("/cached/cosmos/v1beta1")
+	group := router.Group("/cached/cosmos")
 
-	group.GET("/pools", getPools)
-	group.GET("/params", getParams)
-	group.GET("/supply", getSupply)
+	group.GET("/liquidity/v1beta1/pools", getPools)
+	group.GET("/liquidity/v1beta1/params", getParams)
+	group.GET("/bank/v1beta1/supply", getSupply)
 }
 
 // getPools returns the of all pools.
