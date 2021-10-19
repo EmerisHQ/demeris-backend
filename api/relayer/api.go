@@ -54,7 +54,7 @@ func getRelayerStatus(c *gin.Context) {
 
 		return
 	}
-	relayer := v1.Relayer{}
+	relayer := &v1.Relayer{}
 
 	obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
 		Namespace: d.KubeNamespace,
