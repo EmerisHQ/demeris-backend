@@ -9,18 +9,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/allinbits/demeris-backend/utils"
+	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-
-	"github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/allinbits/demeris-backend/models"
+	k8stypes "k8s.io/apimachinery/pkg/types"
 
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
+	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	v1 "github.com/allinbits/starport-operator/api/v1"
 	"github.com/gin-gonic/gin"
@@ -59,28 +56,10 @@ func getRelayerStatus(c *gin.Context) {
 	}
 	relayer := v1.Relayer{}
 
-	cfg := ctrl.GetConfigOrDie()
-	informer, err := utils.GetInformer(cfg, "emeris", "relayers")
-	if err != nil {
-		e := deps.NewError(
-			"status",
-			fmt.Errorf("cannot query relayer status"),
-			http.StatusBadRequest,
-		)
-
-		d.WriteError(c, e,
-			"cannot query relayer status",
-			"id",
-			e.ID,
-			"error",
-			err,
-		)
-
-		return
-	}
-
-	ns := informer.Lister().ByNamespace("emeris")
-	obj, _ := ns.Get("relayer")
+	obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
+		Namespace: d.KubeNamespace,
+		Name:      "relayer",
+	}.String())
 
 	if err != nil {
 		e := deps.NewError(

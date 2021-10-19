@@ -3,24 +3,26 @@ package deps
 import (
 	"fmt"
 
+	"go.uber.org/zap"
+	"k8s.io/client-go/informers"
 	kube "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/utils/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // Deps represents a set of objects useful during the lifecycle of REST endpoints.
 type Deps struct {
-	Logger        *zap.SugaredLogger
-	Database      *database.Database
-	Store         *store.Store
-	K8S           *kube.Client
-	Codec         codec.Marshaler
-	CNSURL        string
-	KubeNamespace string
+	Logger           *zap.SugaredLogger
+	Database         *database.Database
+	Store            *store.Store
+	K8S              *kube.Client
+	Codec            codec.Marshaler
+	RelayersInformer informers.GenericInformer
+	CNSURL           string
+	KubeNamespace    string
 }
 
 func GetDeps(c *gin.Context) *Deps {

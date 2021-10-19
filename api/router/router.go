@@ -7,6 +7,7 @@ import (
 
 	"github.com/allinbits/demeris-backend/api/block"
 	"github.com/allinbits/demeris-backend/api/pool"
+	"k8s.io/client-go/informers"
 
 	"github.com/allinbits/demeris-backend/utils/logging"
 
@@ -32,14 +33,15 @@ import (
 )
 
 type Router struct {
-	g            *gin.Engine
-	db           *database.Database
-	l            *zap.SugaredLogger
-	s            *store.Store
-	k8s          kube.Client
-	k8sNamespace string
-	cdc          codec.Marshaler
-	cnsURL       string
+	g                *gin.Engine
+	db               *database.Database
+	l                *zap.SugaredLogger
+	s                *store.Store
+	k8s              kube.Client
+	k8sNamespace     string
+	cdc              codec.Marshaler
+	cnsURL           string
+	relayersInformer informers.GenericInformer
 }
 
 func New(
@@ -51,6 +53,7 @@ func New(
 	cnsURL string,
 	cdc codec.Marshaler,
 	debug bool,
+	relayersInformer informers.GenericInformer,
 ) *Router {
 	gin.SetMode(gin.ReleaseMode)
 
@@ -61,14 +64,15 @@ func New(
 	engine := gin.New()
 
 	r := &Router{
-		g:            engine,
-		db:           db,
-		l:            l,
-		s:            s,
-		k8s:          kubeClient,
-		k8sNamespace: kubeNamespace,
-		cnsURL:       cnsURL,
-		cdc:          cdc,
+		g:                engine,
+		db:               db,
+		l:                l,
+		s:                s,
+		k8s:              kubeClient,
+		k8sNamespace:     kubeNamespace,
+		cnsURL:           cnsURL,
+		cdc:              cdc,
+		relayersInformer: relayersInformer,
 	}
 
 	r.metrics()
@@ -122,13 +126,14 @@ func (r *Router) catchPanicsFunc(c *gin.Context) {
 
 func (r *Router) decorateCtxWithDeps(c *gin.Context) {
 	c.Set("deps", &deps.Deps{
-		Logger:        r.l,
-		Database:      r.db,
-		Store:         r.s,
-		CNSURL:        r.cnsURL,
-		KubeNamespace: r.k8sNamespace,
-		Codec:         r.cdc,
-		K8S:           &r.k8s,
+		Logger:           r.l,
+		Database:         r.db,
+		Store:            r.s,
+		CNSURL:           r.cnsURL,
+		KubeNamespace:    r.k8sNamespace,
+		Codec:            r.cdc,
+		K8S:              &r.k8s,
+		RelayersInformer: r.relayersInformer,
 	})
 }
 
