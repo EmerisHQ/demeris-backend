@@ -1,0 +1,75 @@
+{
+  "chain_name": "sifchain",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "Terra",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "LUNA",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.5, "average": 1, "high": 2 },
+      "name": "rowan",
+      "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "LUNA"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "terra",
+    "chain_id": columbus-5",
+    "bech32_config": {
+      "main_prefix": "terra",
+      "prefix_account": "terra",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "terra",
+    "cli_name": "terrad",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-traceclistener44:4185559",
+    "join_config": {
+      "genesis": {
+        "url": "https://columbus-genesis.s3.ap-northeast-1.amazonaws.com/columbus-5-genesis.json"
+      },
+      "seeds": [
+        {
+          "id": "e999fc20aa5b87c1acef8677cf495ad85061cfb9",
+          "address": "seed.terra.delightlabs.io",
+          "port": 26656
+        },
+        {
+          "id": "6d8e943c049a80c161a889cb5fcf3d184215023e",
+          "address": "public-seed2.terra.dev",
+          "port": 26656
+        },
+        {
+          "id": "87048bf71526fb92d73733ba3ddb79b7a83ca11e",
+          "address": "public-seed.terra.dev",
+          "port": 26656
+        }
+      ]
+    },
+    "docker_image": "terramoney/core",
+    "docker_image_version": "v0.5.5"
+  },
+  "relayer_configuration": {
+    "max_msg_num":12,
+    "max_gas": 1000000,
+    "clock_drift": "1800s",
+    "trusting_period": "9days"
+  },
+  "block_explorer": "https://finder.terra.money"
+}
