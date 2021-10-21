@@ -81,5 +81,5 @@
     "clock_drift": "70s",
     "trusting_period": "14days"
   },
-  "block_explorer": "https://junoscan.com/"
+  "block_explorer": "https://www.mintscan.io/juno"
 }
