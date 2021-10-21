@@ -839,3 +839,12 @@ func getAddress(chain models.Chain, account string) (string, error) {
 
 	return addr, nil
 }
+
+func GetChannelIsFresh(c *gin.Context) {
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+	channelId := c.Param("channelId")
+
+	channel, err := d.Database.GetIbcChannelOfChain()
+}

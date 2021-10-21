@@ -29,7 +29,7 @@ func Register(router *gin.Engine) {
 }
 
 // getRelayerStatus returns status of relayer.
-// @Summary Gets relayer status
+// @Summary Gets relayer  status
 // @Tags Relayer
 // @ID relayer-status
 // @Description gets relayer status

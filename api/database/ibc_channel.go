@@ -84,3 +84,6 @@ func (d *Database) GetIbcChannelToChain(chain, channel, chainID string) (models.
 
 	return c, nil
 }
+
+func (d *Database) GetIbcChannelOfChain(chain, channel, chainID string) (models.IbcChannelsInfo, error) {
+}
