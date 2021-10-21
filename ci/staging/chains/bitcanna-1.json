@@ -1,7 +1,7 @@
 {
   "chain_name": "bitcanna",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://www.mintscan.io/_next/static/image/assets/Dashboard/chain_bitcanna.ff6a96506ae31ac3252908e4f4379bd9.svg",
+  "logo": "https://storage.googleapis.com/emeris/logos/bitcanna.svg",
   "enabled": false,
   "valid_block_thresh": "20s",
   "display_name": "BitCanna",
@@ -16,7 +16,7 @@
       "minimum_thresh_relayer_balance": 42,
       "gas_price_levels": { "low": 0.5, "average": 1, "high": 2 },
       "name": "bcna",
-      "logo": "https://www.mintscan.io/_next/static/image/assets/Dashboard/chain_bitcanna.ff6a96506ae31ac3252908e4f4379bd9.svg",
+      "logo": "https://storage.googleapis.com/emeris/logos/bitcanna.svg",
       "verified": true,
       "precision": 6,
       "ticker": "BCNA"
