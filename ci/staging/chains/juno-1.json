@@ -1,7 +1,7 @@
 {
   "chain_name": "juno",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://firebasestorage.googleapis.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-MZiFiIZH5IkEYsWMUO4%2F-MiMePnaIrP7sur_mMUW%2F-MiMe_5htMHVa2Pk850L%2FJUNO%20Logo%20(Red).svg?alt=media&token=873db37c-7381-4bad-a069-fd7b5bac2acc",
+  "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
   "enabled": false,
   "valid_block_thresh": "20s",
   "display_name": "juno",
@@ -16,7 +16,7 @@
       "minimum_thresh_relayer_balance": 42,
       "gas_price_levels": { "low": 1, "average": 1, "high": 1 },
       "name": "ujuno",
-      "logo": "https://firebasestorage.googleapis.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-MZiFiIZH5IkEYsWMUO4%2F-MiMePnaIrP7sur_mMUW%2F-MiMe_5htMHVa2Pk850L%2FJUNO%20Logo%20(Red).svg?alt=media&token=873db37c-7381-4bad-a069-fd7b5bac2acc",
+      "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
       "verified": true,
       "precision": 6,
       "ticker": "JUNO"
