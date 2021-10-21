@@ -3,7 +3,6 @@ package relayer
 import (
 	"database/sql"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -139,48 +138,51 @@ func getRelayerBalance(c *gin.Context) {
 	d := deps.GetDeps(c)
 
 	if !d.Store.Exists("relayer") {
-		running, err := k8s.Querier{
-			Client:    *d.K8S,
+		obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
 			Namespace: d.KubeNamespace,
-		}.Relayer()
-		if err != nil && !errors.Is(err, k8s.ErrNotFound) {
-			e := deps.NewError(
-				"status",
-				fmt.Errorf("cannot retrieve relayer status"),
-				http.StatusBadRequest,
-			)
+			Name:      "relayer",
+		}.String())
 
-			d.WriteError(c, e,
-				"cannot retrieve relayer status",
-				"id",
-				e.ID,
-				"error",
-				err,
-			)
-
-			return
-		}
-
-		bz, err := json.Marshal(running)
 		if err != nil {
 			e := deps.NewError(
 				"status",
-				fmt.Errorf("cannot retrieve relayer status"),
+				fmt.Errorf("cannot query relayer status"),
 				http.StatusBadRequest,
 			)
 
 			d.WriteError(c, e,
-				"cannot marshal relayer status",
+				"cannot query relayer status",
+				"id",
+				e.ID,
+				"error",
+				err,
+				"obj",
+				obj,
+			)
+
+			return
+		}
+
+		relayer := &v1.Relayer{}
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+			obj.(*unstructured.Unstructured).UnstructuredContent(), relayer); err != nil && !errors.Is(err, k8s.ErrNotFound) {
+			e := deps.NewError(
+				"status",
+				fmt.Errorf("cannot query relayer status"),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"cannot unstructure relayer status",
 				"id",
 				e.ID,
 				"error",
 				err,
 			)
 
-			return
 		}
 
-		err = d.Store.SetWithExpiryTime("relayer", string(bz), 10*time.Second)
+		err = d.Store.SetWithExpiryTime("relayer", relayer, 5*time.Second)
 		if err != nil {
 			e := deps.NewError(
 				"status",
@@ -198,7 +200,6 @@ func getRelayerBalance(c *gin.Context) {
 
 			return
 		}
-
 	}
 
 	relayer, err := d.Store.GetRelayer("relayer")
@@ -281,7 +282,6 @@ func getRelayerBalance(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, res)
-
 }
 
 func relayerThresh(chains []string, db *database.Database) (map[string]models.Denom, error) {
