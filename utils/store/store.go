@@ -363,8 +363,7 @@ func (s *Store) GetPools() (liquiditytypes.QueryLiquidityPoolsResponse, error) {
 		return liquiditytypes.QueryLiquidityPoolsResponse{}, err
 	}
 
-	cdc, _ := gaia.MakeCodecs()
-	err = cdc.UnmarshalJSON(bz, &res)
+	err = s.Cdc.UnmarshalJSON(bz, &res)
 	if err != nil {
 		return liquiditytypes.QueryLiquidityPoolsResponse{}, err
 	}
