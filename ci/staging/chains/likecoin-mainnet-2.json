@@ -1,0 +1,70 @@
+{
+  "chain_name": "likecoin",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/likecoin.svg",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "LikeCoin",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "LIKE",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 1, "average": 1, "high": 1 },
+      "name": "nlike",
+      "logo": "https://storage.googleapis.com/emeris/logos/likecoin.svg",
+      "verified": true,
+      "precision": 9,
+      "ticker": "LIKE"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "cosmos",
+    "chain_id": "likecoin-mainnet-2",
+    "bech32_config": {
+      "main_prefix": "cosmos",
+      "prefix_account": "cosmos",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "likecoin",
+    "cli_name": "liked",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/likecoin/mainnet/master/genesis.json"
+      },
+      "seeds": [
+        {
+          "id": "913bd0f4bea4ef512ffba39ab90eae84c1420862",
+          "address": "34.82.131.35",
+          "port": 26656
+        },
+        {
+          "id": "e44a2165ac573f84151671b092aa4936ac305e2a",
+          "address": "nnkken.dev",
+          "port": 26656
+        }
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/likecoin",
+    "docker_image_version": "fotan-1"
+  },
+  "relayer_configuration": {
+    "max_msg_num":12,
+    "max_gas": 500000,
+    "clock_drift": "70s",
+    "trusting_period": "14days"
+  },
+  "block_explorer": "https://likecoin.bigdipper.live"
+}
