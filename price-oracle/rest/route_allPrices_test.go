@@ -75,6 +75,7 @@ func setup(t *testing.T) (router, *gin.Context, *httptest.ResponseRecorder, func
 		DatabaseConnectionURL: connStr,
 		Interval:              "10s",
 		Whitelistfiats:        []string{"EUR", "KRW", "CHF"},
+		ListenAddr:            "127.0.0.1:9898",
 	}
 
 	logger := logging.New(logging.LoggingConfig{
