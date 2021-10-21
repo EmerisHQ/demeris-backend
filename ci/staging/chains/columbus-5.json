@@ -25,7 +25,7 @@
   "genesis_hash": "genesis_hash",
   "node_info": {
     "endpoint": "terra",
-    "chain_id": columbus-5",
+    "chain_id": "columbus-5",
     "bech32_config": {
       "main_prefix": "terra",
       "prefix_account": "terra",
