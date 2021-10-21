@@ -1,5 +1,5 @@
 {
-  "chain_name": "sifchain",
+  "chain_name": "terra",
   "derivation_path": "m/44'/118'/0'/0/0",
   "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
   "enabled": false,
