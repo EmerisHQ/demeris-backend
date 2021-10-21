@@ -56,18 +56,12 @@ func (r *router) FiatsPrices(ctx *gin.Context) {
 	if err != nil {
 		r.s.l.Error("Error", "FiatsPrices", err.Error(), "Duration", time.Second)
 	}
-	if len(selectFiat.Fiats) >= 10 {
+
+	if len(selectFiat.Fiats) > 10 {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
-			"data":    "Not allow More than 10 asset",
-			"message": nil,
-		})
-	}
-	if len(selectFiat.Fiats) == 0 {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"status":  http.StatusForbidden,
-			"data":    "",
-			"message": "Not allow 0  asset",
+			"data":    nil,
+			"message": "Not allow More than 10 asset",
 		})
 		return
 	}
@@ -75,11 +69,21 @@ func (r *router) FiatsPrices(ctx *gin.Context) {
 	if selectFiat.Fiats == nil {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
-			"data":    "",
+			"data":    nil,
 			"message": "Not allow nil asset",
 		})
 		return
 	}
+
+	if len(selectFiat.Fiats) == 0 {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"status":  http.StatusForbidden,
+			"data":    nil,
+			"message": "Not allow 0 asset",
+		})
+		return
+	}
+
 	var basefiats []string
 	for _, fiat := range r.s.c.Whitelistfiats {
 		fiats := types.USDBasecurrency + fiat
@@ -88,7 +92,7 @@ func (r *router) FiatsPrices(ctx *gin.Context) {
 	if Diffpair(selectFiat.Fiats, basefiats) == false {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
-			"data":    "",
+			"data":    nil,
 			"message": "Not whitelisting asset",
 		})
 		return
