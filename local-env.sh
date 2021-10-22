@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CLUSTER_NAME=emeris
-BUILD=false
+REBUILD=false
 NO_CHAINS=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
@@ -19,7 +19,7 @@ usage()
     echo -e "  -p, --port \t\t The local port at which the api will be served"
     echo -e "  -a, --address \t\t The address at which the api will be served, defaults to 127.0.0.1"
     echo -e "  -n, --cluster-name \t Kind cluster name"
-    echo -e "  -b, --build \t\t Whether to (re)build docker images"
+    echo -e "  -b, --rebuild \t\t Whether to (re)build docker images"
     echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
     echo -e "  -m, --monitoring \t Setup monitoring infrastructure"
     echo -e "  -h, --help \t\t Show this menu\n"
@@ -60,8 +60,8 @@ case $key in
     shift
     shift
     ;;
-    -b|--build)
-    BUILD=true
+    -b|--rebuild)
+    REBUILD=true
     shift
     ;;
     -m|--monitoring)
@@ -104,7 +104,7 @@ assert_executable_exists docker
 
 if [ "$COMMAND" = "up" ]
 then
-    if [ "$BUILD" = "true" ]; then
+    if [ "$REBUILD" = "true" ]; then
         if [ -z "$GITHUB_TOKEN" ]; then
           echo -e "${red}Error:${reset} you should export GITHUB_TOKEN with a valid GitHub token to build images.\n"
           usage
@@ -241,8 +241,10 @@ EOF
         &> /dev/null
 
     ### Ensure tracelistener image
-    if [[ "$(docker images -q emeris/tracelistener 2> /dev/null)" == "" ]]
+    if [ "$(docker images -q emeris/tracelistener 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
     then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/tracelistener already exists"
+    else
         if [ ! -d .tracelistener/.git ]
         then
             echo -e "${green}\xE2\x9C\x94${reset} Cloning tracelistener repo"
@@ -253,23 +255,10 @@ EOF
             git pull $TRACELISTENER_REPO &> /dev/null
             cd ..
         fi
-
         echo -e "${green}\xE2\x9C\x94${reset} Building emeris/tracelistener image"
         cd .tracelistener
         docker build -t emeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
         cd ..
-    else
-        if [ "$BUILD" = "true" ]
-        then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/tracelistener image"
-            echo -e "${green}\xE2\x9C\x94${reset} Fetching tracelistener latest changes"
-            cd .tracelistener
-            git pull $TRACELISTENER_REPO &> /dev/null
-            docker build -t emeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
-            cd ..
-        else
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/tracelistener already exists"
-        fi
     fi
     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/tracelistener image to cluster"
     kind load docker-image emeris/tracelistener --name $CLUSTER_NAME &> /dev/null
