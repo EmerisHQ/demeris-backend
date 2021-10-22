@@ -1,4 +1,4 @@
-package pool
+package liquidity
 
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
