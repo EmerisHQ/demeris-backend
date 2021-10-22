@@ -282,7 +282,6 @@ func GetDelegatorRewards(c *gin.Context) {
 
 	// TODO: add to tracelistener
 
-
 	address := c.Param("address")
 	chainName := c.Param("chain")
 
@@ -291,7 +290,7 @@ func GetDelegatorRewards(c *gin.Context) {
 	if err != nil {
 		e := deps.NewError(
 			"delegator rewards",
-			fmt.Errorf("unable to fetch chainchain %v", chainName),
+			fmt.Errorf("unable to fetch chain %v", chainName),
 			http.StatusBadRequest,
 		)
 
@@ -347,6 +346,8 @@ func GetDelegatorRewards(c *gin.Context) {
 		)
 
 		return
+
+	}
 
 	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
 	if err != nil {
