@@ -17,6 +17,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/cosmos/cosmos-sdk/types/tx"
@@ -333,24 +334,28 @@ func VerifyTrace(c *gin.Context) {
 	}
 
 	chainIDsMap, err := d.Database.ChainIDs()
-	if err != nil {
-		cause := fmt.Sprintf("cannot query list of chain ids, %s", err)
 
-		d.LogError(
+	if err != nil {
+
+		err = fmt.Errorf("cannot query list of chain ids, %w", err)
+
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("cannot query list of chain ids"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
 			"cannot query list of chain ids",
+			"id",
+			e.ID,
 			"hash",
 			hash,
 			"path",
 			res.VerifiedTrace.Path,
 			"err",
-			cause,
+			err,
 		)
-
-		res.VerifiedTrace.Verified = false
-		res.VerifiedTrace.Cause = cause
-
-		c.JSON(http.StatusOK, res)
-
 		return
 	}
 
@@ -406,25 +411,38 @@ func VerifyTrace(c *gin.Context) {
 		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel, chainID)
 
 		if err != nil {
+			switch err.(type) {
+			case *database.ErrNoMatchingChannel:
+				d.LogError(
+					err.Error(),
+					"hash",
+					hash,
+					"path",
+					res.VerifiedTrace.Path,
+					"chain",
+					chain,
+				)
 
-			cause := fmt.Sprintf("no matching channels found for %s -> %s -> %s", chainID, channel, nextChain)
+				res.VerifiedTrace.Verified = false
+				res.VerifiedTrace.Cause = err.Error()
 
-			d.LogError(
-				cause,
-				"hash",
-				hash,
-				"path",
-				res.VerifiedTrace.Path,
-				"chain",
-				chain,
-				"err",
-				err,
-			)
+				c.JSON(http.StatusOK, res)
+			default:
+				e1 := deps.NewError(
+					"denom/verify-trace",
+					fmt.Errorf("failed querying for %s", hash),
+					http.StatusBadRequest,
+				)
 
-			res.VerifiedTrace.Verified = false
-			res.VerifiedTrace.Cause = cause
+				d.WriteError(c, e1,
+					"invalid number of query responses",
+					"id",
+					e1.ID,
+					"hash",
+					hash,
+				)
 
-			c.JSON(http.StatusOK, res)
+			}
 
 			return
 		}

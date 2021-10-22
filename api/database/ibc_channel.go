@@ -1,8 +1,6 @@
 package database
 
 import (
-	"fmt"
-
 	"github.com/allinbits/demeris-backend/models"
 )
 
@@ -79,7 +77,11 @@ func (d *Database) GetIbcChannelToChain(chain, channel, chainID string) (models.
 	}
 
 	if len(c) == 0 {
-		return nil, fmt.Errorf("query done but returned no result")
+		return nil, ErrNoMatchingChannel{
+			chain_a: chainID,
+			channel: channel,
+			chain_b: chain,
+		}
 	}
 
 	return c, nil
