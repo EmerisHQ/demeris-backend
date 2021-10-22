@@ -11,10 +11,13 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
 	"github.com/allinbits/demeris-backend/rpcwatcher/database"
-
 	"github.com/allinbits/demeris-backend/utils/store"
+
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/client"
@@ -28,6 +31,7 @@ const (
 	EventsTx       = "tm.event='Tx'"
 	EventsBlock    = "tm.event='NewBlock'"
 	defaultRPCPort = 26657
+	grpcPort       = 9090
 )
 
 type DataHandler func(watcher *Watcher, event coretypes.ResultEvent)
@@ -645,6 +649,62 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 	if err != nil {
 		w.l.Errorw("cannot set block to cache", "error", err, "height", newHeight)
 		return
+	}
+
+	// creating a grpc ClientConn to perform RPCs
+	grpcConn, err := grpc.Dial(
+		fmt.Sprintf("%s:%d", w.Name, grpcPort),
+		grpc.WithInsecure(),
+	)
+
+	liquidityQuery := liquiditytypes.NewQueryClient(grpcConn)
+	poolsRes, err := liquidityQuery.LiquidityPools(context.Background(), &liquiditytypes.QueryLiquidityPoolsRequest{})
+	if err != nil {
+		w.l.Errorw("cannot get liquidity pools in blocks", "error", err, "height", newHeight)
+	}
+
+	bz, err := w.store.Cdc.MarshalJSON(poolsRes)
+	if err != nil {
+		w.l.Errorw("cannot marshal liquidity pools", "error", err, "height", newHeight)
+	}
+
+	// caching pools info
+	err = w.store.SetWithExpiry("pools", string(bz), 0)
+	if err != nil {
+		w.l.Errorw("cannot set liquidity pools", "error", err, "height", newHeight)
+	}
+
+	paramsRes, err := liquidityQuery.Params(context.Background(), &liquiditytypes.QueryParamsRequest{})
+	if err != nil {
+		w.l.Errorw("cannot get liquidity params", "error", err, "height", newHeight)
+	}
+
+	bz, err = w.store.Cdc.MarshalJSON(paramsRes)
+	if err != nil {
+		w.l.Errorw("cannot unmarshal liquidity params", "error", err, "height", newHeight)
+	}
+
+	// caching liquidity params
+	err = w.store.SetWithExpiry("params", string(bz), 0)
+	if err != nil {
+		w.l.Errorw("cannot set liquidity params", "error", err, "height", newHeight)
+	}
+
+	supplyQuery := banktypes.NewQueryClient(grpcConn)
+	supplyRes, err := supplyQuery.TotalSupply(context.Background(), &banktypes.QueryTotalSupplyRequest{})
+	if err != nil {
+		w.l.Errorw("cannot get liquidity pools in blocks", "error", err, "height", newHeight)
+	}
+
+	bz, err = w.store.Cdc.MarshalJSON(supplyRes)
+	if err != nil {
+		w.l.Errorw("cannot unmarshal total supply", "error", err, "height", newHeight)
+	}
+
+	// caching total supply
+	err = w.store.SetWithExpiry("supply", string(bz), 0)
+	if err != nil {
+		w.l.Errorw("cannot set total supply", "error", err, "height", newHeight)
 	}
 
 	return
