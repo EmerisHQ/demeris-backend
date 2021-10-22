@@ -55,7 +55,7 @@ func getRelayerStatus(c *gin.Context) {
 		Name:      "relayer",
 	}.String())
 
-	if err != nil {
+	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot query relayer status"),
