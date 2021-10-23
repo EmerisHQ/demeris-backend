@@ -53,8 +53,9 @@ func selectTokensPrices(r *router, selectToken types.SelectToken) ([]types.Token
 			return nil, err
 		}
 		defer rowCmcSupply.Close()
+		var throwawayPrice float64
 		for rowCmcSupply.Next() {
-			if err := rowCmcSupply.Scan(&symbol, &supply); err != nil {
+			if err := rowCmcSupply.Scan(&symbol, &throwawayPrice, &supply); err != nil {
 				r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 			}
 		}
@@ -76,20 +77,11 @@ func (r *router) TokensPrices(ctx *gin.Context) {
 	if err != nil {
 		r.s.l.Error("Error", "TokensPrices", err.Error(), "Duration", time.Second)
 	}
-	if len(selectToken.Tokens) >= 10 {
+	if len(selectToken.Tokens) > 10 {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
-			"data":    "",
+			"data":    nil,
 			"message": "Not allow More than 10 asset",
-		})
-		return
-	}
-
-	if len(selectToken.Tokens) == 0 {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"status":  http.StatusForbidden,
-			"data":    "",
-			"message": "Not allow 0  asset",
 		})
 		return
 	}
@@ -97,11 +89,21 @@ func (r *router) TokensPrices(ctx *gin.Context) {
 	if selectToken.Tokens == nil {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
-			"data":    "",
+			"data":    nil,
 			"message": "Not allow nil asset",
 		})
 		return
 	}
+
+	if len(selectToken.Tokens) == 0 {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"status":  http.StatusForbidden,
+			"data":    nil,
+			"message": "Not allow 0 asset",
+		})
+		return
+	}
+
 	Whitelists, err := r.s.d.CnstokenQueryHandler()
 	if err != nil {
 		r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
@@ -115,7 +117,7 @@ func (r *router) TokensPrices(ctx *gin.Context) {
 	if Diffpair(selectToken.Tokens, basetokens) == false {
 		ctx.JSON(http.StatusForbidden, gin.H{
 			"status":  http.StatusForbidden,
-			"data":    "",
+			"data":    nil,
 			"message": "Not whitelisting asset",
 		})
 		return

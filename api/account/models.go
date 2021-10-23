@@ -29,6 +29,16 @@ type stakingBalance struct {
 	ChainName        string `json:"chain_name"`
 }
 
+type unbondingDelegationsResponse struct {
+	UnbondingDelegations []unbondingDelegation `json:"unbonding_delegations"`
+}
+
+type unbondingDelegation struct {
+	ValidatorAddress string                            `json:"validator_address"`
+	Entries          models.UnbondingDelegationEntries `json:"entries"`
+	ChainName        string                            `json:"chain_name"`
+}
+
 type numbersResponse struct {
 	Numbers []models.AuthRow `json:"numbers"`
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
+	mint "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 // GetChains returns the list of all the chains supported by demeris.
@@ -862,4 +863,193 @@ func fetchNumbers(chain models.Chain, account string) (models.AuthRow, error) {
 	}
 
 	return result, nil
+}
+
+// GetInflation returns the inflation of a specific chain
+// @Summary Gets the inflation of a chain
+// @Description Gets inflation
+// @Tags Chain
+// @ID get-inflation
+// @Produce json
+// @Success 200 {object} inflationResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/mint/inflation [get]
+func GetInflation(c *gin.Context) {
+
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"mint/inflation",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	mintQuery := mint.NewQueryClient(grpcConn)
+
+	queryInflationRes, err := mintQuery.Inflation(context.Background(), &mint.QueryInflationRequest{})
+
+	if err != nil {
+		e := deps.NewError(
+			"mint/inflation",
+			fmt.Errorf("unable to query inflation for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"unable to query inflation",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, queryInflationRes)
+}
+
+// GetMintParams returns the minting parameters of a specific chain
+// @Summary Gets the minting params of a chain
+// @Description Gets minting params
+// @Tags Chain
+// @ID get-mint-params
+// @Produce json
+// @Success 200 {object} paramsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/mint/params [get]
+func GetMintParams(c *gin.Context) {
+
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"mint/params",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	mintQuery := mint.NewQueryClient(grpcConn)
+
+	queryParamsRes, err := mintQuery.Params(context.Background(), &mint.QueryParamsRequest{})
+
+	if err != nil {
+		e := deps.NewError(
+			"mint/params",
+			fmt.Errorf("unable to query params for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"unable to query params",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, queryParamsRes)
+}
+
+// GetAnnualProvisions returns the annual provisions of a specific chain
+// @Summary Gets the annual provisions of a chain
+// @Description Gets annual provisions
+// @Tags Chain
+// @ID get-annual-provisions
+// @Produce json
+// @Success 200 {object} annualProvisionsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/mint/annual_provisions [get]
+func GetAnnualProvisions(c *gin.Context) {
+
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"mint/annual-provisions",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	mintQuery := mint.NewQueryClient(grpcConn)
+
+	queryAnnualProvisionsRes, err := mintQuery.AnnualProvisions(context.Background(), &mint.QueryAnnualProvisionsRequest{})
+
+	if err != nil {
+		e := deps.NewError(
+			"mint/annual-provisions",
+			fmt.Errorf("unable to query annual provisions for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"unable to query annual provisions",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, queryAnnualProvisionsRes)
 }

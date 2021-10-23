@@ -58,5 +58,7 @@
     "max_gas": 1000000,
     "clock_drift": "1800s",
     "trusting_period": "14days"
-  }
+  },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/cosmos"
 }

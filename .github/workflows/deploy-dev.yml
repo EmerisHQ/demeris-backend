@@ -1,9 +1,10 @@
 name: Deploy on Emeris Dev Environment
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Build docker images"]
-    branches: [master]
+    branches: [develop]
     types: 
       - completed
 

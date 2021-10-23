@@ -49,7 +49,7 @@
 		"name": "crypto-com",
 		"cli_name": "chain-maind",
 		"namespace": "emeris",
-		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:main",
 		"testnet_config": {
 			"chainID": "crypto-com-testnet",
 			"stakeAmount": "10000000000basecro",
@@ -62,5 +62,6 @@
 		},
 		"docker_image": "gcr.io/tendermint-dev/crypto-com",
 		"docker_image_version": "v2.0.1"
-	}
+	},
+	"supported_wallets": ["keplr"]
 }

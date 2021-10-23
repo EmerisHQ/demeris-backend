@@ -52,5 +52,7 @@
     },
     "docker_image": "gcr.io/tendermint-dev/akash",
     "docker_image_version": "v0.12.1"
-  }
+  },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/akash"
 }
