@@ -53,9 +53,8 @@ func selectTokensPrices(r *router, selectToken types.SelectToken) ([]types.Token
 			return nil, err
 		}
 		defer rowCmcSupply.Close()
-		var throwawayPrice float64
 		for rowCmcSupply.Next() {
-			if err := rowCmcSupply.Scan(&symbol, &throwawayPrice, &supply); err != nil {
+			if err := rowCmcSupply.Scan(&symbol, &supply); err != nil {
 				r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 			}
 		}
