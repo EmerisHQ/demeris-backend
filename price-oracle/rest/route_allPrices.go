@@ -49,9 +49,8 @@ func allPrices(r *router) ([]types.TokenPriceResponse, []types.FiatPriceResponse
 					return nil, nil, err
 				}
 				defer rowCmcSupply.Close()
-				var throwAwayPrice float64 // TODO: Clarify what to change
 				for rowCmcSupply.Next() {
-					if err := rowCmcSupply.Scan(&symbol, &throwAwayPrice, &supply); err != nil {
+					if err := rowCmcSupply.Scan(&symbol, &supply); err != nil {
 						r.s.l.Error("Error", "DB", err.Error(), "Duration", time.Second)
 					}
 				}
