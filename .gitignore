@@ -114,3 +114,4 @@ bin
 .envrc
 
 .starport-operator
+.tracelistener
