@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/allinbits/demeris-backend/api/block"
-	"github.com/allinbits/demeris-backend/api/pool"
-
+	"github.com/allinbits/demeris-backend/api/cached"
+	"github.com/allinbits/demeris-backend/api/liquidity"
 	"github.com/allinbits/demeris-backend/utils/logging"
 
 	"github.com/allinbits/demeris-backend/api/relayer"
@@ -174,7 +174,12 @@ func registerRoutes(engine *gin.Engine) {
 	// @tag.description Blocks-related endpoints
 	block.Register(engine)
 
-	// @tag.name Pool
-	// @tag.description Pool-related endpoints
-	pool.Register(engine)
+	// @tag.name liquidity
+	// @tag.description pool-related endpoints
+	liquidity.Register(engine)
+
+	// @tag.name cached
+	// @tag.description cached data endpoints
+	cached.Register(engine)
+
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/allinbits/demeris-backend/tracelistener"
 	"github.com/allinbits/demeris-backend/tracelistener/config"
 	"github.com/cosmos/cosmos-sdk/codec"
-	gaia "github.com/cosmos/gaia/v4/app"
+	gaia "github.com/cosmos/gaia/v5/app"
 	"go.uber.org/zap"
 )
 
