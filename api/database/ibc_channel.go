@@ -78,9 +78,9 @@ func (d *Database) GetIbcChannelToChain(chain, channel, chainID string) (models.
 
 	if len(c) == 0 {
 		return nil, ErrNoMatchingChannel{
-			chain_a: chainID,
-			channel: channel,
-			chain_b: chain,
+			Chain_a: chainID,
+			Channel: channel,
+			Chain_b: chain,
 		}
 	}
 
