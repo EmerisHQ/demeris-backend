@@ -59,7 +59,7 @@ func getRelayerStatus(c *gin.Context) {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot query relayer status"),
-			http.StatusBadRequest,
+			http.StatusInternalServerError,
 		)
 
 		d.WriteError(c, e,
@@ -81,7 +81,7 @@ func getRelayerStatus(c *gin.Context) {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot query relayer status"),
-			http.StatusBadRequest,
+			http.StatusInternalServerError,
 		)
 
 		d.WriteError(c, e,
@@ -106,7 +106,7 @@ func getRelayerStatus(c *gin.Context) {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot retrieve relayer status"),
-			http.StatusBadRequest,
+			http.StatusInternalServerError,
 		)
 
 		d.WriteError(c, e,
@@ -147,7 +147,7 @@ func getRelayerBalance(c *gin.Context) {
 			e := deps.NewError(
 				"status",
 				fmt.Errorf("cannot query relayer status"),
-				http.StatusBadRequest,
+				http.StatusInternalServerError,
 			)
 
 			d.WriteError(c, e,
@@ -169,7 +169,7 @@ func getRelayerBalance(c *gin.Context) {
 			e := deps.NewError(
 				"status",
 				fmt.Errorf("cannot query relayer status"),
-				http.StatusBadRequest,
+				http.StatusInternalServerError,
 			)
 
 			d.WriteError(c, e,
@@ -207,7 +207,7 @@ func getRelayerBalance(c *gin.Context) {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot retrieve relayer status"),
-			http.StatusBadRequest,
+			http.StatusInternalServerError,
 		)
 
 		d.WriteError(c, e,
