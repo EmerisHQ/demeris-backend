@@ -3,6 +3,7 @@ package chains
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -411,8 +412,7 @@ func VerifyTrace(c *gin.Context) {
 		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel, chainID)
 
 		if err != nil {
-			switch err.(type) {
-			case *database.ErrNoMatchingChannel:
+			if errors.As(err, &database.ErrNoMatchingChannel{}) {
 				d.LogError(
 					err.Error(),
 					"hash",
@@ -427,7 +427,7 @@ func VerifyTrace(c *gin.Context) {
 				res.VerifiedTrace.Cause = err.Error()
 
 				c.JSON(http.StatusOK, res)
-			default:
+			} else {
 				e1 := deps.NewError(
 					"denom/verify-trace",
 					fmt.Errorf("failed querying for %s", hash),
@@ -441,7 +441,6 @@ func VerifyTrace(c *gin.Context) {
 					"hash",
 					hash,
 				)
-
 			}
 
 			return
