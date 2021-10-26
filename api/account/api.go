@@ -394,10 +394,6 @@ func GetDelegatorRewards(c *gin.Context) {
 		return
 	}
 
-	// if l := len(rewardsRes.Rewards); l > 0 {
-	// 	res.Rewards = make([]delegationDelegatorReward, l)
-	// }
-
 	for _, r := range rewardsRes.Rewards {
 		res.Rewards = append(res.Rewards, delegationDelegatorReward{
 			ValidatorAddress: r.ValidatorAddress,
