@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
@@ -42,13 +41,6 @@ func getRelayerStatus(c *gin.Context) {
 	var res relayerStatusResponse
 
 	d := deps.GetDeps(c)
-
-	if d.Store.Exists("relayer") {
-		res.Running = true
-		c.JSON(http.StatusOK, res)
-
-		return
-	}
 
 	obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
 		Namespace: d.KubeNamespace,
@@ -101,25 +93,6 @@ func getRelayerStatus(c *gin.Context) {
 		res.Running = false
 	}
 
-	err = d.Store.SetWithExpiryTime("relayer", relayer, 5*time.Second)
-	if err != nil {
-		e := deps.NewError(
-			"status",
-			fmt.Errorf("cannot retrieve relayer status"),
-			http.StatusInternalServerError,
-		)
-
-		d.WriteError(c, e,
-			"cannot set relayer status",
-			"id",
-			e.ID,
-			"error",
-			err,
-		)
-
-		return
-	}
-
 	c.JSON(http.StatusOK, res)
 }
 
@@ -137,88 +110,48 @@ func getRelayerBalance(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	if !d.Store.Exists("relayer") {
-		obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
-			Namespace: d.KubeNamespace,
-			Name:      "relayer",
-		}.String())
+	obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
+		Namespace: d.KubeNamespace,
+		Name:      "relayer",
+	}.String())
 
-		if err != nil {
-			e := deps.NewError(
-				"status",
-				fmt.Errorf("cannot query relayer status"),
-				http.StatusInternalServerError,
-			)
-
-			d.WriteError(c, e,
-				"cannot query relayer status",
-				"id",
-				e.ID,
-				"error",
-				err,
-				"obj",
-				obj,
-			)
-
-			return
-		}
-
-		relayer := &v1.Relayer{}
-		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(
-			obj.(*unstructured.Unstructured).UnstructuredContent(), relayer); err != nil && !errors.Is(err, k8s.ErrNotFound) {
-			e := deps.NewError(
-				"status",
-				fmt.Errorf("cannot query relayer status"),
-				http.StatusInternalServerError,
-			)
-
-			d.WriteError(c, e,
-				"cannot unstructure relayer status",
-				"id",
-				e.ID,
-				"error",
-				err,
-			)
-
-		}
-
-		err = d.Store.SetWithExpiryTime("relayer", relayer, 5*time.Second)
-		if err != nil {
-			e := deps.NewError(
-				"status",
-				fmt.Errorf("cannot retrieve relayer status"),
-				http.StatusBadRequest,
-			)
-
-			d.WriteError(c, e,
-				"cannot set relayer status",
-				"id",
-				e.ID,
-				"error",
-				err,
-			)
-
-			return
-		}
-	}
-
-	relayer, err := d.Store.GetRelayer("relayer")
 	if err != nil {
 		e := deps.NewError(
 			"status",
-			fmt.Errorf("cannot retrieve relayer status"),
+			fmt.Errorf("cannot query relayer status"),
 			http.StatusInternalServerError,
 		)
 
 		d.WriteError(c, e,
-			"cannot get relayer status",
+			"cannot query relayer status",
+			"id",
+			e.ID,
+			"error",
+			err,
+			"obj",
+			obj,
+		)
+
+		return
+	}
+
+	relayer := &v1.Relayer{}
+	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+		obj.(*unstructured.Unstructured).UnstructuredContent(), relayer); err != nil && !errors.Is(err, k8s.ErrNotFound) {
+		e := deps.NewError(
+			"status",
+			fmt.Errorf("cannot query relayer status"),
+			http.StatusInternalServerError,
+		)
+
+		d.WriteError(c, e,
+			"cannot unstructure relayer status",
 			"id",
 			e.ID,
 			"error",
 			err,
 		)
 
-		return
 	}
 
 	chains := []string{}
