@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/lib/pq"
+)
 
 // TracelistenerDatabaseRow contains a list of all the fields each database row must contain in order to be
 // inserted correctly.
@@ -52,11 +56,11 @@ func (b DelegationRow) WithChainName(cn string) DatabaseEntrier {
 type IBCChannelRow struct {
 	TracelistenerDatabaseRow
 
-	ChannelID        string   `db:"channel_id" json:"channel_id"`
-	CounterChannelID string   `db:"counter_channel_id" json:"counter_channel_id"`
-	Hops             []string `db:"hops" json:"hops"`
-	Port             string   `db:"port" json:"port"`
-	State            int32    `db:"state" json:"state"`
+	ChannelID        string         `db:"channel_id" json:"channel_id"`
+	CounterChannelID string         `db:"counter_channel_id" json:"counter_channel_id"`
+	Port             string         `db:"port" json:"port"`
+	State            int32          `db:"state" json:"state"`
+	Hops             pq.StringArray `db:"hops" json:"hops"`
 }
 
 // WithChainName implements the DatabaseEntrier interface.

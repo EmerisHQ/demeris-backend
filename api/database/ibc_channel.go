@@ -85,5 +85,22 @@ func (d *Database) GetIbcChannelToChain(chain, channel, chainID string) (models.
 	return c, nil
 }
 
-func (d *Database) GetIbcChannelOfChain(chain, channel, chainID string) (models.IbcChannelsInfo, error) {
+func (d *Database) GetIbcChannelOfChain(chain, channelId string) (models.IBCChannelRow, error) {
+	var channel models.IBCChannelRow
+
+	q := `SELECT * FROM tracelistener.channels WHERE channel_id=? and chain_name=?;`
+
+	q = d.dbi.DB.Rebind(q)
+
+	return channel, d.dbi.DB.Get(&channel, q, channelId, chain)
+}
+
+func (d *Database) GetIbcConnectionOfChain(chain, connId string) (models.IBCConnectionRow, error) {
+	var conn models.IBCConnectionRow
+
+	q := `SELECT * FROM tracelistener.connections WHERE connection_id=? and chain_name=?;`
+
+	q = d.dbi.DB.Rebind(q)
+
+	return conn, d.dbi.DB.Get(&conn, q, connId, chain)
 }
