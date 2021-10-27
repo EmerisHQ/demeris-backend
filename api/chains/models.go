@@ -60,7 +60,7 @@ type trace struct {
 type verifiedTrace struct {
 	IbcDenom  string  `json:"ibc_denom,omitempty"`
 	BaseDenom string  `json:"base_denom,omitempty"`
-	Verified  bool    `json:"verified,omitempty"`
+	Verified  bool    `json:"verified"`
 	Path      string  `json:"path,omitempty"`
 	Trace     []trace `json:"trace,omitempty"`
 }
