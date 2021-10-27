@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	v12 "k8s.io/api/core/v1"
-
 	v1 "github.com/allinbits/starport-operator/api/v1"
+	v12 "k8s.io/api/core/v1"
 
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
 
@@ -56,7 +55,7 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		Namespace: r.s.defaultK8SNamespace,
 	}
 
-	if _, err := k.ChainByName(newChain.ChainName); !errors.Is(err, k8s.ErrNotFound) {
+	if _, err := k8s.GetChain(r.s.nodesetInformer, r.s.defaultK8SNamespace, newChain.ChainName); !errors.Is(err, k8s.ErrNotFound) {
 		r.s.l.Infow("trying to add a kubernetes nodeset which is already there, ignoring", "error", err)
 		newChain.NodeConfig = nil
 	}

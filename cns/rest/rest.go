@@ -6,6 +6,7 @@ import (
 
 	"github.com/allinbits/demeris-backend/utils/validation"
 	"github.com/gin-gonic/gin/binding"
+	"k8s.io/client-go/informers"
 
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
 
@@ -28,6 +29,7 @@ type Server struct {
 	k                   *kube.Client
 	rc                  *chainwatch.Connection
 	defaultK8SNamespace string
+	nodesetInformer     informers.GenericInformer
 	debug               bool
 }
 
@@ -35,7 +37,8 @@ type router struct {
 	s *Server
 }
 
-func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc *chainwatch.Connection, defaultK8SNamespace string, debug bool) *Server {
+func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc *chainwatch.Connection,
+	defaultK8SNamespace string, nodesetInformer informers.GenericInformer, debug bool) *Server {
 	if !debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -49,6 +52,7 @@ func NewServer(l *zap.SugaredLogger, d *database.Instance, kube *kube.Client, rc
 		k:                   kube,
 		rc:                  rc,
 		defaultK8SNamespace: defaultK8SNamespace,
+		nodesetInformer:     nodesetInformer,
 		debug:               debug,
 	}
 

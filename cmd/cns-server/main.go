@@ -1,6 +1,8 @@
 package main
 
 import (
+	k8srest "k8s.io/client-go/rest"
+
 	"github.com/allinbits/demeris-backend/cns/chainwatch"
 	"github.com/allinbits/demeris-backend/cns/database"
 	"github.com/allinbits/demeris-backend/cns/rest"
@@ -38,12 +40,29 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	infConfig, err := k8srest.InClusterConfig()
+	if err != nil {
+		logger.Panicw("k8s server panic", "error", err)
+	}
+
+	nodesetInformer, err := k8s.GetInformer(infConfig, config.KubernetesNamespace, "nodeset")
+	if err != nil {
+		logger.Panicw("k8s server panic", "error", err)
+	}
+
+	relayerInformer, err := k8s.GetInformer(infConfig, config.KubernetesNamespace, "relayers")
+	if err != nil {
+		logger.Panicw("k8s server panic", "error", err)
+	}
+
 	ci := chainwatch.New(
 		logger,
 		kube,
 		config.KubernetesNamespace,
 		rc,
 		di,
+		nodesetInformer,
+		relayerInformer,
 		config.RelayerDebug,
 	)
 
@@ -55,8 +74,11 @@ func main() {
 		&kube,
 		rc,
 		config.KubernetesNamespace,
+		nodesetInformer,
 		config.Debug,
 	)
+
+	go nodesetInformer.Informer().Run(make(chan struct{}))
 
 	if err := restServer.Serve(config.RESTAddress); err != nil {
 		logger.Panicw("rest http server error", "error", err)

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/allinbits/demeris-backend/models"
+	"k8s.io/client-go/informers"
 
 	"github.com/allinbits/demeris-backend/cns/database"
 
@@ -31,6 +32,8 @@ type Instance struct {
 	defaultNamespace string
 	c                *Connection
 	db               *database.Instance
+	nodesetInformer  informers.GenericInformer
+	relayerInformer  informers.GenericInformer
 	relayerDebug     bool
 }
 
@@ -40,6 +43,8 @@ func New(
 	defaultNamespace string,
 	c *Connection,
 	db *database.Instance,
+	nodesetInformer informers.GenericInformer,
+	relayerInformer informers.GenericInformer,
 	relayerDebug bool,
 ) *Instance {
 	return &Instance{
@@ -48,6 +53,8 @@ func New(
 		defaultNamespace: defaultNamespace,
 		c:                c,
 		db:               db,
+		nodesetInformer:  nodesetInformer,
+		relayerInformer:  relayerInformer,
 		relayerDebug:     relayerDebug,
 	}
 
@@ -82,12 +89,7 @@ func (i *Instance) Run() {
 				}
 			}
 
-			q := k8s.Querier{
-				Client:    i.k,
-				Namespace: i.defaultNamespace,
-			}
-
-			n, err := q.ChainByName(chain.Name)
+			n, err := k8s.GetChain(i.nodesetInformer, i.defaultNamespace, chain.Name)
 			if err != nil {
 				i.l.Errorw("cannot get chains from k8s", "error", err)
 				continue
@@ -124,7 +126,8 @@ func (i *Instance) Run() {
 					continue
 				}
 			case relayerConnecting:
-				relayer, err := q.Relayer()
+
+				relayer, err := k8s.GetRelayer(i.relayerInformer, i.defaultNamespace)
 				if err != nil {
 					i.l.Errorw("cannot get relayer", "error", err)
 					continue
@@ -212,7 +215,7 @@ func (i *Instance) createRelayer(chain Chain) error {
 		return err
 	}
 
-	relayer, err := q.Relayer()
+	relayer, err := k8s.GetRelayer(i.relayerInformer, i.defaultNamespace)
 	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
 		return fmt.Errorf("cannot query relayer, %w", err)
 	}

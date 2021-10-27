@@ -7,17 +7,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	k8stypes "k8s.io/apimachinery/pkg/types"
-
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/models"
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	v1 "github.com/allinbits/starport-operator/api/v1"
+	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,34 +38,8 @@ func getRelayerStatus(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
-		Namespace: d.KubeNamespace,
-		Name:      "relayer",
-	}.String())
-
+	relayer, err := k8s.GetRelayer(d.RelayersInformer, d.KubeNamespace)
 	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
-		e := deps.NewError(
-			"status",
-			fmt.Errorf("cannot query relayer status"),
-			http.StatusInternalServerError,
-		)
-
-		d.WriteError(c, e,
-			"cannot query relayer status",
-			"id",
-			e.ID,
-			"error",
-			err,
-			"obj",
-			obj,
-		)
-
-		return
-	}
-
-	relayer := &v1.Relayer{}
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(
-		obj.(*unstructured.Unstructured).UnstructuredContent(), relayer); err != nil && !errors.Is(err, k8s.ErrNotFound) {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot query relayer status"),
@@ -110,34 +80,8 @@ func getRelayerBalance(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	obj, err := d.RelayersInformer.Lister().Get(k8stypes.NamespacedName{
-		Namespace: d.KubeNamespace,
-		Name:      "relayer",
-	}.String())
-
-	if err != nil {
-		e := deps.NewError(
-			"status",
-			fmt.Errorf("cannot query relayer status"),
-			http.StatusInternalServerError,
-		)
-
-		d.WriteError(c, e,
-			"cannot query relayer status",
-			"id",
-			e.ID,
-			"error",
-			err,
-			"obj",
-			obj,
-		)
-
-		return
-	}
-
-	relayer := &v1.Relayer{}
-	if err := runtime.DefaultUnstructuredConverter.FromUnstructured(
-		obj.(*unstructured.Unstructured).UnstructuredContent(), relayer); err != nil && !errors.Is(err, k8s.ErrNotFound) {
+	relayer, err := k8s.GetRelayer(d.RelayersInformer, d.KubeNamespace)
+	if err != nil && !errors.Is(err, k8s.ErrNotFound) {
 		e := deps.NewError(
 			"status",
 			fmt.Errorf("cannot query relayer status"),

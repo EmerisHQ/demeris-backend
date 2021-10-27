@@ -27,11 +27,7 @@ type denomsDataResponse struct {
 func (r *router) denomsDataHandler(ctx *gin.Context) {
 	chainName := ctx.Param("chain")
 
-	q := k8s.Querier{
-		Client: *r.s.k,
-	}
-
-	ready, err := q.ChainRunning(chainName)
+	ready, err := k8s.ChainRunning(r.s.nodesetInformer, r.s.defaultK8SNamespace, chainName)
 	if err != nil || !ready {
 		e(ctx, http.StatusInternalServerError, fmt.Errorf("chain %s not ready", chainName))
 		r.s.l.Error("chain not ready", "error", err, "ready value", ready)

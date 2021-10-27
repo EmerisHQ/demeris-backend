@@ -9,7 +9,6 @@ import (
 	"github.com/allinbits/demeris-backend/api/config"
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router"
-	"github.com/allinbits/demeris-backend/utils"
 	"github.com/allinbits/demeris-backend/utils/k8s"
 	"github.com/allinbits/demeris-backend/utils/logging"
 	"github.com/allinbits/demeris-backend/utils/store"
@@ -71,7 +70,7 @@ func main() {
 		l.Panicw("k8s server panic", "error", err)
 	}
 
-	informer, err := utils.GetInformer(infConfig, cfg.KubernetesNamespace, "relayers")
+	informer, err := k8s.GetInformer(infConfig, cfg.KubernetesNamespace, "relayers")
 	if err != nil {
 		l.Panicw("k8s server panic", "error", err)
 	}
