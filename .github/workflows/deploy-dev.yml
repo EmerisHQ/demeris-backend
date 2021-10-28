@@ -12,15 +12,6 @@ jobs:
   redis:
     runs-on: self-hosted
     steps:
-      - uses: mikefarah/yq@master
-
-      - uses: chkk-io/actions/k8s@main
-        id: precheck
-        env:
-          CHKK_ACCESS_TOKEN: ${{ secrets.CHKK_ACCESS_TOKEN }}
-        with:
-          continue-on-failure: true
-
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
         with:
