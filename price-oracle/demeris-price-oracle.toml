@@ -1,9 +1,0 @@
-#kubectl port-forward service/cockroachdb-public 26257
-DatabaseConnectionURL = "postgres://root@127.0.0.1:26257?sslmode=disable"
-ListenAddr = "127.0.0.1:9898"
-Debug = true
-LogPath = ""
-interval = "10s"
-whitelistfiats = ["EUR","KRW","CHF"]
-coinmarketcapapikey =""
-fixerapikey = ""
