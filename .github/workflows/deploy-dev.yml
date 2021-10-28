@@ -2,6 +2,11 @@ name: Deploy on Emeris Dev Environment
 
 on:
   workflow_dispatch:
+    inputs:
+      cns-version:
+        description: cns-server and admin-ui branch, tag or commit to deploy
+        required: true
+        default: master
   workflow_run:
     workflows: ["Build docker images"]
     branches: [develop]
@@ -56,7 +61,7 @@ jobs:
             helm upgrade cns-server \
               --install \
               --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.sha }} \
+              --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.cns-version }} \
               ./helm/emeris-cns-server
   
   api-server:
@@ -143,7 +148,7 @@ jobs:
             helm upgrade admin-ui \
               --install \
               --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-admin-ui:${{ github.sha }} \
+              --set image=gcr.io/tendermint-dev/emeris-admin-ui:${{ github.event.inputs.cns-version }} \
               --set cnsAddress=https://dev.demeris.io/v1/cns \
               ./helm/emeris-admin-ui
 
