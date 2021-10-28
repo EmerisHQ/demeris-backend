@@ -12,6 +12,13 @@ jobs:
   redis:
     runs-on: self-hosted
     steps:
+      - uses: chkk-io/actions/k8s@main
+        id: precheck
+        env:
+          CHKK_ACCESS_TOKEN: ${{ secrets.CHKK_ACCESS_TOKEN }}
+        with:
+          continue-on-failure: true
+
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
         with:
@@ -24,6 +31,7 @@ jobs:
               --set auth.enabled=false \
               --set auth.sentinel=false \
               --set architecture=standalone \
+              --post-renderer ./chkk-post-renderer
               bitnami/redis
 
   cockroachdb:
