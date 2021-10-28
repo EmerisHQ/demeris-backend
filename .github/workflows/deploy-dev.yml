@@ -12,7 +12,7 @@ jobs:
   redis:
     runs-on: self-hosted
     steps:
-      - uses: chrisdickinson/setup-yq@latest
+      - uses: mikefarah/yq@master
 
       - uses: chkk-io/actions/k8s@main
         id: precheck
