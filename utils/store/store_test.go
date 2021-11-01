@@ -271,3 +271,19 @@ func TestSetPoolSwapFees(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, sdk.Coins{sdk.NewCoin(testDenom, testAmountInt)}.String(), fees.String())
 }
+
+func TestBlocks(t *testing.T) {
+	defer resetDB()
+	blocks := NewBlocks(store)
+	// call Block method with height not stored, expected error
+	_, err := blocks.Block(123)
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrBlockNotFound)
+	// add new block with dummy data
+	data := []byte("dummy block data")
+	require.NoError(t, blocks.Add(data, 123))
+	// test Block Method
+	res, err := blocks.Block(123)
+	require.NoError(t, err)
+	require.Equal(t, data, res)
+}
