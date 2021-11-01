@@ -24,6 +24,7 @@ jobs:
               --set auth.enabled=false \
               --set auth.sentinel=false \
               --set architecture=standalone \
+              --post-renderer ./chkk-post-renderer
               bitnami/redis
 
   cockroachdb:
