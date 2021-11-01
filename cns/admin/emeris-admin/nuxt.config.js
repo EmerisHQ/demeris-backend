@@ -55,6 +55,30 @@ export default {
     ['nuxt-buefy', { materialDesignIcons: false }],
     'bootstrap-vue/nuxt',
     '@nuxtjs/axios',
+    [
+      '@nuxtjs/firebase',
+      {
+        config: {
+          apiKey: "AIzaSyA09i5TB-Jb0-llyRaHPjytr9iFNY8V1TI",
+          authDomain: "emeris-admin-ui.firebaseapp.com",
+          projectId: "emeris-admin-ui",
+          storageBucket: "emeris-admin-ui.appspot.com",
+          messagingSenderId: "456830583626",
+          appId: "1:456830583626:web:cc57b5b475143771f177b3"
+        
+        },
+        services: {
+          auth: {
+            persistence: 'local',
+            initialize: {
+              onAuthStateChangedAction: 'onAuthStateChangedAction',
+              subscribeManually: false
+            },
+            ssr: false,
+          }
+        }
+      }
+    ],
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -67,6 +91,7 @@ export default {
   },
 
   router: {
-    base: process.env.BASE_URL || "/admin"
+    base: process.env.BASE_URL || "/admin",
+    middleware: 'auth'
   }
 };
