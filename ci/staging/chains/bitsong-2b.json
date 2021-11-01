@@ -52,5 +52,6 @@
     "docker_image": "gcr.io/tendermint-dev/bitsong",
     "docker_image_version": "v0.8.0"
   },
-  "supported_wallets": ["keplr"]
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://explorebitsong.com/"
 }
