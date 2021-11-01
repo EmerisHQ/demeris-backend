@@ -45,7 +45,7 @@ func main() {
 		logger.Panicw("k8s server panic", "error", err)
 	}
 
-	nodesetInformer, err := k8s.GetInformer(infConfig, config.KubernetesNamespace, "nodeset")
+	nodesetInformer, err := k8s.GetInformer(infConfig, config.KubernetesNamespace, "nodesets")
 	if err != nil {
 		logger.Panicw("k8s server panic", "error", err)
 	}
@@ -54,6 +54,10 @@ func main() {
 	if err != nil {
 		logger.Panicw("k8s server panic", "error", err)
 	}
+
+	go nodesetInformer.Informer().Run(make(chan struct{}))
+
+	go relayerInformer.Informer().Run(make(chan struct{}))
 
 	ci := chainwatch.New(
 		logger,
@@ -77,8 +81,6 @@ func main() {
 		nodesetInformer,
 		config.Debug,
 	)
-
-	go nodesetInformer.Informer().Run(make(chan struct{}))
 
 	if err := restServer.Serve(config.RESTAddress); err != nil {
 		logger.Panicw("rest http server error", "error", err)

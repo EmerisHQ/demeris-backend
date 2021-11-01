@@ -76,6 +76,7 @@ func (i *Instance) Run() {
 
 		for idx, chain := range chains {
 			chainStatus, found, err := i.c.ChainStatus(chain.Name)
+			i.l.Infow("this is chain status", "status", chainStatus, "err", err)
 			if err != nil {
 				i.l.Errorw("cannot query chain status from redis at beginning of chains loop", "chainName", chain.Name, "error", err)
 				continue

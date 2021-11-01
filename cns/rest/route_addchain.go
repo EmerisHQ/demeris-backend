@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend/cns/chainwatch"
+	"github.com/allinbits/demeris-backend/utils/validation"
 	v1 "github.com/allinbits/starport-operator/api/v1"
 	v12 "k8s.io/api/core/v1"
-
-	"github.com/allinbits/demeris-backend/cns/chainwatch"
-
-	"github.com/allinbits/demeris-backend/utils/validation"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/allinbits/demeris-backend/utils/k8s"
 
@@ -55,7 +55,13 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 		Namespace: r.s.defaultK8SNamespace,
 	}
 
-	if _, err := k8s.GetChain(r.s.nodesetInformer, r.s.defaultK8SNamespace, newChain.ChainName); !errors.Is(err, k8s.ErrNotFound) {
+	rsrc := schema.GroupResource{Group: "apps.starport.cloud", Resource: "nodesets"}
+	testErr := k8serrors.NewNotFound(rsrc, newChain.ChainName)
+	r.s.l.Infow("test error this", "test", testErr)
+
+	r.s.l.Infow("debug", "info", r.s.nodesetInformer, "ns", r.s.defaultK8SNamespace, "name", newChain.ChainName)
+	_, err := k8s.GetChain(r.s.nodesetInformer, "apps.starport.cloud", newChain.ChainName)
+	if errors.Is(err, k8serrors.NewNotFound(rsrc, newChain.ChainName)) {
 		r.s.l.Infow("trying to add a kubernetes nodeset which is already there, ignoring", "error", err)
 		newChain.NodeConfig = nil
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	appsv1 "github.com/allinbits/starport-operator/api/v1"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -40,11 +41,14 @@ func GetChain(informer informers.GenericInformer, namespace, name string) (appsv
 	}
 
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(
-		obj.(*unstructured.Unstructured).UnstructuredContent(), chainList)
+		obj.(*unstructured.Unstructured).UnstructuredContent(), &chainList)
 	if err != nil {
-		return appsv1.NodeSet{}, err
+		return appsv1.NodeSet{}, errors.Wrap(err, "this is from unstructure")
 	}
 
+	if len(chainList.Items) == 0 {
+		return appsv1.NodeSet{}, fmt.Errorf("%w: %s", ErrNotFound, name)
+	}
 	return chainList.Items[0], nil
 }
 
