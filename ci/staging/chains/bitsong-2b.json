@@ -1,1 +1,55 @@
-
+{
+  "chain_name": "bitsong",
+  "derivation_path": "m/44'/639'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/bitsong.svg",
+  "enabled": true,
+  "valid_block_thresh": "20s",
+  "display_name": "BitSong",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "BTSG",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.01, "average": 0.025, "high": 0.03},
+      "name": "ubtsg",
+      "logo": "https://storage.googleapis.com/emeris/logos/bitsong.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "BTSG"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "bitsong",
+    "chain_id": "bitsong-2b",
+    "bech32_config": {
+      "main_prefix": "bitsong",
+      "prefix_account": "bitsong",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "bitsong",
+    "cli_name": "bitsongd",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/bitsongofficial/networks/master/bitsong-2b/genesis.json"
+      },
+      "seeds": [
+        {"id": "ffa27441ca78a5d41a36f6d505b67a145fd54d8a", "address": "95.217.156.228", "port": 26656},
+        {"id": "efd52c1e56b460b1f37d73c8d2bd5f860b41d2ba", "address": "65.21.62.83", "port": 26656}
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/bitsong",
+    "docker_image_version": "v0.8.0"
+  }
+}
