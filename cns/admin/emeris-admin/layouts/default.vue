@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <aside-menu :menu="menu" />
+    <nav-bar />
     <nuxt />
     <footer-bar />
   </div>
@@ -9,11 +10,13 @@
 <script>
 import AsideMenu from '@/components/AsideMenu'
 import FooterBar from '@/components/FooterBar'
+import NavBar from '@/components/NavBar'
 
 export default {
   name: 'Home',
   components: {
     FooterBar,
+    NavBar,
     AsideMenu,
   },
   computed: {
