@@ -13,11 +13,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 
+	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
 	"github.com/allinbits/demeris-backend/models"
 	bech322 "github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	bank "github.com/cosmos/cosmos-sdk/x/bank/types"
+	mint "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 // GetChains returns the list of all the chains supported by demeris.
@@ -269,69 +271,69 @@ func VerifyTrace(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	chain := c.Param("chain")
+	chainName := c.Param("chain")
 	hash := c.Param("hash")
 
 	hash = strings.ToLower(hash)
 
-	denomTrace, err := d.Database.DenomTrace(chain, hash)
+	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
+
+	denomTrace, err := d.Database.DenomTrace(chainName, hash)
 
 	if err != nil {
 
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("cannot query token hash %v on chain %v", hash, chain),
-			http.StatusBadRequest,
-		)
+		cause := fmt.Sprintf("token hash %v not found on chain %v", hash, chainName)
 
-		d.WriteError(c, e,
-			"cannot query database for denom",
-			"id",
-			e.ID,
+		d.LogError(
+			cause,
 			"hash",
 			hash,
-			"chain",
-			chain,
+			"chainName",
+			chainName,
 			"error",
 			err,
 		)
+
+		res.VerifiedTrace.Verified = false
+		res.VerifiedTrace.Cause = cause
+
+		c.JSON(http.StatusOK, res)
 
 		return
 
 	}
 
-	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
 	res.VerifiedTrace.Path = denomTrace.Path
 	res.VerifiedTrace.BaseDenom = denomTrace.BaseDenom
 
 	pathsElements, err := paths(res.VerifiedTrace.Path)
 
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
 
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
-			http.StatusBadRequest,
-		)
+		cause := fmt.Sprintf("unsupported path %s", res.VerifiedTrace.Path)
 
-		d.WriteError(c, e,
+		d.LogError(
 			"invalid denom",
-			"id",
-			e.ID,
 			"hash",
 			hash,
 			"path",
 			res.VerifiedTrace.Path,
 			"err",
-			err,
+			cause,
 		)
+
+		res.VerifiedTrace.Verified = false
+		res.VerifiedTrace.Cause = cause
+
+		c.JSON(http.StatusOK, res)
 
 		return
 	}
 
 	chainIDsMap, err := d.Database.ChainIDs()
+
 	if err != nil {
+
 		err = fmt.Errorf("cannot query list of chain ids, %w", err)
 
 		e := deps.NewError(
@@ -351,33 +353,29 @@ func VerifyTrace(c *gin.Context) {
 			"err",
 			err,
 		)
-
 		return
 	}
 
-	nextChain := chain
+	nextChain := chainName
 	for _, element := range pathsElements {
 		// otherwise, check that it has a transfer prefix
 		if !strings.HasPrefix(element, "transfer/") {
-			err = errors.New(fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path))
+			cause := fmt.Sprintf("Unsupported path %s", res.VerifiedTrace.Path)
 
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("invalid denom %v with path %v", hash, res.VerifiedTrace.Path),
-				http.StatusBadRequest,
-			)
-
-			d.WriteError(c, e,
+			d.LogError(
 				"invalid denom",
-				"id",
-				e.ID,
 				"hash",
 				hash,
 				"path",
 				res.VerifiedTrace.Path,
 				"err",
-				err,
+				cause,
 			)
+
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = cause
+
+			c.JSON(http.StatusOK, res)
 
 			return
 		}
@@ -389,16 +387,9 @@ func VerifyTrace(c *gin.Context) {
 
 		chainID, ok := chainIDsMap[nextChain]
 		if !ok {
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("cannot check path element during path resolution"),
-				http.StatusBadRequest,
-			)
 
-			d.WriteError(c, e,
+			d.LogError(
 				"cannot check path element during path resolution",
-				"id",
-				e.ID,
 				"hash",
 				hash,
 				"path",
@@ -407,30 +398,47 @@ func VerifyTrace(c *gin.Context) {
 				fmt.Errorf("cannot find %s in chainIDs map", nextChain),
 			)
 
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = "cannot check path element during path resolution"
+
+			c.JSON(http.StatusOK, res)
+
 			return
 		}
+
 		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel, chainID)
 
 		if err != nil {
-			e := deps.NewError(
-				"denom/verify-trace",
-				fmt.Errorf("failed querying for %s", hash),
-				http.StatusBadRequest,
-			)
+			if errors.As(err, &database.ErrNoMatchingChannel{}) {
+				d.LogError(
+					err.Error(),
+					"hash",
+					hash,
+					"path",
+					res.VerifiedTrace.Path,
+					"chain",
+					chainName,
+				)
 
-			d.WriteError(c, e,
-				"invalid number of query responses",
-				"id",
-				e.ID,
-				"hash",
-				hash,
-				"path",
-				res.VerifiedTrace.Path,
-				"chain",
-				chain,
-				"err",
-				err,
-			)
+				res.VerifiedTrace.Verified = false
+				res.VerifiedTrace.Cause = err.Error()
+
+				c.JSON(http.StatusOK, res)
+			} else {
+				e1 := deps.NewError(
+					"denom/verify-trace",
+					fmt.Errorf("failed querying for %s", hash),
+					http.StatusBadRequest,
+				)
+
+				d.WriteError(c, e1,
+					"invalid number of query responses",
+					"id",
+					e1.ID,
+					"hash",
+					hash,
+				)
+			}
 
 			return
 		}
@@ -443,20 +451,61 @@ func VerifyTrace(c *gin.Context) {
 		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
 
 		nextChain = trace.CounterpartyName
+
+		primaryChannelInfo, err := d.Database.PrimaryChannelCounterparty(chainName, nextChain)
+
+		if err != nil {
+			e := deps.NewError(
+				"denom/verify-trace",
+				fmt.Errorf("failed to get primary channel for %s", hash),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"cannot query primary channel information",
+				"id",
+				e.ID,
+				"hash",
+				hash,
+				"path",
+				res.VerifiedTrace.Path,
+				"chain",
+				chainName,
+				"nextChain",
+				nextChain,
+				"err",
+				err,
+			)
+
+			return
+		}
+
+		if primaryChannelInfo.ChannelName != channel {
+
+			d.LogError(
+				"not primary channel",
+				"hash",
+				hash,
+				"channel",
+				channel,
+				"chain",
+				chainName,
+				"err",
+				err,
+			)
+
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = fmt.Sprintf("%s : not primary channel for chain %s- expecting %s got %s", hash, chainName, primaryChannelInfo, channel)
+			c.JSON(http.StatusOK, res)
+			return
+		}
 	}
 
 	nextChainData, err := d.Database.Chain(nextChain)
 	if err != nil {
-		e := deps.NewError(
-			"denom/verify-trace",
-			fmt.Errorf("cannot query chain %s", nextChain),
-			http.StatusBadRequest,
-		)
 
-		d.WriteError(c, e,
+		d.LogError(
 			"cannot query chain",
-			"id",
-			e.ID,
 			"hash",
 			hash,
 			"path",
@@ -838,4 +887,193 @@ func getAddress(chain models.Chain, account string) (string, error) {
 	}
 
 	return addr, nil
+}
+
+// GetInflation returns the inflation of a specific chain
+// @Summary Gets the inflation of a chain
+// @Description Gets inflation
+// @Tags Chain
+// @ID get-inflation
+// @Produce json
+// @Success 200 {object} inflationResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/mint/inflation [get]
+func GetInflation(c *gin.Context) {
+
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"mint/inflation",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	mintQuery := mint.NewQueryClient(grpcConn)
+
+	queryInflationRes, err := mintQuery.Inflation(context.Background(), &mint.QueryInflationRequest{})
+
+	if err != nil {
+		e := deps.NewError(
+			"mint/inflation",
+			fmt.Errorf("unable to query inflation for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"unable to query inflation",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, queryInflationRes)
+}
+
+// GetMintParams returns the minting parameters of a specific chain
+// @Summary Gets the minting params of a chain
+// @Description Gets minting params
+// @Tags Chain
+// @ID get-mint-params
+// @Produce json
+// @Success 200 {object} paramsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/mint/params [get]
+func GetMintParams(c *gin.Context) {
+
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"mint/params",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	mintQuery := mint.NewQueryClient(grpcConn)
+
+	queryParamsRes, err := mintQuery.Params(context.Background(), &mint.QueryParamsRequest{})
+
+	if err != nil {
+		e := deps.NewError(
+			"mint/params",
+			fmt.Errorf("unable to query params for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"unable to query params",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, queryParamsRes)
+}
+
+// GetAnnualProvisions returns the annual provisions of a specific chain
+// @Summary Gets the annual provisions of a chain
+// @Description Gets annual provisions
+// @Tags Chain
+// @ID get-annual-provisions
+// @Produce json
+// @Success 200 {object} annualProvisionsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /chain/{chainName}/mint/annual_provisions [get]
+func GetAnnualProvisions(c *gin.Context) {
+
+	d := deps.GetDeps(c)
+
+	chainName := c.Param("chain")
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"mint/annual-provisions",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	mintQuery := mint.NewQueryClient(grpcConn)
+
+	queryAnnualProvisionsRes, err := mintQuery.AnnualProvisions(context.Background(), &mint.QueryAnnualProvisionsRequest{})
+
+	if err != nil {
+		e := deps.NewError(
+			"mint/annual-provisions",
+			fmt.Errorf("unable to query annual provisions for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"unable to query annual provisions",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, queryAnnualProvisionsRes)
 }

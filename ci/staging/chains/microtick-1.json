@@ -61,5 +61,6 @@
       "max_gas": 5000000,
       "clock_drift": "1800s",
       "trusting_period": "14days"
-    }
+    },
+    "supported_wallets": ["keplr"]
   }

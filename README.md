@@ -1,6 +1,32 @@
 [![Build docker images](https://github.com/allinbits/demeris-backend/actions/workflows/docker-build.yml/badge.svg)](https://github.com/allinbits/demeris-backend/actions/workflows/docker-build.yml)
 
-# Demeris Backend
+# Emeris Backend
+
+## Intro to Emeris
+
+The following blog posts give a good, high-level overview of the product's vision. 
+
+* [What is Emeris](https://medium.com/emeris-blog/introducing-emeris-the-cross-chain-portal-to-all-crypto-apps-4e6eee5b53a8)
+* [Why Emeris matters](https://blog.cosmos.network/why-emeris-matters-to-cosmos-f8f1dfc7664f)
+
+## Architecture
+
+The Emeris backend can be summarised as *a multi-blockchain indexer*. 
+
+![Emeris backend architecture](./images/architecture.png)  
+> Original diagram is [here](https://whimsical.com/backend-current-CP9C1GXs79j9CNs8XAnWJb)
+
+## Components
+
+* [api-server](./api)
+* [cns-server](./cns)
+* [price-oracle](https://github.com/allinbits/emeris-price-oracle)
+* [rpc-watcher](./rpcwatcher)
+* [trace-listener](https://github.com/allinbits/tracelistener/)
+* [ticket-watcher](./cmd/ticket-watcher)
+* [sdk-service](https://github.com/allinbits/sdk-service-meta)
+* [models](https://github.com/allinbits/demeris-backend-models) (shared library)
+* [utils](./utils) (shared library)
 
 ## Generating API documentation
 

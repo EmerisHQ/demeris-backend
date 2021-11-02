@@ -1,3 +1,7 @@
+# price-oracle 
+
+Aggregates and caches price data feeds from external data providers. 
+
 ## Usage
 
 ### Configuration
@@ -72,3 +76,25 @@ The same must be done for FIAT currencies on `POST /fiats`:
 	]
 }
 ```
+
+### Possible Problems
+If you have multiple copy of in-memory cockroach db, it can happen that when you run
+
+`testserver.NewTestServer()` it can stuck at `waiting for download of SOME TMP DIR`
+
+**Solution:** if this happens manually delete **ALL** instances of test server from your machine.
+
+## Dependencies & Licenses
+
+The list of non-{Cosmos, AiB, Tendermint} dependencies and their licenses are:
+
+|Module   	                  |License          |
+|---	                      |---  	        |
+|go-playground/validator   	  |MIT   	        |
+|go.uber.org/zap   	          |MIT           	|
+|lib/pq                       |Open use         |
+|superoo7/go-gecko            |MIT              |
+|gin-contrib/zap   	          |MIT    	        |
+|gin-gonic/gin   	          |MIT    	        |
+|jackc/pgx         	          |MIT    	        |
+|alicebob/miniredis           |MIT    	        |

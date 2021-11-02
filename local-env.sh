@@ -1,9 +1,10 @@
 #!/bin/bash
 
 CLUSTER_NAME=emeris
-BUILD=false
+REBUILD=false
 NO_CHAINS=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
+TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
 KIND_CONFIG=""
 
 usage()
@@ -18,7 +19,7 @@ usage()
     echo -e "  -p, --port \t\t The local port at which the api will be served"
     echo -e "  -a, --address \t\t The address at which the api will be served, defaults to 127.0.0.1"
     echo -e "  -n, --cluster-name \t Kind cluster name"
-    echo -e "  -b, --build \t\t Whether to (re)build docker images"
+    echo -e "  -b, --rebuild \t\t Whether to (re)build docker images"
     echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
     echo -e "  -m, --monitoring \t Setup monitoring infrastructure"
     echo -e "  -h, --help \t\t Show this menu\n"
@@ -59,8 +60,8 @@ case $key in
     shift
     shift
     ;;
-    -b|--build)
-    BUILD=true
+    -b|--rebuild)
+    REBUILD=true
     shift
     ;;
     -m|--monitoring)
@@ -103,7 +104,7 @@ assert_executable_exists docker
 
 if [ "$COMMAND" = "up" ]
 then
-    if [ "$BUILD" = "true" ]; then
+    if [ "$REBUILD" = "true" ]; then
         if [ -z "$GITHUB_TOKEN" ]; then
           echo -e "${red}Error:${reset} you should export GITHUB_TOKEN with a valid GitHub token to build images.\n"
           usage
@@ -146,6 +147,16 @@ EOF
     ### Ensure emeris namespace
     kubectl create namespace emeris &> /dev/null
     kubectl config set-context kind-$CLUSTER_NAME --namespace=emeris &> /dev/null
+
+    ### Apply CRDs
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
 
     ### Ensure nginx ingress controller is deployed
     echo -e "${green}\xE2\x9C\x94${reset} Ensure nginx ingress controller is installed and running"
@@ -230,18 +241,24 @@ EOF
         &> /dev/null
 
     ### Ensure tracelistener image
-    if [[ "$(docker images -q emeris/tracelistener 2> /dev/null)" == "" ]]
+    if [ "$(docker images -q emeris/tracelistener 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/tracelistener image"
-        docker build -t emeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/tracelistener already exists"
     else
-        if [ "$BUILD" = "true" ]
+        if [ ! -d .tracelistener/.git ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/tracelistener image"
-            docker build -t emeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.tracelistener .
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning tracelistener repo"
+            git clone $TRACELISTENER_REPO .tracelistener &> /dev/null
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/tracelistener already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching tracelistener latest changes"
+            cd .tracelistener
+            git pull $TRACELISTENER_REPO &> /dev/null
+            cd ..
         fi
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/tracelistener image"
+        cd .tracelistener
+        docker build -t emeris/tracelistener --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
     fi
     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/tracelistener image to cluster"
     kind load docker-image emeris/tracelistener --name $CLUSTER_NAME &> /dev/null

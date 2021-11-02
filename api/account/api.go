@@ -1,8 +1,15 @@
 package account
 
 import (
+	"context"
+	"encoding/hex"
 	"fmt"
 	"net/http"
+
+	"google.golang.org/grpc"
+
+	basetypes "github.com/cosmos/cosmos-sdk/types"
+	distribution "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
 	"github.com/allinbits/demeris-backend/api/database"
 	"github.com/allinbits/demeris-backend/api/router/deps"
@@ -17,8 +24,10 @@ func Register(router *gin.Engine) {
 	group := router.Group("/account/:address")
 	group.GET("/balance", GetBalancesByAddress)
 	group.GET("/stakingbalances", GetDelegationsByAddress)
+	group.GET("/unbondingdelegations", GetUnbondingDelegationsByAddress)
 	group.GET("/numbers", GetNumbersByAddress)
 	group.GET("/tickets", GetUserTickets)
+	group.GET("/delegatorrewards/:chain", GetDelegatorRewards)
 }
 
 // GetBalancesByAddress returns account of an address.
@@ -193,6 +202,198 @@ func GetDelegationsByAddress(c *gin.Context) {
 			ChainName:        del.ChainName,
 		})
 	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+// GetUnbondingDelegationsByAddress returns the unbonding delegations of an address
+// @Summary Gets unbonding delegations
+// @Description gets unbonding delegations
+// @Tags Account
+// @ID get-unbonding-delegations-account
+// @Produce json
+// @Param address path string true "address to query unbonding delegations for"
+// @Success 200 {object} unbondingDelegationsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /account/{address}/unbondingdelegations [get]
+func GetUnbondingDelegationsByAddress(c *gin.Context) {
+	var res unbondingDelegationsResponse
+
+	d := deps.GetDeps(c)
+
+	address := c.Param("address")
+
+	unbondings, err := d.Database.UnbondingDelegations(address)
+
+	if err != nil {
+		e := deps.NewError(
+			"unbonding delegations",
+			fmt.Errorf("cannot retrieve unbonding delegations for address %v", address),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot query database unbonding delegations for addresses",
+			"id",
+			e.ID,
+			"address",
+			address,
+			"error",
+			err,
+		)
+
+		return
+	}
+
+	for _, unbonding := range unbondings {
+		res.UnbondingDelegations = append(res.UnbondingDelegations, unbondingDelegation{
+			ValidatorAddress: unbonding.Validator,
+			Entries:          unbonding.Entries,
+			ChainName:        unbonding.ChainName,
+		})
+	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+// GetDelegatorRewards returns the delegations rewards of an address on a chain
+// @Summary Gets delegation rewards
+// @Description gets delegation rewards
+// @Tags Account
+// @ID get-delegation-rewards-account
+// @Produce json
+// @Param address path string true "address to query delegation rewards for"
+// @Param chain path string true "chain to query delegation rewards for"
+// @Success 200 {object} delegatorRewardsResponse
+// @Failure 500,403 {object} deps.Error
+// @Router /account/{address}/delegatorrewards/{chain} [get]
+func GetDelegatorRewards(c *gin.Context) {
+	var res delegatorRewardsResponse
+
+	d := deps.GetDeps(c)
+
+	// TODO: add to tracelistener
+
+	address := c.Param("address")
+	chainName := c.Param("chain")
+
+	chain, err := d.Database.Chain(chainName)
+
+	if err != nil {
+		e := deps.NewError(
+			"delegator rewards",
+			fmt.Errorf("unable to fetch chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot get chain",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"err",
+			err,
+		)
+
+		return
+	}
+
+	addressBytes, err := hex.DecodeString(address)
+
+	if err != nil {
+		e := deps.NewError(
+			"delegator rewards",
+			fmt.Errorf("unable to decode hex to bytes"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot decode bytes",
+			"id",
+			e.ID,
+			"err",
+			err,
+		)
+
+		return
+
+	}
+
+	bech23Address, err := basetypes.Bech32ifyAddressBytes(chain.NodeInfo.Bech32Config.PrefixAccount, addressBytes)
+
+	if err != nil {
+		e := deps.NewError(
+			"delegator rewards",
+			fmt.Errorf("failed to bech32ify address bytes"),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot bech32ify bytes",
+			"id",
+			e.ID,
+			"err",
+			err,
+		)
+
+		return
+
+	}
+
+	grpcConn, err := grpc.Dial(fmt.Sprintf("%s:%d", chainName, grpcPort), grpc.WithInsecure())
+	if err != nil {
+		e := deps.NewError(
+			"DelegatorRewards",
+			fmt.Errorf("unable to connect to grpc server for chain %v", chainName),
+			http.StatusBadRequest,
+		)
+
+		d.WriteError(c, e,
+			"cannot connect to grpc",
+			"id",
+			e.ID,
+			"name",
+			chainName,
+			"err",
+			err,
+		)
+
+		return
+	}
+
+	distributionQuery := distribution.NewQueryClient(grpcConn)
+
+	rewardsRes, err := distributionQuery.DelegationTotalRewards(context.Background(), &distribution.QueryDelegationTotalRewardsRequest{
+		DelegatorAddress: bech23Address,
+	})
+
+	if err != nil {
+		e := deps.NewError(
+			"chains",
+			fmt.Errorf("cannot query delegations from chain"),
+			http.StatusInternalServerError,
+		)
+
+		d.WriteError(c, e,
+			"cannot retrieve chains from database",
+			"id",
+			e.ID,
+			"err",
+			err,
+		)
+
+		return
+	}
+
+	for _, r := range rewardsRes.Rewards {
+		res.Rewards = append(res.Rewards, delegationDelegatorReward{
+			ValidatorAddress: r.ValidatorAddress,
+			Reward:           r.Reward.String(),
+		})
+	}
+
+	res.Total = rewardsRes.Total.String()
 
 	c.JSON(http.StatusOK, res)
 }

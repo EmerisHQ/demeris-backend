@@ -1,6 +1,8 @@
 package account
 
-import "github.com/allinbits/demeris-backend/models"
+import (
+	"github.com/allinbits/demeris-backend/models"
+)
 
 type balancesResponse struct {
 	Balances []balance `json:"balances"`
@@ -29,10 +31,30 @@ type stakingBalance struct {
 	ChainName        string `json:"chain_name"`
 }
 
+type unbondingDelegationsResponse struct {
+	UnbondingDelegations []unbondingDelegation `json:"unbonding_delegations"`
+}
+
+type unbondingDelegation struct {
+	ValidatorAddress string                            `json:"validator_address"`
+	Entries          models.UnbondingDelegationEntries `json:"entries"`
+	ChainName        string                            `json:"chain_name"`
+}
+
 type numbersResponse struct {
 	Numbers []models.AuthRow `json:"numbers"`
 }
 
 type userTicketsResponse struct {
 	Tickets map[string][]string `json:"tickets"`
+}
+
+type delegationDelegatorReward struct {
+	ValidatorAddress string `json:"validator_address,omitempty"`
+	Reward           string `json:"reward"`
+}
+
+type delegatorRewardsResponse struct {
+	Rewards []delegationDelegatorReward `json:"rewards"`
+	Total   string                      `json:"total"`
 }

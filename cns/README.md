@@ -1,7 +1,7 @@
-# API server
+# CNS
 
-REST API entry-point to the Emeris back-end.  
-At its simplest the api-server is a translation layer between JSON REST and chain-specific RPC.  
+Emeris configuration service.  
+Allows admins to add and configure supported chains and tokens.
 
 ## Dependencies & Licenses
 
@@ -9,10 +9,11 @@ The list of non-{Cosmos, AiB, Tendermint} dependencies and their licenses are:
 
 |Module   	                  |License          |
 |---	                      |---  	        |
-|gin-gonic/gin   	          |MIT   	        |
 |go-playground/validator   	  |MIT   	        |
-|jmoiron/sqlx   	          |MIT   	        |
-|go.uber.org/zap   	          |MIT           	|
 |sigs.k8s.io/controller-runtime |MIT            |
-|sony/sonyflake               |MIT              |
+|go.uber.org/zap   	          |MIT           	|
+|stretchr/testify   	      |MIT           	|
+|go-redis/redis   	          |BSD-2 Simple    	|
+|gin-contrib/zap   	          |MIT    	        |
 |lib/pq                       |Open use         |
+

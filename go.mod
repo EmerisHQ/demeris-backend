@@ -10,6 +10,7 @@ replace (
 )
 
 require (
+	github.com/alicebob/miniredis/v2 v2.15.1
 	github.com/allinbits/starport-operator v0.0.1-alpha.26
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/containerd/fifo v1.0.0

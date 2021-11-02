@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	gecko "github.com/superoo7/go-gecko/v3"
 	geckoTypes "github.com/superoo7/go-gecko/v3/types"
@@ -28,34 +27,43 @@ const (
 	FixerURL         = "https://data.fixer.io/api/latest"
 )
 
-func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config) {
+type Api struct {
+	Client   *http.Client
+	Instance *Instance
+}
 
+func StartSubscription(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config) {
 	d, err := New(cfg.DatabaseConnectionURL)
 	if err != nil {
 		logger.Fatal(err)
 	}
 	defer d.d.Close()
 
+	api := Api{
+		Client:   &http.Client{Timeout: 2 * time.Second},
+		Instance: d,
+	}
+
 	var wg sync.WaitGroup
-	for _, subscriber := range []func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error{
-		SubscriptionBinance,
+	for _, subscriber := range []func(context.Context, *zap.SugaredLogger, *config.Config) error{
+		api.SubscriptionBinance,
 		//SubscriptionCoinmarketcap,
-		SubscriptionCoingecko,
-		SubscriptionFixer,
+		api.SubscriptionCoingecko,
+		api.SubscriptionFixer,
 		//...
 	} {
 		subscriber := subscriber
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			SubscriptionWorker(ctx, d.d.DB, logger, cfg, subscriber)
+			SubscriptionWorker(ctx, logger, cfg, subscriber)
 		}()
 	}
 
 	wg.Wait()
 }
 
-func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config, fn func(context.Context, *sqlx.DB, *zap.SugaredLogger, *config.Config) error) {
+func SubscriptionWorker(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config, fn func(context.Context, *zap.SugaredLogger, *config.Config) error) {
 	logger.Infow("INFO", "Database", "SubscriptionWorker Start")
 	for {
 		select {
@@ -64,7 +72,7 @@ func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLog
 		default:
 		}
 
-		if err := fn(ctx, db, logger, cfg); err != nil {
+		if err := fn(ctx, logger, cfg); err != nil {
 			logger.Errorw("Database", "SubscriptionWorker", err)
 		}
 
@@ -77,10 +85,9 @@ func SubscriptionWorker(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLog
 	}
 }
 
-func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
-	client := http.Client{
-		Timeout: 2 * time.Second,
-	}
+func (api *Api) SubscriptionBinance(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config) error {
+	client := api.Client
+	db := api.Instance.d.DB
 	Whitelisttokens, err := CnsTokenQuery(db)
 	if err != nil {
 		return fmt.Errorf("SubscriptionBinance CnsTokenQuery: %w", err)
@@ -127,7 +134,6 @@ func SubscriptionBinance(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLo
 		if strToFloat == float64(0) {
 			continue
 		}
-
 		tx := db.MustBegin()
 		now := time.Now()
 		result := tx.MustExec("UPDATE oracle.binance SET price = ($1),updatedat = ($2) WHERE symbol = ($3)", strToFloat, now.Unix(), bp.Symbol)
@@ -245,7 +251,8 @@ func SubscriptionCoinmarketcap(ctx context.Context, db *sqlx.DB, logger *zap.Sug
 }
 */
 
-func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
+func (api *Api) SubscriptionCoingecko(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config) error {
+	db := api.Instance.d.DB
 	Whitelisttokens, err := CnsPriceIdQuery(db)
 	if err != nil {
 		return fmt.Errorf("SubscriptionCoingecko CnsPriceIdQuery: %w", err)
@@ -254,7 +261,7 @@ func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.Sugared
 		return fmt.Errorf("SubscriptionCoingecko CnsPriceIdQuery: The token does not exist.")
 	}
 
-	cg := gecko.NewClient(nil)
+	cg := gecko.NewClient(api.Client)
 	vsCurrency := types.USDBasecurrency
 	perPage := 1
 	page := 1
@@ -301,10 +308,10 @@ func SubscriptionCoingecko(ctx context.Context, db *sqlx.DB, logger *zap.Sugared
 	}
 	return nil
 }
-func SubscriptionFixer(ctx context.Context, db *sqlx.DB, logger *zap.SugaredLogger, cfg *config.Config) error {
-	client := &http.Client{
-		Timeout: 2 * time.Second,
-	}
+
+func (api *Api) SubscriptionFixer(ctx context.Context, logger *zap.SugaredLogger, cfg *config.Config) error {
+	client := api.Client
+	db := api.Instance.d.DB
 	req, err := http.NewRequest("GET", FixerURL, nil)
 	if err != nil {
 		return fmt.Errorf("SubscriptionFixer fetch Fixer: %w", err)
