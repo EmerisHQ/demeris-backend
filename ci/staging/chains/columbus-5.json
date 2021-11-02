@@ -71,5 +71,6 @@
     "clock_drift": "1800s",
     "trusting_period": "9days"
   },
+  "supported_wallets": ["keplr"],
   "block_explorer": "https://finder.terra.money"
 }
