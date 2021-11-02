@@ -1,6 +1,8 @@
 package account
 
-import "github.com/allinbits/demeris-backend/models"
+import (
+	"github.com/allinbits/demeris-backend/models"
+)
 
 type balancesResponse struct {
 	Balances []balance `json:"balances"`
@@ -45,4 +47,14 @@ type numbersResponse struct {
 
 type userTicketsResponse struct {
 	Tickets map[string][]string `json:"tickets"`
+}
+
+type delegationDelegatorReward struct {
+	ValidatorAddress string `json:"validator_address,omitempty"`
+	Reward           string `json:"reward"`
+}
+
+type delegatorRewardsResponse struct {
+	Rewards []delegationDelegatorReward `json:"rewards"`
+	Total   string                      `json:"total"`
 }
