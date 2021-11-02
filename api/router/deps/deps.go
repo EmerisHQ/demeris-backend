@@ -37,9 +37,20 @@ func GetDeps(c *gin.Context) *Deps {
 	return deps
 }
 
+// WriteError lgos and return client-facing errors
 func (d *Deps) WriteError(c *gin.Context, err Error, logMessage string, keyAndValues ...interface{}) {
 	_ = c.Error(err)
 
+	if keyAndValues != nil {
+		d.Logger.Errorw(
+			logMessage,
+			keyAndValues...,
+		)
+	}
+}
+
+// LogError is used to log errors internally while returning 200 in the response
+func (d *Deps) LogError(logMessage string, keyAndValues ...interface{}) {
 	if keyAndValues != nil {
 		d.Logger.Errorw(
 			logMessage,
