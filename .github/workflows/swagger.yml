@@ -21,3 +21,9 @@ jobs:
 
       - name: Generate swagger
         run: make generate-swagger
+
+      - name: Upload Swagger
+        uses: actions/upload-artifact@v2
+        with:
+          name: swagger.yaml
+          path: docs/swagger.yaml
