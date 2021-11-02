@@ -275,25 +275,25 @@ func VerifyTrace(c *gin.Context) {
 
 	d := deps.GetDeps(c)
 
-	chain := c.Param("chain")
+	chainName := c.Param("chain")
 	hash := c.Param("hash")
 
 	hash = strings.ToLower(hash)
 
 	res.VerifiedTrace.IbcDenom = fmt.Sprintf("ibc/%s", hash)
 
-	denomTrace, err := d.Database.DenomTrace(chain, hash)
+	denomTrace, err := d.Database.DenomTrace(chainName, hash)
 
 	if err != nil {
 
-		cause := fmt.Sprintf("token hash %v not found on chain %v", hash, chain)
+		cause := fmt.Sprintf("token hash %v not found on chain %v", hash, chainName)
 
 		d.LogError(
 			cause,
 			"hash",
 			hash,
-			"chain",
-			chain,
+			"chainName",
+			chainName,
 			"error",
 			err,
 		)
@@ -360,7 +360,7 @@ func VerifyTrace(c *gin.Context) {
 		return
 	}
 
-	nextChain := chain
+	nextChain := chainName
 	for _, element := range pathsElements {
 		// otherwise, check that it has a transfer prefix
 		if !strings.HasPrefix(element, "transfer/") {
@@ -409,6 +409,7 @@ func VerifyTrace(c *gin.Context) {
 
 			return
 		}
+
 		channelInfo, err = d.Database.GetIbcChannelToChain(nextChain, channel, chainID)
 
 		if err != nil {
@@ -420,7 +421,7 @@ func VerifyTrace(c *gin.Context) {
 					"path",
 					res.VerifiedTrace.Path,
 					"chain",
-					chain,
+					chainName,
 				)
 
 				res.VerifiedTrace.Verified = false
@@ -454,6 +455,54 @@ func VerifyTrace(c *gin.Context) {
 		res.VerifiedTrace.Trace = append(res.VerifiedTrace.Trace, trace)
 
 		nextChain = trace.CounterpartyName
+
+		primaryChannelInfo, err := d.Database.PrimaryChannelCounterparty(chainName, nextChain)
+
+		if err != nil {
+			e := deps.NewError(
+				"denom/verify-trace",
+				fmt.Errorf("failed to get primary channel for %s", hash),
+				http.StatusBadRequest,
+			)
+
+			d.WriteError(c, e,
+				"cannot query primary channel information",
+				"id",
+				e.ID,
+				"hash",
+				hash,
+				"path",
+				res.VerifiedTrace.Path,
+				"chain",
+				chainName,
+				"nextChain",
+				nextChain,
+				"err",
+				err,
+			)
+
+			return
+		}
+
+		if primaryChannelInfo.ChannelName != channel {
+
+			d.LogError(
+				"not primary channel",
+				"hash",
+				hash,
+				"channel",
+				channel,
+				"chain",
+				chainName,
+				"err",
+				err,
+			)
+
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = fmt.Sprintf("%s : not primary channel for chain %s- expecting %s got %s", hash, chainName, primaryChannelInfo, channel)
+			c.JSON(http.StatusOK, res)
+			return
+		}
 	}
 
 	nextChainData, err := d.Database.Chain(nextChain)
