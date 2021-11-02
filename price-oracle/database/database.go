@@ -100,3 +100,7 @@ func (i *Instance) CnstokenQueryHandler() ([]string, error) {
 	}
 	return Whitelists, nil
 }
+
+func (i *Instance) GetConnectionString() string {
+	return i.connString
+}
