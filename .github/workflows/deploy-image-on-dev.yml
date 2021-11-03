@@ -15,7 +15,7 @@ name: Deploy new Emeris backend stack image on dev
 
 on:
   repository_dispatch:
-    types: [dev-push]
+    types: [dev-push-*]
 
 jobs:
   deploy-service:
@@ -26,6 +26,7 @@ jobs:
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: "allinbits/${{ github.event.client_payload.repo_name }}"
+          ref: ${{ github.event.client_payload.branch_name }}
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
