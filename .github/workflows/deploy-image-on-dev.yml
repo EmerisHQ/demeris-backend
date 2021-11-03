@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          repository: allinbits/${{ github.event.client_payload.repo_name }}
+          repository: "allinbits/${{ github.event.client_payload.repo_name }}"
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
