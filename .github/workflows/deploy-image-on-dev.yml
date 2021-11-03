@@ -1,0 +1,50 @@
+name: Deploy new Emeris backend stack image on dev
+
+# This action is executed only via GitHub API call.
+# All Emeris repositories call this action when their
+# Docker image finished building, and they want it to be
+# deployed on Dev environment.
+
+# It works through repository_dispatch, the only type accepted is "dev-push".
+
+# Since we use Helm to do deployments, for each image we need:
+#  - new image SHA, `image_sha`
+#  - image name, `image_name`
+#  - service name, `service_name`
+#  - repository url, embedded in payload response from GitHub webhook
+
+on:
+  repository_dispatch:
+    types: ["dev-push"]
+
+jobs:
+  deploy-service:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.repository.full_name }}
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: "${{ secrets.KUBECONFIG }}"
+          exec: |
+            helm upgrade "${{ github.event.client_payload.service_name }}"  \
+              --install \
+              --namespace emeris \
+              --set image=gcr.io/tendermint-dev/"${{ github.event.client_payload.image_name }}":"${{ github.event.client_payload.image_sha }}" \
+              ./helm
+
+  ingress:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: apply -n emeris -f ci/dev/ingress.yaml
