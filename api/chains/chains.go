@@ -2,6 +2,7 @@ package chains
 
 import (
 	"context"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -519,6 +520,38 @@ func VerifyTrace(c *gin.Context) {
 			"err",
 			err,
 		)
+
+		// we did not find any chain with name nextChain
+		if errors.Is(err, sql.ErrNoRows) {
+			res.VerifiedTrace.Verified = false
+			res.VerifiedTrace.Cause = fmt.Sprintf("no chain with name %s found", nextChain)
+			c.JSON(http.StatusOK, res)
+
+			return
+		}
+
+		e := deps.NewError(
+			"denom/verify-trace",
+			fmt.Errorf("database error, %w", err),
+			http.StatusInternalServerError,
+		)
+
+		d.WriteError(c, e,
+			fmt.Sprintf("cannot query chain with name %s", nextChain),
+			"id",
+			e.ID,
+			"hash",
+			hash,
+			"path",
+			res.VerifiedTrace.Path,
+			"chain",
+			chainName,
+			"nextChain",
+			nextChain,
+			"err",
+			err,
+		)
+
 		return
 	}
 
