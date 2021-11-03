@@ -15,7 +15,7 @@ name: Deploy new Emeris backend stack image on dev
 
 on:
   repository_dispatch:
-    types: ["dev-push"]
+    types: [dev-push]
 
 jobs:
   deploy-service:
