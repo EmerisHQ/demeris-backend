@@ -24,6 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: "allinbits/${{ github.event.client_payload.repo_name }}"
 
       - name: Deploy
