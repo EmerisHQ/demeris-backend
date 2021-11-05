@@ -5,6 +5,7 @@ REBUILD=false
 NO_CHAINS=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
+CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
 KIND_CONFIG=""
 
 usage()
@@ -271,22 +272,34 @@ EOF
           -f local-env/nodes
     fi
 
-    ### Ensure cns-server image
-    if [[ "$(docker images -q emeris/cns-server 2> /dev/null)" == "" ]]
+    ### Ensure cns-server and admin-ui images
+    if [ "$(docker images -q emeris/cns-server 2> /dev/null)" != "" ] && [ "$(docker images -q emeris/admin-ui 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/cns-server image"
-        docker build -t emeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/cns-server already exists"
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/admin-ui already exists"
     else
-        if [ "$BUILD" = "true" ]
+        if [ ! -d .cns-server/.git ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/cns-server image"
-            docker build -t emeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.cns-server .
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning cns-server repo"
+            git clone $CNS_SERVER_REPO .cns-server &> /dev/null
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/cns-server already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching cns-server latest changes"
+            cd .cns-server
+            git pull $CNS_SERVER_REPO &> /dev/null
+            cd ..
         fi
+        cd .cns-server
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/cns-server image"
+        docker build -t emeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/admin-ui image"
+        docker build -t emeris/admin-ui ./cns/admin/emeris-admin
+        cd ..
     fi
     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/cns-server image to cluster"
     kind load docker-image emeris/cns-server --name $CLUSTER_NAME &> /dev/null
+
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/admin-ui image to cluster"
+    kind load docker-image emeris/admin-ui --name $CLUSTER_NAME &> /dev/null
 
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/cns-server"
     helm upgrade cns-server \
@@ -296,23 +309,6 @@ EOF
         --set imagePullPolicy=Never \
         helm/emeris-cns-server \
         &> /dev/null
-
-    ### Ensure admin-ui image
-    if [[ "$(docker images -q emeris/admin-ui 2> /dev/null)" == "" ]]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/admin-ui image"
-        docker build -t emeris/admin-ui ./cns/admin/emeris-admin
-    else
-        if [ "$BUILD" = "true" ]
-        then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/admin-ui image"
-            docker build -t emeris/admin-ui ./cns/admin/emeris-admin
-        else
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/admin-ui already exists"
-        fi
-    fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/admin-ui image to cluster"
-    kind load docker-image emeris/admin-ui --name $CLUSTER_NAME &> /dev/null
 
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/admin-ui"
     helm upgrade admin-ui \
