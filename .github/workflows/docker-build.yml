@@ -9,10 +9,8 @@ on:
     paths:
       - Dockerfile.**
       - cmd/**
-      - cns/**
       - api/**
       - models/**
-      - price-oracle/**
       - tmwsproxy/**
       - rpcwatcher/**
       - utils/**
@@ -51,36 +49,6 @@ jobs:
           build-args: |
             GIT_TOKEN=${{ secrets.TENDERBOT_GIT_TOKEN }}
 
-  price-oracle:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to GCR
-        uses: docker/login-action@v1
-        with:
-          registry: gcr.io
-          username: _json_key
-          password: ${{ secrets.GCR_JSON_KEY }}
-
-      - name: Get version
-        id: get_version
-        uses: battila7/get-version-action@v2
-
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          file: Dockerfile.price-oracle
-          tags: gcr.io/tendermint-dev/emeris-price-oracle:${{ steps.get_version.outputs.version-without-v }},gcr.io/tendermint-dev/emeris-price-oracle:${{ github.sha }}
-          build-args: |
-            GIT_TOKEN=${{ secrets.TENDERBOT_GIT_TOKEN }}
-
   rpcwatcher:
     runs-on: self-hosted
     steps:
@@ -108,63 +76,6 @@ jobs:
           context: .
           file: Dockerfile.rpcwatcher
           tags: gcr.io/tendermint-dev/emeris-rpcwatcher:${{ steps.get_version.outputs.version-without-v }},gcr.io/tendermint-dev/emeris-rpcwatcher:${{ github.sha }}
-          build-args: |
-            GIT_TOKEN=${{ secrets.TENDERBOT_GIT_TOKEN }}
-
-  admin-ui:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to GCR
-        uses: docker/login-action@v1
-        with:
-          registry: gcr.io
-          username: _json_key
-          password: ${{ secrets.GCR_JSON_KEY }}
-
-      - name: Get version
-        id: get_version
-        uses: battila7/get-version-action@v2
-
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: ./cns/admin/emeris-admin
-          tags: gcr.io/tendermint-dev/emeris-admin-ui:${{ steps.get_version.outputs.version-without-v }},gcr.io/tendermint-dev/emeris-admin-ui:${{ github.sha }}
-  
-  cns-server:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Login to GCR
-        uses: docker/login-action@v1
-        with:
-          registry: gcr.io
-          username: _json_key
-          password: ${{ secrets.GCR_JSON_KEY }}
-
-      - name: Get version
-        id: get_version
-        uses: battila7/get-version-action@v2
-
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: .
-          file: Dockerfile.cns-server
-          tags: gcr.io/tendermint-dev/emeris-cns-server:${{ steps.get_version.outputs.version-without-v }},gcr.io/tendermint-dev/emeris-cns-server:${{ github.sha }}
           build-args: |
             GIT_TOKEN=${{ secrets.TENDERBOT_GIT_TOKEN }}
 

@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Branch, tag or commit to deploy
+        description: demeris-backend branch, tag or commit to deploy
+        required: true
+        default: master
+      cns-version:
+        description: cns-server and admin-ui branch, tag or commit to deploy
         required: true
         default: master
 
@@ -23,7 +27,7 @@ jobs:
             helm upgrade cns-server \
               --install \
               --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.version }} \
+              --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.cns-version }} \
               --set updateInterval=10s \
               ./helm/emeris-cns-server
 
@@ -76,7 +80,7 @@ jobs:
             helm upgrade price-oracle \
               --install \
               --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.event.inputs.version }} \
+              --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.event.inputs.cns-version }} \
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               --set replicas=3 \
               ./helm/emeris-price-oracle-server
