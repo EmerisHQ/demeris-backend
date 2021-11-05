@@ -5,6 +5,7 @@ REBUILD=false
 NO_CHAINS=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
+PRICE_ORACLE_REPO=git@github.com:allinbits/emeris-price-oracle.git
 CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
 KIND_CONFIG=""
 
@@ -398,21 +399,27 @@ EOF
         &> /dev/null
 
     ### Ensure price-oracle-server image
-     if [[ "$(docker images -q emeris/price-oracle-server 2> /dev/null)" == "" ]]
-     then
-         echo -e "${green}\xE2\x9C\x94${reset} Building emeris/price-oracle-server image"
-         docker build -t emeris/price-oracle-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.price-oracle .
-     else
-         if [ "$BUILD" = "true" ]
-         then
-             echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/price-oracle-server image"
-             docker build -t emeris/price-oracle-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.price-oracle .
-         else
-             echo -e "${green}\xE2\x9C\x94${reset} Image emeris/price-oracle-server already exists"
-         fi
-     fi
-     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/price-oracle-server image to cluster"
-     kind load docker-image emeris/price-oracle-server --name $CLUSTER_NAME &> /dev/null
+    if [ "$(docker images -q emeris/price-oracle-server 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/price-oracle-server already exists"
+    else
+        if [ ! -d .price-oracle/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning price-oracle repo"
+            git clone $PRICE_ORACLE_REPO .price-oracle &> /dev/null
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching price-oracle latest changes"
+            cd .price-oracle
+            git pull $PRICE_ORACLE_REPO &> /dev/null
+            cd ..
+        fi
+        cd .price-oracle
+        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/price-oracle-server image"
+        docker build -t emeris/price-oracle-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/price-oracle-server image to cluster"
+    kind load docker-image emeris/price-oracle-server --name $CLUSTER_NAME &> /dev/null
 
     helm upgrade price-oracle \
         --install \
