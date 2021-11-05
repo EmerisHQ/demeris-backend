@@ -63,6 +63,7 @@ type verifiedTrace struct {
 	Verified  bool    `json:"verified"`
 	Path      string  `json:"path,omitempty"`
 	Trace     []trace `json:"trace,omitempty"`
+	Cause     string  `json:"cause,omitempty"`
 }
 
 type verifiedTraceResponse struct {
