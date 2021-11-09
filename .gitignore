@@ -108,10 +108,11 @@ docs/docs.go
 
 # demeris config
 demeris-api.toml
-demeris-price-oracle.toml
 
 bin
 .envrc
 
 .starport-operator
 .tracelistener
+.price-oracle
+.cns-server
