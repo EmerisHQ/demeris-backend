@@ -60,7 +60,8 @@ func (r *router) addChainHandler(ctx *gin.Context) {
 	r.s.l.Infow("test error this", "test", testErr)
 
 	r.s.l.Infow("debug", "info", r.s.nodesetInformer, "ns", r.s.defaultK8SNamespace, "name", newChain.ChainName)
-	_, err := k8s.GetChain(r.s.nodesetInformer, "apps.starport.cloud", newChain.ChainName)
+	nodeset, err := k8s.GetChain(r.s.nodesetInformer, r.s.defaultK8SNamespace, newChain.ChainName)
+	r.s.l.Infow("this is nodeset", "nodes", nodeset, "error", err)
 	if errors.Is(err, k8serrors.NewNotFound(rsrc, newChain.ChainName)) {
 		r.s.l.Infow("trying to add a kubernetes nodeset which is already there, ignoring", "error", err)
 		newChain.NodeConfig = nil
