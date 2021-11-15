@@ -1,8 +1,6 @@
 package store
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"testing"
 
@@ -27,32 +25,10 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	var err error
-	mr, err = miniredis.Run()
-	if err != nil {
-		log.Fatalf("got error: %s when running miniredis", err)
-	}
-
-	store, err = NewClient(mr.Addr())
-	if err != nil {
-		log.Fatalf("got error: %s when creating new store client", err)
-	}
-
+	mr, store = SetupTestDB()
 	code := m.Run()
 	defer mr.Close()
 	os.Exit(code)
-}
-
-func resetDB() {
-	mr.DB(store.Client.Options().DB).FlushDB()
-}
-
-func getKey(chain, txHash string) string {
-	return fmt.Sprintf("%s/%s", chain, txHash)
-}
-
-func getIBCKey(destChain, sourceChannel, sendPacketSequence string) string {
-	return fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 }
 
 func getShadowKey(key string) string {
@@ -60,10 +36,10 @@ func getShadowKey(key string) string {
 }
 
 func TestCreateTicket(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// create ticket
 	require.NoError(t, store.CreateTicket(testChain, testTxHash, testOwner))
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.True(t, store.Exists(key))
 	require.True(t, store.Exists(getShadowKey(key)))
 	// get all tickets of testOwner
@@ -78,9 +54,9 @@ func TestCreateTicket(t *testing.T) {
 }
 
 func TestSetComplete(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// call SetComplete with not stored key, expecting error
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.Error(t, store.SetComplete(key, 123))
 	// create ticket and set complete
 	require.NoError(t, store.CreateTicket(testChain, testTxHash, testOwner))
@@ -99,9 +75,9 @@ func TestSetComplete(t *testing.T) {
 }
 
 func TestSetInTransit(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// call SetInTransit with not stored key, expecting error
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.Error(t, store.SetInTransit(key, testDestChain, testSrcChannel,
 		testPktSeq, testTxHash, testChain, 123))
 	// create ticket and set ticket status as transit
@@ -114,7 +90,7 @@ func TestSetInTransit(t *testing.T) {
 	ticket, err := store.Get(key)
 	require.NoError(t, err)
 	require.Equal(t, transit, ticket.Status)
-	newKey := getIBCKey(testDestChain, testSrcChannel, testPktSeq)
+	newKey := GetIBCKey(testDestChain, testSrcChannel, testPktSeq)
 	require.True(t, store.Exists(newKey))
 	// get created ticket details of new key
 	newKeyTicket, err := store.Get(newKey)
@@ -123,9 +99,9 @@ func TestSetInTransit(t *testing.T) {
 }
 
 func TestSetIbcReceived(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// call SetIbcReceived with not stored key, expecting error
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.Error(t, store.SetIbcReceived(key, testTxHash, testChain, 123))
 	// create ticket and set ticket status as transit
 	require.NoError(t, store.CreateTicket(testChain, testTxHash, testOwner))
@@ -133,7 +109,7 @@ func TestSetIbcReceived(t *testing.T) {
 		testPktSeq, testTxHash, testChain, 123))
 	require.True(t, store.Exists(key))
 	require.True(t, store.Exists(getShadowKey(key)))
-	newKey := getIBCKey(testDestChain, testSrcChannel, testPktSeq)
+	newKey := GetIBCKey(testDestChain, testSrcChannel, testPktSeq)
 	require.True(t, store.Exists(newKey))
 	// update new key ticket status to ibcReceiveSuccess
 	require.NoError(t, store.SetIbcReceived(newKey, testTxHash, testChain, 144))
@@ -152,9 +128,9 @@ func TestSetIbcReceived(t *testing.T) {
 }
 
 func TestSetIbcFailed(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// call SetIbcFailed with not stored key, expecting error
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.Error(t, store.SetIbcFailed(key, testTxHash, testChain, 123))
 	// create ticket and set ticket status as transit
 	require.NoError(t, store.CreateTicket(testChain, testTxHash, testOwner))
@@ -162,7 +138,7 @@ func TestSetIbcFailed(t *testing.T) {
 		testPktSeq, testTxHash, testChain, 123))
 	require.True(t, store.Exists(key))
 	require.True(t, store.Exists(getShadowKey(key)))
-	newKey := getIBCKey(testDestChain, testSrcChannel, testPktSeq)
+	newKey := GetIBCKey(testDestChain, testSrcChannel, testPktSeq)
 	require.True(t, store.Exists(newKey))
 	// update new key ticket status to ibcReceiveFailed
 	require.NoError(t, store.SetIbcFailed(newKey, testTxHash, testChain, 144))
@@ -176,9 +152,9 @@ func TestSetIbcFailed(t *testing.T) {
 }
 
 func TestSetIbcTimeoutUnlock(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// call SetIbcTimeoutUnlock with not stored key, expecting error
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.Error(t, store.SetIbcTimeoutUnlock(key, testTxHash, testChain, 123))
 	// create ticket and set ticket status as transit
 	require.NoError(t, store.CreateTicket(testChain, testTxHash, testOwner))
@@ -186,7 +162,7 @@ func TestSetIbcTimeoutUnlock(t *testing.T) {
 		testPktSeq, testTxHash, testChain, 123))
 	require.True(t, store.Exists(key))
 	require.True(t, store.Exists(getShadowKey(key)))
-	newKey := getIBCKey(testDestChain, testSrcChannel, testPktSeq)
+	newKey := GetIBCKey(testDestChain, testSrcChannel, testPktSeq)
 	require.True(t, store.Exists(newKey))
 	// update new key ticket status to tokensUnlockedTimeout
 	require.NoError(t, store.SetIbcTimeoutUnlock(newKey, testTxHash, testChain, 144))
@@ -205,9 +181,9 @@ func TestSetIbcTimeoutUnlock(t *testing.T) {
 }
 
 func TestSetIbcAckUnlock(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// call SetIbcAckUnlock with not stored key, expecting error
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.Error(t, store.SetIbcAckUnlock(key, testTxHash, testChain, 123))
 	// create ticket and set ticket status as transit
 	require.NoError(t, store.CreateTicket(testChain, testTxHash, testOwner))
@@ -215,7 +191,7 @@ func TestSetIbcAckUnlock(t *testing.T) {
 		testPktSeq, testTxHash, testChain, 123))
 	require.True(t, store.Exists(key))
 	require.True(t, store.Exists(getShadowKey(key)))
-	newKey := getIBCKey(testDestChain, testSrcChannel, testPktSeq)
+	newKey := GetIBCKey(testDestChain, testSrcChannel, testPktSeq)
 	require.True(t, store.Exists(newKey))
 	// update new key ticket status to tokensUnlockedAck
 	require.NoError(t, store.SetIbcAckUnlock(newKey, testTxHash, testChain, 144))
@@ -234,9 +210,9 @@ func TestSetIbcAckUnlock(t *testing.T) {
 }
 
 func TestSetFailedWithErr(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	// call SetFailedWithErr with not stored key, expecting error
-	key := getKey(testChain, testTxHash)
+	key := GetKey(testChain, testTxHash)
 	require.Error(t, store.SetFailedWithErr(key, testErr, 123))
 	// create ticket and set ticket status as failed
 	require.NoError(t, store.CreateTicket(testChain, testTxHash, testOwner))
@@ -255,7 +231,7 @@ func TestSetFailedWithErr(t *testing.T) {
 }
 
 func TestSetPoolSwapFees(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	var (
 		testPoolID = "2"
 		testAmount = "1000"
@@ -273,7 +249,7 @@ func TestSetPoolSwapFees(t *testing.T) {
 }
 
 func TestBlocks(t *testing.T) {
-	defer resetDB()
+	defer ResetTestDB(mr, store)
 	blocks := NewBlocks(store)
 	// call Block method with height not stored, expected error
 	_, err := blocks.Block(123)

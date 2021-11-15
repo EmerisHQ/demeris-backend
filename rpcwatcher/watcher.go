@@ -302,7 +302,7 @@ func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 	chainName := w.Name
 	eventTx := data.Data.(types.EventDataTx)
 	height := eventTx.Height
-	key := fmt.Sprintf("%s/%s", chainName, txHash)
+	key := store.GetKey(chainName, txHash)
 
 	w.l.Debugw("got message to handle", "chain name", chainName, "key", key, "is create lp", createPoolEventPresent, "is ibc", IBCSenderEventPresent, "is ibc recv", IBCReceivePacketEventPresent,
 		"is ibc ack", IBCAckEventPresent, "is ibc timeout", IBCTimeoutEventPresent)
@@ -333,256 +333,35 @@ func HandleMessage(w *Watcher, data coretypes.ResultEvent) {
 
 	// Handle case where an LP is being created on the Cosmos Hub
 	if createPoolEventPresent && chainName == "cosmos-hub" {
-		defer func() {
-			if err := w.store.SetComplete(key, height); err != nil {
-				w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
-			}
-		}()
-
 		w.l.Debugw("is create lp", "is it", createPoolEventPresent)
-
-		chain, err := w.d.Chain(chainName)
-
-		if err != nil {
-			w.l.Errorw("can't find chain cosmos-hub", "error", err)
-			return
-		}
-
-		poolCoinDenom, ok := data.Events["create_pool.pool_coin_denom"]
-
-		if !ok {
-			w.l.Errorw("no field create_pool.pool_coin_denom in Events", "error", err)
-			return
-		}
-
-		dd, err := formatDenom(w, data)
-
-		if err != nil {
-			w.l.Errorw("failed to format denom", "error", err)
-			return
-		}
-
-		found := false
-
-		for _, token := range chain.Denoms {
-			if token.Name == poolCoinDenom[0] {
-				token = dd
-				found = true
-			}
-		}
-
-		if !found {
-			chain.Denoms = append(chain.Denoms, dd)
-		}
-
-		err = w.d.UpdateDenoms(chain)
-
-		if err != nil {
-			w.l.Errorw("failed to update chain", "error", err)
-			return
-		}
-
+		HandleCosmosHubLPCreated(w, data, chainName, key, height)
 		return
 	}
 
 	if SwapTransactionEventPresent && w.Name == "cosmos-hub" {
-		poolId, ok := data.Events["swap_within_batch.pool_id"]
-		if !ok {
-			w.l.Errorw("pool_id not found")
-			return
-		}
-
-		offerCoinFee, ok := data.Events["swap_within_batch.offer_coin_fee_amount"]
-		if !ok {
-			w.l.Errorw("offer_coin_fee_amount not found")
-			return
-		}
-
-		offerCoinDenom, ok := data.Events["swap_within_batch.offer_coin_denom"]
-		if !ok {
-			w.l.Errorw("offer_coin_fee_denom not found")
-		}
-
-		err := w.store.SetPoolSwapFees(poolId[0], offerCoinFee[0], offerCoinDenom[0])
-		if err != nil {
-			w.l.Errorw("unable to store swap fees", "error", err)
-		}
-
-		if err := w.store.SetComplete(key, height); err != nil {
-			w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
-		}
+		HandleSwapTransaction(w, data, chainName, key, height)
 		return
 	}
 
 	// Handle case where an IBC transfer is sent from the origin chain.
 	if IBCSenderEventPresent {
-
-		sendPacketSourcePort, ok := data.Events["send_packet.packet_src_port"]
-
-		if !ok {
-			w.l.Errorf("send_packet.packet_src_port not found")
-			return
-		}
-
-		if sendPacketSourcePort[0] != "transfer" {
-			w.l.Errorf("port is not 'transfer', ignoring")
-			return
-		}
-
-		sendPacketSourceChannel, ok := data.Events["send_packet.packet_src_channel"]
-
-		if !ok {
-			w.l.Errorf("send_packet.packet_src_channel not found")
-			return
-		}
-
-		sendPacketSequence, ok := data.Events["send_packet.packet_sequence"]
-
-		if !ok {
-			w.l.Errorf("send_packet.packet_sequence not found")
-			return
-		}
-
-		c, err := w.d.GetCounterParty(chainName, sendPacketSourceChannel[0])
-		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
-			return
-		}
-
-		if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0], txHash, chainName, height); err != nil {
-			w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
-		}
+		HandleIBCSenderEvent(w, data, chainName, txHash, key, height)
 		return
 	}
 
 	// Handle case where IBC transfer is received by the receiving chain.
 	if IBCReceivePacketEventPresent {
-		recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
-
-		if !ok {
-			w.l.Errorf("recv_packet.packet_src_port not found")
-			return
-		}
-
-		if recvPacketSourcePort[0] != "transfer" {
-			w.l.Errorf("port is not 'transfer', ignoring")
-			return
-		}
-
-		recvPacketSourceChannel, ok := data.Events["recv_packet.packet_src_channel"]
-
-		if !ok {
-			w.l.Errorf("recv_packet.packet_src_channel not found")
-			return
-		}
-
-		recvPacketSequence, ok := data.Events["recv_packet.packet_sequence"]
-
-		if !ok {
-			w.l.Errorf("recv_packet.packet_sequence not found")
-			return
-		}
-
-		packetAck, ok := data.Events["write_acknowledgement.packet_ack"]
-
-		if !ok {
-			w.l.Errorf("packet ack not found")
-			return
-		}
-
-		key := fmt.Sprintf("%s-%s-%s", chainName, recvPacketSourceChannel[0], recvPacketSequence[0])
-		if !w.store.Exists(key) {
-			w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_receive")
-			return
-		}
-
-		var ack Ack
-		if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil {
-			w.l.Errorw("unable to unmarshal packetAck", "err", err)
-			return
-		}
-
-		if ack.Result != ackSuccess {
-			if err := w.store.SetIbcFailed(key, txHash, chainName, height); err != nil {
-				w.l.Errorw("unable to set status as failed for key", "key", key, "error", err)
-			}
-			return
-		}
-
-		if err := w.store.SetIbcReceived(key, txHash, chainName, height); err != nil {
-			w.l.Errorw("unable to set status as ibc received for key", "key", key, "error", err)
-		}
+		HandleIBCReceivePacket(w, data, chainName, txHash, height)
 		return
 	}
 
 	if IBCTimeoutEventPresent {
-		timeoutPacketSourceChannel, ok := data.Events["timeout_packet.packet_src_channel"]
-
-		if !ok {
-			w.l.Errorf("timeout_packet.packet_src_channel not found")
-			return
-		}
-
-		timeoutPacketSequence, ok := data.Events["timeout_packet.packet_sequence"]
-
-		if !ok {
-			w.l.Errorf("timeout_packet.packet_sequence not found")
-			return
-		}
-
-		c, err := w.d.GetCounterParty(chainName, timeoutPacketSourceChannel[0])
-		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
-			return
-		}
-
-		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
-		if !w.store.Exists(key) {
-			w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "timeout")
-			return
-		}
-
-		if err := w.store.SetIbcTimeoutUnlock(key, txHash, chainName, height); err != nil {
-			w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
-		}
+		HandleIBCTimeoutPacket(w, data, chainName, txHash, height)
 		return
 	}
 
 	if IBCAckEventPresent {
-		ackPacketSourceChannel, ok := data.Events["acknowledge_packet.packet_src_channel"]
-
-		if !ok {
-			w.l.Errorf("acknowledge_packet.packet_src_channel not found")
-			return
-		}
-
-		ackPacketSequence, ok := data.Events["acknowledge_packet.packet_sequence"]
-
-		if !ok {
-			w.l.Errorf("acknowledge_packet.packet_sequence not found")
-			return
-		}
-
-		c, err := w.d.GetCounterParty(chainName, ackPacketSourceChannel[0])
-		if err != nil {
-			w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
-			return
-		}
-
-		key := fmt.Sprintf("%s-%s-%s", c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
-		_, ok = data.Events["fungible_token_packet.error"]
-		if ok {
-			if !w.store.Exists(key) {
-				w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_ack")
-				return
-			}
-
-			if err := w.store.SetIbcAckUnlock(key, txHash, chainName, height); err != nil {
-				w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
-			}
-			return
-		}
-
+		HandleIBCAckPacket(w, data, chainName, txHash, height)
 	}
 
 }
@@ -597,7 +376,7 @@ func HandleCosmosHubBlock(w *Watcher, data coretypes.ResultEvent) {
 	time.Sleep(750 * time.Millisecond) // to handle the time gap between block production and event broadcast
 	newHeight := realData.Block.Header.Height
 
-	u := fmt.Sprintf("http://%s:%d", w.Name, defaultRPCPort)
+	u := w.endpoint
 
 	ru, err := url.Parse(u)
 	if err != nil {
@@ -654,4 +433,230 @@ func HandleNewBlock(w *Watcher, _ coretypes.ResultEvent) {
 	w.watchdog.Ping()
 	w.l.Debugw("performed watchdog ping", "chain_name", w.Name)
 	w.l.Debugw("new block", "chain_name", w.Name)
+}
+
+func HandleCosmosHubLPCreated(w *Watcher, data coretypes.ResultEvent, chainName, key string, height int64) {
+	defer func() {
+		if err := w.store.SetComplete(key, height); err != nil {
+			w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
+		}
+	}()
+
+	chain, err := w.d.Chain(chainName)
+	if err != nil {
+		w.l.Errorw("can't find chain cosmos-hub", "error", err)
+		return
+	}
+
+	poolCoinDenom, ok := data.Events["create_pool.pool_coin_denom"]
+	if !ok {
+		w.l.Errorw("no field create_pool.pool_coin_denom in Events", "error", err)
+		return
+	}
+
+	dd, err := formatDenom(w, data)
+	if err != nil {
+		w.l.Errorw("failed to format denom", "error", err)
+		return
+	}
+
+	found := false
+	for _, token := range chain.Denoms {
+		if token.Name == poolCoinDenom[0] {
+			token = dd
+			found = true
+		}
+	}
+
+	if !found {
+		chain.Denoms = append(chain.Denoms, dd)
+	}
+
+	err = w.d.UpdateDenoms(chain)
+	if err != nil {
+		w.l.Errorw("failed to update chain", "error", err)
+		return
+	}
+}
+
+func HandleSwapTransaction(w *Watcher, data coretypes.ResultEvent, chainName, key string, height int64) {
+	poolId, ok := data.Events["swap_within_batch.pool_id"]
+	if !ok {
+		w.l.Errorw("pool_id not found")
+		return
+	}
+
+	offerCoinFee, ok := data.Events["swap_within_batch.offer_coin_fee_amount"]
+	if !ok {
+		w.l.Errorw("offer_coin_fee_amount not found")
+		return
+	}
+
+	offerCoinDenom, ok := data.Events["swap_within_batch.offer_coin_denom"]
+	if !ok {
+		w.l.Errorw("offer_coin_fee_denom not found")
+	}
+
+	err := w.store.SetPoolSwapFees(poolId[0], offerCoinFee[0], offerCoinDenom[0])
+	if err != nil {
+		w.l.Errorw("unable to store swap fees", "error", err)
+	}
+
+	if err := w.store.SetComplete(key, height); err != nil {
+		w.l.Errorw("cannot set complete", "chain name", chainName, "error", err)
+	}
+}
+
+func HandleIBCSenderEvent(w *Watcher, data coretypes.ResultEvent, chainName, txHash, key string, height int64) {
+	sendPacketSourcePort, ok := data.Events["send_packet.packet_src_port"]
+	if !ok {
+		w.l.Errorf("send_packet.packet_src_port not found")
+		return
+	}
+
+	if sendPacketSourcePort[0] != "transfer" {
+		w.l.Errorf("port is not 'transfer', ignoring")
+		return
+	}
+
+	sendPacketSourceChannel, ok := data.Events["send_packet.packet_src_channel"]
+	if !ok {
+		w.l.Errorf("send_packet.packet_src_channel not found")
+		return
+	}
+
+	sendPacketSequence, ok := data.Events["send_packet.packet_sequence"]
+	if !ok {
+		w.l.Errorf("send_packet.packet_sequence not found")
+		return
+	}
+
+	c, err := w.d.GetCounterParty(chainName, sendPacketSourceChannel[0])
+	if err != nil {
+		w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
+		return
+	}
+
+	if err := w.store.SetInTransit(key, c[0].Counterparty, sendPacketSourceChannel[0], sendPacketSequence[0],
+		txHash, chainName, height); err != nil {
+		w.l.Errorw("unable to set status as in transit for key", "key", key, "error", err)
+	}
+}
+
+func HandleIBCReceivePacket(w *Watcher, data coretypes.ResultEvent, chainName, txHash string, height int64) {
+	recvPacketSourcePort, ok := data.Events["recv_packet.packet_src_port"]
+	if !ok {
+		w.l.Errorf("recv_packet.packet_src_port not found")
+		return
+	}
+
+	if recvPacketSourcePort[0] != "transfer" {
+		w.l.Errorf("port is not 'transfer', ignoring")
+		return
+	}
+
+	recvPacketSourceChannel, ok := data.Events["recv_packet.packet_src_channel"]
+	if !ok {
+		w.l.Errorf("recv_packet.packet_src_channel not found")
+		return
+	}
+
+	recvPacketSequence, ok := data.Events["recv_packet.packet_sequence"]
+	if !ok {
+		w.l.Errorf("recv_packet.packet_sequence not found")
+		return
+	}
+
+	packetAck, ok := data.Events["write_acknowledgement.packet_ack"]
+	if !ok {
+		w.l.Errorf("packet ack not found")
+		return
+	}
+
+	key := store.GetIBCKey(chainName, recvPacketSourceChannel[0], recvPacketSequence[0])
+	if !w.store.Exists(key) {
+		w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_receive")
+		return
+	}
+
+	var ack Ack
+	if err := json.Unmarshal([]byte(packetAck[0]), &ack); err != nil {
+		w.l.Errorw("unable to unmarshal packetAck", "err", err)
+		return
+	}
+
+	if ack.Result != ackSuccess {
+		if err := w.store.SetIbcFailed(key, txHash, chainName, height); err != nil {
+			w.l.Errorw("unable to set status as failed for key", "key", key, "error", err)
+		}
+		return
+	}
+
+	if err := w.store.SetIbcReceived(key, txHash, chainName, height); err != nil {
+		w.l.Errorw("unable to set status as ibc received for key", "key", key, "error", err)
+	}
+}
+
+func HandleIBCTimeoutPacket(w *Watcher, data coretypes.ResultEvent, chainName, txHash string, height int64) {
+	timeoutPacketSourceChannel, ok := data.Events["timeout_packet.packet_src_channel"]
+	if !ok {
+		w.l.Errorf("timeout_packet.packet_src_channel not found")
+		return
+	}
+
+	timeoutPacketSequence, ok := data.Events["timeout_packet.packet_sequence"]
+	if !ok {
+		w.l.Errorf("timeout_packet.packet_sequence not found")
+		return
+	}
+
+	c, err := w.d.GetCounterParty(chainName, timeoutPacketSourceChannel[0])
+	if err != nil {
+		w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
+		return
+	}
+
+	key := store.GetIBCKey(c[0].Counterparty, timeoutPacketSourceChannel[0], timeoutPacketSequence[0])
+	if !w.store.Exists(key) {
+		w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "timeout")
+		return
+	}
+
+	if err := w.store.SetIbcTimeoutUnlock(key, txHash, chainName, height); err != nil {
+		w.l.Errorw("unable to set status as ibc timeout unlock for key", "key", key, "error", err)
+	}
+}
+
+func HandleIBCAckPacket(w *Watcher, data coretypes.ResultEvent, chainName, txHash string, height int64) {
+	ackPacketSourceChannel, ok := data.Events["acknowledge_packet.packet_src_channel"]
+	if !ok {
+		w.l.Errorf("acknowledge_packet.packet_src_channel not found")
+		return
+	}
+
+	ackPacketSequence, ok := data.Events["acknowledge_packet.packet_sequence"]
+	if !ok {
+		w.l.Errorf("acknowledge_packet.packet_sequence not found")
+		return
+	}
+
+	c, err := w.d.GetCounterParty(chainName, ackPacketSourceChannel[0])
+	if err != nil {
+		w.l.Errorw("unable to fetch counterparty chain from db", "error", err)
+		return
+	}
+
+	key := store.GetIBCKey(c[0].Counterparty, ackPacketSourceChannel[0], ackPacketSequence[0])
+	_, ok = data.Events["fungible_token_packet.error"]
+	if ok {
+		if !w.store.Exists(key) {
+			w.l.Debugw("bypassing key, event not sourced from us", "chain_name", w.Name, "key", key, "event", "ibc_ack")
+			return
+		}
+
+		if err := w.store.SetIbcAckUnlock(key, txHash, chainName, height); err != nil {
+			w.l.Errorw("unable to set status as ibc ack unlock for key", "key", key, "error", err)
+		}
+		return
+	}
 }

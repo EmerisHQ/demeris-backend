@@ -5,9 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/go-redis/redis/v8"
 )
@@ -84,7 +86,7 @@ func (s *Store) CreateTicket(chain, txHash, owner string) error {
 		Status: pending,
 	}
 
-	key := fmt.Sprintf("%s/%s", chain, txHash)
+	key := GetKey(chain, txHash)
 	if err := s.CreateShadowKey(key); err != nil {
 		return err
 	}
@@ -209,7 +211,7 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, 
 		return err
 	}
 
-	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
+	newKey := GetIBCKey(destChain, sourceChannel, sendPacketSequence)
 
 	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
 		Owner: ticket.Owner,
@@ -439,4 +441,30 @@ func (s *Store) getValues(keys []string) ([]string, error) {
 	}
 
 	return values, nil
+}
+
+func GetKey(chain, txHash string) string {
+	return fmt.Sprintf("%s/%s", chain, txHash)
+}
+
+func GetIBCKey(chain, packetSrcChannel, packetSequence string) string {
+	return fmt.Sprintf("%s-%s-%s", chain, packetSrcChannel, packetSequence)
+}
+
+func SetupTestDB() (*miniredis.Miniredis, *Store) {
+	m, err := miniredis.Run()
+	if err != nil {
+		log.Fatalf("got error: %s when running miniredis", err)
+	}
+
+	s, err := NewClient(m.Addr())
+	if err != nil {
+		log.Fatalf("got error: %s when creating new store client", err)
+	}
+
+	return m, s
+}
+
+func ResetTestDB(m *miniredis.Miniredis, s *Store) {
+	m.DB(s.Client.Options().DB).FlushDB()
 }
