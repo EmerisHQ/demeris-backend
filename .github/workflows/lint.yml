@@ -2,14 +2,14 @@ name: Lint
 on:
   push:
     branches:
-      - main
+      - master
       - develop
-      - sahith/update-develop
+      - sahith/update-dev
   pull_request:
     branches:
-      - main
+      - master
       - develop
-      - sahith/update-develop
+      - sahith/update-dev
 jobs:
   golangci:
   name: lint
