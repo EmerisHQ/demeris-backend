@@ -13,7 +13,7 @@ linters:
     - gocritic
     - gofmt
     - goimports
-  #  - revive    find a way to disable var-naming and blank-imports in revive
+    - revive
     - gosec
     - gosimple
     - govet
