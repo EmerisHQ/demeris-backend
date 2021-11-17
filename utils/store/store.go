@@ -216,17 +216,14 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, 
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
+	return s.SetWithExpiry(newKey, Ticket{Info: key,
 		Owner: ticket.Owner,
 		TxHashes: []TxHashEntry{{
 			Chain:  chainName,
 			Status: transit,
 			TxHash: txHash,
-		}}}, 2); err != nil {
-		return err
-	}
+		}}}, 2)
 
-	return nil
 }
 
 func (s *Store) SetIbcTimeoutUnlock(key, txHash, chainName string, height int64) error {
@@ -479,7 +476,7 @@ func (s *Store) scan(prefix string) ([]string, error) {
 }
 
 func (s *Store) getValues(keys []string) ([]string, error) {
-	var values []string
+	values := make([]string, 0, len(keys))
 	for _, k := range keys {
 		value, err := s.Client.Get(context.Background(), k).Result()
 		if err != nil {
