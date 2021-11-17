@@ -29,4 +29,3 @@ jobs:
           version: latest
           args: --out-format=tab
           skip-go-installation: true
-        if: env.GIT_DIFF
