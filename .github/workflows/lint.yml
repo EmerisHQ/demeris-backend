@@ -1,4 +1,17 @@
-golangci:
+name: Lint
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - sahith/update-develop
+  pull_request:
+    branches:
+      - main
+      - develop
+      - sahith/update-develop
+jobs:
+  golangci:
   name: lint
   runs-on: ubuntu-latest
   steps:
