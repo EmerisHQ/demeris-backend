@@ -50,5 +50,7 @@
     },
     "docker_image": "gcr.io/tendermint-dev/ki",
     "docker_image_version": "2.0.1"
-  }
+  },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/ki-chain"
 }
