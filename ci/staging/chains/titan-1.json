@@ -1,0 +1,58 @@
+{
+  "chain_name": "rizon",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/rizon.svg",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "Rizon",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "ATOLO",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.00025, "average": 0.0003, "high": 0.0005},
+      "name": "uatolo",
+      "logo": "https://storage.googleapis.com/emeris/logos/rizon.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "ATOLO"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "rizon",
+    "chain_id": "titan-1",
+    "bech32_config": {
+      "main_prefix": "rizon",
+      "prefix_account": "rizon",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "rizon",
+    "cli_name": "rizond",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/rizon-world/mainnet/master/genesis.json"
+      },
+      "seeds": [
+        {"id": "83c9cdc2db2b4eff4acc9cd7d664ad5ae6191080", "address": "seed-1.mainnet.rizon.world", "port": 26656},
+        {"id": "ae1476777536e2be26507c4fbcf86b67540adb64", "address": "seed-2.mainnet.rizon.world", "port": 26656},
+        {"id": "8abf316257a264dc8744dee6be4981cfbbcaf4e4", "address": "seed-3.mainnet.rizon.world", "port": 26656}
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/rizon",
+    "docker_image_version": "v0.2.8"
+  },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/rizon"
+}
