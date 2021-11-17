@@ -20,13 +20,17 @@ spec:
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
       containers:
-        - name: ticket-watcher
+        - name: api-server
           image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+{{- include "ports.pod" . | indent 8 }}
           env:
-            - name: EMERIS-TW_DEBUG
+            - name: RPCWATCHER_DATABASECONNECTIONURL
+              value: "{{ .Values.databaseConnectionURL }}"
+            - name: RPCWATCHER_DEBUG
               value: "{{ .Values.debug }}"
-            - name: TW_REDISURL
+            - name: RPCWATCHER_REDISURL
               value: "{{ .Values.redisUrl }}"
           resources:
 {{ toYaml .Values.resources | indent 12 }}
