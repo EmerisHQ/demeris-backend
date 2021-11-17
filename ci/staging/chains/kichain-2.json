@@ -1,0 +1,54 @@
+{
+  "chain_name": "ki",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/ki.svg",
+  "enabled": false,
+  "valid_block_thresh": "20s",
+  "display_name": "Ki",
+  "demeris_addresses": ["feeaddress"],
+  "denoms": [
+    {
+      "display_name": "XKI",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.025, "average": 0.03, "high": 0.05},
+      "name": "uxki",
+      "logo": "https://storage.googleapis.com/emeris/logos/ki.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "XKI"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "ki",
+    "chain_id": "kichain-2",
+    "bech32_config": {
+      "main_prefix": "ki",
+      "prefix_account": "ki",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "node_config": {
+    "name": "ki",
+    "cli_name": "kid",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+    "join_config": {
+      "genesis": {
+        "url": "https://raw.githubusercontent.com/KiFoundation/ki-networks/v0.1/Mainnet/kichain-2/genesis.json"
+      },
+      "seeds": [
+        {"id": "24cbccfa8813accd0ebdb09e7cdb54cff2e8fcd9", "address": "51.89.166.197", "port": 26656}
+      ]
+    },
+    "docker_image": "gcr.io/tendermint-dev/ki",
+    "docker_image_version": "2.0.1"
+  }
+}
