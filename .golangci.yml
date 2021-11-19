@@ -1,6 +1,8 @@
 run:
   tests: false
   timeout: 5m
+  skip-dirs:
+    - github.com/allinbits/starport-operator/*
 
 linters:
   disable-all: true
@@ -14,7 +16,7 @@ linters:
     - gocritic
     - gofmt
     - goimports
-    - revive
+#    - revive
     - gosec
     - gosimple
     - govet
