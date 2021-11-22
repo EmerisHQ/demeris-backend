@@ -10,6 +10,9 @@ permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
   # pull-requests: read
+env:
+  GOPRIVATE: "github.com/allinbits/*"
+
 jobs:
   golangci:
     name: lint
@@ -19,9 +22,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Configure git for private modules
         env:
-          ACCOUNT: ${{ secrets.GITHUB_ACCOUNT_USER }}
-          TOKEN: ${{ secrets.GITHUB_ACCOUNT_TOKEN }}
-        run: git config --global url."https://${ACCOUNT}:${TOKEN}@github.com".insteadOf "https://github.com"
+          GIT_TOKEN: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+        run: git config --global url."https://git:${GIT_TOKEN}@github.com".insteadOf "https://github.com"
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
