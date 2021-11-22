@@ -16,7 +16,7 @@ linters:
     - gocritic
     - gofmt
     - goimports
-#    - revive
+#    - revive // TODO: enable, being disabled as we use blank imports and also needs changing var names(poolId -> poolID)
     - gosec
     - gosimple
     - govet
@@ -45,10 +45,12 @@ issues:
 linters-settings:
   dogsled:
     max-blank-identifiers: 3
-
   maligned:
     # print struct with more effective memory layout or not, false by default
     suggest-new: true
+  gocritic:
+    disabled-checks:
+      - appendAssign
   golint:
     # minimal confidence for issues, default is 0.8
     min-confidence: 0
