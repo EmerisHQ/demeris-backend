@@ -1,0 +1,66 @@
+{
+    "chain_name": "juno",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
+    "enabled": true,
+    "valid_block_thresh": "20s",
+    "display_name": "juno",
+    "demeris_addresses": ["feeaddress"],
+    "counterparty_names": {
+		"cn1": "cn1",
+		"cn2": "cn2"
+	},
+	"primary_channel": {
+		"cn1": "cn1",
+		"cn2": "cn2"
+	},
+    "denoms": [
+      {
+        "display_name": "JUNO",
+        "stakable": true,
+        "fee_token": true,
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 42,
+        "gas_price_levels": { "low": 1, "average": 1, "high": 1 },
+        "name": "ujuno",
+        "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
+        "verified": true,
+        "precision": 6,
+        "ticker": "JUNO"
+      }
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "juno",
+      "chain_id": "juno-testnet",
+      "bech32_config": {
+        "main_prefix": "juno",
+        "prefix_account": "juno",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper"
+      }
+    },
+    "node_config": {
+      "name": "juno",
+      "cli_name": "junod",
+      "namespace": "emeris",
+      "disable_min_fee_config": true,
+      "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
+      "testnet_config": {
+        "chainID": "juno-testnet",
+        "stake_amount": "10000000000ujuno",
+        "bondDenom": "ujuno",
+        "assets": ["10000000000000000000000ujuno"],
+        "faucet": {
+            "funds": "10000000000000000000000ujuno",
+            "denoms": ["ujuno"]
+        }
+    },
+      "docker_image": "gcr.io/tendermint-dev/juno",
+      "docker_image_version": "v1.0.0"
+    },
+    "supported_wallets": ["keplr"]
+}
