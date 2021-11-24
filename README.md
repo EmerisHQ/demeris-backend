@@ -18,7 +18,7 @@ The Emeris backend can be summarised as *a multi-blockchain indexer*.
 
 ## Components
 
-* [api-server](./api)
+* [api-server](https://github.com/allinbits/demeris-api-server)
 * [cns-server](https://github.com/allinbits/emeris-cns-server)
 * [price-oracle](https://github.com/allinbits/emeris-price-oracle)
 * [rpc-watcher](https://github.com/allinbits/emeris-rpcwatcher)
