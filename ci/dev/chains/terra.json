@@ -50,7 +50,7 @@
 		"cli_name": "terrad",
 		"namespace": "emeris",
 		"disable_min_fee_config": true,
-		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener44:latest",
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener44:main",
 		"testnet_config": {
 			"chainID": "terra-testnet",
 			"stake_amount": "10000000000uluna",

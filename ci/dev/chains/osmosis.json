@@ -49,7 +49,7 @@
 		"name": "osmosis",
 		"cli_name": "osmosisd",
 		"namespace": "emeris",
-		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:develop",
+		"tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:main",
 		"testnet_config": {
 			"chainID": "osmosis-testnet",
 			"stake_amount": "10000000000uosmo",
