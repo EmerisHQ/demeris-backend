@@ -117,4 +117,5 @@ bin
 .price-oracle
 .cns-server
 .api-server
+.rpcwatcher
 .ticket-watcher
