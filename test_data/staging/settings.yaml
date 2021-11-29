@@ -1,0 +1,4 @@
+httpClient:
+  timeout: 1000
+  tcpTimeout: 500
+  sslTimeout: 500
