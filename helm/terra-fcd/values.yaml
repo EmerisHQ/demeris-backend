@@ -1,0 +1,18 @@
+image: terramoney/fcd:1.0.1
+imagePullPolicy: IfNotPresent
+
+replicas: 1
+
+nodeSelector: {}
+
+ports:
+  http: 3060
+
+config:
+  chainID: terra-testnet
+  nodeHost: terra
+  postgres:
+    host: terra-postgresql
+    username: postgres
+    password: postgres
+    database: fcd

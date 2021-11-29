@@ -48,7 +48,7 @@ func (q Querier) ChainByName(name string) (v1.NodeSet, error) {
 }
 
 func (q Querier) ChainsByName(names ...string) ([]v1.NodeSet, error) {
-	var chainList []v1.NodeSet
+	chainList := make([]v1.NodeSet, 0, len(names))
 
 	for _, name := range names {
 		c, err := q.ChainByName(name)
@@ -63,11 +63,8 @@ func (q Querier) ChainsByName(names ...string) ([]v1.NodeSet, error) {
 }
 
 func (q Querier) AddNode(node v1.NodeSet) error {
-	if err := q.Client.Create(context.TODO(), &node); err != nil {
-		return err
-	}
 
-	return nil
+	return q.Client.Create(context.TODO(), &node)
 }
 
 func (q Querier) DeleteNode(nodeName string) error {
@@ -82,11 +79,7 @@ func (q Querier) DeleteNode(nodeName string) error {
 		return fmt.Errorf("%w: %s", ErrNotFound, nodeName)
 	}
 
-	if err := q.Client.Delete(context.TODO(), &objs.Items[0]); err != nil {
-		return err
-	}
-
-	return nil
+	return q.Client.Delete(context.TODO(), &objs.Items[0])
 }
 
 func (q Querier) Relayer() (v1.Relayer, error) {
@@ -104,17 +97,11 @@ func (q Querier) Relayer() (v1.Relayer, error) {
 }
 
 func (q Querier) AddRelayer(r v1.Relayer) error {
-	if err := q.Client.Create(context.TODO(), &r); err != nil {
-		return err
-	}
 
-	return nil
+	return q.Client.Create(context.TODO(), &r)
 }
 
 func (q Querier) UpdateRelayer(r v1.Relayer) error {
-	if err := q.Client.Update(context.TODO(), &r); err != nil {
-		return err
-	}
 
-	return nil
+	return q.Client.Update(context.TODO(), &r)
 }
