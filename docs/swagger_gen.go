@@ -21,6 +21,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/cosmos-sdk/types/tx"
 	_ "github.com/cosmos/cosmos-sdk/x/bank/types"
+	_ "github.com/gravity-devs/liquidity/x/liquidity/types"
 	_ "github.com/swaggo/swag"
 	_ "github.com/tendermint/tendermint/proto/tendermint/version"
 	_ "github.com/tendermint/tendermint/rpc/core/types"

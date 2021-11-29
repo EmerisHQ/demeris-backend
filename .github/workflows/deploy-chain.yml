@@ -23,7 +23,10 @@ on:
         description: 'Deploy Persistence'
         required: true
         default: 'false'
-
+      terra:
+        description: 'Deploy Terra'     
+        required: true
+        default: 'false'
 jobs:
   cosmos-hub:
     if: ${{ github.event.inputs.cosmos_hub == 'true' }}
@@ -114,4 +117,46 @@ jobs:
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: patch -n emeris nodeset persistence --type merge --patch "$(cat ci/dev/chains/persistence-patch.yaml)"
+
+  terra:
+    if: ${{ github.event.inputs.terra == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Deploy
+        uses: wei/curl@v1
+        with:
+          args: -X POST -u tendermint:${{ secrets.DEV_CNS_PASSWORD }} -d @ci/dev/chains/terra.json https://dev.demeris.io/v1/cns/add
+
+      - name: Patch Chain
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: patch -n emeris nodeset terra --type merge --patch "$(cat ci/dev/chains/terra-patch.yaml)"
+
+      - name: Install PostgreSQL
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm repo add bitnami https://charts.bitnami.com/bitnami;
+            helm upgrade terra \
+              --install \
+              --namespace emeris \
+              --set postgresqlPassword=postgres \
+              --set postgresqlDatabase=fcd \
+              bitnami/postgresql
+
+      - name: Install Terra FCD
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm upgrade terra-fcd \
+              --install \
+              --namespace emeris \
+              ./helm/terra-fcd
+
 

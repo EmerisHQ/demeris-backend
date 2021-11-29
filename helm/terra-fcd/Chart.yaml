@@ -1,0 +1,5 @@
+apiVersion: v2
+name: terra-fcd
+description: terra fcd
+version: 0.0.1
+appVersion: 0.0.1

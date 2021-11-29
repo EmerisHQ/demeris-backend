@@ -8,8 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	gaia "github.com/cosmos/gaia/v5/app"
 	"github.com/go-redis/redis/v8"
+	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 )
 
 const (
@@ -32,9 +36,8 @@ var defaultExpiry = 300 * time.Second
 type Store struct {
 	Client        *redis.Client
 	ConnectionURL string
-	Config        struct {
-		ExpiryTime time.Duration
-	}
+	Config        struct{ ExpiryTime time.Duration }
+	Cdc           codec.Marshaler
 }
 
 type TxHashEntry struct {
@@ -63,6 +66,7 @@ func (t Ticket) MarshalBinary() (data []byte, err error) {
 func NewClient(connUrl string) (*Store, error) {
 
 	var store Store
+	cdc, _ := gaia.MakeCodecs()
 
 	store.Client = redis.NewClient(&redis.Options{
 		Addr: connUrl,
@@ -72,6 +76,7 @@ func NewClient(connUrl string) (*Store, error) {
 	store.ConnectionURL = connUrl
 
 	store.Config.ExpiryTime = defaultExpiry
+	store.Cdc = cdc
 
 	return &store, nil
 
@@ -211,17 +216,14 @@ func (s *Store) SetInTransit(key, destChain, sourceChannel, sendPacketSequence, 
 
 	newKey := fmt.Sprintf("%s-%s-%s", destChain, sourceChannel, sendPacketSequence)
 
-	if err := s.SetWithExpiry(newKey, Ticket{Info: key,
+	return s.SetWithExpiry(newKey, Ticket{Info: key,
 		Owner: ticket.Owner,
 		TxHashes: []TxHashEntry{{
 			Chain:  chainName,
 			Status: transit,
 			TxHash: txHash,
-		}}}, 2); err != nil {
-		return err
-	}
+		}}}, 2)
 
-	return nil
 }
 
 func (s *Store) SetIbcTimeoutUnlock(key, txHash, chainName string, height int64) error {
@@ -351,6 +353,51 @@ func (s *Store) GetUserTickets(user string) (map[string][]string, error) {
 	return res, nil
 }
 
+func (s *Store) GetPools() (liquiditytypes.QueryLiquidityPoolsResponse, error) {
+	var res liquiditytypes.QueryLiquidityPoolsResponse
+	bz, err := s.Client.Get(context.Background(), "pools").Bytes()
+	if err != nil {
+		return liquiditytypes.QueryLiquidityPoolsResponse{}, err
+	}
+
+	err = s.Cdc.UnmarshalJSON(bz, &res)
+	if err != nil {
+		return liquiditytypes.QueryLiquidityPoolsResponse{}, err
+	}
+
+	return res, nil
+}
+
+func (s *Store) GetParams() (liquiditytypes.QueryParamsResponse, error) {
+	var res liquiditytypes.QueryParamsResponse
+	bz, err := s.Client.Get(context.Background(), "params").Bytes()
+	if err != nil {
+		return liquiditytypes.QueryParamsResponse{}, err
+	}
+
+	err = s.Cdc.UnmarshalJSON(bz, &res)
+	if err != nil {
+		return liquiditytypes.QueryParamsResponse{}, err
+	}
+
+	return res, nil
+}
+
+func (s *Store) GetSupply() (banktypes.QueryTotalSupplyResponse, error) {
+	var res banktypes.QueryTotalSupplyResponse
+	bz, err := s.Client.Get(context.Background(), "supply").Bytes()
+	if err != nil {
+		return banktypes.QueryTotalSupplyResponse{}, err
+	}
+
+	err = s.Cdc.UnmarshalJSON(bz, &res)
+	if err != nil {
+		return banktypes.QueryTotalSupplyResponse{}, err
+	}
+
+	return res, nil
+}
+
 func (s *Store) Delete(key string) error {
 	return s.Client.Del(context.Background(), key).Err()
 }
@@ -429,7 +476,7 @@ func (s *Store) scan(prefix string) ([]string, error) {
 }
 
 func (s *Store) getValues(keys []string) ([]string, error) {
-	var values []string
+	values := make([]string, 0, len(keys))
 	for _, k := range keys {
 		value, err := s.Client.Get(context.Background(), k).Result()
 		if err != nil {
