@@ -29,6 +29,7 @@ jobs:
           ref: ${{ github.event.client_payload.branch_name }}
 
       - name: Deploy
+        if: ${{ github.event.client_payload.service_name != 'cns-server' }}
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: "${{ secrets.KUBECONFIG }}"
@@ -41,6 +42,36 @@ jobs:
               --set cnsAddress=https://dev.demeris.io/v1/cns \
               --set image=gcr.io/tendermint-dev/"${{ github.event.client_payload.image_name }}":"${{ github.event.client_payload.image_sha }}" \
               ./helm
+
+      - name: Deploy - CNS Server
+        if: ${{ github.event.client_payload.service_name == 'cns-server' }}
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: "${{ secrets.KUBECONFIG }}"
+          exec: |
+            helm upgrade "${{ github.event.client_payload.service_name }}"  \
+              --install \
+              --namespace emeris \
+              --set debug=true \
+              --set fixerKey=${{ secrets.FIXER_KEY }} \
+              --set cnsAddress=https://dev.demeris.io/v1/cns \
+              --set image=gcr.io/tendermint-dev/emeris-cns-server:"${{ github.event.client_payload.image_sha }}" \
+              ./helm/cns-server
+
+      - name: Deploy - Admin UI
+        if: ${{ github.event.client_payload.service_name == 'cns-server' }}
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: "${{ secrets.KUBECONFIG }}"
+          exec: |
+            helm upgrade "${{ github.event.client_payload.service_name }}"  \
+              --install \
+              --namespace emeris \
+              --set debug=true \
+              --set fixerKey=${{ secrets.FIXER_KEY }} \
+              --set cnsAddress=https://dev.demeris.io/v1/cns \
+              --set image=gcr.io/tendermint-dev/emeris-admin-ui:"${{ github.event.client_payload.image_sha }}" \
+              ./helm/admin-ui
 
   ingress:
     runs-on: self-hosted
