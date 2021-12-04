@@ -1,10 +1,13 @@
 apiVersion: v1
-kind: Secret
+kind: Service
 metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | indent 4 }}
-type: Opaque
-data:
-  fixerKey: {{ .Values.fixerKey | b64enc }}
+spec:
+  type: NodePort
+  ports:
+{{- include "ports.service" . | indent 2 }}
+  selector:
+{{- include "chart.labels" . | indent 4 }}

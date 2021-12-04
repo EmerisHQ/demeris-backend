@@ -7,6 +7,9 @@ STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
 PRICE_ORACLE_REPO=git@github.com:allinbits/emeris-price-oracle.git
 CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
+TICKET_WATCHER_REPO=git@github.com:allinbits/emeris-ticket-watcher.git
+RPC_WATCHER_REPO=git@github.com:allinbits/emeris-rpcwatcher.git
+API_SERVER_REPO=git@github.com:allinbits/demeris-api-server.git
 KIND_CONFIG=""
 
 usage()
@@ -321,81 +324,96 @@ EOF
         &> /dev/null
 
     ### Ensure api-server image
-    if [[ "$(docker images -q emeris/api-server 2> /dev/null)" == "" ]]
+    if [ "$(docker images -q emeris/api-server 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/api-server image"
-        docker build -t emeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/api-server already exists"
     else
-        if [ "$BUILD" = "true" ]
+        if [ ! -d .api-server/.git ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/api-server image"
-            docker build -t emeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.api-server .
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning api-server repo"
+            git clone $API_SERVER_REPO .api-server &> /dev/null
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/api-server already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching api-server latest changes"
+            cd .api-server
+            git pull $API_SERVER_REPO &> /dev/null
+            cd ..
         fi
+        cd .api-server
+        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/api-server image"
+        docker build -t emeris/api-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
     fi
     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/api-server image to cluster"
     kind load docker-image emeris/api-server --name $CLUSTER_NAME &> /dev/null
 
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/api-server"
     helm upgrade api-server \
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        helm/emeris-api-server \
+        .api-server/helm \
         &> /dev/null
 
     ### Ensure rpcwatcher image
-    if [[ "$(docker images -q emeris/rpcwatcher 2> /dev/null)" == "" ]]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/rpcwatcher image"
-        docker build -t emeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
-    else
-        if [ "$BUILD" = "true" ]
+    if [ "$(docker images -q emeris/rpcwatcher 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/rpcwatcher image"
-            docker build -t emeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.rpcwatcher .
-        else
             echo -e "${green}\xE2\x9C\x94${reset} Image emeris/rpcwatcher already exists"
-        fi
-    fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/rpcwatcher image to cluster"
-    kind load docker-image emeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
-
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/rpcwatcher"
-    helm upgrade rpcwatcher \
-        --install \
-        --kube-context kind-$CLUSTER_NAME \
-        --namespace emeris \
-        --set imagePullPolicy=Never \
-        helm/emeris-rpcwatcher \
-        &> /dev/null
-
-### Ensure ticket-watcher image
-    if [[ "$(docker images -q emeris/ticket-watcher 2> /dev/null)" == "" ]]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/ticket-watcher image"
-        docker build -t emeris/ticket-watcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.ticket-watcher .
-    else
-        if [ "$BUILD" = "true" ]
-        then
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/ticket-watcher image"
-            docker build -t emeris/ticket-watcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile.ticket-watcher .
         else
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/ticket-watcher already exists"
+            if [ ! -d .rpcwatcher/.git ]
+            then
+                echo -e "${green}\xE2\x9C\x94${reset} Cloning emeris/rpcwatcher repo"
+                git clone $RPC_WATCHER_REPO .rpcwatcher &> /dev/null
+            else
+                echo -e "${green}\xE2\x9C\x94${reset} Fetching rpcwatcher latest changes"
+                cd .rpcwatcher
+                git pull $RPC_WATCHER_REPO &> /dev/null
+                cd ..
+            fi
+            cd .rpcwatcher
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/rpcwatcher image"
+            docker build -t emeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+            cd ..
         fi
+        echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/rpcwatcher image to cluster"
+        kind load docker-image emeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
+
+        helm upgrade rpcwatcher \
+            --install \
+            --kube-context kind-$CLUSTER_NAME \
+            --namespace emeris \
+            --set imagePullPolicy=Never \
+            .rpcwatcher/helm \
+            &> /dev/null
+
+    ### Ensure ticket-watcher image
+    if [ "$(docker images -q emeris/ticket-watcher 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/ticket-watcher already exists"
+    else
+        if [ ! -d .ticket-watcher/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning ticket-watcher repo"
+            git clone $TICKET_WATCHER_REPO .ticket-watcher &> /dev/null
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching ticket-watcher latest changes"
+            cd .ticket-watcher
+            git pull $TICKET_WATCHER_REPO &> /dev/null
+            cd ..
+        fi
+        cd .ticket-watcher
+        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/ticket-watcher image"
+        docker build -t emeris/ticket-watcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
     fi
     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/ticket-watcher image to cluster"
     kind load docker-image emeris/ticket-watcher --name $CLUSTER_NAME &> /dev/null
 
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/ticket-watcher"
     helm upgrade ticket-watcher \
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        helm/emeris-ticket-watcher \
+        .ticket-watcher/helm \
         &> /dev/null
 
     ### Ensure price-oracle-server image
@@ -426,7 +444,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        helm/emeris-price-oracle-server \
+        .price-oracle/helm \
         &> /dev/null
 
     ## Ensure Emeris ingress

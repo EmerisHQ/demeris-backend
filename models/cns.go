@@ -25,7 +25,7 @@ type Chain struct {
 	ValidBlockThresh Threshold      `diff:"-" db:"valid_block_thresh" binding:"required" json:"valid_block_thresh" swaggertype:"primitive,integer"` // valid block time expressed in time.Duration format
 	DerivationPath   string         `diff:"-" db:"derivation_path" binding:"required,derivationpath" json:"derivation_path"`                        // chain derivation path
 	SupportedWallets pq.StringArray `diff:"-" db:"supported_wallets" binding:"required" json:"supported_wallets"`                                   // the list of supported wallets
-	BlockExplorer 	 string 		    `diff:"-" db:"block_explorer" json:"block_explorer"`															                              // block explorer url
+	BlockExplorer    string         `diff:"-" db:"block_explorer" json:"block_explorer"`                                                            // block explorer url
 }
 
 // VerifiedTokens returns a DenomList of native denoms that are verified.
@@ -84,8 +84,6 @@ func (t *Threshold) UnmarshalJSON(bytes []byte) error {
 
 	*t = Threshold(d)
 
-	bytes = nil
-
 	return nil
 }
 
@@ -140,9 +138,6 @@ func (a *NodeInfo) Scan(value interface{}) error {
 		return err
 	}
 
-	b = nil
-	value = nil
-
 	return nil
 }
 
@@ -169,9 +164,6 @@ func (a *GasPrice) Scan(value interface{}) error {
 		return err
 	}
 
-	b = nil
-	value = nil
-
 	return nil
 }
 
@@ -188,9 +180,8 @@ type Bech32Config struct {
 // MarshalJSON implements the json.Marshaler interface.
 // Returns the json representation of Bech32Config with prefixes methods as fields.
 func (b Bech32Config) MarshalJSON() ([]byte, error) {
-	var ret bech32ConfigMarshaled
 
-	ret = bech32ConfigMarshaled{
+	return json.Marshal(bech32ConfigMarshaled{
 		MainPrefix:      b.MainPrefix,
 		PrefixAccount:   b.PrefixAccount,
 		PrefixValidator: b.PrefixValidator,
@@ -203,9 +194,7 @@ func (b Bech32Config) MarshalJSON() ([]byte, error) {
 		ValPub:          b.Bech32PrefixValPub(),
 		ConsAddr:        b.Bech32PrefixConsAddr(),
 		ConsPub:         b.Bech32PrefixConsPub(),
-	}
-
-	return json.Marshal(ret)
+	})
 }
 
 // Bech32PrefixAccAddr defines the Bech32 prefix of an account's address
@@ -283,9 +272,6 @@ func (a *DenomList) Scan(value interface{}) error {
 		return err
 	}
 
-	b = nil
-	value = nil
-
 	return nil
 }
 
@@ -299,15 +285,7 @@ func (a *DbStringMap) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 
-	err := json.Unmarshal(b, &a)
-	if err != nil {
-		return err
-	}
-
-	b = nil
-	value = nil
-
-	return nil
+	return json.Unmarshal(b, &a)
 }
 
 // ChannelQuery represents a query to get a specified channel or counterparty data.

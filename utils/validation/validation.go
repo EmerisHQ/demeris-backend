@@ -25,8 +25,7 @@ func MissingFields(err error, fieldName bool) []string {
 
 	var missingFields []string
 	for _, e := range ve {
-		switch e.Tag() {
-		case "required":
+		if e.Tag() == "required" {
 			field := e.Field()
 			if fieldName {
 				field = e.ActualTag()
@@ -34,6 +33,7 @@ func MissingFields(err error, fieldName bool) []string {
 
 			missingFields = append(missingFields, field)
 		}
+
 	}
 
 	return missingFields
