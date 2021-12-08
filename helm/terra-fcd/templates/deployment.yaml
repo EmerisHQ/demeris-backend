@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "chart.labels" . | indent 6 }}
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+      labels:
+        {{- include "chart.labels" . | indent 8 }}
+    spec:
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      containers:
+        - name: api
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          args: ["start"]
+          ports:
+{{- include "ports.pod" . | indent 8 }}
+          env:
+            - name: CHAIN_ID
+              value: "{{ .Values.config.chainID }}"
+            - name: LCD_URI
+              value: "http://{{ .Values.config.nodeHost }}:1317"
+            - name: BYPASS_URI
+              value: "http://{{ .Values.config.nodeHost }}:1317"
+            - name: RPC_URI
+              value: "http://{{ .Values.config.nodeHost }}:26657"
+            - name: TYPEORM_CONNECTION
+              value: postgres
+            - name: TYPEORM_HOST
+              value: "{{ .Values.config.postgres.host }}"
+            - name: TYPEORM_USERNAME
+              value: "{{ .Values.config.postgres.username }}"
+            - name: TYPEORM_PASSWORD
+              value: "{{ .Values.config.postgres.password }}"
+            - name: TYPEORM_DATABASE
+              value: "{{ .Values.config.postgres.database }}"
+            - name: TYPEORM_SYNCHRONIZE
+              value: "true"
+            - name: TYPEORM_ENTITIES
+              value: "src/orm/*Entity.ts"
+        - name: collector
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          args: ["collector"]
+          ports:
+{{- include "ports.pod" . | indent 8 }}
+          env:
+            - name: CHAIN_ID
+              value: "{{ .Values.config.chainID }}"
+            - name: LCD_URI
+              value: "http://{{ .Values.config.nodeHost }}:1317"
+            - name: BYPASS_URI
+              value: "http://{{ .Values.config.nodeHost }}:1317"
+            - name: RPC_URI
+              value: "http://{{ .Values.config.nodeHost }}:26657"
+            - name: TYPEORM_CONNECTION
+              value: postgres
+            - name: TYPEORM_HOST
+              value: "{{ .Values.config.postgres.host }}"
+            - name: TYPEORM_USERNAME
+              value: "{{ .Values.config.postgres.username }}"
+            - name: TYPEORM_PASSWORD
+              value: "{{ .Values.config.postgres.password }}"
+            - name: TYPEORM_DATABASE
+              value: "{{ .Values.config.postgres.database }}"
+            - name: TYPEORM_SYNCHRONIZE
+              value: "true"
+            - name: TYPEORM_ENTITIES
+              value: "src/orm/*Entity.ts"
+      terminationGracePeriodSeconds: 10

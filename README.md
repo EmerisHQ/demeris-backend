@@ -2,6 +2,8 @@
 
 # Emeris Backend
 
+This is the entry-point project for the Emeris backend system.
+
 ## Intro to Emeris
 
 The following blog posts give a good, high-level overview of the product's vision. 
@@ -18,64 +20,27 @@ The Emeris backend can be summarised as *a multi-blockchain indexer*.
 
 ## Components
 
-* [api-server](./api)
+* [api-server](https://github.com/allinbits/demeris-api-server)
 * [cns-server](https://github.com/allinbits/emeris-cns-server)
 * [price-oracle](https://github.com/allinbits/emeris-price-oracle)
-* [rpc-watcher](./rpcwatcher)
+* [rpc-watcher](https://github.com/allinbits/emeris-rpcwatcher)
 * [trace-listener](https://github.com/allinbits/tracelistener/)
-* [ticket-watcher](./cmd/ticket-watcher)
+* [ticket-watcher](https://github.com/allinbits/emeris-ticket-watcher)
 * [sdk-service](https://github.com/allinbits/sdk-service-meta)
 * [models](https://github.com/allinbits/demeris-backend-models) (shared library)
 * [utils](./utils) (shared library)
 
-## Generating API documentation
+## CI/CD 
 
-To generate the OpenAPI specification document (`swagger.yml`), run:
+The Github actions to deploy to various envs are in the [.github](.github/workflows) subfolder.
 
-```shell
-make generate-swagger
-```
+The CI/CD workflows are described in the following diagram
 
-## Compiling
+![Emeris CI/CD](./images/CI_CD.png)
+Original diagram is [here](https://whimsical.com/ci-cd-HTBa2HjDzroKsePps71hHE)
 
-Each compilation target resides under a directory living in `cmd`, for example to build `tracelistener` one would execute:
-
-```shell
-make tracelistener
-```
-
-To build all the project's binaries, run:
-
-```shell
-make
-```
-
-By default `make` will produce stripped and optimized binaries.
-
-To build a non-stripped binary with debug symbols, append `DEBUG=true` in your environment or when calling `make`:
-
-```shell
-make DEBUG=true
-```
-
-Build targets are automatically updated as soon as you create a new directory under `cmd`, no need to modify the
-`Makefile` to include them.
-
-## Cleaning
-
-To clean the generated OpenAPI specification and build artifacts, run:
-
-```shell
-make clean
-```
-
-## Docker
-
-To build Docker images for `cmd` binaries, run from the root of this repository:
-
-```shell
-docker build -t [yourbinary]:latest -f Dockerfile.<yourbinary> .^
-```
+Each push/merge to a service's `main` branch (which passes testing), creates a Docker image.  
+This in turn triggers an automatic deployment to the DEV env. 
 
 ## Local Kubernetes environment
 
@@ -109,6 +74,8 @@ Flags:
   -h, --help 		 Show this menu
   -m, --monitoring   Setup monitoring infrastructure
 ```
+
+For more instructions see [this page](https://www.notion.so/allinbits/Emeris-back-end-Dev-environment-setup-2b8a05f940274b45b0b3ba775f1fd6f8#ef44b157a985426d9d9743b5d017e86c).
 
 ### Grafana credentials
 

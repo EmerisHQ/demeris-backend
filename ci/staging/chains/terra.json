@@ -1,0 +1,108 @@
+{
+  "enabled": true,
+  "chain_name": "terra",
+  "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
+  "display_name": "Terra",
+  "primary_channel": {
+    "cosmos-hub": "channel-2",
+    "emoney": "channel-5",
+    "juno": "channel-3",
+    "osmosis": "channel-1"
+  },
+  "denoms": [
+    {
+      "name": "uluna",
+      "display_name": "LUNA",
+      "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
+      "precision": 6,
+      "verified": true,
+      "stakable": true,
+      "ticker": "LUNA",
+      "price_id": "terra-luna",
+      "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.013199,
+        "average": 0.015,
+        "high": 0.025
+      },
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42
+    },
+    {
+      "name": "uusd",
+      "display_name": "Terra USD",
+      "logo": "https://marketcap.com/assets/images/coins/936422-UST.png",
+      "precision": 6,
+      "verified": true,
+      "ticker": "UST",
+      "price_id": "terrausd",
+      "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.456,
+        "average": 0.5,
+        "high": 1
+      },
+      "fetch_price": true,
+      "relayer_denom": false,
+      "minimum_thresh_relayer_balance": 42
+    }
+  ],
+  "demeris_addresses": [
+    "feeaddress"
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "terra",
+    "chain_id": "columbus-5",
+    "bech32_config": {
+      "main_prefix": "terra",
+      "prefix_account": "terra",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper",
+      "acc_addr": "terra",
+      "acc_pub": "terrapub",
+      "val_addr": "terravaloper",
+      "val_pub": "terravaloperpub",
+      "cons_addr": "terravalcons",
+      "cons_pub": "terravalconspub"
+    }
+  },
+  "node_config": {
+    "name": "terra",
+    "cli_name": "terrad",
+    "namespace": "emeris",
+    "tracelistener_image": "gcr.io/tendermint-dev/emeris-traceclistener44:4185559",
+    "join_config": {
+      "genesis": {
+        "url": "https://columbus-genesis.s3.ap-northeast-1.amazonaws.com/columbus-5-genesis.json"
+      },
+      "seeds": [
+        {
+          "address": "seed.terra.delightlabs.io",
+          "id": "e999fc20aa5b87c1acef8677cf495ad85061cfb9",
+          "port": 26656
+        },
+        {
+          "address": "public-seed2.terra.dev",
+          "id": "6d8e943c049a80c161a889cb5fcf3d184215023e",
+          "port": 26656
+        },
+        {
+          "address": "public-seed.terra.dev",
+          "id": "87048bf71526fb92d73733ba3ddb79b7a83ca11e",
+          "port": 26656
+        }
+      ]
+    },
+    "docker_image": "terramoney/core",
+    "docker_image_version": "v0.5.5"
+  },
+  "valid_block_thresh": "20s",
+  "derivation_path": "m/44'/330'/0'/0/0",
+  "supported_wallets": [],
+  "block_explorer": "\"\""
+}
+

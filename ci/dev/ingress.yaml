@@ -22,6 +22,13 @@ spec:
         pathType: ImplementationSpecific
       - backend:
           service:
+            name: terra-fcd
+            port:
+              number: 3060
+        path: /v1/services/terra/fcd(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
             name: price-oracle
             port:
               number: 8000
