@@ -1,0 +1,4 @@
+http_client:
+  timeout: 1000
+  tcp_timeout: 500
+  ssl_timeout: 500
