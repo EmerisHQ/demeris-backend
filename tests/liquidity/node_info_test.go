@@ -41,15 +41,16 @@ func TestLiquidityStatus(t *testing.T) {
 				var values map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &values, t)
 
-				fmt.Println(values["node_info"])
-				v, _ := values["node_info"].(map[string]interface{})
-				require.NotEmpty(t, v)
+				v, ok := values["node_info"].(map[string]interface{})
+				require.True(t, ok)
 				networkName := v["network"]
 
 				var fileResp map[string]interface{}
 				utils.StringToMap(ch.Payload, &fileResp, t)
-				fv, _ := fileResp["node_info"].(map[string]interface{})
-				require.NotEmpty(t, fv)
+
+				fv, ok := fileResp["node_info"].(map[string]interface{})
+				require.True(t, ok)
+
 				expectedName := fv["chain_id"]
 
 				require.Equal(t, expectedName, networkName)
