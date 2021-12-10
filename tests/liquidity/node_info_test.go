@@ -40,6 +40,8 @@ func TestLiquidityStatus(t *testing.T) {
 				// act
 				resp, err := client.Get(url)
 				require.NoError(t, err)
+				
+				defer resp.Body.Close()
 
 				// assert
 				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
