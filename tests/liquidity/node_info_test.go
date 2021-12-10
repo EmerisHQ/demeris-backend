@@ -14,6 +14,7 @@ import (
 const (
 	baseUrl               = "%s://%s%s"
 	liquidityNodeEndpoint = "/liquidity/node_info"
+	chainName             = "cosmos-hub"
 )
 
 func TestLiquidityStatus(t *testing.T) {
@@ -22,11 +23,16 @@ func TestLiquidityStatus(t *testing.T) {
 	// arrange
 	env := os.Getenv("ENV")
 	emIngress, _ := utils.LoadIngressInfo(env, t)
+	require.NotNil(t, emIngress)
+
 	chains := utils.LoadChainsInfo(env, t)
+	require.NotNil(t, chains)
+
 	client := utils.CreateNetClient(env, t)
+	require.NotNil(t, client)
 
 	for _, ch := range chains {
-		if ch.Name == "cosmos-hub" {
+		if ch.Name == chainName {
 			t.Run(ch.Name, func(t *testing.T) {
 
 				// arrange
