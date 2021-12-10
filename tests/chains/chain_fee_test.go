@@ -52,6 +52,23 @@ func TestChainFee(t *testing.T) {
 				require.NoError(t, err)
 
 				require.NotEmpty(t, denoms)
+
+				var payload map[string]interface{}
+				err = json.Unmarshal(ch.Payload, &payload)
+				require.NoError(t, err)
+
+				data, err = json.Marshal(payload["denoms"])
+				require.NoError(t, err)
+
+				var expectedDenoms cns.DenomList
+				err = json.Unmarshal(data, &expectedDenoms)
+				require.NoError(t, err)
+
+				require.Equal(t, len(expectedDenoms), len(denoms))
+				for i, denom := range denoms {
+					require.Equal(t, expectedDenoms[i].Name, denom.Name)
+				}
+
 			}
 		})
 	}
