@@ -40,6 +40,8 @@ func TestPrimaryChannels(t *testing.T) {
 			resp, err := client.Get(url)
 			require.NoError(t, err)
 
+			defer resp.Body.Close()
+
 			// assert
 			if !ch.Enabled {
 				require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
