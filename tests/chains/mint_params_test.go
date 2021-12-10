@@ -38,6 +38,8 @@ func TestMintParams(t *testing.T) {
 			// act
 			resp, err := client.Get(url)
 			require.NoError(t, err)
+			
+			defer resp.Body.Close()
 
 			// assert
 			if !ch.Enabled {
