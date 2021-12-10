@@ -11,7 +11,7 @@ import (
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
-const chainValidatorsEndpoint = "chain/%s/fee/address"
+const chainFeeAddressEndpoint = "chain/%s/fee/address"
 
 func TestChainFeeAddress(t *testing.T) {
 	t.Parallel()
@@ -25,7 +25,7 @@ func TestChainFeeAddress(t *testing.T) {
 	for _, ch := range chains {
 		t.Run(ch.Name, func(t *testing.T) {
 			// arrange
-			url := fmt.Sprintf(baseUrl+chainValidatorsEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
+			url := fmt.Sprintf(baseUrl+chainFeeAddressEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
 			// act
 			resp, err := client.Get(url)
 			require.NoError(t, err)
