@@ -2,7 +2,7 @@
     "chain_name": "microtick",
     "derivation_path": "m/44'/118'/0'/0/0",
     "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
-    "enabled": false,
+    "enabled": true,
     "valid_block_thresh": "20s",
     "display_name": "Microtick",
     "demeris_addresses": ["feeaddress"],

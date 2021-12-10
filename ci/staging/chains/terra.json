@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "chain_name": "terra",
   "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
   "display_name": "Terra",
