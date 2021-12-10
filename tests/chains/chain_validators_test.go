@@ -54,7 +54,6 @@ func TestChainValidators(t *testing.T) {
 					err = json.Unmarshal(data, &row)
 					require.NoError(t, err)
 				}
-
 			}
 		})
 	}
