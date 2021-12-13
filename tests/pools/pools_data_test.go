@@ -35,5 +35,5 @@ func TestPoolsData(t *testing.T) {
 	require.NotNil(t, respValues)
 
 	pools, _ := respValues["pools"]
-	require.NotNil(t, pools)
+	require.NotEmpty(t, pools)
 }
