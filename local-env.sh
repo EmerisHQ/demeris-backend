@@ -10,6 +10,8 @@ CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
 TICKET_WATCHER_REPO=git@github.com:allinbits/emeris-ticket-watcher.git
 RPC_WATCHER_REPO=git@github.com:allinbits/emeris-rpcwatcher.git
 API_SERVER_REPO=git@github.com:allinbits/demeris-api-server.git
+SDK_SERVICE_REPO=git@github.com:allinbits/sdk-service.git
+
 KIND_CONFIG=""
 
 usage()
@@ -447,6 +449,69 @@ EOF
         --set imagePullPolicy=Never \
         .price-oracle/helm \
         &> /dev/null
+
+
+ ### Ensure sdk-service image for v44
+    if [ "$(docker images -q emeris/sdk-service-v44 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service already exists"
+    else
+        if [ ! -d .sdk-service/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning price-oracle repo"
+            git clone $SDK_SERVICE_REPO .sdk-service &> /dev/null
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching sdk-service latest changes"
+            cd .sdk-service
+            git pull $SDK_SERVICE_REPO &> /dev/null
+            cd ..
+        fi
+        cd .sdk-service
+        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/sdk-service image"
+        docker build -t emeris/sdk-service-v44 --build-arg GIT_TOKEN=$GITHUB_TOKEN --build-arg SDK_TARGET='v44' -f Dockerfile .
+        cd ..
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/price-oracle-server image to cluster"
+    kind load docker-image emeris/sdk-service --name $CLUSTER_NAME &> /dev/null
+
+    helm upgrade sdk-service-v44 \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
+        --set imagePullPolicy=Never \
+        .sdk-service/helm \
+        &> /dev/null
+
+    ### Ensure sdk-service image for v42
+        if [ "$(docker images -q emeris/sdk-service-v42 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service already exists"
+        else
+            if [ ! -d .sdk-service/.git ]
+            then
+                echo -e "${green}\xE2\x9C\x94${reset} Cloning price-oracle repo"
+                git clone $SDK_SERVICE_REPO .sdk-service &> /dev/null
+            else
+                echo -e "${green}\xE2\x9C\x94${reset} Fetching sdk-service latest changes"
+                cd .sdk-service
+                git pull $SDK_SERVICE_REPO &> /dev/null
+                cd ..
+            fi
+            cd .sdk-service
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/sdk-service image"
+            docker build -t emeris/sdk-service-v42 --build-arg GIT_TOKEN=$GITHUB_TOKEN --build-arg SDK_TARGET='v42' -f Dockerfile .
+            cd ..
+        fi
+        echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/price-oracle-server image to cluster"
+        kind load docker-image emeris/sdk-service-v42 --name $CLUSTER_NAME &> /dev/null
+
+        helm upgrade sdk-service-v42 \
+            --install \
+            --kube-context kind-$CLUSTER_NAME \
+            --namespace emeris \
+            --set imagePullPolicy=Never \
+            .sdk-service/helm \
+            &> /dev/null
 
     ## Ensure Emeris ingress
     echo -e "${green}\xE2\x9C\x94${reset} Deploy emeris ingress"
