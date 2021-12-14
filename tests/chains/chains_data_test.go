@@ -20,7 +20,9 @@ func TestChainsData(t *testing.T) {
 	// arrange
 	env := os.Getenv("ENV")
 	emIngress, _ := utils.LoadIngressInfo(env, t)
+	require.NotNil(t, emIngress.Host)
 	chains := utils.LoadChainsInfo(env, t)
+	require.NotEmpty(t, chains)
 	client := utils.CreateNetClient(env, t)
 
 	// arrange
