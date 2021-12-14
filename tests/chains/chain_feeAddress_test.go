@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -36,13 +37,17 @@ func TestChainFeeAddress(t *testing.T) {
 			} else {
 				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
+				var payload map[string]interface{}
+				err := json.Unmarshal(ch.Payload, &payload)
+				require.NoError(t, err)
+
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
 				err = resp.Body.Close()
 				require.NoError(t, err)
 
-				require.Equal(t, []interface{}{"feeaddress"}, respValues["fee_address"])
+				require.Equal(t, payload["demeris_addresses"], respValues["fee_address"])
 			}
 		})
 	}
