@@ -58,5 +58,5 @@ func TestChainsFeeAddresses(t *testing.T) {
 	err = json.Unmarshal(expValuesData, &expValuesInterface)
 	require.NoError(t, err)
 
-	require.Equal(t, expValuesInterface, respValues)
+	require.ElementsMatch(t, expValuesInterface["fee_addresses"], respValues["fee_addresses"])
 }
