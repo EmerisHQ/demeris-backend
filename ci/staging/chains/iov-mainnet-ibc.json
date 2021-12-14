@@ -2,6 +2,8 @@
   "enabled": true,
   "chain_name": "starname",
   "logo": "https://storage.googleapis.com/emeris/logos/starname.svg",
+  "enabled": true,
+  "valid_block_thresh": "20s",
   "display_name": "Starname",
   "primary_channel": {
     "akash": "channel-7",
