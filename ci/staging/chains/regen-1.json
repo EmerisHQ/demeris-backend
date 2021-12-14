@@ -1,57 +1,69 @@
 {
-  "chain_name": "regen",
-  "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://storage.googleapis.com/emeris/logos/regen.svg",
-  "enabled": true,
-  "valid_block_thresh": "20s",
-  "display_name": "Regen",
-  "demeris_addresses": ["feeaddress"],
-  "denoms": [
-    {
-      "display_name": "REGEN",
-      "stakable": true,
-      "fee_token": true,
-      "fetch_price": true,
-      "relayer_denom": true,
-      "minimum_thresh_relayer_balance": 42,
-      "gas_price_levels": { "low": 0.03, "average": 0.075, "high": 0.12},
-      "name": "uregen",
-      "logo": "https://storage.googleapis.com/emeris/logos/regen.svg",
-      "verified": true,
-      "precision": 6,
-      "ticker": "REGEN"
-    }
-  ],
-  "genesis_hash": "genesis_hash",
-  "node_info": {
-    "endpoint": "regen",
-    "chain_id": "regen-1",
-    "bech32_config": {
-      "main_prefix": "regen",
-      "prefix_account": "regen",
-      "prefix_validator": "val",
-      "prefix_consensus": "cons",
-      "prefix_public": "pub",
-      "prefix_operator": "oper"
-    }
-  },
-  "node_config": {
-    "name": "regen",
-    "cli_name": "regen",
-    "namespace": "emeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
-    "join_config": {
-      "genesis": {
-        "url": "https://github.com/regen-network/mainnet/raw/main/regen-1/genesis.json"
-      },
-      "seeds": [
-        {"id": "69975e7afdf731a165e40449fcffc75167a084fc", "address": "104.131.169.70", "port": 26656},
-        {"id": "d35d652b6cb3bf7d6cb8d4bd7c036ea03e7be2ab", "address": "116.203.182.185", "port": 26656},
-        {"id": "ffacd3202ded6945fed12fa4fd715b1874985b8c", "address": "3.98.38.91", "port": 26656}
-      ]
+  "chain": {
+    "enabled": true,
+    "chain_name": "regen",
+    "logo": "https://storage.googleapis.com/emeris/logos/regen.svg",
+    "display_name": "Regen",
+    "primary_channel": {
+      "akash": "channel-10",
+      "cosmos-hub": "channel-11",
+      "crypto-org": "channel-12",
+      "emoney": "channel-35",
+      "iris": "channel-9",
+      "ixo": "channel-31",
+      "microtick": "channel-30",
+      "osmosis": "channel-1",
+      "persistence": "channel-14",
+      "sentinel": "channel-15",
+      "sifchain": "channel-28",
+      "starname": "channel-29"
     },
-    "docker_image": "gcr.io/tendermint-dev/regen",
-    "docker_image_version": "v1.0.0"
-  },
-  "supported_wallets": ["keplr"]
+    "denoms": [
+      {
+        "name": "uregen",
+        "display_name": "REGEN",
+        "logo": "https://storage.googleapis.com/emeris/logos/regen.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "REGEN",
+        "price_id": "regen",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.03,
+          "average": 0.075,
+          "high": 0.12
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 50000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "regen",
+      "chain_id": "regen-1",
+      "bech32_config": {
+        "main_prefix": "regen",
+        "prefix_account": "regen",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "regen",
+        "acc_pub": "regenpub",
+        "val_addr": "regenvaloper",
+        "val_pub": "regenvaloperpub",
+        "cons_addr": "regenvalcons",
+        "cons_pub": "regenvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\""
+  }
 }

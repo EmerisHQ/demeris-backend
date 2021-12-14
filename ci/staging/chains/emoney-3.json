@@ -1,86 +1,67 @@
 {
-  "chain_name": "emoney",
-  "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
-  "enabled": false,
-  "valid_block_thresh": "20s",
-  "display_name": "e-Money",
-  "demeris_addresses": ["feeaddress"],
-  "denoms": [
-    {
-      "display_name": "NGM",
-      "stakable": true,
-      "fee_token": true,
-      "fetch_price": true,
-      "relayer_denom": true,
-      "minimum_thresh_relayer_balance": 42,
-      "gas_price_levels": { "low": 1, "average": 1, "high": 1 },
-      "name": "ungm",
-      "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
-      "verified": true,
-      "precision": 6,
-      "ticker": "NGM"
-    }
-  ],
-  "genesis_hash": "genesis_hash",
-  "node_info": {
-    "endpoint": "emoney",
-    "chain_id": "emoney-3",
-    "bech32_config": {
-      "main_prefix": "emoney",
-      "prefix_account": "emoney",
-      "prefix_validator": "val",
-      "prefix_consensus": "cons",
-      "prefix_public": "pub",
-      "prefix_operator": "oper"
-    }
-  },
-  "node_config": {
-    "name": "emoney",
-    "cli_name": "emd",
-    "namespace": "emeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
-    "join_config": {
-      "genesis": {
-        "url": "https://raw.githubusercontent.com/e-money/networks/master/emoney-3/genesis.json"
-      },
-      "persistentPeers": [
-        {
-          "id": "0ad7bc7687112e212bac404670aa24cd6116d097",
-          "address": "50.18.83.75",
-          "port": 26656
-        },
-        {
-          "id": "170255a4a9b120786d2d6c3931ebf0125087cca0",
-          "address": "62.171.171.139",
-          "port": 26656
-        },
-        {
-          "id": "170255a4a9b120786d2d6c3931ebf0125087cca0",
-          "address": "62.171.171.139",
-          "port": 26656
-        },
-        {
-          "id": "d12ac664ff9766e0535c836173111e3eed462e79",
-          "address": "185.144.83.157",
-          "port": 26656
-        },
-        {
-          "id": "226d713acb10a1cd09b3b890406b886d7b071cf2",
-          "address": "10.105.2.101",
-          "port": 26656
-        }
-      ]
+  "chain": {
+    "enabled": true,
+    "chain_name": "emoney",
+    "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
+    "display_name": "e-Money",
+    "primary_channel": {
+      "akash": "channel-3",
+      "cosmos-hub": "channel-1",
+      "crypto-org": "channel-5",
+      "iris": "channel-6",
+      "microtick": "channel-11",
+      "osmosis": "channel-0",
+      "persistence": "channel-8",
+      "regen": "channel-9",
+      "sentinel": "channel-10",
+      "terra": "channel-13"
     },
-    "docker_image": "gcr.io/tendermint-dev/e-money",
-    "docker_image_version": "v1.1.2"
-  },
-  "relayer_configuration": {
-    "max_msg_num":12,
-    "max_gas": 500000,
-    "clock_drift": "70s",
-    "trusting_period": "14days"
-  },
-  "skip_channel_creation": true,
-  "block_explorer": "https://www.mintscan.io/emoney"
+    "denoms": [
+      {
+        "name": "ungm",
+        "display_name": "NGM",
+        "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "NGM",
+        "price_id": "e-money",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 1.5,
+          "average": 1,
+          "high": 2
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 42
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "emoney",
+      "chain_id": "emoney-3",
+      "bech32_config": {
+        "main_prefix": "emoney",
+        "prefix_account": "emoney",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "emoney",
+        "acc_pub": "emoneypub",
+        "val_addr": "emoneyvaloper",
+        "val_pub": "emoneyvaloperpub",
+        "cons_addr": "emoneyvalcons",
+        "cons_pub": "emoneyvalconspub"
+      }
+    },
+    "valid_block_thresh": "5m0s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\""
+  }
 }

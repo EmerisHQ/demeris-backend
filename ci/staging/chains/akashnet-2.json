@@ -1,58 +1,69 @@
 {
-  "chain_name": "akash",
-  "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
-  "enabled": true,
-  "valid_block_thresh": "20s",
-  "display_name": "Akash",
-  "demeris_addresses": ["feeaddress"],
-  "denoms": [
-    {
-      "display_name": "AKT",
-      "stakable": true,
-      "fee_token": true,
-      "fetch_price": true,
-      "relayer_denom": true,
-      "minimum_thresh_relayer_balance": 42,
-      "gas_price_levels": { "low": 0.036, "average": 0.09, "high": 0.108},
-      "name": "uakt",
+    "chain": {
+      "enabled": true,
+      "chain_name": "akash",
       "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
-      "verified": true,
-      "precision": 6,
-      "ticker": "AKT"
-    }
-  ],
-  "genesis_hash": "genesis_hash",
-  "node_info": {
-    "endpoint": "akash",
-    "chain_id": "akashnet-2",
-    "bech32_config": {
-      "main_prefix": "akash",
-      "prefix_account": "akash",
-      "prefix_validator": "val",
-      "prefix_consensus": "cons",
-      "prefix_public": "pub",
-      "prefix_operator": "oper"
-    }
-  },
-  "node_config": {
-    "name": "akash",
-    "cli_name": "akash",
-    "namespace": "emeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
-    "join_config": {
-      "genesis": {
-        "url": "https://raw.githubusercontent.com/ovrclk/net/master/mainnet/genesis.json"
+      "display_name": "Akash",
+      "primary_channel": {
+        "cosmos-hub": "channel-17",
+        "crypto-org": "channel-18",
+        "emoney": "channel-30",
+        "iris": "channel-16",
+        "ixo": "channel-29",
+        "microtick": "channel-28",
+        "osmosis": "channel-9",
+        "persistence": "channel-20",
+        "regen": "channel-21",
+        "sentinel": "channel-22",
+        "sifchain": "channel-24",
+        "starname": "channel-27"
       },
-      "seeds": [
-        {"id": "27eb432ccd5e895c5c659659120d68b393dd8c60", "address": "35.247.65.183", "port": 26656},
-        {"id": "8e2f56098f182ffe2f6fb09280bafe13c63eb42f", "address": "46.101.176.149", "port": 26656},
-        {"id": "fff99a2e8f3c9473e4e5ee9a99611a2e599529fd", "address": "46.166.138.218", "port": 26656}
-      ]
-    },
-    "docker_image": "gcr.io/tendermint-dev/akash",
-    "docker_image_version": "v0.12.1"
-  },
-  "supported_wallets": ["keplr"],
-  "block_explorer": "https://www.mintscan.io/akash"
-}
+      "denoms": [
+        {
+          "name": "uakt",
+          "display_name": "AKT",
+          "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
+          "precision": 6,
+          "verified": true,
+          "stakable": true,
+          "ticker": "AKT",
+          "price_id": "akash-network",
+          "fee_token": true,
+          "gas_price_levels": {
+            "low": 0.036,
+            "average": 0.09,
+            "high": 0.108
+          },
+          "fetch_price": true,
+          "relayer_denom": true,
+          "minimum_thresh_relayer_balance": 40000000
+        }
+      ],
+      "demeris_addresses": [
+        "feeaddress"
+      ],
+      "genesis_hash": "genesis_hash",
+      "node_info": {
+        "endpoint": "akash",
+        "chain_id": "akashnet-2",
+        "bech32_config": {
+          "main_prefix": "akash",
+          "prefix_account": "akash",
+          "prefix_validator": "val",
+          "prefix_consensus": "cons",
+          "prefix_public": "pub",
+          "prefix_operator": "oper",
+          "acc_addr": "akash",
+          "acc_pub": "akashpub",
+          "val_addr": "akashvaloper",
+          "val_pub": "akashvaloperpub",
+          "cons_addr": "akashvalcons",
+          "cons_pub": "akashvalconspub"
+        }
+      },
+      "valid_block_thresh": "30s",
+      "derivation_path": "m/44'/118'/0'/0/0",
+      "supported_wallets": [],
+      "block_explorer": "\"\""
+    }
+  }
