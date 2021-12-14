@@ -14,8 +14,8 @@ require (
 	github.com/cosmos/cosmos-sdk v0.42.8
 	github.com/cosmos/gaia/v5 v5.0.4 // indirect
 	github.com/cssivision/reverseproxy v0.0.1
-	github.com/ethereum/go-ethereum v1.10.12 // indirect
-	github.com/gin-gonic/gin v1.7.4 // indirect
+	github.com/ethereum/go-ethereum v1.10.13 // indirect
+	github.com/gin-gonic/gin v1.7.7 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis/v8 v8.8.3 // indirect
@@ -26,7 +26,7 @@ require (
 	github.com/iamolegga/enviper v1.2.1 // indirect
 	github.com/jackc/pgx/v4 v4.10.1 // indirect
 	github.com/jmoiron/sqlx v1.3.3 // indirect
-	github.com/lib/pq v1.10.3
+	github.com/lib/pq v1.10.4
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/spf13/viper v1.7.1 // indirect
 	github.com/stretchr/testify v1.7.1-0.20210427113832-6241f9ab9942
@@ -41,7 +41,10 @@ require (
 	k8s.io/client-go v11.0.0+incompatible
 )
 
-require github.com/allinbits/emeris-utils v0.0.0-20211210141153-0564b764708d
+require (
+	github.com/allinbits/demeris-backend-models v0.0.0-20211208145319-7294e21e5351
+	github.com/allinbits/emeris-utils v0.0.0-20211210141153-0564b764708d
+)
 
 require (
 	github.com/99designs/keyring v1.1.6 // indirect
