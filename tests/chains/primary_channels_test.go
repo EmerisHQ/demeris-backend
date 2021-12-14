@@ -20,7 +20,6 @@ func TestPrimaryChannels(t *testing.T) {
 	t.Parallel()
 
 	// arrange
-	os.Setenv("ENV", "dev")
 	env := os.Getenv("ENV")
 	emIngress, _ := utils.LoadIngressInfo(env, t)
 	require.NotNil(t, emIngress)
