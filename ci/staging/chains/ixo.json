@@ -2,7 +2,7 @@
   "chain_name": "ixo",
   "derivation_path": "m/44'/118'/0'/0/0",
   "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
-  "enabled": false,
+  "enabled": true,
   "valid_block_thresh": "20s",
   "display_name": "IXO",
   "demeris_addresses": ["feeaddress"],
