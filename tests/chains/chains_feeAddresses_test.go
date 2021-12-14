@@ -40,9 +40,15 @@ func TestChainsFeeAddresses(t *testing.T) {
 	expValues := make(map[string][]map[string]interface{}, 0)
 	for _, ch := range chains {
 		if ch.Enabled {
+			var payload map[string]interface{}
+			err := json.Unmarshal(ch.Payload, &payload)
+			require.NoError(t, err)
+
+			fmt.Println(payload["demeris_addresses"])
+
 			expValues["fee_addresses"] = append(expValues["fee_addresses"], map[string]interface{}{
 				"chain_name":  ch.Name,
-				"fee_address": []string{"feeaddress"},
+				"fee_address": payload["demeris_addresses"],
 			})
 		}
 	}
