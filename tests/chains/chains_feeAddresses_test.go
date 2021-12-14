@@ -44,8 +44,6 @@ func TestChainsFeeAddresses(t *testing.T) {
 			err := json.Unmarshal(ch.Payload, &payload)
 			require.NoError(t, err)
 
-			fmt.Println(payload["demeris_addresses"])
-
 			expValues["fee_addresses"] = append(expValues["fee_addresses"], map[string]interface{}{
 				"chain_name":  ch.Name,
 				"fee_address": payload["demeris_addresses"],
