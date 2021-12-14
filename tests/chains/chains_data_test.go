@@ -59,8 +59,5 @@ func TestChainsData(t *testing.T) {
 	err = json.Unmarshal(expValuesData, &expValuesInterface)
 	require.NoError(t, err)
 
-	fmt.Println(expValuesInterface)
-	fmt.Println(respValues)
-
 	require.ElementsMatch(t, expValuesInterface["chains"], respValues["chains"])
 }
