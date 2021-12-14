@@ -1,92 +1,41 @@
 {
-  "chain_name": "microtick",
-  "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
   "enabled": true,
-  "valid_block_thresh": "20s",
+  "chain_name": "microtick",
+  "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
   "display_name": "Microtick",
-  "demeris_addresses": [
-    "feeaddress"
-  ],
+  "primary_channel": {
+    "akash": "channel-5",
+    "cosmos-hub": "channel-6",
+    "crypto-org": "channel-7",
+    "emoney": "channel-17",
+    "iris": "channel-8",
+    "ixo": "channel-15",
+    "osmosis": "channel-9",
+    "persistence": "channel-10",
+    "regen": "channel-11",
+    "sentinel": "channel-13",
+    "starname": "channel-4"
+  },
   "denoms": [
     {
+      "name": "utick",
       "display_name": "Microtick",
+      "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
+      "precision": 6,
+      "verified": true,
       "stakable": true,
+      "ticker": "TICK",
+      "price_id": "1",
       "fee_token": true,
-      "fetch_price": true,
-      "relayer_denom": true,
-      "minimum_thresh_relayer_balance": 42,
       "gas_price_levels": {
         "low": 0.0005,
         "average": 0.001,
         "high": 0.0015
       },
-      "name": "utick",
-      "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
-      "verified": true,
-      "precision": 6,
-      "ticker": "TICK"
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42
     }
-  ],
-  "genesis_hash": "genesis_hash",
-  "node_info": {
-    "endpoint": "microtick",
-    "chain_id": "microtick-1",
-    "bech32_config": {
-      "main_prefix": "micro",
-      "prefix_account": "micro",
-      "prefix_validator": "val",
-      "prefix_consensus": "cons",
-      "prefix_public": "pub",
-      "prefix_operator": "oper"
-    }
-  },
-  "node_config": {
-    "name": "microtick",
-    "cli_name": "mtm",
-    "namespace": "emeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
-    "join_config": {
-      "genesis": {
-        "url": "https://raw.githubusercontent.com/microtick/stargate-genesis/master/genesis.json"
-      },
-      "seeds": [
-        {
-          "id": "e8466c961788f68803d873c28b6a0f843b36ba3e",
-          "address": "45.79.207.112",
-          "port": 26656
-        },
-        {
-          "id": "885cc6b8bcc36d9fd0489f4bfa2d845c9b60f354",
-          "address": "5.189.132.164",
-          "port": 26656
-        },
-        {
-          "id": "f1b27c43f32b68710de06d8e0fb13e7c9cc21ed2",
-          "address": "168.119.231.242",
-          "port": 26656
-        },
-        {
-          "id": "ccb33eecbd843d96976d17bcac6e37faa25cf6eb",
-          "address": "144.91.127.3",
-          "port": 26656
-        },
-        {
-          "id": "16d0b9dfff57dc8942db8d01749a9e8ae255f73c",
-          "address": "167.86.106.41",
-          "port": 26656
-        },
-        {
-          "id": "f1b27c43f32b68710de06d8e0fb13e7c9cc21ed2",
-          "address": "168.119.231.242",
-          "port": 26656
-        }
-      ]
-    },
-    "fetch_price": true,
-    "relayer_denom": true,
-    "minimum_thresh_relayer_balance": 42
-  }
   ],
   "demeris_addresses": [
     "feeaddress"

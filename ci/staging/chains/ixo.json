@@ -2,8 +2,6 @@
   "enabled": true,
   "chain_name": "ixo",
   "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
-  "enabled": true,
-  "valid_block_thresh": "20s",
   "display_name": "IXO",
   "primary_channel": {
     "akash": "channel-0",
