@@ -54,8 +54,6 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/Workiva/go-datastructures v1.0.52 // indirect
-	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
-	github.com/alicebob/miniredis/v2 v2.16.0 // indirect
 	github.com/armon/go-metrics v0.3.8 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
