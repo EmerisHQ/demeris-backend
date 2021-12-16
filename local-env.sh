@@ -454,7 +454,7 @@ EOF
  ### Ensure sdk-service image for v44
     if [ "$(docker images -q emeris/sdk-service-v44 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
     then
-        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service already exists"
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service-v44 already exists"
     else
         if [ ! -d .sdk-service/.git ]
         then
@@ -467,11 +467,11 @@ EOF
             cd ..
         fi
         cd .sdk-service
-        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/sdk-service image"
+        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/sdk-service-v44 image"
         docker build -t emeris/sdk-service-v44 --build-arg GIT_TOKEN=$GITHUB_TOKEN --build-arg SDK_TARGET='v44' -f Dockerfile .
         cd ..
     fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/price-oracle-server image to cluster"
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/sdk-service-v44 image to cluster"
     kind load docker-image emeris/sdk-service --name $CLUSTER_NAME &> /dev/null
 
     helm upgrade sdk-service-v44 \
@@ -485,11 +485,11 @@ EOF
     ### Ensure sdk-service image for v42
         if [ "$(docker images -q emeris/sdk-service-v42 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service-v42 already exists"
         else
             if [ ! -d .sdk-service/.git ]
             then
-                echo -e "${green}\xE2\x9C\x94${reset} Cloning price-oracle repo"
+                echo -e "${green}\xE2\x9C\x94${reset} Cloning emeris/sdk-service repo"
                 git clone $SDK_SERVICE_REPO .sdk-service &> /dev/null
             else
                 echo -e "${green}\xE2\x9C\x94${reset} Fetching sdk-service latest changes"
@@ -498,11 +498,11 @@ EOF
                 cd ..
             fi
             cd .sdk-service
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/sdk-service image"
+            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/sdk-service-v42 image"
             docker build -t emeris/sdk-service-v42 --build-arg GIT_TOKEN=$GITHUB_TOKEN --build-arg SDK_TARGET='v42' -f Dockerfile .
             cd ..
         fi
-        echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/price-oracle-server image to cluster"
+        echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/sdk-service-v42 image to cluster"
         kind load docker-image emeris/sdk-service-v42 --name $CLUSTER_NAME &> /dev/null
 
         helm upgrade sdk-service-v42 \
