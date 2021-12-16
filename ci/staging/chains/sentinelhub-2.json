@@ -1,26 +1,45 @@
 {
-  "chain_name": "sentinel",
-  "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://storage.googleapis.com/emeris/logos/sentinel.svg",
   "enabled": true,
-  "valid_block_thresh": "20s",
+  "chain_name": "sentinel",
+  "logo": "https://storage.googleapis.com/emeris/logos/sentinel.svg",
   "display_name": "Sentinel",
-  "demeris_addresses": ["feeaddress"],
+  "primary_channel": {
+    "akash": "channel-10",
+    "cosmos-hub": "channel-12",
+    "crypto-org": "channel-13",
+    "emoney": "channel-43",
+    "iris": "channel-9",
+    "ixo": "channel-42",
+    "microtick": "channel-41",
+    "osmosis": "channel-0",
+    "persistence": "channel-15",
+    "regen": "channel-11",
+    "sifchain": "channel-36",
+    "starname": "channel-40"
+  },
   "denoms": [
     {
+      "name": "udvpn",
       "display_name": "Sentinel",
+      "logo": "https://storage.googleapis.com/emeris/logos/sentinel.svg",
+      "precision": 6,
+      "verified": true,
       "stakable": true,
+      "ticker": "DVPN",
+      "price_id": "sentinel",
       "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.1,
+        "average": 0.12,
+        "high": 0.2
+      },
       "fetch_price": true,
       "relayer_denom": true,
-      "minimum_thresh_relayer_balance": 42,
-      "gas_price_levels": { "low": 0.1, "average": 0.12, "high": 0.2},
-      "name": "udvpn",
-      "logo": "https://storage.googleapis.com/emeris/logos/sentinel.svg",
-      "verified": true,
-      "precision": 6,
-      "ticker": "DVPN"
+      "minimum_thresh_relayer_balance": 5000000000
     }
+  ],
+  "demeris_addresses": [
+    "feeaddress"
   ],
   "genesis_hash": "genesis_hash",
   "node_info": {
@@ -32,44 +51,17 @@
       "prefix_validator": "val",
       "prefix_consensus": "cons",
       "prefix_public": "pub",
-      "prefix_operator": "oper"
+      "prefix_operator": "oper",
+      "acc_addr": "sent",
+      "acc_pub": "sentpub",
+      "val_addr": "sentvaloper",
+      "val_pub": "sentvaloperpub",
+      "cons_addr": "sentvalcons",
+      "cons_pub": "sentvalconspub"
     }
   },
-  "node_config": {
-    "name": "sentinel",
-    "cli_name": "sentinelhub",
-    "namespace": "emeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
-    "join_config": {
-      "genesis": {
-        "url": "https://storage.googleapis.com/emeris/genesis/sentinehub-2.json"
-      },
-      "seeds": [
-        {
-          "id": "05fe2a7847fd27345250915fd06752c424f40651",
-          "address": "85.222.234.135",
-          "port": 26656
-        },
-        {
-          "id": "387027e3b1180d3a619cbbf3462704a490785963",
-          "address": "54.176.90.228",
-          "port": 26656
-        },
-        {
-          "id": "855807cc6a919c22ec943050ebb5c80b23724ed0",
-          "address": "3.239.11.246",
-          "port": 26656
-        },
-        {
-          "id": "d1efceccb04ded9a604e5235f76da86872157d68",
-          "address": "161.97.149.223",
-          "port": 26656
-        }
-      ]
-    },
-    "docker_image": "gcr.io/tendermint-dev/sentinel",
-    "docker_image_version": "v0.7.0"
-  },
-  "supported_wallets": ["keplr"],
-  "block_explorer": "https://www.mintscan.io/sentinel"
+  "valid_block_thresh": "30s",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "supported_wallets": [],
+  "block_explorer": "\"\""
 }

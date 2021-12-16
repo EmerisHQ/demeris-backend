@@ -16,7 +16,7 @@ const (
 	annualProvisionKey           = "annual_provisions"
 )
 
-func TestMintInflation(t *testing.T) {
+func TestAnnualProvisions(t *testing.T) {
 	t.Parallel()
 
 	// arrange
@@ -38,7 +38,7 @@ func TestMintInflation(t *testing.T) {
 			// act
 			resp, err := client.Get(url)
 			require.NoError(t, err)
-			
+
 			defer resp.Body.Close()
 
 			// assert
