@@ -118,4 +118,5 @@ bin
 .cns-server
 .api-server
 .rpcwatcher
+.sdk-service
 .ticket-watcher

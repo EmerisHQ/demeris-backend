@@ -64,5 +64,6 @@
 		"docker_image": "gcr.io/tendermint-dev/gaia",
 		"docker_image_version": "v5.0.0"
 	},
-	"supported_wallets": ["keplr"]
+	"supported_wallets": ["keplr"],
+	"cosmos_sdk_version": "v0.42"
 }
