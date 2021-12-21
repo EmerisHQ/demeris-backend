@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,15 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
-	baseUrl        = "%s://%s%s"
-	statusEndpoint = "chain/%s/status"
-	onlineKey      = "online"
+	chainSupplyEndpoint = "chain/%s/supply"
+	supplyKey           = "supply"
 )
 
-func TestChainStatus(t *testing.T) {
+func TestChainSupply(t *testing.T) {
 	t.Parallel()
 
 	// arrange
@@ -28,13 +29,14 @@ func TestChainStatus(t *testing.T) {
 
 	for _, ch := range chains {
 		t.Run(ch.Name, func(t *testing.T) {
-			t.Parallel()
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+statusEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
+			url := fmt.Sprintf(baseUrl+chainSupplyEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
 			// act
 			resp, err := client.Get(url)
 			require.NoError(t, err)
+
+			defer resp.Body.Close()
 
 			// assert
 			if !ch.Enabled {
@@ -42,10 +44,18 @@ func TestChainStatus(t *testing.T) {
 			} else {
 				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var values map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &values, t)
+				var respValues map[string]interface{}
+				utils.RespBodyToMap(resp.Body, &respValues, t)
 
-				require.Equal(t, true, values[onlineKey].(bool), fmt.Sprintf("Chain %s Online %t", ch.Name, values[onlineKey].(bool)))
+				data, err := json.Marshal(respValues[supplyKey])
+				require.NoError(t, err)
+
+				var coins sdk.Coins
+				err = json.Unmarshal(data, &coins)
+				require.NoError(t, err)
+
+				//check if the repsonse is empty
+				require.NotEmpty(t, coins)
 			}
 		})
 	}
