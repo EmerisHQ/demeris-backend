@@ -42,6 +42,7 @@ func TestChainsData(t *testing.T) {
 	expValues := make(map[string][]map[string]interface{}, 0)
 	for _, ch := range chains {
 		if ch.Enabled {
+			require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			var payload map[string]interface{}
 			err := json.Unmarshal(ch.Payload, &payload)
 			require.NoError(t, err)
