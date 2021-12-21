@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -11,13 +12,9 @@ import (
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
-const (
-	baseUrl        = "%s://%s%s"
-	statusEndpoint = "chain/%s/status"
-	onlineKey      = "online"
-)
+const chainFeeAddressEndpoint = "chain/%s/fee/address"
 
-func TestChainStatus(t *testing.T) {
+func TestChainFeeAddress(t *testing.T) {
 	t.Parallel()
 
 	// arrange
@@ -28,10 +25,8 @@ func TestChainStatus(t *testing.T) {
 
 	for _, ch := range chains {
 		t.Run(ch.Name, func(t *testing.T) {
-			t.Parallel()
-
 			// arrange
-			url := fmt.Sprintf(baseUrl+statusEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
+			url := fmt.Sprintf(baseUrl+chainFeeAddressEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
 			// act
 			resp, err := client.Get(url)
 			require.NoError(t, err)
@@ -42,10 +37,17 @@ func TestChainStatus(t *testing.T) {
 			} else {
 				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var values map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &values, t)
+				var payload map[string]interface{}
+				err := json.Unmarshal(ch.Payload, &payload)
+				require.NoError(t, err)
 
-				require.Equal(t, true, values[onlineKey].(bool), fmt.Sprintf("Chain %s Online %t", ch.Name, values[onlineKey].(bool)))
+				var respValues map[string]interface{}
+				utils.RespBodyToMap(resp.Body, &respValues, t)
+
+				err = resp.Body.Close()
+				require.NoError(t, err)
+
+				require.Equal(t, payload["demeris_addresses"], respValues["fee_address"])
 			}
 		})
 	}

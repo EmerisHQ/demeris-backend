@@ -202,6 +202,7 @@ EOF
         echo -e "${green}\xE2\x9C\x94${reset} Fetching starport-operator latest changes"
         cd .starport-operator
         git pull $STARPORT_OPERATOR_REPO &> /dev/null
+        git checkout v0.0.1-alpha.45
         cd ..
     fi
 
