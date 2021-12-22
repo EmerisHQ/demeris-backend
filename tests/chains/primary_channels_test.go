@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
@@ -32,7 +34,6 @@ func TestPrimaryChannels(t *testing.T) {
 
 	for _, ch := range chains {
 		t.Run(ch.Name, func(t *testing.T) {
-
 			// arrange
 			url := fmt.Sprintf(baseUrl+primaryChannelsEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
 			// act
@@ -50,9 +51,30 @@ func TestPrimaryChannels(t *testing.T) {
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
-				//expect a non empty data
-				channels := respValues[primaryChannelskey]
-				require.NotEmpty(t, channels)
+				data, err := json.Marshal(respValues[primaryChannelskey])
+				require.NoError(t, err)
+
+				var channels []cns.DbStringMap
+				err = json.Unmarshal(data, &channels)
+				require.NoError(t, err)
+
+				formattedChannels := make(map[string]string, len(channels))
+				for _, channel := range channels {
+					formattedChannels[channel["counterparty"]] = channel["channel_name"]
+				}
+
+				var payload map[string]interface{}
+				err = json.Unmarshal(ch.Payload, &payload)
+				require.NoError(t, err)
+
+				data, err = json.Marshal(payload["primary_channel"])
+				require.NoError(t, err)
+
+				var expectedChannels map[string]string
+				err = json.Unmarshal(data, &expectedChannels)
+				require.NoError(t, err)
+
+				require.Equal(t, expectedChannels, formattedChannels)
 			}
 		})
 	}
