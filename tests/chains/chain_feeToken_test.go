@@ -64,12 +64,14 @@ func TestChainFeeToken(t *testing.T) {
 				err = json.Unmarshal(data, &expectedDenoms)
 				require.NoError(t, err)
 
-				for i, denom := range denoms {
+				var expectedFeeDenoms cns.DenomList
+				for _, denom := range expectedDenoms {
 					if denom.FeeToken {
-						require.Equal(t, expectedDenoms[i].Name, denom.Name)
+						expectedFeeDenoms = append(expectedFeeDenoms, denom)
 					}
 				}
-
+				require.Equal(t, len(expectedFeeDenoms), len(denoms))
+				require.ElementsMatch(t, expectedFeeDenoms, denoms)
 			}
 		})
 	}
