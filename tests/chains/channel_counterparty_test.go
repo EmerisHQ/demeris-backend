@@ -18,14 +18,7 @@ const (
 	channelCounterparty    = "/chain/%s/primary_channel/%s"
 )
 
-type PrimaryChannels struct {
-	PrimaryChannels []struct {
-		Counterparty string `json:"counterparty"`
-		ChannelName  string `json:"channel_name"`
-	} `json:"primary_channels"`
-}
-
-func TestPrimaryChannels(t *testing.T) {
+func TestPrimaryChannelCounterparty(t *testing.T) {
 	t.Parallel()
 
 	// arrange
@@ -41,21 +34,11 @@ func TestPrimaryChannels(t *testing.T) {
 
 	for _, ch := range chains {
 		t.Run(ch.Name, func(t *testing.T) {
-
-			// arrange
-			url := fmt.Sprintf(baseUrl+primaryChannelEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
-			// act
-			resp, err := client.Get(url)
-			require.NoError(t, err)
-
-			defer resp.Body.Close()
-
-			// assert
 			if !ch.Enabled {
-				require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
-				// checking /chain/XXX/primary_channel/ZZZ returns 400
+				// checking /chain/XXX/primary_channel/ZZZ returns 400 if chain disabled
 				for _, otherChains := range chains {
 					if otherChains.Name != ch.Name {
+						// arrange
 						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, otherChains.Name)
 						// act
 						resp, err := client.Get(counterPartyURL)
@@ -65,38 +48,50 @@ func TestPrimaryChannels(t *testing.T) {
 					}
 				}
 			} else {
-				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
-
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
-
-				defer resp.Body.Close()
-
-				data, err := json.Marshal(respValues)
+				var payload map[string]interface{}
+				err := json.Unmarshal(ch.Payload, &payload)
 				require.NoError(t, err)
 
-				var channels PrimaryChannels
-				err = json.Unmarshal(data, &channels)
+				data, err := json.Marshal(payload["primary_channel"])
 				require.NoError(t, err)
-				require.NotNil(t, channels)
 
-				for _, v := range channels.PrimaryChannels {
+				var expectedChannels map[string]string
+				err = json.Unmarshal(data, &expectedChannels)
+				require.NoError(t, err)
+
+				// test for existing channels
+				for counterParty, channel_name := range expectedChannels {
 					// arrange
-					counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, v.Counterparty)
+					counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, counterParty)
 					// act
 					resp, err := client.Get(counterPartyURL)
 					require.NoError(t, err)
 
-					require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, v.Counterparty, resp.StatusCode))
+					require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, counterParty, resp.StatusCode))
 
 					defer resp.Body.Close()
 
 					var respValues map[string]interface{}
 					utils.RespBodyToMap(resp.Body, &respValues, t)
 
-					// expect a non empty data
-					require.NotNil(t, respValues)
+					expectedChannelsFormatted := map[string]interface{}{
+						"counterparty": counterParty,
+						"channel_name": channel_name,
+					}
+					require.Equal(t, expectedChannelsFormatted, respValues["primary_channel"])
+				}
 
+				// test for non-existing channels
+				for _, otherChains := range chains {
+					if _, ok := expectedChannels[otherChains.Name]; !ok && otherChains.Name != ch.Name {
+						// arrange
+						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, otherChains.Name)
+						// act
+						resp, err := client.Get(counterPartyURL)
+						require.NoError(t, err)
+
+						require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
+					}
 				}
 			}
 		})
