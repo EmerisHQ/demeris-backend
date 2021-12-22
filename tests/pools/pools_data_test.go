@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"testing"
 
@@ -25,6 +26,8 @@ func TestPoolsData(t *testing.T) {
 
 	resp, err := client.Get(url)
 	require.NoError(t, err)
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var respValues map[string]interface{}
 	utils.RespBodyToMap(resp.Body, &respValues, t)

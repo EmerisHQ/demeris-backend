@@ -1,67 +1,65 @@
 {
-  "chain": {
-    "enabled": true,
-    "chain_name": "ixo",
-    "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
-    "display_name": "IXO",
-    "primary_channel": {
-      "akash": "channel-0",
-      "cosmos-hub": "channel-1",
-      "crypto-org": "channel-2",
-      "iris": "channel-3",
-      "microtick": "channel-9",
-      "osmosis": "channel-4",
-      "persistence": "channel-5",
-      "regen": "channel-6",
-      "sentinel": "channel-7",
-      "starname": "channel-8"
-    },
-    "denoms": [
-      {
-        "name": "uixo",
-        "display_name": "IXO",
-        "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
-        "precision": 6,
-        "verified": true,
-        "stakable": true,
-        "ticker": "IXO",
-        "price_id": "1",
-        "fee_token": true,
-        "gas_price_levels": {
-          "low": 0.01,
-          "average": 0.025,
-          "high": 0.04
-        },
-        "fetch_price": false,
-        "relayer_denom": true,
-        "minimum_thresh_relayer_balance": 42
-      }
-    ],
-    "demeris_addresses": [
-      "feeaddress"
-    ],
-    "genesis_hash": "genesis_hash",
-    "node_info": {
-      "endpoint": "ixo",
-      "chain_id": "impacthub-3",
-      "bech32_config": {
-        "main_prefix": "ixo",
-        "prefix_account": "ixo",
-        "prefix_validator": "val",
-        "prefix_consensus": "cons",
-        "prefix_public": "pub",
-        "prefix_operator": "oper",
-        "acc_addr": "ixo",
-        "acc_pub": "ixopub",
-        "val_addr": "ixovaloper",
-        "val_pub": "ixovaloperpub",
-        "cons_addr": "ixovalcons",
-        "cons_pub": "ixovalconspub"
-      }
-    },
-    "valid_block_thresh": "30s",
-    "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\""
-  }
+  "enabled": true,
+  "chain_name": "ixo",
+  "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
+  "display_name": "IXO",
+  "primary_channel": {
+    "akash": "channel-0",
+    "cosmos-hub": "channel-1",
+    "crypto-org": "channel-2",
+    "iris": "channel-3",
+    "microtick": "channel-9",
+    "osmosis": "channel-4",
+    "persistence": "channel-5",
+    "regen": "channel-6",
+    "sentinel": "channel-7",
+    "starname": "channel-8"
+  },
+  "denoms": [
+    {
+      "name": "uixo",
+      "display_name": "IXO",
+      "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
+      "precision": 6,
+      "verified": true,
+      "stakable": true,
+      "ticker": "IXO",
+      "price_id": "1",
+      "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.01,
+        "average": 0.025,
+        "high": 0.04
+      },
+      "fetch_price": false,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42
+    }
+  ],
+  "demeris_addresses": [
+    "feeaddress"
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "ixo",
+    "chain_id": "impacthub-3",
+    "bech32_config": {
+      "main_prefix": "ixo",
+      "prefix_account": "ixo",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper",
+      "acc_addr": "ixo",
+      "acc_pub": "ixopub",
+      "val_addr": "ixovaloper",
+      "val_pub": "ixovaloperpub",
+      "cons_addr": "ixovalcons",
+      "cons_pub": "ixovalconspub"
+    }
+  },
+  "valid_block_thresh": "30s",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "supported_wallets": [],
+  "block_explorer": "\"\""
 }

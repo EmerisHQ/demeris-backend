@@ -1,79 +1,77 @@
 {
-	"chain": {
-	  "enabled": true,
-	  "chain_name": "cosmos-hub",
-	  "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
-	  "display_name": "Cosmos Hub Emeris",
-	  "primary_channel": {
-		"akash": "channel-1",
-		"cn1": "cn1",
-		"cn2": "cn2",
-		"terra": "channel-0"
-	  },
-	  "denoms": [
-		{
-		  "name": "uatom",
-		  "display_name": "ATOM",
-		  "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
-		  "precision": 6,
-		  "verified": true,
-		  "stakable": true,
-		  "ticker": "ATOM",
-		  "fee_token": true,
-		  "gas_price_levels": {
-			"low": 0.01,
-			"average": 0.022,
-			"high": 0.042
-		  },
-		  "fetch_price": true,
-		  "relayer_denom": true,
-		  "minimum_thresh_relayer_balance": 42
-		},
-		{
-		  "name": "poolCDE5DC97ED362F71427E8270E8C073A7C27F4CDF161EE1CB90DD429DDE297DC9",
-		  "display_name": "Gravity 1",
-		  "precision": 6,
-		  "verified": true,
-		  "ticker": "G1",
-		  "gas_price_levels": {
-			"low": 0,
-			"average": 0,
-			"high": 0
-		  },
-		  "fetch_price": false,
-		  "relayer_denom": false
-		}
-	  ],
-	  "demeris_addresses": [
-		"feeaddress"
-	  ],
-	  "genesis_hash": "genesis_hash",
-	  "node_info": {
-		"endpoint": "cosmos-hub",
-		"chain_id": "cosmos-hub-testnet",
-		"bech32_config": {
-		  "main_prefix": "cosmos",
-		  "prefix_account": "cosmos",
-		  "prefix_validator": "val",
-		  "prefix_consensus": "cons",
-		  "prefix_public": "pub",
-		  "prefix_operator": "oper",
-		  "acc_addr": "cosmos",
-		  "acc_pub": "cosmospub",
-		  "val_addr": "cosmosvaloper",
-		  "val_pub": "cosmosvaloperpub",
-		  "cons_addr": "cosmosvalcons",
-		  "cons_pub": "cosmosvalconspub"
-		}
-	  },
-	  "valid_block_thresh": "10s",
-	  "derivation_path": "m/44'/118'/0'/0/0",
-	  "supported_wallets": [],
-	  "block_explorer": "",
-	  "public_node_endpoints": {
-		"tendermint_rpc": "",
-		"cosmos_api": ""
-	  },
-	  "cosmos_sdk_version": "v0.42.10"
-	}
-  }
+  "enabled": true,
+  "chain_name": "cosmos-hub",
+  "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
+  "display_name": "Cosmos Hub Emeris",
+  "primary_channel": {
+    "akash": "channel-1",
+    "cn1": "cn1",
+    "cn2": "cn2",
+    "terra": "channel-0"
+  },
+  "denoms": [
+    {
+      "name": "uatom",
+      "display_name": "ATOM",
+      "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
+      "precision": 6,
+      "verified": true,
+      "stakable": true,
+      "ticker": "ATOM",
+      "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.01,
+        "average": 0.022,
+        "high": 0.042
+      },
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42
+    },
+    {
+      "name": "poolCDE5DC97ED362F71427E8270E8C073A7C27F4CDF161EE1CB90DD429DDE297DC9",
+      "display_name": "Gravity 1",
+      "precision": 6,
+      "verified": true,
+      "ticker": "G1",
+      "gas_price_levels": {
+        "low": 0,
+        "average": 0,
+        "high": 0
+      },
+      "fetch_price": false,
+      "relayer_denom": false
+    }
+  ],
+  "demeris_addresses": [
+    "feeaddress"
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "cosmos-hub",
+    "chain_id": "cosmos-hub-testnet",
+    "bech32_config": {
+      "main_prefix": "cosmos",
+      "prefix_account": "cosmos",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper",
+      "acc_addr": "cosmos",
+      "acc_pub": "cosmospub",
+      "val_addr": "cosmosvaloper",
+      "val_pub": "cosmosvaloperpub",
+      "cons_addr": "cosmosvalcons",
+      "cons_pub": "cosmosvalconspub"
+    }
+  },
+  "valid_block_thresh": "10s",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "supported_wallets": [],
+  "block_explorer": "",
+  "public_node_endpoints": {
+    "tendermint_rpc": "",
+    "cosmos_api": ""
+  },
+  "cosmos_sdk_version": "v0.42.10"
+}

@@ -1,68 +1,66 @@
 {
-  "chain": {
-    "enabled": true,
-    "chain_name": "microtick",
-    "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
-    "display_name": "Microtick",
-    "primary_channel": {
-      "akash": "channel-5",
-      "cosmos-hub": "channel-6",
-      "crypto-org": "channel-7",
-      "emoney": "channel-17",
-      "iris": "channel-8",
-      "ixo": "channel-15",
-      "osmosis": "channel-9",
-      "persistence": "channel-10",
-      "regen": "channel-11",
-      "sentinel": "channel-13",
-      "starname": "channel-4"
-    },
-    "denoms": [
-      {
-        "name": "utick",
-        "display_name": "Microtick",
-        "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
-        "precision": 6,
-        "verified": true,
-        "stakable": true,
-        "ticker": "TICK",
-        "price_id": "1",
-        "fee_token": true,
-        "gas_price_levels": {
-          "low": 0.0005,
-          "average": 0.001,
-          "high": 0.0015
-        },
-        "fetch_price": true,
-        "relayer_denom": true,
-        "minimum_thresh_relayer_balance": 42
-      }
-    ],
-    "demeris_addresses": [
-      "feeaddress"
-    ],
-    "genesis_hash": "genesis_hash",
-    "node_info": {
-      "endpoint": "microtick",
-      "chain_id": "microtick-1",
-      "bech32_config": {
-        "main_prefix": "micro",
-        "prefix_account": "micro",
-        "prefix_validator": "val",
-        "prefix_consensus": "cons",
-        "prefix_public": "pub",
-        "prefix_operator": "oper",
-        "acc_addr": "micro",
-        "acc_pub": "micropub",
-        "val_addr": "microvaloper",
-        "val_pub": "microvaloperpub",
-        "cons_addr": "microvalcons",
-        "cons_pub": "microvalconspub"
-      }
-    },
-    "valid_block_thresh": "30s",
-    "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\""
-  }
+  "enabled": true,
+  "chain_name": "microtick",
+  "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
+  "display_name": "Microtick",
+  "primary_channel": {
+    "akash": "channel-5",
+    "cosmos-hub": "channel-6",
+    "crypto-org": "channel-7",
+    "emoney": "channel-17",
+    "iris": "channel-8",
+    "ixo": "channel-15",
+    "osmosis": "channel-9",
+    "persistence": "channel-10",
+    "regen": "channel-11",
+    "sentinel": "channel-13",
+    "starname": "channel-4"
+  },
+  "denoms": [
+    {
+      "name": "utick",
+      "display_name": "Microtick",
+      "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
+      "precision": 6,
+      "verified": true,
+      "stakable": true,
+      "ticker": "TICK",
+      "price_id": "1",
+      "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.0005,
+        "average": 0.001,
+        "high": 0.0015
+      },
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42
+    }
+  ],
+  "demeris_addresses": [
+    "feeaddress"
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "microtick",
+    "chain_id": "microtick-1",
+    "bech32_config": {
+      "main_prefix": "micro",
+      "prefix_account": "micro",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper",
+      "acc_addr": "micro",
+      "acc_pub": "micropub",
+      "val_addr": "microvaloper",
+      "val_pub": "microvaloperpub",
+      "cons_addr": "microvalcons",
+      "cons_pub": "microvalconspub"
+    }
+  },
+  "valid_block_thresh": "30s",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "supported_wallets": [],
+  "block_explorer": "\"\""
 }
