@@ -30,19 +30,26 @@ func TestVerifiedDenoms(t *testing.T) {
 	client := utils.CreateNetClient(env, t)
 	require.NotNil(t, client)
 
-	var chainsDenoms []cns.DenomList
+	var chainsDenoms cns.DenomList
 	for _, ch := range chains {
-		var payload map[string]interface{}
-		err := json.Unmarshal(ch.Payload, &payload)
-		require.NoError(t, err)
+		if ch.Enabled {
+			var payload map[string]interface{}
+			err := json.Unmarshal(ch.Payload, &payload)
+			require.NoError(t, err)
 
-		data, err := json.Marshal(payload["denoms"])
-		require.NoError(t, err)
+			data, err := json.Marshal(payload["denoms"])
+			require.NoError(t, err)
 
-		var expectedDenoms cns.DenomList
-		err = json.Unmarshal(data, &expectedDenoms)
-		require.NoError(t, err)
-		chainsDenoms = append(chainsDenoms, expectedDenoms)
+			var expectedDenoms cns.DenomList
+			err = json.Unmarshal(data, &expectedDenoms)
+			require.NoError(t, err)
+
+			for _, denom := range expectedDenoms {
+				if denom.Verified {
+					chainsDenoms = append(chainsDenoms, denom)
+				}
+			}
+		}
 	}
 
 	// arrange
@@ -66,4 +73,5 @@ func TestVerifiedDenoms(t *testing.T) {
 
 	require.Equal(t, len(chainsDenoms), len(denoms))
 
+	require.ElementsMatch(t, chainsDenoms, denoms)
 }
