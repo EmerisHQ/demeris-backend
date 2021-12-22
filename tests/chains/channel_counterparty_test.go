@@ -29,7 +29,6 @@ func TestPrimaryChannels(t *testing.T) {
 	t.Parallel()
 
 	// arrange
-	os.Setenv("ENV", "staging")
 	env := os.Getenv("ENV")
 	emIngress, _ := utils.LoadIngressInfo(env, t)
 	require.NotNil(t, emIngress)
@@ -54,6 +53,17 @@ func TestPrimaryChannels(t *testing.T) {
 			// assert
 			if !ch.Enabled {
 				require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				// checking /chain/XXX/primary_channel/ZZZ returns 400
+				for _, otherChains := range chains {
+					if otherChains.Name != ch.Name {
+						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, otherChains.Name)
+						// act
+						resp, err := client.Get(counterPartyURL)
+						require.NoError(t, err)
+
+						require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
+					}
+				}
 			} else {
 				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
@@ -76,6 +86,8 @@ func TestPrimaryChannels(t *testing.T) {
 					// act
 					resp, err := client.Get(counterPartyURL)
 					require.NoError(t, err)
+
+					require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, v.Counterparty, resp.StatusCode))
 
 					defer resp.Body.Close()
 
