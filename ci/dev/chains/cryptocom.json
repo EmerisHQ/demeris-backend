@@ -2,7 +2,7 @@
 	"chain_name": "crypto-com",
 	"derivation_path": "m/44'/394'/0'/0/0",
 	"logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
-	"enabled": true,
+	"enabled": false,
 	"valid_block_thresh": "10s",
 	"minimum_thresh_relayer_balance": 42,
 	"display_name": "Crypto.com Emeris",
