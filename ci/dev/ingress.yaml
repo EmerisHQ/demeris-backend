@@ -36,6 +36,13 @@ spec:
         pathType: ImplementationSpecific
       - backend:
           service:
+            name: dexinfo
+            port:
+              number: 8080
+        path: /v1/dexinfo(/|$)(.*)
+        pathType: ImplementationSpecific
+      - backend:
+          service:
             name: api-server
             port:
               number: 8000

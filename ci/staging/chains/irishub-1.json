@@ -1,26 +1,45 @@
 {
-  "chain_name": "iris",
-  "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
   "enabled": true,
-  "valid_block_thresh": "20s",
+  "chain_name": "iris",
+  "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
   "display_name": "IRISNet",
-  "demeris_addresses": ["feeaddress"],
+  "primary_channel": {
+    "akash": "channel-11",
+    "cosmos-hub": "channel-12",
+    "crypto-org": "channel-13",
+    "emoney": "channel-25",
+    "ixo": "channel-24",
+    "microtick": "channel-22",
+    "osmosis": "channel-3",
+    "persistence": "channel-15",
+    "regen": "channel-16",
+    "sentinel": "channel-17",
+    "sifchain": "channel-19",
+    "starname": "channel-21"
+  },
   "denoms": [
     {
+      "name": "uiris",
       "display_name": "IRIS",
+      "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
+      "precision": 6,
+      "verified": true,
       "stakable": true,
+      "ticker": "IRIS",
+      "price_id": "iris-network",
       "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.2,
+        "average": 0.3,
+        "high": 0.4
+      },
       "fetch_price": true,
       "relayer_denom": true,
-      "minimum_thresh_relayer_balance": 42,
-      "gas_price_levels": { "low": 0.2, "average": 0.3, "high": 0.4 },
-      "name": "uiris",
-      "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
-      "verified": true,
-      "precision": 6,
-      "ticker": "IRIS"
+      "minimum_thresh_relayer_balance": 1500000000
     }
+  ],
+  "demeris_addresses": [
+    "feeaddress"
   ],
   "genesis_hash": "genesis_hash",
   "node_info": {
@@ -32,34 +51,17 @@
       "prefix_validator": "val",
       "prefix_consensus": "cons",
       "prefix_public": "pub",
-      "prefix_operator": "oper"
+      "prefix_operator": "oper",
+      "acc_addr": "iaa",
+      "acc_pub": "iaapub",
+      "val_addr": "iaavaloper",
+      "val_pub": "iaavaloperpub",
+      "cons_addr": "iaavalcons",
+      "cons_pub": "iaavalconspub"
     }
   },
-  "node_config": {
-    "name": "iris",
-    "cli_name": "iris",
-    "namespace": "emeris",
-    "tracelistener_image": "gcr.io/tendermint-dev/emeris-tracelistener:master",
-    "join_config": {
-      "genesis": {
-        "url": "https://raw.githubusercontent.com/irisnet/mainnet/master/config/genesis.json"
-      },
-      "seeds": [
-        {
-          "id": "6a6de770deaa4b8c061dffd82e9c7f4d40c2165d",
-          "address": "seed-1.mainnet.irisnet.org",
-          "port": 26656
-        },
-        {
-          "id": "a17d7923293203c64ba75723db4d5f28e642f469",
-          "address": "seed-2.mainnet.irisnet.org",
-          "port": 26656
-        }
-      ]
-    },
-    "docker_image": "gcr.io/tendermint-dev/iris",
-    "docker_image_version": "v1.1.1"
-  },
-  "supported_wallets": ["keplr"],
-  "block_explorer": "https://www.mintscan.io/iris"
+  "valid_block_thresh": "30s",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "supported_wallets": [],
+  "block_explorer": "\"\""
 }

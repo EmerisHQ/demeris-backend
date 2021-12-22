@@ -202,6 +202,7 @@ EOF
         echo -e "${green}\xE2\x9C\x94${reset} Fetching starport-operator latest changes"
         cd .starport-operator
         git pull $STARPORT_OPERATOR_REPO &> /dev/null
+        git checkout v0.0.1-alpha.45
         cd ..
     fi
 
@@ -311,7 +312,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        helm/emeris-cns-server \
+        .cns-server/helm/cns-server \
         &> /dev/null
 
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/admin-ui"
@@ -320,7 +321,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        helm/emeris-admin-ui \
+        .cns-server/helm/admin-ui \
         &> /dev/null
 
     ### Ensure api-server image
