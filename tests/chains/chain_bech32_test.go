@@ -64,7 +64,7 @@ func TestChainBech32(t *testing.T) {
 				err = json.Unmarshal(data, &expectedNodeInfo)
 				require.NoError(t, err)
 
-				require.Equal(t, expectedNodeInfo.Bech32Config.MainPrefix, bech32.MainPrefix)
+				require.Equal(t, expectedNodeInfo.Bech32Config, bech32)
 			}
 		})
 	}
