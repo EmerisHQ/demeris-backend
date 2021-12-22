@@ -12,29 +12,34 @@ import (
 )
 
 const (
-	baseUrl        = "%s://%s%s"
-	statusEndpoint = "chain/%s/status"
-	onlineKey      = "online"
+	mintAnnualProvisionsEndpoint = "chain/%s/mint/annual_provisions"
+	annualProvisionKey           = "annual_provisions"
 )
 
-func TestChainStatus(t *testing.T) {
+func TestAnnualProvisions(t *testing.T) {
 	t.Parallel()
 
 	// arrange
 	env := os.Getenv("ENV")
 	emIngress, _ := utils.LoadIngressInfo(env, t)
+	require.NotNil(t, emIngress)
+
 	chains := utils.LoadChainsInfo(env, t)
+	require.NotNil(t, chains)
+
 	client := utils.CreateNetClient(env, t)
+	require.NotNil(t, client)
 
 	for _, ch := range chains {
 		t.Run(ch.Name, func(t *testing.T) {
-			t.Parallel()
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+statusEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
+			url := fmt.Sprintf(baseUrl+mintAnnualProvisionsEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
 			// act
 			resp, err := client.Get(url)
 			require.NoError(t, err)
+
+			defer resp.Body.Close()
 
 			// assert
 			if !ch.Enabled {
@@ -42,10 +47,12 @@ func TestChainStatus(t *testing.T) {
 			} else {
 				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var values map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &values, t)
+				var respValues map[string]interface{}
+				utils.RespBodyToMap(resp.Body, &respValues, t)
 
-				require.Equal(t, true, values[onlineKey].(bool), fmt.Sprintf("Chain %s Online %t", ch.Name, values[onlineKey].(bool)))
+				//expect a non empty data
+				provisions := respValues[annualProvisionKey]
+				require.NotEmpty(t, provisions)
 			}
 		})
 	}

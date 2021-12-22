@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/allinbits/demeris-backend/utils/database"
+	"github.com/allinbits/emeris-utils/database"
 
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 	"go.uber.org/zap"
