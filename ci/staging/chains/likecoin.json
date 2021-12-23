@@ -1,0 +1,56 @@
+{
+    "enabled": true,
+    "chain_name": "likecoin",
+    "logo": "https://storage.googleapis.com/emeris/logos/likecoin.svg",
+    "display_name": "LikeCoin",
+    "primary_channel": {
+      "cosmos-hub": "channel-5",
+      "osmosis": "channel-3"
+    },
+    "denoms": [
+      {
+        "name": "nanolike",
+        "display_name": "LIKE",
+        "logo": "https://storage.googleapis.com/emeris/logos/likecoin.svg",
+        "precision": 9,
+        "verified": true,
+        "stakable": true,
+        "ticker": "LIKE",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 4,
+          "average": 4,
+          "high": 10
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 60000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "cosmos",
+      "chain_id": "likecoin-mainnet-2",
+      "bech32_config": {
+        "main_prefix": "cosmos",
+        "prefix_account": "cosmos",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "cosmos",
+        "acc_pub": "cosmospub",
+        "val_addr": "cosmosvaloper",
+        "val_pub": "cosmosvaloperpub",
+        "cons_addr": "cosmosvalcons",
+        "cons_pub": "cosmosvalconspub"
+      }
+    },
+    "valid_block_thresh": "20s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\""
+  }
