@@ -1,0 +1,59 @@
+{
+    "enabled": true,
+    "chain_name": "juno",
+    "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
+    "display_name": "juno",
+    "primary_channel": {
+      "cosmos-hub": "channel-1",
+      "osmosis": "channel-0",
+      "regen": "channel-6",
+      "sifchain": "channel-5",
+      "terra": "channel-7"
+    },
+    "denoms": [
+      {
+        "name": "ujuno",
+        "display_name": "JUNO",
+        "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "JUNO",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.005,
+          "average": 0.01,
+          "high": 0.025
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 42
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "juno",
+      "chain_id": "juno-1",
+      "bech32_config": {
+        "main_prefix": "juno",
+        "prefix_account": "juno",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "juno",
+        "acc_pub": "junopub",
+        "val_addr": "junovaloper",
+        "val_pub": "junovaloperpub",
+        "cons_addr": "junovalcons",
+        "cons_pub": "junovalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\""
+  }
