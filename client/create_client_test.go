@@ -22,7 +22,8 @@ func TestCreateClient(t *testing.T) {
 
 	_ = account
 
-	a, err := cli.ImportMnemonic("c1", "foot milk eight ugly nation atom deer tuition door quarter tackle bicycle three fall purpose behave school shy tonight decrease local concert snap false")
+	//a, err := cli.ImportMnemonic("c1", "foot milk eight ugly nation atom deer tuition door quarter tackle bicycle three fall purpose behave school shy tonight decrease local concert snap false")
+	a, err := cli.ImportMnemonic("testkey", "section cannon journey measure guess mountain drastic swarm victory sight call harsh job word clown top erode verb protect alone grocery million cover industry")
 	if err != nil {
 		log.Println("mnemonic import error.....", err)
 	}
@@ -45,7 +46,7 @@ func TestCreateClient(t *testing.T) {
 	fmt.Println("list......", list[0].GetAddress().String(), list[0].GetName())
 	fmt.Println("list......", list[1].GetAddress().String(), list[1].GetName())
 
-	adr := list[0].GetAddress().String()
+	adr := list[1].GetAddress().String()
 
 	bal, err := cli.GetBankBalances(adr, "stake")
 	if err != nil {
@@ -53,6 +54,8 @@ func TestCreateClient(t *testing.T) {
 	}
 
 	fmt.Println("balllllll..........", bal, err)
+
+	cli.TestGetBalanceOfAnyAccount(t)
 
 	log.Fatal("Address.....", address)
 }
