@@ -182,11 +182,14 @@ EOF
     then
         echo -e "${green}\xE2\x9C\x94${reset} Cloning starport-operator repo"
         git clone $STARPORT_OPERATOR_REPO .starport-operator &> /dev/null
+        cd .starport-operator
+        git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
+        cd ..
     else
         echo -e "${green}\xE2\x9C\x94${reset} Fetching starport-operator latest changes"
         cd .starport-operator
-        git pull $STARPORT_OPERATOR_REPO &> /dev/null
-        cd ..
+        git pull &> /dev/null
+        git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
     fi
 
     echo -e "${green}\xE2\x9C\x94${reset} Ensure starport-operator is installed"
