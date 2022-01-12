@@ -2,11 +2,14 @@ package tests
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
+	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	"github.com/stretchr/testify/require"
+	tmjson "github.com/tendermint/tendermint/libs/json"
 )
 
 const (
@@ -32,8 +35,12 @@ func TestCachedPools(t *testing.T) {
 
 	defer cachedResp.Body.Close()
 
-	var cachedValues map[string]interface{}
-	utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
+	var cachedValues liquiditytypes.QueryLiquidityPoolsResponse
+	// utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
+	body, err := ioutil.ReadAll(cachedResp.Body)
+	require.NoError(t, err)
+
+	require.NoError(t, tmjson.Unmarshal(body, &cachedValues))
 
 	// get liquidity pools
 	url = fmt.Sprintf(baseUrl+liquidityPoolsEndPoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
@@ -42,10 +49,11 @@ func TestCachedPools(t *testing.T) {
 
 	defer liquidityResp.Body.Close()
 
-	var liquidityValues map[string]interface{}
-	utils.RespBodyToMap(liquidityResp.Body, &liquidityValues, t)
+	var liquidityValues liquiditytypes.QueryLiquidityPoolsResponse
+	body, err = ioutil.ReadAll(liquidityResp.Body)
+	require.NoError(t, err)
 
-	// Fix needed: type mistach of pool id (uint64 in cached resp and string in liquidity resp)
+	require.NoError(t, tmjson.Unmarshal(body, &liquidityValues))
 
-	require.Equal(t, liquidityValues["pools"], cachedValues["pools"])
+	require.Equal(t, liquidityValues.Pools, cachedValues.Pools)
 }
