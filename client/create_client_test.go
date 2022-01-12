@@ -13,17 +13,17 @@ func TestCreateClient(t *testing.T) {
 	cli, err := New(t, context.Background())
 	require.NoError(t, err)
 
-	accountName := "test5"
+	// accountName := "test5"
 
-	account, _, err := cli.CreateAccount(accountName)
-	if err != nil {
-		log.Println("create account error....", err)
-	}
+	// account, _, err := cli.CreateAccount(accountName)
+	// if err != nil {
+	// 	log.Println("create account error....", err)
+	// }
 
-	_ = account
+	// _ = account
 
 	//a, err := cli.ImportMnemonic("c1", "foot milk eight ugly nation atom deer tuition door quarter tackle bicycle three fall purpose behave school shy tonight decrease local concert snap false")
-	a, err := cli.ImportMnemonic("testkey", "section cannon journey measure guess mountain drastic swarm victory sight call harsh job word clown top erode verb protect alone grocery million cover industry")
+	a, err := cli.ImportMnemonic("test_key", "unable grass pipe pear glue forward gold truck victory pause fragile scan mask morning develop floor treat essence vendor solid surprise theme process sign")
 	if err != nil {
 		log.Println("mnemonic import error.....", err)
 	}
@@ -31,7 +31,7 @@ func TestCreateClient(t *testing.T) {
 	log.Println("aaaaaaaaaaaaaaaaa.......", a)
 
 	// get account from the keyring by account name and return a bech32 address
-	address, err := cli.Address("c1")
+	address, err := cli.Address("test_key")
 	if err != nil {
 		log.Println("get address error", err)
 	}
@@ -41,14 +41,14 @@ func TestCreateClient(t *testing.T) {
 		fmt.Println("Error while getting keys list")
 	}
 
-	fmt.Println("C1 address........", address)
+	fmt.Println("test_key address........", address)
 
 	fmt.Println("list......", list[0].GetAddress().String(), list[0].GetName())
-	fmt.Println("list......", list[1].GetAddress().String(), list[1].GetName())
+	// fmt.Println("list......", list[1].GetAddress().String(), list[1].GetName())
 
-	adr := list[1].GetAddress().String()
+	adr := list[0].GetAddress().String()
 
-	bal, err := cli.GetBankBalances(adr, "stake")
+	bal, err := cli.GetBankBalances(adr, "uatom")
 	if err != nil {
 		fmt.Println("Error while getting bank balance....", err)
 	}
