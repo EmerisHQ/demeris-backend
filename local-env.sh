@@ -7,6 +7,7 @@ STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
 PRICE_ORACLE_REPO=git@github.com:allinbits/emeris-price-oracle.git
 CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
+ADMIN_UI_REPO=git@github.com:allinbits/emeris-admin-ui.git
 TICKET_WATCHER_REPO=git@github.com:allinbits/emeris-ticket-watcher.git
 RPC_WATCHER_REPO=git@github.com:allinbits/emeris-rpcwatcher.git
 API_SERVER_REPO=git@github.com:allinbits/demeris-api-server.git
@@ -277,11 +278,10 @@ EOF
           -f local-env/nodes
     fi
 
-    ### Ensure cns-server and admin-ui images
-    if [ "$(docker images -q emeris/cns-server 2> /dev/null)" != "" ] && [ "$(docker images -q emeris/admin-ui 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
+    ### Ensure cns-server image
+    if [ "$(docker images -q emeris/cns-server 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Image emeris/cns-server already exists"
-        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/admin-ui already exists"
     else
         if [ ! -d .cns-server/.git ]
         then
@@ -296,15 +296,10 @@ EOF
         cd .cns-server
         echo -e "${green}\xE2\x9C\x94${reset} Building emeris/cns-server image"
         docker build -t emeris/cns-server --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
-        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/admin-ui image"
-        docker build -t emeris/admin-ui ./cns/admin/emeris-admin
         cd ..
     fi
     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/cns-server image to cluster"
     kind load docker-image emeris/cns-server --name $CLUSTER_NAME &> /dev/null
-
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/admin-ui image to cluster"
-    kind load docker-image emeris/admin-ui --name $CLUSTER_NAME &> /dev/null
 
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/cns-server"
     helm upgrade cns-server \
@@ -315,17 +310,41 @@ EOF
         .cns-server/helm/cns-server \
         &> /dev/null
 
+    ### Ensure admin-ui image
+    if [ "$(docker images -q emeris/admin-ui 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/admin-ui already exists"
+    else
+        if [ ! -d .admin-ui/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning admin-ui repo"
+            git clone $ADMIN_UI_REPO .admin-ui &> /dev/null
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching admin-ui latest changes"
+            cd .admin-ui
+            git pull $ADMIN_UI_REPO &> /dev/null
+            cd ..
+        fi
+        cd .admin-ui
+        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/admin-ui image"
+        docker build -t emeris/admin-ui --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/admin-ui image to cluster"
+    kind load docker-image emeris/admin-ui --name $CLUSTER_NAME &> /dev/null
+
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/admin-ui"
     helm upgrade admin-ui \
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        .cns-server/helm/admin-ui \
+        .cns-server/helm \
         &> /dev/null
 
+
     ### Ensure api-server image
-    if [ "$(docker images -q emeris/api-server 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+    if [ "$(docker images -q emeris/api-server 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Image emeris/api-server already exists"
     else
@@ -356,7 +375,7 @@ EOF
         &> /dev/null
 
     ### Ensure rpcwatcher image
-    if [ "$(docker images -q emeris/rpcwatcher 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+    if [ "$(docker images -q emeris/rpcwatcher 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
         then
             echo -e "${green}\xE2\x9C\x94${reset} Image emeris/rpcwatcher already exists"
         else
@@ -387,7 +406,7 @@ EOF
             &> /dev/null
 
     ### Ensure ticket-watcher image
-    if [ "$(docker images -q emeris/ticket-watcher 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+    if [ "$(docker images -q emeris/ticket-watcher 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Image emeris/ticket-watcher already exists"
     else
@@ -418,7 +437,7 @@ EOF
         &> /dev/null
 
     ### Ensure price-oracle-server image
-    if [ "$(docker images -q emeris/price-oracle-server 2> /dev/null)" != "" ] && [ "$BUILD" = "false" ]
+    if [ "$(docker images -q emeris/price-oracle-server 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Image emeris/price-oracle-server already exists"
     else
