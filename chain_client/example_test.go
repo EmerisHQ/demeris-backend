@@ -24,14 +24,14 @@ func TestCreateClient(t *testing.T) {
 		log.Println("get address error", err)
 	}
 
+	log.Printf("address : %v", address)
+
 	list, err := cli.GetkeysList()
 	if err != nil {
 		fmt.Println("Error while getting keys list")
 	}
 
-	fmt.Println("test_key address........", address)
-
-	fmt.Println("list......", list[0].GetAddress().String(), list[0].GetName())
+	log.Printf("list length : %v", len(list))
 
 	adr := list[0].GetAddress().String()
 
@@ -40,7 +40,7 @@ func TestCreateClient(t *testing.T) {
 		fmt.Println("Error while getting bank balance....", err)
 	}
 
-	fmt.Println("balllllll..........", bal, err)
+	log.Printf("balance : %v", bal)
 
 	cli.TestGetBalanceOfAnyAccount(t)
 }

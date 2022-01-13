@@ -3,18 +3,15 @@ package client
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
-	"strings"
-	"sync"
 	"testing"
 	"time"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
-	"github.com/cenkalti/backoff"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -30,11 +27,8 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/go-bip39"
-	proto "github.com/gogo/protobuf/proto"
-	prototypes "github.com/gogo/protobuf/types"
 	"github.com/pkg/errors"
 	"github.com/tendermint/starport/starport/pkg/cosmosaccount"
-	"github.com/tendermint/starport/starport/pkg/cosmosfaucet"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 )
 
@@ -46,9 +40,7 @@ const (
 	defaultNodeAddress   = "http://localhost:26657"
 	defaultGasAdjustment = 1.0
 	defaultGasLimit      = 300000
-)
 
-const (
 	defaultFaucetAddress   = "http://localhost:4500"
 	defaultFaucetDenom     = "token"
 	defaultFaucetMinAmount = 100
@@ -195,7 +187,7 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 				// }
 				// c.homePath = filepath.Join(home, "."+c.chainID)
 				c.HomePath = t.TempDir()
-				fmt.Println("Home...", c.HomePath)
+				log.Printf("Home  : %v", c.HomePath)
 			}
 
 			c.AccountRegistry, err = cosmosaccount.New(
@@ -269,7 +261,6 @@ func (c Client) ImportMnemonic(name, secret string) (Account, error) {
 }
 
 func (c Client) GetkeysList() ([]keyring.Info, error) {
-	fmt.Println("Key ringgggggggg.......", c.AccountRegistry.Keyring)
 	records, err := c.AccountRegistry.Keyring.List()
 	if err != nil {
 		return records, err
@@ -318,8 +309,6 @@ func (c Client) GetBankBalances(address, denom string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("context node url......", c.Context, c.Context.NodeURI)
-
 	queryClient := banktypes.NewQueryClient(c.Context)
 	params := banktypes.NewQueryBalanceRequest(addr, denom)
 	res, err := queryClient.Balance(context.Background(), params)
@@ -327,14 +316,11 @@ func (c Client) GetBankBalances(address, denom string) (string, error) {
 		return "", err
 	}
 
-	// bal := c.Context.PrintProto(res.Balance)
-
 	out, err := c.Context.Codec.MarshalJSON(res.Balance)
 	if err != nil {
 		return "", err
 	}
 
-	fmt.Println("BALLLLLLLLLLLLLL resp........", string(out))
 	return string(out), err
 }
 
@@ -355,163 +341,6 @@ type Response struct {
 	*sdktypes.TxResponse
 }
 
-// Decode decodes the proto func response defined in your Msg service into your message type.
-// message needs be a pointer. and you need to provide the correct proto message(struct) type to the Decode func.
-//
-// e.g., for the following CreateChain func the type would be: `types.MsgCreateChainResponse`.
-//
-// ```proto
-// service Msg {
-//   rpc CreateChain(MsgCreateChain) returns (MsgCreateChainResponse);
-// }
-// ```
-func (r Response) Decode(message proto.Message) error {
-	data, err := hex.DecodeString(r.Data)
-	if err != nil {
-		return err
-	}
-
-	var txMsgData sdktypes.TxMsgData
-	if err := r.codec.Unmarshal(data, &txMsgData); err != nil {
-		return err
-	}
-
-	resData := txMsgData.Data[0]
-
-	return prototypes.UnmarshalAny(&prototypes.Any{
-		// TODO get type url dynamically(basically remove `+ "Response"`) after the following issue has solved.
-		// https://github.com/cosmos/cosmos-sdk/issues/10496
-		TypeUrl: resData.MsgType + "Response",
-		Value:   resData.Data,
-	}, message)
-}
-
-// BroadcastTx creates and broadcasts a tx with given messages for account.
-func (c Client) BroadcastTx(accountName string, msgs ...sdktypes.Msg) (Response, error) {
-	_, broadcast, err := c.BroadcastTxWithProvision(accountName, msgs...)
-	if err != nil {
-		return Response{}, err
-	}
-	return broadcast()
-}
-
-// protects sdktypes.Config.
-var mconf sync.Mutex
-
-func (c Client) BroadcastTxWithProvision(accountName string, msgs ...sdktypes.Msg) (
-	gas uint64, broadcast func() (Response, error), err error) {
-	if err := c.prepareBroadcast(context.Background(), accountName, msgs); err != nil {
-		return 0, nil, err
-	}
-
-	// TODO find a better way if possible.
-	mconf.Lock()
-	defer mconf.Unlock()
-	config := sdktypes.GetConfig()
-	config.SetBech32PrefixForAccount(c.AddressPrefix, c.AddressPrefix+"pub")
-
-	accountAddress, err := c.Address(accountName)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	context := c.Context.
-		WithFromName(accountName).
-		WithFromAddress(accountAddress)
-
-	txf, err := prepareFactory(context, c.Factory)
-	if err != nil {
-		return 0, nil, err
-	}
-
-	_, gas, err = tx.CalculateGas(context, txf, msgs...)
-	if err != nil {
-		return 0, nil, err
-	}
-	// the simulated gas can vary from the actual gas needed for a real transaction
-	// we add an additional amount to endure sufficient gas is provided
-	gas += 10000
-	txf = txf.WithGas(gas)
-
-	// Return the provision function
-	return gas, func() (Response, error) {
-		txUnsigned, err := tx.BuildUnsignedTx(txf, msgs...)
-		if err != nil {
-			return Response{}, err
-		}
-		if err := tx.Sign(txf, accountName, txUnsigned, true); err != nil {
-			return Response{}, err
-		}
-
-		txBytes, err := context.TxConfig.TxEncoder()(txUnsigned.GetTx())
-		if err != nil {
-			return Response{}, err
-		}
-
-		resp, err := context.BroadcastTx(txBytes)
-		return Response{
-			codec:      context.Codec,
-			TxResponse: resp,
-		}, handleBroadcastResult(resp, err)
-	}, nil
-}
-
-// prepareBroadcast performs checks and operations before broadcasting messages
-func (c *Client) prepareBroadcast(ctx context.Context, accountName string, _ []sdktypes.Msg) error {
-	// TODO uncomment after https://github.com/tendermint/spn/issues/363
-	// validate msgs.
-	//  for _, msg := range msgs {
-	//  if err := msg.ValidateBasic(); err != nil {
-	//  return err
-	//  }
-	//  }
-
-	// account, err := c.Account(accountName)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// // // make sure that account has enough balances before broadcasting.
-	// if c.useFaucet {
-	// 	// if err := c.makeSureAccountHasTokens(ctx, account.Address(c.addressPrefix)); err != nil {
-	// 	// 	return err
-	// 	// }
-	// }
-
-	return nil
-}
-
-// makeSureAccountHasTokens makes sure the address has a positive balance
-// it requests funds from the faucet if the address has an empty balance
-func (c *Client) makeSureAccountHasTokens(ctx context.Context, address string) error {
-	if err := c.checkAccountBalance(ctx, address); err == nil {
-		return nil
-	}
-
-	// request coins from the faucet.
-	fc := cosmosfaucet.NewClient(c.FaucetAddress)
-	faucetResp, err := fc.Transfer(ctx, cosmosfaucet.TransferRequest{AccountAddress: address})
-	if err != nil {
-		return errors.Wrap(err, "faucet server request failed")
-	}
-	if faucetResp.Error != "" {
-		return fmt.Errorf("cannot retrieve tokens from faucet: %s", faucetResp.Error)
-	}
-	for _, transfer := range faucetResp.Transfers {
-		if transfer.Error != "" {
-			return fmt.Errorf("cannot retrieve tokens from faucet: %s", transfer.Error)
-		}
-	}
-
-	// make sure funds are retrieved.
-	ctx, cancel := context.WithTimeout(ctx, FaucetTransferEnsureDuration)
-	defer cancel()
-
-	return backoff.Retry(func() error {
-		return c.checkAccountBalance(ctx, address)
-	}, backoff.WithContext(backoff.NewConstantBackOff(time.Second), ctx))
-}
-
 func (c *Client) checkAccountBalance(ctx context.Context, address string) (err error) {
 	balancesResp, err := banktypes.NewQueryClient(c.Context).AllBalances(ctx, &banktypes.QueryAllBalancesRequest{
 		Address: address,
@@ -530,48 +359,6 @@ func (c *Client) checkAccountBalance(ctx context.Context, address string) (err e
 	}
 
 	return errors.New("account has not enough balance")
-}
-
-// handleBroadcastResult handles the result of broadcast messages result and checks if an error occurred
-func handleBroadcastResult(resp *sdktypes.TxResponse, err error) error {
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			return errors.New("make sure that your SPN account has enough balance")
-		}
-
-		return err
-	}
-
-	if resp.Code > 0 {
-		return fmt.Errorf("SPN error with '%d' code: %s", resp.Code, resp.RawLog)
-	}
-	return nil
-}
-
-func prepareFactory(clientCtx client.Context, txf tx.Factory) (tx.Factory, error) {
-	from := clientCtx.GetFromAddress()
-
-	if err := txf.AccountRetriever().EnsureExists(clientCtx, from); err != nil {
-		return txf, err
-	}
-
-	initNum, initSeq := txf.AccountNumber(), txf.Sequence()
-	if initNum == 0 || initSeq == 0 {
-		num, seq, err := txf.AccountRetriever().GetAccountNumberSequence(clientCtx, from)
-		if err != nil {
-			return txf, err
-		}
-
-		if initNum == 0 {
-			txf = txf.WithAccountNumber(num)
-		}
-
-		if initSeq == 0 {
-			txf = txf.WithSequence(seq)
-		}
-	}
-
-	return txf, nil
 }
 
 func newContext(
