@@ -1,0 +1,12 @@
+{
+    "enabled": true,
+    "chain_name": "terra",
+    "node_address": "https://terra-emeris.app.alpha.starport.cloud:443",
+    "key":"terra_test",
+    "mnemonic":"age airport attend curtain medal arrow always kitchen gift egg poet satoshi write benefit unlock century output waste quality anchor system liberty photo culture",
+    "account_address":"",
+    "denom": "terra",
+    "account_address_prefix":"terra",
+    "chain_id":"test"
+  }
+  

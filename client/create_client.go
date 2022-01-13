@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -69,12 +68,11 @@ type Client struct {
 	// AccountRegistry is the retistry to access accounts.
 	AccountRegistry cosmosaccount.Registry `json:"account_registry"`
 
-	// address prefix
-	AddressPrefix string `json:""account_address_prefix`
+	AddressPrefix string `json:"account_address_prefix"`
 
 	NodeAddress string `json:"node_address"`
 
-	Mnemonic string `json:""mnemonic`
+	Mnemonic string `json:"mnemonic"`
 
 	Key string `json:"key"`
 
@@ -82,17 +80,17 @@ type Client struct {
 
 	AccountAddress string `json:"account_address"`
 
-	out     io.Writer `json:"out"`
+	Out     io.Writer `json:"out"`
 	ChainID string    `json:"chain_id"`
 
-	useFaucet       bool   `json:"use_faucet"`
-	faucetAddress   string `json:"faucet_address"`
-	faucetDenom     string `json:"faucet_denom"`
-	faucetMinAmount uint64 `json:"faucet_min_amount"`
+	UseFaucet       bool   `json:"use_faucet"`
+	FaucetAddress   string `json:"faucet_address"`
+	FaucetDenom     string `json:"faucet_denom"`
+	FaucetMinAmount uint64 `json:"faucet_min_amount"`
 
-	homePath           string                       `json:"home_path"`
-	keyringServiceName string                       `json:"keyring_service_name"`
-	keyringBackend     cosmosaccount.KeyringBackend `json:"keyring_backend"`
+	HomePath           string                       `json:"home_path"`
+	KeyringServiceName string                       `json:"keyring_service_name"`
+	KeyringBackend     cosmosaccount.KeyringBackend `json:"keyring_backend"`
 }
 
 // Option configures your client.
@@ -103,7 +101,7 @@ type Option func(*Client)
 // when it is not provided, your data dir will be assumed as `$HOME/.your-chain-id`.
 func WithHome(path string) Option {
 	return func(c *Client) {
-		c.homePath = path
+		c.HomePath = path
 	}
 }
 
@@ -111,14 +109,14 @@ func WithHome(path string) Option {
 // by default it is `cosmos`.
 func WithKeyringServiceName(name string) Option {
 	return func(c *Client) {
-		c.keyringServiceName = name
+		c.KeyringServiceName = name
 	}
 }
 
 // WithKeyringBackend sets your keyring backend. By default, it is `test`.
 func WithKeyringBackend(backend cosmosaccount.KeyringBackend) Option {
 	return func(c *Client) {
-		c.keyringBackend = backend
+		c.KeyringBackend = backend
 	}
 }
 
@@ -138,96 +136,87 @@ func WithAddressPrefix(prefix string) Option {
 
 func WithUseFaucet(faucetAddress, denom string, minAmount uint64) Option {
 	return func(c *Client) {
-		c.useFaucet = true
-		c.faucetAddress = faucetAddress
+		c.UseFaucet = true
+		c.FaucetAddress = faucetAddress
 		if denom != "" {
-			c.faucetDenom = denom
+			c.FaucetDenom = denom
 		}
 		if minAmount != 0 {
-			c.faucetMinAmount = minAmount
+			c.FaucetMinAmount = minAmount
 		}
 	}
 }
 
 // New creates a new client with given options.
-func New(t *testing.T, ctx context.Context, options ...Option) (Client, error) {
+func New(chainName string, t *testing.T, ctx context.Context, options ...Option) (Client, error) {
 	var err error
 
 	chains := utils.LoadClientChainsInfo(t)
 
 	c := Client{
 		NodeAddress:        defaultNodeAddress,
-		keyringBackend:     cosmosaccount.KeyringTest,
+		KeyringBackend:     cosmosaccount.KeyringTest,
 		AddressPrefix:      "cosmos",
-		faucetAddress:      defaultFaucetAddress,
-		faucetDenom:        defaultFaucetDenom,
-		faucetMinAmount:    defaultFaucetMinAmount,
-		out:                io.Discard,
+		FaucetAddress:      defaultFaucetAddress,
+		FaucetDenom:        defaultFaucetDenom,
+		FaucetMinAmount:    defaultFaucetMinAmount,
+		Out:                io.Discard,
 		ChainID:            "test",
-		keyringServiceName: "api",
+		KeyringServiceName: "api",
 	}
 
 	for _, ch := range chains {
+		if ch.Name == chainName {
 
-		conf := Client{}
-		err = json.Unmarshal(ch.Payload, &conf)
-		if err != nil {
-			fmt.Println("Error while unmarshelling json config file : ", err)
+			err = json.Unmarshal(ch.Payload, &c)
+			if err != nil {
+				fmt.Println("Error while unmarshelling json config file : ", err)
+			}
+
+			for _, apply := range options {
+				apply(&c)
+			}
+
+			if c.RPC, err = rpchttp.New(c.NodeAddress, "/websocket"); err != nil {
+				return Client{}, err
+			}
+
+			statusResp, err := c.RPC.Status(ctx)
+			if err != nil {
+				return Client{}, err
+			}
+
+			c.ChainID = statusResp.NodeInfo.Network
+
+			if c.HomePath == "" {
+				// home, err := os.UserHomeDir()
+				// if err != nil {
+				// 	return Client{}, err
+				// }
+				// c.homePath = filepath.Join(home, "."+c.chainID)
+				c.HomePath = t.TempDir()
+				fmt.Println("Home...", c.HomePath)
+			}
+
+			c.AccountRegistry, err = cosmosaccount.New(
+				cosmosaccount.WithKeyringServiceName(c.KeyringServiceName),
+				cosmosaccount.WithKeyringBackend(c.KeyringBackend),
+				cosmosaccount.WithHome(c.HomePath),
+			)
+			if err != nil {
+				return Client{}, err
+			}
+
+			c.Context = newContext(c.RPC, c.Out, c.ChainID, c.HomePath).WithKeyring(c.AccountRegistry.Keyring)
+			c.Factory = newFactory(c.Context)
+
+			c.AccountRegistry.Keyring, err = keyring.New(c.KeyringServiceName, string(c.KeyringBackend), c.HomePath, os.Stdin)
+			if err != nil {
+				return Client{}, err
+			}
+
+			return c, nil
 		}
-
-		for _, apply := range options {
-			apply(&c)
-		}
-
-		fmt.Println("config.....", conf)
-
-		log.Fatalf("ccc client : %v.......", c)
-
-		if c.RPC, err = rpchttp.New(c.NodeAddress, "/websocket"); err != nil {
-			return Client{}, err
-		}
-
-		fmt.Println("client.......", c, c.RPC)
-
-		statusResp, err := c.RPC.Status(ctx)
-		if err != nil {
-			return Client{}, err
-		}
-
-		// fmt.Println("chain id...........", statusResp.NodeInfo.Network)
-
-		c.ChainID = statusResp.NodeInfo.Network
-
-		if c.homePath == "" {
-			// home, err := os.UserHomeDir()
-			// if err != nil {
-			// 	return Client{}, err
-			// }
-			// c.homePath = filepath.Join(home, "."+c.chainID)
-			c.homePath = t.TempDir()
-			fmt.Println("Home...", c.homePath)
-		}
-
-		c.AccountRegistry, err = cosmosaccount.New(
-			cosmosaccount.WithKeyringServiceName(c.keyringServiceName),
-			cosmosaccount.WithKeyringBackend(c.keyringBackend),
-			cosmosaccount.WithHome(c.homePath),
-		)
-		if err != nil {
-			return Client{}, err
-		}
-
-		fmt.Println("account registry......", c.AccountRegistry)
-
-		c.Context = newContext(c.RPC, c.out, c.ChainID, c.homePath).WithKeyring(c.AccountRegistry.Keyring)
-		c.Factory = newFactory(c.Context)
-
-		c.AccountRegistry.Keyring, err = keyring.New(c.keyringServiceName, string(c.keyringBackend), c.homePath, os.Stdin)
-		if err != nil {
-			return Client{}, err
-		}
-
-		return c, nil
 	}
 
 	return c, nil
@@ -500,7 +489,7 @@ func (c *Client) makeSureAccountHasTokens(ctx context.Context, address string) e
 	}
 
 	// request coins from the faucet.
-	fc := cosmosfaucet.NewClient(c.faucetAddress)
+	fc := cosmosfaucet.NewClient(c.FaucetAddress)
 	faucetResp, err := fc.Transfer(ctx, cosmosfaucet.TransferRequest{AccountAddress: address})
 	if err != nil {
 		return errors.Wrap(err, "faucet server request failed")
@@ -534,7 +523,7 @@ func (c *Client) checkAccountBalance(ctx context.Context, address string) (err e
 	// if the balance is enough do nothing.
 	if len(balancesResp.Balances) > 0 {
 		for _, coin := range balancesResp.Balances {
-			if coin.Denom == c.faucetDenom && coin.Amount.Uint64() >= c.faucetMinAmount {
+			if coin.Denom == c.FaucetDenom && coin.Amount.Uint64() >= c.FaucetMinAmount {
 				return nil
 			}
 		}
