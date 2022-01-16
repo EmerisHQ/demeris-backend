@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -31,10 +30,6 @@ import (
 	"github.com/tendermint/starport/starport/pkg/cosmosaccount"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 )
-
-// FaucetTransferEnsureDuration is the duration that BroadcastTx will wait when a faucet transfer
-// is triggered prior to broadcasting but transfer's tx is not committed in the state yet.
-var FaucetTransferEnsureDuration = time.Minute * 2
 
 const (
 	defaultNodeAddress   = "http://localhost:26657"
@@ -90,7 +85,6 @@ type Option func(*Client)
 
 // WithHome sets the data dir of your chain. This option is used to access your chain's
 // file based keyring which is only needed when you deal with creating and signing transactions.
-// when it is not provided, your data dir will be assumed as `$HOME/.your-chain-id`.
 func WithHome(path string) Option {
 	return func(c *Client) {
 		c.HomePath = path
@@ -98,22 +92,20 @@ func WithHome(path string) Option {
 }
 
 // WithKeyringServiceName used as the keyring's name when you are using OS keyring backend.
-// by default it is `cosmos`.
 func WithKeyringServiceName(name string) Option {
 	return func(c *Client) {
 		c.KeyringServiceName = name
 	}
 }
 
-// WithKeyringBackend sets your keyring backend. By default, it is `test`.
+// WithKeyringBackend sets your keyring backend
 func WithKeyringBackend(backend cosmosaccount.KeyringBackend) Option {
 	return func(c *Client) {
 		c.KeyringBackend = backend
 	}
 }
 
-// WithNodeAddress sets the node address of your chain. When this option is not provided
-// `http://localhost:26657` is used as default.
+// WithNodeAddress sets the node address of your chain.
 func WithNodeAddress(addr string) Option {
 	return func(c *Client) {
 		c.NodeAddress = addr
