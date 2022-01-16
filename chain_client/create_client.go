@@ -327,30 +327,10 @@ func (c Client) Address(accountName string) (sdktypes.AccAddress, error) {
 
 // Response of your broadcasted transaction.
 type Response struct {
-	codec codec.Codec
+	// codec codec.Codec
 
 	// TxResponse is the underlying tx response.
 	*sdktypes.TxResponse
-}
-
-func (c *Client) checkAccountBalance(ctx context.Context, address string) (err error) {
-	balancesResp, err := banktypes.NewQueryClient(c.Context).AllBalances(ctx, &banktypes.QueryAllBalancesRequest{
-		Address: address,
-	})
-	if err != nil {
-		return err
-	}
-
-	// if the balance is enough do nothing.
-	if len(balancesResp.Balances) > 0 {
-		for _, coin := range balancesResp.Balances {
-			if coin.Denom == c.FaucetDenom && coin.Amount.Uint64() >= c.FaucetMinAmount {
-				return nil
-			}
-		}
-	}
-
-	return errors.New("account has not enough balance")
 }
 
 func newContext(
