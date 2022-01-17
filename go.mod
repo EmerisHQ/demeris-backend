@@ -10,24 +10,24 @@ replace (
 )
 
 require (
-	github.com/allinbits/starport-operator v0.0.1-alpha.26
+	github.com/allinbits/starport-operator v0.0.1-alpha.45
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1
 	github.com/cosmos/cosmos-sdk v0.44.5
 	github.com/cosmos/gaia/v5 v5.0.4
 	github.com/cssivision/reverseproxy v0.0.1
-	github.com/ethereum/go-ethereum v1.10.3
-	github.com/gin-gonic/gin v1.7.1
-	github.com/go-playground/universal-translator v0.17.0
-	github.com/go-playground/validator/v10 v10.5.0
+	github.com/ethereum/go-ethereum v1.10.12
+	github.com/gin-gonic/gin v1.7.4
+	github.com/go-playground/universal-translator v0.18.0
+	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v8 v8.8.3
-	github.com/golang/snappy v0.0.3 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/gravity-devs/liquidity v1.2.9
 	github.com/iamolegga/enviper v1.2.1
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jmoiron/sqlx v1.3.3
-	github.com/lib/pq v1.10.2
+	github.com/lib/pq v1.10.3
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.1-0.20210427113832-6241f9ab9942
@@ -56,6 +56,7 @@ require (
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/Workiva/go-datastructures v1.0.52 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
+	github.com/allinbits/emeris-utils v0.0.0-20220112134811-8355f1b1f274 // indirect
 	github.com/armon/go-metrics v0.3.9 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
@@ -92,7 +93,7 @@ require (
 	github.com/go-openapi/jsonreference v0.19.4 // indirect
 	github.com/go-openapi/spec v0.19.14 // indirect
 	github.com/go-openapi/swag v0.19.11 // indirect
-	github.com/go-playground/locales v0.13.0 // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gogo/gateway v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.3 // indirect
@@ -165,7 +166,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/syndtr/goleveldb v1.0.1-0.20210305035536-64b5b1c73954 // indirect
+	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tendermint/btcd v0.1.1 // indirect
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
