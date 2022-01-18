@@ -165,15 +165,13 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 				return Client{}, err
 			}
 
-			// statusResp, err := c.RPC.Status(ctx)
+			statusResp, err := c.RPC.Status(ctx)
 
-			// if err != nil {
-			// 	return Client{}, err
-			// }
+			if err != nil {
+				return Client{}, err
+			}
 
-			// c.ChainID = statusResp.NodeInfo.Network
-
-			c.ChainID = ch.Name
+			c.ChainID = statusResp.NodeInfo.Network
 
 			if c.HomePath == "" {
 				// home, err := os.UserHomeDir()
@@ -297,26 +295,22 @@ func (c Client) Account(accountName string) (cosmosaccount.Account, error) {
 	return c.AccountRegistry.GetByName(accountName)
 }
 
-func (c Client) GetBankBalances(address, denom string) (string, error) {
+func (c Client) GetBankBalances(address, denom string) (*banktypes.QueryBalanceResponse, error) {
+	var bal *banktypes.QueryBalanceResponse
 
 	addr, err := sdktypes.AccAddressFromBech32(address)
 	if err != nil {
-		return "", err
+		return bal, err
 	}
 
 	queryClient := banktypes.NewQueryClient(c.Context)
 	params := banktypes.NewQueryBalanceRequest(addr, denom)
 	res, err := queryClient.Balance(context.Background(), params)
 	if err != nil {
-		return "", err
+		return bal, err
 	}
 
-	out, err := c.Context.Codec.MarshalJSON(res.Balance)
-	if err != nil {
-		return "", err
-	}
-
-	return string(out), err
+	return res, err
 }
 
 // Address returns the account addWress from account name.
