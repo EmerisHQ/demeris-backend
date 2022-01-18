@@ -19,6 +19,7 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/cosmos/cosmos-sdk/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
@@ -166,7 +167,6 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 			}
 
 			statusResp, err := c.RPC.Status(ctx)
-
 			if err != nil {
 				return Client{}, err
 			}
@@ -295,22 +295,33 @@ func (c Client) Account(accountName string) (cosmosaccount.Account, error) {
 	return c.AccountRegistry.GetByName(accountName)
 }
 
-func (c Client) GetBankBalances(address, denom string) (*banktypes.QueryBalanceResponse, error) {
-	var bal *banktypes.QueryBalanceResponse
+func (c Client) GetBankBalances(address, denom string) (types.Coin, error) {
+
+	var coin types.Coin
 
 	addr, err := sdktypes.AccAddressFromBech32(address)
 	if err != nil {
-		return bal, err
+		return coin, err
 	}
 
 	queryClient := banktypes.NewQueryClient(c.Context)
 	params := banktypes.NewQueryBalanceRequest(addr, denom)
 	res, err := queryClient.Balance(context.Background(), params)
 	if err != nil {
-		return bal, err
+		return coin, err
 	}
 
-	return res, err
+	out, err := c.Context.Codec.MarshalJSON(res.Balance)
+	if err != nil {
+		return coin, err
+	}
+
+	err = c.Context.Codec.UnmarshalJSON(out, &coin)
+	if err != nil {
+		return coin, err
+	}
+
+	return coin, err
 }
 
 // Address returns the account addWress from account name.
