@@ -165,12 +165,15 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 				return Client{}, err
 			}
 
-			statusResp, err := c.RPC.Status(ctx)
-			if err != nil {
-				return Client{}, err
-			}
+			// statusResp, err := c.RPC.Status(ctx)
 
-			c.ChainID = statusResp.NodeInfo.Network
+			// if err != nil {
+			// 	return Client{}, err
+			// }
+
+			// c.ChainID = statusResp.NodeInfo.Network
+
+			c.ChainID = ch.Name
 
 			if c.HomePath == "" {
 				// home, err := os.UserHomeDir()
