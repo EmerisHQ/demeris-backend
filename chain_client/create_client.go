@@ -73,11 +73,6 @@ type Client struct {
 	Out     io.Writer `json:"out"`
 	ChainID string    `json:"chain_id"`
 
-	UseFaucet       bool   `json:"use_faucet"`
-	FaucetAddress   string `json:"faucet_address"`
-	FaucetDenom     string `json:"faucet_denom"`
-	FaucetMinAmount uint64 `json:"faucet_min_amount"`
-
 	HomePath           string                       `json:"home_path"`
 	KeyringServiceName string                       `json:"keyring_service_name"`
 	KeyringBackend     cosmosaccount.KeyringBackend `json:"keyring_backend"`
