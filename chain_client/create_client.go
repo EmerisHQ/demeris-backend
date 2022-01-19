@@ -46,18 +46,6 @@ type Client struct {
 	// starport client
 	op cosmosclient.Client
 
-	// RPC is Tendermint RPC.
-	RPC *rpchttp.HTTP `json:"rpc"`
-
-	// Factory is a Cosmos SDK tx factory.
-	Factory tx.Factory `json:"factory"`
-
-	// context is a Cosmos SDK client context.
-	Context client.Context `json:"context"`
-
-	// AccountRegistry is the retistry to access accounts.
-	AccountRegistry cosmosaccount.Registry `json:"account_registry"`
-
 	AddressPrefix string `json:"account_address_prefix"`
 
 	NodeAddress string `json:"node_address"`
@@ -110,11 +98,11 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 				apply(&c)
 			}
 
-			if c.RPC, err = rpchttp.New(c.NodeAddress, "/websocket"); err != nil {
+			if c.op.RPC, err = rpchttp.New(c.NodeAddress, "/websocket"); err != nil {
 				return Client{}, err
 			}
 
-			statusResp, err := c.RPC.Status(ctx)
+			statusResp, err := c.op.RPC.Status(ctx)
 			if err != nil {
 				return Client{}, err
 			}
@@ -126,7 +114,7 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 				log.Printf("Home  : %v", c.HomePath)
 			}
 
-			c.AccountRegistry, err = cosmosaccount.New(
+			c.op.AccountRegistry, err = cosmosaccount.New(
 				cosmosaccount.WithKeyringServiceName(c.KeyringServiceName),
 				cosmosaccount.WithKeyringBackend(c.KeyringBackend),
 				cosmosaccount.WithHome(c.HomePath),
@@ -135,10 +123,10 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 				return Client{}, err
 			}
 
-			c.Context = newContext(c.RPC, c.Out, c.ChainID, c.HomePath).WithKeyring(c.AccountRegistry.Keyring)
-			c.Factory = newFactory(c.Context)
+			c.op.Context = newContext(c.op.RPC, c.Out, c.ChainID, c.HomePath).WithKeyring(c.op.AccountRegistry.Keyring)
+			c.op.Factory = newFactory(c.op.Context)
 
-			c.AccountRegistry.Keyring, err = keyring.New(c.KeyringServiceName, string(c.KeyringBackend), c.HomePath, os.Stdin)
+			c.op.AccountRegistry.Keyring, err = keyring.New(c.KeyringServiceName, string(c.KeyringBackend), c.HomePath, os.Stdin)
 			if err != nil {
 				return Client{}, err
 			}
@@ -161,7 +149,7 @@ func (c Client) CreateAccount(accountName string) (acc Account, mnemonic string,
 		return Account{}, "", err
 	}
 
-	info, err := c.AccountRegistry.Keyring.NewAccount(accountName, mnemonic, "", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
+	info, err := c.op.AccountRegistry.Keyring.NewAccount(accountName, mnemonic, "", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
 	if err != nil {
 		return Account{}, "", err
 	}
@@ -176,11 +164,11 @@ func (c Client) CreateAccount(accountName string) (acc Account, mnemonic string,
 
 func (c Client) ImportMnemonic(name, secret string) (Account, error) {
 	if bip39.IsMnemonicValid(secret) {
-		_, err := c.AccountRegistry.Keyring.NewAccount(name, secret, "", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
+		_, err := c.op.AccountRegistry.Keyring.NewAccount(name, secret, "", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
 		if err != nil {
 			return Account{}, err
 		}
-	} else if err := c.AccountRegistry.Keyring.ImportPrivKey(name, secret, ""); err != nil {
+	} else if err := c.op.AccountRegistry.Keyring.ImportPrivKey(name, secret, ""); err != nil {
 		return Account{}, err
 	}
 
@@ -188,7 +176,7 @@ func (c Client) ImportMnemonic(name, secret string) (Account, error) {
 }
 
 func (c Client) GetkeysList() ([]keyring.Info, error) {
-	records, err := c.AccountRegistry.Keyring.List()
+	records, err := c.op.AccountRegistry.Keyring.List()
 	if err != nil {
 		return records, err
 	}
@@ -198,7 +186,7 @@ func (c Client) GetkeysList() ([]keyring.Info, error) {
 
 // GetByName returns an account by its name.
 func (c Client) GetByName(name string) (Account, error) {
-	info, err := c.AccountRegistry.Keyring.Key(name)
+	info, err := c.op.AccountRegistry.Keyring.Key(name)
 	if err != nil {
 		return Account{}, errors.New("Key not found")
 	}
@@ -211,21 +199,6 @@ func (c Client) GetByName(name string) (Account, error) {
 	return acc, nil
 }
 
-func (c Client) ImportKey(filePath string) error {
-	bz, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	err = c.AccountRegistry.Keyring.ImportPrivKey(filePath, string(bz), "password")
-
-	return err
-}
-
-func (c Client) Account(accountName string) (cosmosaccount.Account, error) {
-	return c.AccountRegistry.GetByName(accountName)
-}
-
 func (c Client) GetBankBalances(address, denom string) (types.Coin, error) {
 
 	var coin types.Coin
@@ -235,34 +208,24 @@ func (c Client) GetBankBalances(address, denom string) (types.Coin, error) {
 		return coin, err
 	}
 
-	queryClient := banktypes.NewQueryClient(c.Context)
+	queryClient := banktypes.NewQueryClient(c.op.Context)
 	params := banktypes.NewQueryBalanceRequest(addr, denom)
 	res, err := queryClient.Balance(context.Background(), params)
 	if err != nil {
 		return coin, err
 	}
 
-	out, err := c.Context.Codec.MarshalJSON(res.Balance)
+	out, err := c.op.Context.Codec.MarshalJSON(res.Balance)
 	if err != nil {
 		return coin, err
 	}
 
-	err = c.Context.Codec.UnmarshalJSON(out, &coin)
+	err = c.op.Context.Codec.UnmarshalJSON(out, &coin)
 	if err != nil {
 		return coin, err
 	}
 
 	return coin, err
-}
-
-// Address returns the account addWress from account name.
-func (c Client) Address(accountName string) (sdktypes.AccAddress, error) {
-	account, err := c.Account(accountName)
-	if err != nil {
-		return sdktypes.AccAddress{}, err
-	}
-
-	return account.Info.GetAddress(), nil
 }
 
 func newContext(
