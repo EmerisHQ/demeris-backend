@@ -29,6 +29,7 @@ import (
 	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"
 	"github.com/tendermint/starport/starport/pkg/cosmosaccount"
+	"github.com/tendermint/starport/starport/pkg/cosmosclient"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 )
 
@@ -36,14 +37,15 @@ const (
 	defaultNodeAddress   = "http://localhost:26657"
 	defaultGasAdjustment = 1.0
 	defaultGasLimit      = 300000
-
-	defaultFaucetAddress   = "http://localhost:4500"
-	defaultFaucetDenom     = "token"
-	defaultFaucetMinAmount = 100
 )
+
+// var Client cosmosaccount.Client
 
 // Client is a client to access your chain by querying and broadcasting transactions.
 type Client struct {
+	// starport client
+	op cosmosclient.Client
+
 	// RPC is Tendermint RPC.
 	RPC *rpchttp.HTTP `json:"rpc"`
 
@@ -81,56 +83,10 @@ type Client struct {
 	KeyringBackend     cosmosaccount.KeyringBackend `json:"keyring_backend"`
 }
 
+type Account cosmosaccount.Account
+
 // Option configures your client.
 type Option func(*Client)
-
-// WithHome sets the data dir of your chain. This option is used to access your chain's
-// file based keyring which is only needed when you deal with creating and signing transactions.
-func WithHome(path string) Option {
-	return func(c *Client) {
-		c.HomePath = path
-	}
-}
-
-// WithKeyringServiceName used as the keyring's name when you are using OS keyring backend.
-func WithKeyringServiceName(name string) Option {
-	return func(c *Client) {
-		c.KeyringServiceName = name
-	}
-}
-
-// WithKeyringBackend sets your keyring backend
-func WithKeyringBackend(backend cosmosaccount.KeyringBackend) Option {
-	return func(c *Client) {
-		c.KeyringBackend = backend
-	}
-}
-
-// WithNodeAddress sets the node address of your chain.
-func WithNodeAddress(addr string) Option {
-	return func(c *Client) {
-		c.NodeAddress = addr
-	}
-}
-
-func WithAddressPrefix(prefix string) Option {
-	return func(c *Client) {
-		c.AddressPrefix = prefix
-	}
-}
-
-func WithUseFaucet(faucetAddress, denom string, minAmount uint64) Option {
-	return func(c *Client) {
-		c.UseFaucet = true
-		c.FaucetAddress = faucetAddress
-		if denom != "" {
-			c.FaucetDenom = denom
-		}
-		if minAmount != 0 {
-			c.FaucetMinAmount = minAmount
-		}
-	}
-}
 
 // New creates a new client with given options.
 func New(chainName string, t *testing.T, ctx context.Context, options ...Option) (Client, error) {
@@ -142,9 +98,6 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 		NodeAddress:        defaultNodeAddress,
 		KeyringBackend:     cosmosaccount.KeyringTest,
 		AddressPrefix:      "cosmos",
-		FaucetAddress:      defaultFaucetAddress,
-		FaucetDenom:        defaultFaucetDenom,
-		FaucetMinAmount:    defaultFaucetMinAmount,
 		Out:                io.Discard,
 		ChainID:            "test",
 		KeyringServiceName: "api",
@@ -174,11 +127,6 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 			c.ChainID = statusResp.NodeInfo.Network
 
 			if c.HomePath == "" {
-				// home, err := os.UserHomeDir()
-				// if err != nil {
-				// 	return Client{}, err
-				// }
-				// c.homePath = filepath.Join(home, "."+c.chainID)
 				c.HomePath = t.TempDir()
 				log.Printf("Home  : %v", c.HomePath)
 			}
@@ -206,15 +154,6 @@ func New(chainName string, t *testing.T, ctx context.Context, options ...Option)
 
 	return c, nil
 
-}
-
-// Account represents an Cosmos SDK account.
-type Account struct {
-	// Name of the account.
-	Name string
-
-	// Info holds additional info about the account.
-	Info keyring.Info
 }
 
 func (c Client) CreateAccount(accountName string) (acc Account, mnemonic string, err error) {
@@ -265,9 +204,6 @@ func (c Client) GetkeysList() ([]keyring.Info, error) {
 // GetByName returns an account by its name.
 func (c Client) GetByName(name string) (Account, error) {
 	info, err := c.AccountRegistry.Keyring.Key(name)
-	// if errors.Is(err, dkeyring.ErrKeyNotFound) || errors.Is(err, sdkerrors.ErrKeyNotFound) {
-	// 	return Account{}, &AccountDoesNotExistError{name}
-	// }
 	if err != nil {
 		return Account{}, errors.New("Key not found")
 	}
@@ -330,15 +266,8 @@ func (c Client) Address(accountName string) (sdktypes.AccAddress, error) {
 	if err != nil {
 		return sdktypes.AccAddress{}, err
 	}
+
 	return account.Info.GetAddress(), nil
-}
-
-// Response of your broadcasted transaction.
-type Response struct {
-	// codec codec.Codec
-
-	// TxResponse is the underlying tx response.
-	*sdktypes.TxResponse
 }
 
 func newContext(
