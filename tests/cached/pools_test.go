@@ -36,7 +36,6 @@ func TestCachedPools(t *testing.T) {
 	defer cachedResp.Body.Close()
 
 	var cachedValues liquiditytypes.QueryLiquidityPoolsResponse
-	// utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
 	body, err := ioutil.ReadAll(cachedResp.Body)
 	require.NoError(t, err)
 
