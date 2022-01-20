@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -29,7 +30,7 @@ func TestCachedParams(t *testing.T) {
 	require.NotNil(t, client)
 
 	// get cached params
-	url := fmt.Sprintf(baseUrl+cachedParamsEndPoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	url := fmt.Sprintf(strings.Join([]string{baseUrl, cachedParamsEndPoint}, ""), emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	cachedResp, err := client.Get(url)
 	require.NoError(t, err)
 
