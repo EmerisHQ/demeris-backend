@@ -13,9 +13,8 @@ import (
 )
 
 const (
-	primaryChannelEndpoint = "/chain/%s/primary_channels"
-	primaryChannelskey     = "primary_channels"
-	channelCounterparty    = "/chain/%s/primary_channel/%s"
+	primaryChannelkey   = "primary_channel"
+	channelCounterparty = "/chain/%s/primary_channel/%s"
 )
 
 func TestPrimaryChannelCounterparty(t *testing.T) {
@@ -52,7 +51,7 @@ func TestPrimaryChannelCounterparty(t *testing.T) {
 				err := json.Unmarshal(ch.Payload, &payload)
 				require.NoError(t, err)
 
-				data, err := json.Marshal(payload["primary_channel"])
+				data, err := json.Marshal(payload[primaryChannelkey])
 				require.NoError(t, err)
 
 				var expectedChannels map[string]string
@@ -78,7 +77,7 @@ func TestPrimaryChannelCounterparty(t *testing.T) {
 						"counterparty": counterParty,
 						"channel_name": channel_name,
 					}
-					require.Equal(t, expectedChannelsFormatted, respValues["primary_channel"])
+					require.Equal(t, expectedChannelsFormatted, respValues[primaryChannelkey])
 				}
 
 				// test for non-existing channels
