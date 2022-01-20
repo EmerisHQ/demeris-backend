@@ -1,0 +1,72 @@
+{
+    "enabled": true,
+    "chain_name": "sentinel",
+    "logo": "https://storage.googleapis.com/emeris/logos/sentinel.svg",
+    "display_name": "Sentinel",
+    "primary_channel": {
+      "akash": "channel-10",
+      "cosmos-hub": "channel-12",
+      "crypto-org": "channel-13",
+      "emoney": "channel-43",
+      "iris": "channel-9",
+      "ixo": "channel-42",
+      "microtick": "channel-41",
+      "osmosis": "channel-0",
+      "persistence": "channel-15",
+      "regen": "channel-11",
+      "sifchain": "channel-36",
+      "starname": "channel-40"
+    },
+    "denoms": [
+      {
+        "name": "udvpn",
+        "display_name": "Sentinel",
+        "logo": "https://storage.googleapis.com/emeris/logos/sentinel.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "DVPN",
+        "price_id": "sentinel",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.1,
+          "average": 0.12,
+          "high": 0.2
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 5000000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "sentinel",
+      "chain_id": "sentinelhub-2",
+      "bech32_config": {
+        "main_prefix": "sent",
+        "prefix_account": "sent",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "sent",
+        "acc_pub": "sentpub",
+        "val_addr": "sentvaloper",
+        "val_pub": "sentvaloperpub",
+        "cons_addr": "sentvalcons",
+        "cons_pub": "sentvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "public_node_endpoints": {
+      "tendermint_rpc": "",
+      "cosmos_api": ""
+    },
+    "cosmos_sdk_version": "v0.42.5"
+  }
