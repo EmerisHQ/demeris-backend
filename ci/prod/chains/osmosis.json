@@ -85,7 +85,7 @@
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": ["keplr"],
-    "block_explorer": "https://rpc-osmosis.blockapsis.com"
+    "block_explorer": "https://rpc-osmosis.blockapsis.com",
     "public_node_endpoints": {
       "tendermint_rpc": "",
       "cosmos_api": "https://lcd-osmosis.blockapsis.com"
