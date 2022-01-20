@@ -1,0 +1,95 @@
+{
+  "chain": {
+    "enabled": true,
+    "chain_name": "osmosis",
+    "logo": "https://storage.googleapis.com/emeris/logos/osmosis.svg",
+    "display_name": "Osmosis",
+    "primary_channel": {
+      "akash": "channel-1",
+      "bitcanna": "channel-51",
+      "cosmos-hub": "channel-0",
+      "crypto-org": "channel-5",
+      "emoney": "channel-37",
+      "iris": "channel-6",
+      "ixo": "channel-38",
+      "juno": "channel-42",
+      "likecoin": "channel-53",
+      "microtick": "channel-36",
+      "persistence": "channel-4",
+      "regen": "channel-8",
+      "sentinel": "channel-2",
+      "sifchain": "channel-47",
+      "starname": "channel-35",
+      "terra": "channel-72",
+      "ki":"channel-77"
+    },
+    "denoms": [
+      {
+        "name": "uosmo",
+        "display_name": "OSMO",
+        "logo": "https://storage.googleapis.com/emeris/logos/osmosis.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "OSMO",
+        "price_id": "osmosis",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0.12
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 60000000
+      },
+      {
+        "name": "uion",
+        "display_name": "ION",
+        "logo": "https://storage.googleapis.com/emeris/logos/ion.svg",
+        "precision": 6,
+        "verified": true,
+        "ticker": "ION",
+        "price_id": "ion",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": true,
+        "relayer_denom": false
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "osmosis",
+      "chain_id": "osmosis-1",
+      "bech32_config": {
+        "main_prefix": "osmo",
+        "prefix_account": "osmo",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "osmo",
+        "acc_pub": "osmopub",
+        "val_addr": "osmovaloper",
+        "val_pub": "osmovaloperpub",
+        "cons_addr": "osmovalcons",
+        "cons_pub": "osmovalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": ["keplr"],
+    "block_explorer": "https://rpc-osmosis.blockapsis.com"
+    "public_node_endpoints": {
+      "tendermint_rpc": "",
+      "cosmos_api": "https://lcd-osmosis.blockapsis.com"
+    },
+    "cosmos_sdk_version": "v0.44.5"
+  }
+}
