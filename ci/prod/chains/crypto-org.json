@@ -1,5 +1,4 @@
 {
-  "chain": {
     "enabled": true,
     "chain_name": "crypto-org",
     "logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
@@ -70,5 +69,5 @@
       "cosmos_api": ""
     },
     "cosmos_sdk_version": "v0.44.5"
-  }
+  
 }
