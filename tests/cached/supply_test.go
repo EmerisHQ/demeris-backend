@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -26,7 +27,7 @@ func TestCachedSupply(t *testing.T) {
 	require.NotNil(t, client)
 
 	// get cached params
-	url := fmt.Sprintf(baseUrl+cachedSupplyEndPoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	url := fmt.Sprintf(strings.Join([]string{baseUrl, cachedSupplyEndPoint}, ""), emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	cachedResp, err := client.Get(url)
 	require.NoError(t, err)
 
