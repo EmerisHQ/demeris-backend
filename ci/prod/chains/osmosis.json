@@ -1,5 +1,4 @@
 {
-  "chain": {
     "enabled": true,
     "chain_name": "osmosis",
     "logo": "https://storage.googleapis.com/emeris/logos/osmosis.svg",
@@ -51,11 +50,7 @@
         "verified": true,
         "ticker": "ION",
         "price_id": "ion",
-        "gas_price_levels": {
-          "low": 0,
-          "average": 0,
-          "high": 0
-        },
+        "fee_token": false,
         "fetch_price": true,
         "relayer_denom": false
       }
@@ -91,5 +86,5 @@
       "cosmos_api": "https://lcd-osmosis.blockapsis.com"
     },
     "cosmos_sdk_version": "v0.44.5"
-  }
+  
 }
