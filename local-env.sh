@@ -7,7 +7,6 @@ STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
 PRICE_ORACLE_REPO=git@github.com:allinbits/emeris-price-oracle.git
 CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
-ADMIN_UI_REPO=git@github.com:allinbits/emeris-admin-ui.git
 TICKET_WATCHER_REPO=git@github.com:allinbits/emeris-ticket-watcher.git
 RPC_WATCHER_REPO=git@github.com:allinbits/emeris-rpcwatcher.git
 API_SERVER_REPO=git@github.com:allinbits/demeris-api-server.git
@@ -309,39 +308,6 @@ EOF
         --set imagePullPolicy=Never \
         .cns-server/helm/cns-server \
         &> /dev/null
-
-    ### Ensure admin-ui image
-    if [ "$(docker images -q emeris/admin-ui 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
-    then
-        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/admin-ui already exists"
-    else
-        if [ ! -d .admin-ui/.git ]
-        then
-            echo -e "${green}\xE2\x9C\x94${reset} Cloning admin-ui repo"
-            git clone $ADMIN_UI_REPO .admin-ui &> /dev/null
-        else
-            echo -e "${green}\xE2\x9C\x94${reset} Fetching admin-ui latest changes"
-            cd .admin-ui
-            git pull $ADMIN_UI_REPO &> /dev/null
-            cd ..
-        fi
-        cd .admin-ui
-        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/admin-ui image"
-        docker build -t emeris/admin-ui --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
-        cd ..
-    fi
-    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/admin-ui image to cluster"
-    kind load docker-image emeris/admin-ui --name $CLUSTER_NAME &> /dev/null
-
-    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/admin-ui"
-    helm upgrade admin-ui \
-        --install \
-        --kube-context kind-$CLUSTER_NAME \
-        --namespace emeris \
-        --set imagePullPolicy=Never \
-        .cns-server/helm \
-        &> /dev/null
-
 
     ### Ensure api-server image
     if [ "$(docker images -q emeris/api-server 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]

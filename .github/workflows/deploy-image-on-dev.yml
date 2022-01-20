@@ -29,6 +29,7 @@ jobs:
           ref: ${{ github.event.client_payload.branch_name }}
 
       - name: Deploy
+        if: ${{ github.event.client_payload.service_name != 'admin-ui' }}
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: "${{ secrets.KUBECONFIG }}"
@@ -38,7 +39,6 @@ jobs:
               --namespace emeris \
               --set debug=true \
               --set fixerKey=${{ secrets.FIXER_KEY }} \
-              --set cnsAddress=https://dev.demeris.io/v1/cns \
               --set image=gcr.io/tendermint-dev/"${{ github.event.client_payload.image_name }}":"${{ github.event.client_payload.image_sha }}" \
               ./helm
 
