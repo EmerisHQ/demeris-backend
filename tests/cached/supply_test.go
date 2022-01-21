@@ -40,13 +40,13 @@ func TestCachedSupply(t *testing.T) {
 	// get cosmos supply
 	urlPattern = strings.Join([]string{baseUrl, liquiditySupplyEndPoint}, "")
 	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	liquidityResp, err := client.Get(url)
+	cosmosResp, err := client.Get(url)
 	require.NoError(t, err)
 
-	defer liquidityResp.Body.Close()
+	defer cosmosResp.Body.Close()
 
-	var liquidityValues map[string]interface{}
-	utils.RespBodyToMap(liquidityResp.Body, &liquidityValues, t)
+	var cosmosValues map[string]interface{}
+	utils.RespBodyToMap(cosmosResp.Body, &cosmosValues, t)
 
-	require.Equal(t, liquidityValues["supply"], cachedValues["supply"])
+	require.Equal(t, cosmosValues["supply"], cachedValues["supply"])
 }
