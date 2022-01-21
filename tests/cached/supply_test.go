@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	cachedSupplyEndPoint    = "cached/cosmos/bank/v1beta1/supply"
-	liquiditySupplyEndPoint = "liquidity/cosmos/bank/v1beta1/supply"
+	cachedSupplyEndPoint = "cached/cosmos/bank/v1beta1/supply"
+	supplyEndPoint       = "liquidity/cosmos/bank/v1beta1/supply"
 )
 
 func TestCachedSupply(t *testing.T) {
@@ -37,16 +37,16 @@ func TestCachedSupply(t *testing.T) {
 	var cachedValues map[string]interface{}
 	utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
 
-	// get cosmos supply
-	urlPattern = strings.Join([]string{baseUrl, liquiditySupplyEndPoint}, "")
+	// get supply
+	urlPattern = strings.Join([]string{baseUrl, supplyEndPoint}, "")
 	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	cosmosResp, err := client.Get(url)
+	supplyResp, err := client.Get(url)
 	require.NoError(t, err)
 
-	defer cosmosResp.Body.Close()
+	defer supplyResp.Body.Close()
 
-	var cosmosValues map[string]interface{}
-	utils.RespBodyToMap(cosmosResp.Body, &cosmosValues, t)
+	var supplyValues map[string]interface{}
+	utils.RespBodyToMap(supplyResp.Body, &supplyValues, t)
 
-	require.Equal(t, cosmosValues["supply"], cachedValues["supply"])
+	require.Equal(t, supplyValues["supply"], cachedValues["supply"])
 }
