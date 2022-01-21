@@ -1,0 +1,70 @@
+{
+    "enabled": true,
+    "chain_name": "starname",
+    "logo": "https://storage.googleapis.com/emeris/logos/starname.svg",
+    "display_name": "Starname",
+    "primary_channel": {
+      "akash": "channel-7",
+      "cosmos-hub": "channel-0",
+      "crypto-org": "channel-9",
+      "iris": "channel-11",
+      "ixo": "channel-17",
+      "microtick": "channel-16",
+      "osmosis": "channel-12",
+      "persistence": "channel-13",
+      "regen": "channel-14",
+      "sentinel": "channel-15"
+    },
+    "denoms": [
+      {
+        "name": "uiov",
+        "display_name": "IOV",
+        "logo": "https://storage.googleapis.com/emeris/logos/starname.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "IOV",
+        "price_id": "starname",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 1,
+          "average": 2,
+          "high": 3
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 42
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "starname",
+      "chain_id": "iov-mainnet-ibc",
+      "bech32_config": {
+        "main_prefix": "star",
+        "prefix_account": "star",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "star",
+        "acc_pub": "starpub",
+        "val_addr": "starvaloper",
+        "val_pub": "starvaloperpub",
+        "cons_addr": "starvalcons",
+        "cons_pub": "starvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/234'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "public_node_endpoints": {
+      "tendermint_rpc": "",
+      "cosmos_api": ""
+    },
+    "cosmos_sdk_version": "v0.44.5"
+  }
