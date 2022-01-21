@@ -30,7 +30,8 @@ func TestCachedPools(t *testing.T) {
 	require.NotNil(t, client)
 
 	// get cached pools
-	url := fmt.Sprintf(strings.Join([]string{baseUrl, cachedPoolsEndPoint}, ""), emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	urlPattern := strings.Join([]string{baseUrl, cachedPoolsEndPoint}, "")
+	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	cachedResp, err := client.Get(url)
 	require.NoError(t, err)
 
@@ -43,7 +44,9 @@ func TestCachedPools(t *testing.T) {
 	require.NoError(t, tmjson.Unmarshal(body, &cachedValues))
 
 	// get liquidity pools
-	url = fmt.Sprintf(baseUrl+liquidityPoolsEndPoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	urlPattern = strings.Join([]string{baseUrl, liquidityPoolsEndPoint}, "")
+
+	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	liquidityResp, err := client.Get(url)
 	require.NoError(t, err)
 
