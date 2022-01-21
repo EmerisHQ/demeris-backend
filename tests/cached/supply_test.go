@@ -37,7 +37,7 @@ func TestCachedSupply(t *testing.T) {
 	var cachedValues map[string]interface{}
 	utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
 
-	// get liquidity supply
+	// get cosmos supply
 	urlPattern = strings.Join([]string{baseUrl, liquiditySupplyEndPoint}, "")
 	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	liquidityResp, err := client.Get(url)
