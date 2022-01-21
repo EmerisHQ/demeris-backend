@@ -30,7 +30,9 @@ func TestCachedParams(t *testing.T) {
 	require.NotNil(t, client)
 
 	// get cached params
-	url := fmt.Sprintf(strings.Join([]string{baseUrl, cachedParamsEndPoint}, ""), emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	urlPattern := strings.Join([]string{baseUrl, cachedParamsEndPoint}, "")
+
+	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	cachedResp, err := client.Get(url)
 	require.NoError(t, err)
 
@@ -44,7 +46,9 @@ func TestCachedParams(t *testing.T) {
 	require.NoError(t, err)
 
 	// get liquidity params
-	url = fmt.Sprintf(baseUrl+liquidityParamsEndPoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	urlPattern = strings.Join([]string{baseUrl, liquidityParamsEndPoint}, "")
+
+	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	liquidityResp, err := client.Get(url)
 	require.NoError(t, err)
 
