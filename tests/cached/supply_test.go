@@ -26,8 +26,10 @@ func TestCachedSupply(t *testing.T) {
 	client := utils.CreateNetClient(env, t)
 	require.NotNil(t, client)
 
-	// get cached params
-	url := fmt.Sprintf(strings.Join([]string{baseUrl, cachedSupplyEndPoint}, ""), emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	// get cached supply
+	urlPattern := strings.Join([]string{baseUrl, cachedSupplyEndPoint}, "")
+
+	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	cachedResp, err := client.Get(url)
 	require.NoError(t, err)
 
@@ -36,8 +38,9 @@ func TestCachedSupply(t *testing.T) {
 	var cachedValues map[string]interface{}
 	utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
 
-	// get liquidity params
-	url = fmt.Sprintf(baseUrl+liquiditySupplyEndPoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	// get liquidity supply
+	urlPattern = strings.Join([]string{baseUrl, liquiditySupplyEndPoint}, "")
+	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
 	liquidityResp, err := client.Get(url)
 	require.NoError(t, err)
 
