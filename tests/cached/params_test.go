@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	baseUrl                 = "%s://%s%s"
 	cachedParamsEndPoint    = "cached/cosmos/liquidity/v1beta1/params"
 	liquidityParamsEndPoint = "liquidity/cosmos/liquidity/v1beta1/params"
 )
