@@ -1,0 +1,72 @@
+{
+    "enabled": true,
+    "chain_name": "persistence",
+    "logo": "https://storage.googleapis.com/emeris/logos/persistence.svg",
+    "display_name": "Persistence",
+    "primary_channel": {
+      "akash": "channel-20",
+      "cosmos-hub": "channel-24",
+      "crypto-org": "channel-23",
+      "emoney": "channel-31",
+      "iris": "channel-19",
+      "ixo": "channel-30",
+      "microtick": "channel-28",
+      "osmosis": "channel-6",
+      "regen": "channel-21",
+      "sentinel": "channel-22",
+      "sifchain": "channel-26",
+      "starname": "channel-27"
+    },
+    "denoms": [
+      {
+        "name": "uxprt",
+        "display_name": "Persistence",
+        "logo": "https://storage.googleapis.com/emeris/logos/persistence.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "XPRT",
+        "price_id": "persistence",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.015,
+          "average": 0.0375,
+          "high": 0.06
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 17000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "persistence",
+      "chain_id": "core-1",
+      "bech32_config": {
+        "main_prefix": "persistence",
+        "prefix_account": "persistence",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "persistence",
+        "acc_pub": "persistencepub",
+        "val_addr": "persistencevaloper",
+        "val_pub": "persistencevaloperpub",
+        "cons_addr": "persistencevalcons",
+        "cons_pub": "persistencevalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/750'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "public_node_endpoints": {
+      "tendermint_rpc": "",
+      "cosmos_api": ""
+    },
+    "cosmos_sdk_version": "v0.44.5"
+  }
