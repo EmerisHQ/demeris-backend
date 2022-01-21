@@ -60,8 +60,5 @@ func TestCachedParams(t *testing.T) {
 	err = json.Unmarshal(body, &liquidityValues)
 	require.NoError(t, err)
 
-	// adding missing feild in cached response
-	cachedValues.Params.CircuitBreakerEnabled = liquidityValues.Params.CircuitBreakerEnabled
-
 	require.Equal(t, liquidityValues.Params, cachedValues.Params)
 }
