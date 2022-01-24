@@ -3,67 +3,27 @@ package client
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io"
-	"log"
-	"os"
-	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	staking "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"
 	"github.com/tendermint/starport/starport/pkg/cosmosaccount"
 	"github.com/tendermint/starport/starport/pkg/cosmosclient"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 )
-
-const (
-	defaultNodeAddress   = "http://localhost:26657"
-	defaultGasAdjustment = 1.0
-	defaultGasLimit      = 300000
-)
-
-// var Client cosmosaccount.Client
 
 // Client is a client to access your chain by querying and broadcasting transactions.
 type Client struct {
-	// starport client
-	op cosmosclient.Client
-
-	AddressPrefix string `json:"account_address_prefix"`
-
-	NodeAddress string `json:"node_address"`
-
-	Mnemonic string `json:"mnemonic"`
-
-	Key string `json:"key"`
-
-	Denom string `json:"denom"`
-
-	AccountAddress string `json:"account_address"`
-
-	Out     io.Writer `json:"out"`
-	ChainID string    `json:"chain_id"`
-
-	HomePath           string                       `json:"home_path"`
+	starportClient     cosmosclient.Client
+	AddressPrefix      string                       `json:"account_address_prefix"`
+	NodeAddress        string                       `json:"node_address"`
+	Mnemonic           string                       `json:"mnemonic"`
 	KeyringServiceName string                       `json:"keyring_service_name"`
 	KeyringBackend     cosmosaccount.KeyringBackend `json:"keyring_backend"`
+	HDPath             string                       `json:"hd_path"`
 }
 
 type Account cosmosaccount.Account
@@ -71,75 +31,23 @@ type Account cosmosaccount.Account
 // Option configures your client.
 type Option func(*Client)
 
-// New creates a new client with given options.
-func New(chainName string, t *testing.T, ctx context.Context, options ...Option) (Client, error) {
-	var err error
+func CreateChainClient(keyringServiceName, nodeAddress, addressPrefix, homePath string) (Client, error) {
+	var cli Client
 
-	chains := utils.LoadClientChainsInfo(t)
+	client, err := cosmosclient.New(context.Background(), cosmosclient.WithKeyringBackend(cosmosaccount.KeyringTest), cosmosclient.WithKeyringServiceName(keyringServiceName),
+		cosmosclient.WithNodeAddress(nodeAddress), cosmosclient.WithAddressPrefix(addressPrefix), cosmosclient.WithHome(homePath))
 
-	c := Client{
-		NodeAddress:        defaultNodeAddress,
-		KeyringBackend:     cosmosaccount.KeyringTest,
-		AddressPrefix:      "cosmos",
-		Out:                io.Discard,
-		ChainID:            "test",
-		KeyringServiceName: "api",
+	if err != nil {
+		return cli, err
 	}
 
-	for _, ch := range chains {
-		if ch.Name == chainName {
+	cli.starportClient = client
 
-			err = json.Unmarshal(ch.Payload, &c)
-			if err != nil {
-				fmt.Println("Error while unmarshelling json config file : ", err)
-			}
-
-			for _, apply := range options {
-				apply(&c)
-			}
-
-			if c.op.RPC, err = rpchttp.New(c.NodeAddress, "/websocket"); err != nil {
-				return Client{}, err
-			}
-
-			statusResp, err := c.op.RPC.Status(ctx)
-			if err != nil {
-				return Client{}, err
-			}
-
-			c.ChainID = statusResp.NodeInfo.Network
-
-			if c.HomePath == "" {
-				c.HomePath = t.TempDir()
-				log.Printf("Home  : %v", c.HomePath)
-			}
-
-			c.op.AccountRegistry, err = cosmosaccount.New(
-				cosmosaccount.WithKeyringServiceName(c.KeyringServiceName),
-				cosmosaccount.WithKeyringBackend(c.KeyringBackend),
-				cosmosaccount.WithHome(c.HomePath),
-			)
-			if err != nil {
-				return Client{}, err
-			}
-
-			c.op.Context = newContext(c.op.RPC, c.Out, c.ChainID, c.HomePath).WithKeyring(c.op.AccountRegistry.Keyring)
-			c.op.Factory = newFactory(c.op.Context)
-
-			c.op.AccountRegistry.Keyring, err = keyring.New(c.KeyringServiceName, string(c.KeyringBackend), c.HomePath, os.Stdin)
-			if err != nil {
-				return Client{}, err
-			}
-
-			return c, nil
-		}
-	}
-
-	return c, nil
-
+	return cli, err
 }
 
-func (c Client) CreateAccount(accountName string) (acc Account, mnemonic string, err error) {
+// CreateAccount is to create a new account
+func (c Client) CreateAccount(accountName, hdPath string) (acc Account, mnemonic string, err error) {
 	entropySeed, err := bip39.NewEntropy(256)
 	if err != nil {
 		return Account{}, "", err
@@ -149,7 +57,7 @@ func (c Client) CreateAccount(accountName string) (acc Account, mnemonic string,
 		return Account{}, "", err
 	}
 
-	info, err := c.op.AccountRegistry.Keyring.NewAccount(accountName, mnemonic, "", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
+	info, err := c.starportClient.AccountRegistry.Keyring.NewAccount(accountName, mnemonic, "", hdPath, hd.Secp256k1)
 	if err != nil {
 		return Account{}, "", err
 	}
@@ -162,21 +70,23 @@ func (c Client) CreateAccount(accountName string) (acc Account, mnemonic string,
 	return acc, mnemonic, nil
 }
 
-func (c Client) ImportMnemonic(name, secret string) (Account, error) {
+// ImportMnemonic is to import existing account mnemonic in keyring
+func (c Client) ImportMnemonic(name, secret, hdPath string) (Account, error) {
 	if bip39.IsMnemonicValid(secret) {
-		_, err := c.op.AccountRegistry.Keyring.NewAccount(name, secret, "", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
+		_, err := c.starportClient.AccountRegistry.Keyring.NewAccount(name, secret, "", hdPath, hd.Secp256k1)
 		if err != nil {
 			return Account{}, err
 		}
-	} else if err := c.op.AccountRegistry.Keyring.ImportPrivKey(name, secret, ""); err != nil {
+	} else if err := c.starportClient.AccountRegistry.Keyring.ImportPrivKey(name, secret, ""); err != nil {
 		return Account{}, err
 	}
 
 	return c.GetByName(name)
 }
 
+// GetkeysList returns the list of keys
 func (c Client) GetkeysList() ([]keyring.Info, error) {
-	records, err := c.op.AccountRegistry.Keyring.List()
+	records, err := c.starportClient.AccountRegistry.Keyring.List()
 	if err != nil {
 		return records, err
 	}
@@ -186,7 +96,7 @@ func (c Client) GetkeysList() ([]keyring.Info, error) {
 
 // GetByName returns an account by its name.
 func (c Client) GetByName(name string) (Account, error) {
-	info, err := c.op.AccountRegistry.Keyring.Key(name)
+	info, err := c.starportClient.AccountRegistry.Keyring.Key(name)
 	if err != nil {
 		return Account{}, errors.New("Key not found")
 	}
@@ -199,8 +109,8 @@ func (c Client) GetByName(name string) (Account, error) {
 	return acc, nil
 }
 
-func (c Client) GetBankBalances(address, denom string) (types.Coin, error) {
-
+// GetAccountBalances returns the balance of the account
+func (c Client) GetAccountBalances(address, denom string) (types.Coin, error) {
 	var coin types.Coin
 
 	addr, err := sdktypes.AccAddressFromBech32(address)
@@ -208,67 +118,22 @@ func (c Client) GetBankBalances(address, denom string) (types.Coin, error) {
 		return coin, err
 	}
 
-	queryClient := banktypes.NewQueryClient(c.op.Context)
+	queryClient := banktypes.NewQueryClient(c.starportClient.Context)
 	params := banktypes.NewQueryBalanceRequest(addr, denom)
 	res, err := queryClient.Balance(context.Background(), params)
 	if err != nil {
 		return coin, err
 	}
 
-	out, err := c.op.Context.Codec.MarshalJSON(res.Balance)
+	out, err := c.starportClient.Context.Codec.MarshalJSON(res.Balance)
 	if err != nil {
 		return coin, err
 	}
 
-	err = c.op.Context.Codec.UnmarshalJSON(out, &coin)
+	err = c.starportClient.Context.Codec.UnmarshalJSON(out, &coin)
 	if err != nil {
 		return coin, err
 	}
 
 	return coin, err
-}
-
-func newContext(
-	c *rpchttp.HTTP,
-	out io.Writer,
-	chainID,
-	home string,
-) client.Context {
-	var (
-		amino             = codec.NewLegacyAmino()
-		interfaceRegistry = codectypes.NewInterfaceRegistry()
-		marshaler         = codec.NewProtoCodec(interfaceRegistry)
-		txConfig          = authtx.NewTxConfig(marshaler, authtx.DefaultSignModes)
-	)
-
-	authtypes.RegisterInterfaces(interfaceRegistry)
-	cryptocodec.RegisterInterfaces(interfaceRegistry)
-	sdktypes.RegisterInterfaces(interfaceRegistry)
-	staking.RegisterInterfaces(interfaceRegistry)
-	cryptocodec.RegisterInterfaces(interfaceRegistry)
-
-	return client.Context{}.
-		WithChainID(chainID).
-		WithInterfaceRegistry(interfaceRegistry).
-		WithCodec(marshaler).
-		WithTxConfig(txConfig).
-		WithLegacyAmino(amino).
-		WithInput(os.Stdin).
-		WithOutput(out).
-		WithAccountRetriever(authtypes.AccountRetriever{}).
-		WithBroadcastMode(flags.BroadcastBlock).
-		WithHomeDir(home).
-		WithClient(c).
-		WithSkipConfirmation(true)
-}
-
-func newFactory(clientCtx client.Context) tx.Factory {
-	return tx.Factory{}.
-		WithChainID(clientCtx.ChainID).
-		WithKeybase(clientCtx.Keyring).
-		WithGas(defaultGasLimit).
-		WithGasAdjustment(defaultGasAdjustment).
-		WithSignMode(signing.SignMode_SIGN_MODE_UNSPECIFIED).
-		WithAccountRetriever(clientCtx.AccountRetriever).
-		WithTxConfig(clientCtx.TxConfig)
 }
