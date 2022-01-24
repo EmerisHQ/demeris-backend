@@ -5,10 +5,8 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
@@ -20,16 +18,22 @@ type clientConfig struct {
 	SslTimeout int16 `yaml:"ssl_timeout"`
 }
 
-func CreateNetClient(env string, t *testing.T) *http.Client {
+func CreateNetClient(env string) (*http.Client, error) {
 
-	require.NotEmpty(t, env)
+	if env == "" {
+		return nil, fmt.Errorf("got nill ENV env:%s", env)
+	}
 
 	yFile, err := ioutil.ReadFile(fmt.Sprintf(settingsPath, env))
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	conf := clientConfig{}
 	err = yaml.Unmarshal(yFile, &conf)
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	netTransport := &http.Transport{
 		// FIXME: Replace Dial with DialContext
@@ -44,5 +48,5 @@ func CreateNetClient(env string, t *testing.T) *http.Client {
 		Transport: netTransport,
 	}
 
-	return netClient
+	return netClient, nil
 }

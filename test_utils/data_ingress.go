@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"testing"
 
-	"github.com/stretchr/testify/require"
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 )
@@ -34,15 +32,18 @@ const (
 	cnsValue        = "cns-server"
 )
 
-func LoadIngressInfo(env string, t *testing.T) (EmerisIngress, EmerisAdminIngress) {
-
-	require.NotEmpty(t, env)
-
-	yFile, err := ioutil.ReadFile(fmt.Sprintf(ingressFilePath, env))
-	require.NoError(t, err)
-
+func LoadIngressInfo(env string) (EmerisIngress, EmerisAdminIngress, error) {
 	emIngress := EmerisIngress{}
 	emAdminIngress := EmerisAdminIngress{}
+
+	if env == "" {
+		return emIngress, emAdminIngress, fmt.Errorf("got nill ENV env:%s", env)
+	}
+
+	yFile, err := ioutil.ReadFile(fmt.Sprintf(ingressFilePath, env))
+	if err != nil {
+		return emIngress, emAdminIngress, err
+	}
 
 	// Original sample: https://dx13.co.uk/articles/2021/01/15/kubernetes-types-using-go/
 	decoder := scheme.Codecs.UniversalDeserializer()
@@ -58,7 +59,9 @@ func LoadIngressInfo(env string, t *testing.T) (EmerisIngress, EmerisAdminIngres
 			[]byte(resourceYAML),
 			nil,
 			nil)
-		require.NoError(t, err)
+		if err != nil {
+			return emIngress, emAdminIngress, err
+		}
 
 		ingress := obj.(*netv1.Ingress)
 
@@ -70,7 +73,7 @@ func LoadIngressInfo(env string, t *testing.T) (EmerisIngress, EmerisAdminIngres
 		}
 	}
 
-	return emIngress, emAdminIngress
+	return emIngress, emAdminIngress, nil
 }
 
 func initEmerisStruct(data *netv1.Ingress, retIngress *EmerisIngress) {
