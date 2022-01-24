@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -18,18 +17,12 @@ const chainFeeTokenEndpoint = "chain/%s/fee/token"
 func TestChainFeeToken(t *testing.T) {
 	t.Parallel()
 
-	// arrange
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	chains := utils.LoadChainsInfo(env, t)
-	client := utils.CreateNetClient(env, t)
-
-	for _, ch := range chains {
+	for _, ch := range testCtx.chains {
 		t.Run(ch.Name, func(t *testing.T) {
 			// arrange
-			url := fmt.Sprintf(baseUrl+chainFeeTokenEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
+			url := fmt.Sprintf(baseUrl+chainFeeTokenEndpoint, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath, ch.Name)
 			// act
-			resp, err := client.Get(url)
+			resp, err := testCtx.client.Get(url)
 			require.NoError(t, err)
 
 			// assert

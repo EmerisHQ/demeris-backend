@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -12,19 +11,14 @@ import (
 
 const (
 	poolsEndpoint = "liquidity/cosmos/liquidity/v1beta1/pools"
-	baseUrl       = "%s://%s%s"
 )
 
 func TestPoolsData(t *testing.T) {
 	t.Parallel()
 
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	client := utils.CreateNetClient(env, t)
+	url := fmt.Sprintf(baseUrl+poolsEndpoint, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
 
-	url := fmt.Sprintf(baseUrl+poolsEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-
-	resp, err := client.Get(url)
+	resp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,27 +19,16 @@ const (
 func TestPrimaryChannelCounterparty(t *testing.T) {
 	t.Parallel()
 
-	// arrange
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	chains := utils.LoadChainsInfo(env, t)
-	require.NotNil(t, chains)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
-
-	for _, ch := range chains {
+	for _, ch := range testCtx.chains {
 		t.Run(ch.Name, func(t *testing.T) {
 			if !ch.Enabled {
 				// checking /chain/XXX/primary_channel/ZZZ returns 400 if chain disabled
-				for _, otherChains := range chains {
+				for _, otherChains := range testCtx.chains {
 					if otherChains.Name != ch.Name {
 						// arrange
-						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, otherChains.Name)
+						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath, ch.Name, otherChains.Name)
 						// act
-						resp, err := client.Get(counterPartyURL)
+						resp, err := testCtx.client.Get(counterPartyURL)
 						require.NoError(t, err)
 
 						require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
@@ -61,9 +49,9 @@ func TestPrimaryChannelCounterparty(t *testing.T) {
 				// test for existing channels
 				for counterParty, channel_name := range expectedChannels {
 					// arrange
-					counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, counterParty)
+					counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath, ch.Name, counterParty)
 					// act
-					resp, err := client.Get(counterPartyURL)
+					resp, err := testCtx.client.Get(counterPartyURL)
 					require.NoError(t, err)
 
 					require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, counterParty, resp.StatusCode))
@@ -81,12 +69,12 @@ func TestPrimaryChannelCounterparty(t *testing.T) {
 				}
 
 				// test for non-existing channels
-				for _, otherChains := range chains {
+				for _, otherChains := range testCtx.chains {
 					if _, ok := expectedChannels[otherChains.Name]; !ok && otherChains.Name != ch.Name {
 						// arrange
-						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, otherChains.Name)
+						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath, ch.Name, otherChains.Name)
 						// act
-						resp, err := client.Get(counterPartyURL)
+						resp, err := testCtx.client.Get(counterPartyURL)
 						require.NoError(t, err)
 
 						require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))

@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,26 +18,15 @@ const (
 func TestMintParams(t *testing.T) {
 	t.Parallel()
 
-	// arrange
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	chains := utils.LoadChainsInfo(env, t)
-	require.NotNil(t, chains)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
-
-	for _, ch := range chains {
+	for _, ch := range testCtx.chains {
 		t.Run(ch.Name, func(t *testing.T) {
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+mintParamsEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
+			url := fmt.Sprintf(baseUrl+mintParamsEndpoint, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath, ch.Name)
 			// act
-			resp, err := client.Get(url)
+			resp, err := testCtx.client.Get(url)
 			require.NoError(t, err)
-			
+
 			defer resp.Body.Close()
 
 			// assert

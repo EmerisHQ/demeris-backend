@@ -2,7 +2,6 @@ package tests
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -18,18 +17,11 @@ const (
 func TestCachedSupply(t *testing.T) {
 	t.Parallel()
 
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
-
 	// get cached supply
 	urlPattern := strings.Join([]string{baseUrl, cachedSupplyEndPoint}, "")
 
-	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	cachedResp, err := client.Get(url)
+	url := fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
+	cachedResp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	defer cachedResp.Body.Close()
@@ -39,8 +31,8 @@ func TestCachedSupply(t *testing.T) {
 
 	// get supply
 	urlPattern = strings.Join([]string{baseUrl, supplyEndPoint}, "")
-	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	supplyResp, err := client.Get(url)
+	url = fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
+	supplyResp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	defer supplyResp.Body.Close()

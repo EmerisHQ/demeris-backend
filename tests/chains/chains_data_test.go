@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -18,17 +17,9 @@ func TestChainsData(t *testing.T) {
 	t.Parallel()
 
 	// arrange
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress.Host)
-	chains := utils.LoadChainsInfo(env, t)
-	require.NotEmpty(t, chains)
-	client := utils.CreateNetClient(env, t)
-
-	// arrange
-	url := fmt.Sprintf(baseUrl+chainsEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	url := fmt.Sprintf(baseUrl+chainsEndpoint, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
 	// act
-	resp, err := client.Get(url)
+	resp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -40,10 +31,10 @@ func TestChainsData(t *testing.T) {
 	require.NoError(t, err)
 
 	expValues := make(map[string][]map[string]interface{}, 0)
-	for _, ch := range chains {
+	for _, ch := range testCtx.chains {
 		if ch.Enabled {
-			chainUrl := fmt.Sprintf(baseUrl+"chain/%s", emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name)
-			chainResp, err := client.Get(chainUrl)
+			chainUrl := fmt.Sprintf(baseUrl+"chain/%s", testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath, ch.Name)
+			chainResp, err := testCtx.client.Get(chainUrl)
 			require.NoError(t, err)
 
 			require.Equal(t, http.StatusOK, chainResp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, chainResp.StatusCode))

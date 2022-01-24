@@ -21,7 +21,7 @@ type clientConfig struct {
 func CreateNetClient(env string) (*http.Client, error) {
 
 	if env == "" {
-		return nil, fmt.Errorf("got nill ENV env:%s", env)
+		return nil, fmt.Errorf("got nil ENV env")
 	}
 
 	yFile, err := ioutil.ReadFile(fmt.Sprintf(settingsPath, env))

@@ -37,7 +37,7 @@ func LoadIngressInfo(env string) (EmerisIngress, EmerisAdminIngress, error) {
 	emAdminIngress := EmerisAdminIngress{}
 
 	if env == "" {
-		return emIngress, emAdminIngress, fmt.Errorf("got nill ENV env:%s", env)
+		return emIngress, emAdminIngress, fmt.Errorf("got nil ENV env")
 	}
 
 	yFile, err := ioutil.ReadFile(fmt.Sprintf(ingressFilePath, env))

@@ -23,7 +23,7 @@ type EnvChain struct {
 func LoadChainsInfo(env string) ([]EnvChain, error) {
 
 	if env == "" {
-		return nil, fmt.Errorf("got nill ENV env:%s", env)
+		return nil, fmt.Errorf("got nil ENV env")
 	}
 
 	d := fmt.Sprintf(chainsFolderPath, env)

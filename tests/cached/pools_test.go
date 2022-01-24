@@ -3,18 +3,15 @@ package tests
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	"github.com/stretchr/testify/require"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 )
 
 const (
-	baseUrl                = "%s://%s%s"
 	cachedPoolsEndPoint    = "cached/cosmos/liquidity/v1beta1/pools"
 	liquidityPoolsEndPoint = "liquidity/cosmos/liquidity/v1beta1/pools"
 )
@@ -22,17 +19,10 @@ const (
 func TestCachedPools(t *testing.T) {
 	t.Parallel()
 
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
-
 	// get cached pools
 	urlPattern := strings.Join([]string{baseUrl, cachedPoolsEndPoint}, "")
-	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	cachedResp, err := client.Get(url)
+	url := fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
+	cachedResp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	defer cachedResp.Body.Close()
@@ -46,8 +36,8 @@ func TestCachedPools(t *testing.T) {
 	// get liquidity pools
 	urlPattern = strings.Join([]string{baseUrl, liquidityPoolsEndPoint}, "")
 
-	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	liquidityResp, err := client.Get(url)
+	url = fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
+	liquidityResp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	defer liquidityResp.Body.Close()

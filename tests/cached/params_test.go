@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	"github.com/stretchr/testify/require"
 )
@@ -21,18 +19,11 @@ const (
 func TestCachedParams(t *testing.T) {
 	t.Parallel()
 
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
-
 	// get cached params
 	urlPattern := strings.Join([]string{baseUrl, cachedParamsEndPoint}, "")
 
-	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	cachedResp, err := client.Get(url)
+	url := fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
+	cachedResp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	defer cachedResp.Body.Close()
@@ -47,8 +38,8 @@ func TestCachedParams(t *testing.T) {
 	// get liquidity params
 	urlPattern = strings.Join([]string{baseUrl, liquidityParamsEndPoint}, "")
 
-	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	liquidityResp, err := client.Get(url)
+	url = fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
+	liquidityResp, err := testCtx.client.Get(url)
 	require.NoError(t, err)
 
 	defer liquidityResp.Body.Close()
