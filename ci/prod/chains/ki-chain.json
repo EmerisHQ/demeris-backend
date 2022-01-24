@@ -1,8 +1,8 @@
 {
   "enabled": true,
-  "chain_name": "ki",
+  "chain_name": "ki-chain",
   "logo": "https://storage.googleapis.com/emeris/logos/ki.svg",
-  "display_name": "Ki",
+  "display_name": "Ki-chain",
   "cosmos_sdk_version": "v0.42.10",
   "primary_channel": {
       "osmosis": "channel-0",
