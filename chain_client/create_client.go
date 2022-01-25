@@ -7,19 +7,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/go-bip39"
-	"github.com/pkg/errors"
 	"github.com/tendermint/starport/starport/pkg/cosmosaccount"
 	"github.com/tendermint/starport/starport/pkg/cosmosclient"
 )
 
 // Client is a client to access your chain by querying and broadcasting transactions.
 type Client struct {
-	starportClient     cosmosclient.Client
+	StarportClient     cosmosclient.Client
 	AddressPrefix      string                       `json:"account_address_prefix"`
-	NodeAddress        string                       `json:"node_address"`
+	RPC                string                       `json:"rpc"`
+	Key                string                       `json:"key"`
 	Mnemonic           string                       `json:"mnemonic"`
 	KeyringServiceName string                       `json:"keyring_service_name"`
 	KeyringBackend     cosmosaccount.KeyringBackend `json:"keyring_backend"`
@@ -41,7 +40,7 @@ func CreateChainClient(keyringServiceName, nodeAddress, addressPrefix, homePath 
 		return cli, err
 	}
 
-	cli.starportClient = client
+	cli.StarportClient = client
 
 	return cli, err
 }
@@ -57,7 +56,7 @@ func (c Client) CreateAccount(accountName, hdPath string) (acc Account, mnemonic
 		return Account{}, "", err
 	}
 
-	info, err := c.starportClient.AccountRegistry.Keyring.NewAccount(accountName, mnemonic, "", hdPath, hd.Secp256k1)
+	info, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(accountName, mnemonic, "", hdPath, hd.Secp256k1)
 	if err != nil {
 		return Account{}, "", err
 	}
@@ -71,22 +70,22 @@ func (c Client) CreateAccount(accountName, hdPath string) (acc Account, mnemonic
 }
 
 // ImportMnemonic is to import existing account mnemonic in keyring
-func (c Client) ImportMnemonic(name, secret, hdPath string) (Account, error) {
+func (c Client) ImportMnemonic(keyName, secret, hdPath string) (Account, error) {
 	if bip39.IsMnemonicValid(secret) {
-		_, err := c.starportClient.AccountRegistry.Keyring.NewAccount(name, secret, "", hdPath, hd.Secp256k1)
+		_, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(keyName, secret, "", hdPath, hd.Secp256k1)
 		if err != nil {
 			return Account{}, err
 		}
-	} else if err := c.starportClient.AccountRegistry.Keyring.ImportPrivKey(name, secret, ""); err != nil {
+	} else if err := c.StarportClient.AccountRegistry.Keyring.ImportPrivKey(keyName, secret, ""); err != nil {
 		return Account{}, err
 	}
 
-	return c.GetByName(name)
+	return c.GetByName(keyName)
 }
 
 // GetkeysList returns the list of keys
 func (c Client) GetkeysList() ([]keyring.Info, error) {
-	records, err := c.starportClient.AccountRegistry.Keyring.List()
+	records, err := c.StarportClient.AccountRegistry.Keyring.List()
 	if err != nil {
 		return records, err
 	}
@@ -96,9 +95,9 @@ func (c Client) GetkeysList() ([]keyring.Info, error) {
 
 // GetByName returns an account by its name.
 func (c Client) GetByName(name string) (Account, error) {
-	info, err := c.starportClient.AccountRegistry.Keyring.Key(name)
+	info, err := c.StarportClient.AccountRegistry.Keyring.Key(name)
 	if err != nil {
-		return Account{}, errors.New("Key not found")
+		return Account{}, err
 	}
 
 	acc := Account{
@@ -110,30 +109,12 @@ func (c Client) GetByName(name string) (Account, error) {
 }
 
 // GetAccountBalances returns the balance of the account
-func (c Client) GetAccountBalances(address, denom string) (types.Coin, error) {
-	var coin types.Coin
+func (c Client) GetAccountBalances(address, denom string) (*types.Coin, error) {
+	res, err := banktypes.NewQueryClient(c.StarportClient.Context).
+		Balance(context.Background(), &banktypes.QueryBalanceRequest{
+			Address: address,
+			Denom:   denom,
+		})
 
-	addr, err := sdktypes.AccAddressFromBech32(address)
-	if err != nil {
-		return coin, err
-	}
-
-	queryClient := banktypes.NewQueryClient(c.starportClient.Context)
-	params := banktypes.NewQueryBalanceRequest(addr, denom)
-	res, err := queryClient.Balance(context.Background(), params)
-	if err != nil {
-		return coin, err
-	}
-
-	out, err := c.starportClient.Context.Codec.MarshalJSON(res.Balance)
-	if err != nil {
-		return coin, err
-	}
-
-	err = c.starportClient.Context.Codec.UnmarshalJSON(out, &coin)
-	if err != nil {
-		return coin, err
-	}
-
-	return coin, err
+	return res.Balance, err
 }
