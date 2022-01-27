@@ -15,7 +15,7 @@ const (
 	jsonSuffix             = ".json"
 	enabledKey             = "enabled"
 	nameKey                = "chain_name"
-	clientChainsFolderPath = "./test_data/client/"
+	clientChainsFolderPath = "./test_data/client/%s/"
 )
 
 type EnvChain struct {
@@ -53,9 +53,8 @@ func LoadChainsInfo(env string, t *testing.T) []EnvChain {
 	return chains
 }
 
-func LoadClientChainsInfo(t *testing.T) []EnvChain {
-
-	d := clientChainsFolderPath
+func LoadClientChainsInfo(env string, t *testing.T) []EnvChain {
+	d := fmt.Sprintf(clientChainsFolderPath, env)
 	files, err := ioutil.ReadDir(d)
 	require.NoError(t, err)
 
@@ -78,4 +77,34 @@ func LoadClientChainsInfo(t *testing.T) []EnvChain {
 	}
 
 	return chains
+}
+
+func LoadSignleChainInfo(env string, chainName string, t *testing.T) EnvChain {
+	d := fmt.Sprintf(chainsFolderPath, env)
+	files, err := ioutil.ReadDir(d)
+	require.NoError(t, err)
+
+	var chain EnvChain
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), jsonSuffix) {
+			jFile, err := ioutil.ReadFile(d + f.Name())
+			require.NoError(t, err)
+
+			temp := map[string]interface{}{}
+			err = json.Unmarshal(jFile, &temp)
+			require.NoError(t, err)
+
+			ch := EnvChain{}
+			ch.Payload = jFile
+			ch.Enabled = temp[enabledKey].(bool)
+			ch.Name = temp[nameKey].(string)
+			chain = ch
+
+			if ch.Name == chainName {
+				return chain
+			}
+		}
+	}
+
+	return chain
 }

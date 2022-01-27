@@ -1,12 +1,8 @@
 {
-    "enabled": true,
     "chain_name": "cosmos-hub",
-    "node_address": "https://cosmos-hub-emeris.app.alpha.starport.cloud:443",
+    "node_address": "https://cosmos-hub-emeris.app.beta.starport.cloud:443",
     "key":"test_key",
     "mnemonic":"unable grass pipe pear glue forward gold truck victory pause fragile scan mask morning develop floor treat essence vendor solid surprise theme process sign",
-    "address":"",
-    "denom": "uatom",
-    "account_address_prefix":"cosmos",
-    "chain_id":"test"
-  }
+    "keyring_service_name":"cosmos"
+}
   
