@@ -25,8 +25,6 @@ type Client struct {
 	HDPath             string                       `json:"hd_path"`
 }
 
-type Account cosmosaccount.Account
-
 // Option configures your client.
 type Option func(*Client)
 
@@ -46,38 +44,38 @@ func CreateChainClient(keyringServiceName, nodeAddress, addressPrefix, homePath 
 }
 
 // CreateAccount is to create a new account
-func (c Client) CreateAccount(accountName, hdPath string) (acc Account, mnemonic string, err error) {
+func (c Client) CreateAccount(accountName, hdPath string) (acc cosmosaccount.Account, mnemonic string, err error) {
+	var Account cosmosaccount.Account
+
 	entropySeed, err := bip39.NewEntropy(256)
 	if err != nil {
-		return Account{}, "", err
+		return Account, "", err
 	}
 	mnemonic, err = bip39.NewMnemonic(entropySeed)
 	if err != nil {
-		return Account{}, "", err
+		return Account, "", err
 	}
 
-	info, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(accountName, mnemonic, "", hdPath, hd.Secp256k1)
+	info, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(accountName, "english", "", hdPath, hd.Secp256k1)
 	if err != nil {
-		return Account{}, "", err
+		return Account, "", err
 	}
 
-	acc = Account{
-		Name: accountName,
-		Info: info,
-	}
+	Account.Name = accountName
+	Account.Info = info
 
 	return acc, mnemonic, nil
 }
 
 // ImportMnemonic is to import existing account mnemonic in keyring
-func (c Client) ImportMnemonic(keyName, secret, hdPath string) (Account, error) {
+func (c Client) ImportMnemonic(keyName, secret, hdPath string) (cosmosaccount.Account, error) {
 	if bip39.IsMnemonicValid(secret) {
 		_, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(keyName, secret, "", hdPath, hd.Secp256k1)
 		if err != nil {
-			return Account{}, err
+			return cosmosaccount.Account{}, err
 		}
 	} else if err := c.StarportClient.AccountRegistry.Keyring.ImportPrivKey(keyName, secret, ""); err != nil {
-		return Account{}, err
+		return cosmosaccount.Account{}, err
 	}
 
 	return c.GetByName(keyName)
@@ -85,25 +83,19 @@ func (c Client) ImportMnemonic(keyName, secret, hdPath string) (Account, error) 
 
 // GetkeysList returns the list of keys
 func (c Client) GetkeysList() ([]keyring.Info, error) {
-	records, err := c.StarportClient.AccountRegistry.Keyring.List()
-	if err != nil {
-		return records, err
-	}
-
-	return records, err
+	return c.StarportClient.AccountRegistry.Keyring.List()
 }
 
 // GetByName returns an account by its name.
-func (c Client) GetByName(name string) (Account, error) {
+func (c Client) GetByName(name string) (cosmosaccount.Account, error) {
+	var acc cosmosaccount.Account
 	info, err := c.StarportClient.AccountRegistry.Keyring.Key(name)
 	if err != nil {
-		return Account{}, err
+		return cosmosaccount.Account{}, err
 	}
 
-	acc := Account{
-		Name: name,
-		Info: info,
-	}
+	acc.Name = name
+	acc.Info = info
 
 	return acc, nil
 }
