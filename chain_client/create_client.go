@@ -45,37 +45,26 @@ func CreateChainClient(keyringServiceName, nodeAddress, addressPrefix, homePath 
 
 // CreateAccount is to create a new account
 func (c Client) CreateAccount(accountName, hdPath string) (acc cosmosaccount.Account, mnemonic string, err error) {
-	var Account cosmosaccount.Account
-
-	entropySeed, err := bip39.NewEntropy(256)
+	info, mnemonic, err := c.StarportClient.AccountRegistry.Keyring.NewMnemonic(accountName, 1, hdPath, "", hd.Secp256k1)
 	if err != nil {
-		return Account, "", err
-	}
-	mnemonic, err = bip39.NewMnemonic(entropySeed)
-	if err != nil {
-		return Account, "", err
+		return acc, "", err
 	}
 
-	info, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(accountName, "english", "", hdPath, hd.Secp256k1)
-	if err != nil {
-		return Account, "", err
-	}
-
-	Account.Name = accountName
-	Account.Info = info
+	acc.Name = accountName
+	acc.Info = info
 
 	return acc, mnemonic, nil
 }
 
 // ImportMnemonic is to import existing account mnemonic in keyring
-func (c Client) ImportMnemonic(keyName, secret, hdPath string) (cosmosaccount.Account, error) {
+func (c Client) ImportMnemonic(keyName, secret, hdPath string) (acc cosmosaccount.Account, err error) {
 	if bip39.IsMnemonicValid(secret) {
 		_, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(keyName, secret, "", hdPath, hd.Secp256k1)
 		if err != nil {
-			return cosmosaccount.Account{}, err
+			return acc, err
 		}
 	} else if err := c.StarportClient.AccountRegistry.Keyring.ImportPrivKey(keyName, secret, ""); err != nil {
-		return cosmosaccount.Account{}, err
+		return acc, err
 	}
 
 	return c.GetByName(keyName)
@@ -87,11 +76,10 @@ func (c Client) GetkeysList() ([]keyring.Info, error) {
 }
 
 // GetByName returns an account by its name.
-func (c Client) GetByName(name string) (cosmosaccount.Account, error) {
-	var acc cosmosaccount.Account
+func (c Client) GetByName(name string) (acc cosmosaccount.Account, err error) {
 	info, err := c.StarportClient.AccountRegistry.Keyring.Key(name)
 	if err != nil {
-		return cosmosaccount.Account{}, err
+		return acc, err
 	}
 
 	acc.Name = name
