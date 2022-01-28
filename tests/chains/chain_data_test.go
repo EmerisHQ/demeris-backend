@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
@@ -15,24 +13,24 @@ const (
 	respChainKey  = "chain"
 )
 
-func TestChainData(t *testing.T) {
-	t.Parallel()
+func (suite *testCtx) TestChainData() {
+	suite.T().Parallel()
 
-	for _, ch := range testCtx.chains {
-		t.Run(ch.Name, func(t *testing.T) {
+	for _, ch := range suite.chains {
+		suite.T().Run(ch.Name, func(t *testing.T) {
 			//t.Parallel()
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+chainEndpoint, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath, ch.Name)
+			url := fmt.Sprintf(baseUrl+chainEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name)
 			// act
-			resp, err := testCtx.client.Get(url)
-			require.NoError(t, err)
+			resp, err := suite.client.Get(url)
+			suite.NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				var expValues map[string]interface{}
@@ -40,7 +38,7 @@ func TestChainData(t *testing.T) {
 				utils.StringToMap(ch.Payload, &expValues, t)
 
 				// response is nested one level down
-				require.Equal(t, expValues, respValues[respChainKey].(map[string]interface{}))
+				suite.Equal(expValues, respValues[respChainKey].(map[string]interface{}))
 			}
 		})
 	}

@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"testing"
 
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -16,40 +14,40 @@ const (
 	liquidityParamsEndPoint = "liquidity/cosmos/liquidity/v1beta1/params"
 )
 
-func TestCachedParams(t *testing.T) {
-	t.Parallel()
+func (suite *testCtx) TestCachedParams() {
+	suite.T().Parallel()
 
 	// get cached params
 	urlPattern := strings.Join([]string{baseUrl, cachedParamsEndPoint}, "")
 
-	url := fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
-	cachedResp, err := testCtx.client.Get(url)
-	require.NoError(t, err)
+	url := fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	cachedResp, err := suite.client.Get(url)
+	suite.NoError(err)
 
 	defer cachedResp.Body.Close()
 
 	var cachedValues liquiditytypes.QueryParamsResponse
 	body, err := ioutil.ReadAll(cachedResp.Body)
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	err = json.Unmarshal(body, &cachedValues)
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	// get liquidity params
 	urlPattern = strings.Join([]string{baseUrl, liquidityParamsEndPoint}, "")
 
-	url = fmt.Sprintf(urlPattern, testCtx.emIngress.Protocol, testCtx.emIngress.Host, testCtx.emIngress.APIServerPath)
-	liquidityResp, err := testCtx.client.Get(url)
-	require.NoError(t, err)
+	url = fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	liquidityResp, err := suite.client.Get(url)
+	suite.NoError(err)
 
 	defer liquidityResp.Body.Close()
 
 	var liquidityValues liquiditytypes.QueryParamsResponse
 	body, err = ioutil.ReadAll(liquidityResp.Body)
-	require.NoError(t, err)
+	suite.NoError(err)
 
 	err = json.Unmarshal(body, &liquidityValues)
-	require.NoError(t, err)
+	suite.NoError(err)
 
-	require.Equal(t, liquidityValues.Params, cachedValues.Params)
+	suite.Equal(liquidityValues.Params, cachedValues.Params)
 }

@@ -8,18 +8,20 @@ import (
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
 	"github.com/allinbits/emeris-utils/logging"
+	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 )
 
 const baseUrl = "%s://%s%s"
 
-var testCtx struct {
+type testCtx struct {
+	suite.Suite
 	emIngress utils.EmerisIngress
 	client    *http.Client
 	chains    []utils.EnvChain
 }
 
-func TestMain(m *testing.M) {
+func (suite *testCtx) SetupTest() {
 	logger := logging.New(logging.LoggingConfig{
 		LogPath: "",
 		Debug:   true,
@@ -34,21 +36,21 @@ func TestMain(m *testing.M) {
 	emIngress, _, err := utils.LoadIngressInfo(env)
 	checkNoError(err, logger)
 
-	testCtx.emIngress = emIngress
+	suite.emIngress = emIngress
 
 	chains, err := utils.LoadChainsInfo(env)
 	checkNoError(err, logger)
 
-	testCtx.chains = chains
+	suite.chains = chains
 
 	client, err := utils.CreateNetClient(env)
 	checkNoError(err, logger)
 
-	testCtx.client = client
+	suite.client = client
+}
 
-	exitVal := m.Run()
-
-	os.Exit(exitVal)
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(testCtx))
 }
 
 func checkNoError(err error, logger *zap.SugaredLogger) {
