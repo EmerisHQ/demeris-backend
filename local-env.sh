@@ -312,7 +312,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        .cns-server/helm/cns-server \
+        .cns-server/helm \
         &> /dev/null
 
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/admin-ui"
@@ -321,7 +321,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        .cns-server/helm/admin-ui \
+        .cns-server/helm \
         &> /dev/null
 
     ### Ensure api-server image
