@@ -5,7 +5,6 @@ import (
 	"context"
 
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/go-bip39"
@@ -67,22 +66,12 @@ func (c Client) ImportMnemonic(keyName, secret, hdPath string) (acc cosmosaccoun
 		return acc, err
 	}
 
-	return c.GetByName(keyName)
-}
-
-// GetkeysList returns the list of keys
-func (c Client) GetkeysList() ([]keyring.Info, error) {
-	return c.StarportClient.AccountRegistry.Keyring.List()
-}
-
-// GetByName returns an account by its name.
-func (c Client) GetByName(name string) (acc cosmosaccount.Account, err error) {
-	info, err := c.StarportClient.AccountRegistry.Keyring.Key(name)
+	info, err := c.StarportClient.AccountRegistry.Keyring.Key(keyName)
 	if err != nil {
 		return acc, err
 	}
 
-	acc.Name = name
+	acc.Name = keyName
 	acc.Info = info
 
 	return acc, nil
