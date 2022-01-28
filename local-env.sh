@@ -306,7 +306,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
-        .cns-server/helm/cns-server \
+        .cns-server/helm/ \
         &> /dev/null
 
     ### Ensure api-server image
