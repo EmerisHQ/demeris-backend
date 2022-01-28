@@ -1,5 +1,4 @@
 {
-    "enabled": true,
     "chain_name": "terra",
     "node_address": "https://terra-emeris.app.alpha.starport.cloud:443",
     "key":"terra_test",

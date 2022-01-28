@@ -70,7 +70,6 @@ func LoadClientChainsInfo(env string, t *testing.T) []EnvChain {
 
 			ch := EnvChain{}
 			ch.Payload = jFile
-			ch.Enabled = temp[enabledKey].(bool)
 			ch.Name = temp[nameKey].(string)
 			chains = append(chains, ch)
 		}
