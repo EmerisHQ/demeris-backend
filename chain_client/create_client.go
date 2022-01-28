@@ -56,16 +56,13 @@ func (c Client) CreateAccount(accountName, hdPath string) (acc cosmosaccount.Acc
 }
 
 // ImportMnemonic is to import existing account mnemonic in keyring
-func (c Client) ImportMnemonic(keyName, secret, hdPath string) (acc cosmosaccount.Account, err error) {
-	if bip39.IsMnemonicValid(secret) {
-		_, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(keyName, secret, "", hdPath, hd.Secp256k1)
+func (c Client) ImportMnemonic(keyName, mnemonic, hdPath string) (acc cosmosaccount.Account, err error) {
+	if bip39.IsMnemonicValid(mnemonic) {
+		_, err := c.StarportClient.AccountRegistry.Keyring.NewAccount(keyName, mnemonic, "", hdPath, hd.Secp256k1)
 		if err != nil {
 			return acc, err
 		}
-	} else if err := c.StarportClient.AccountRegistry.Keyring.ImportPrivKey(keyName, secret, ""); err != nil {
-		return acc, err
 	}
-
 	info, err := c.StarportClient.AccountRegistry.Keyring.Key(keyName)
 	if err != nil {
 		return acc, err
