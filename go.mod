@@ -15,8 +15,8 @@ require (
 	github.com/cosmos/cosmos-sdk v0.44.5
 	github.com/cosmos/gaia/v5 v5.0.4
 	github.com/cssivision/reverseproxy v0.0.1
-	github.com/ethereum/go-ethereum v1.10.12
-	github.com/gin-gonic/gin v1.7.4
+	github.com/ethereum/go-ethereum v1.10.15
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/go-redis/redis/v8 v8.8.3
@@ -27,7 +27,7 @@ require (
 	github.com/iamolegga/enviper v1.2.1
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jmoiron/sqlx v1.3.3
-	github.com/lib/pq v1.10.3
+	github.com/lib/pq v1.10.4
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.1-0.20210427113832-6241f9ab9942
@@ -56,6 +56,7 @@ require (
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/Workiva/go-datastructures v1.0.52 // indirect
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
+	github.com/allinbits/demeris-backend-models v1.0.1 // indirect
 	github.com/allinbits/emeris-utils v0.0.0-20220112134811-8355f1b1f274 // indirect
 	github.com/armon/go-metrics v0.3.9 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -172,6 +173,7 @@ require (
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
 	github.com/tendermint/spm v0.1.9 // indirect
+	github.com/tendermint/spn v0.1.1-0.20211210094128-4ca78a240c57 // indirect
 	github.com/tendermint/starport v0.19.1 // indirect
 	github.com/tendermint/tm-db v0.6.4 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
@@ -184,7 +186,7 @@ require (
 	go.opentelemetry.io/otel/trace v0.20.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 // indirect

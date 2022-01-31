@@ -63,6 +63,7 @@ func (c Client) ImportMnemonic(keyName, mnemonic, hdPath string) (acc cosmosacco
 			return acc, err
 		}
 	}
+
 	info, err := c.StarportClient.AccountRegistry.Keyring.Key(keyName)
 	if err != nil {
 		return acc, err
