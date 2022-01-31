@@ -4,8 +4,8 @@
   "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
   "display_name": "Akash Emeris",
   "primary_channel": {
-    "cn1": "cn1",
-    "cn2": "cn2"
+    "cosmos-hub": "channel-0",
+    "terra": "channel-1"
   },
   "denoms": [
     {

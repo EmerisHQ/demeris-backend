@@ -5,8 +5,6 @@
   "display_name": "Cosmos Hub Emeris",
   "primary_channel": {
     "akash": "channel-1",
-    "cn1": "cn1",
-    "cn2": "cn2",
     "terra": "channel-0"
   },
   "denoms": [

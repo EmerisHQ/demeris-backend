@@ -6,13 +6,9 @@
 	"valid_block_thresh": "10s",
 	"minimum_thresh_relayer_balance": 42,
 	"display_name": "Terra Emeris",
-	"counterparty_names": {
-		"cn1": "cn1",
-		"cn2": "cn2"
-	},
 	"primary_channel": {
-		"cn1": "cn1",
-		"cn2": "cn2"
+		"cosmos-hub": "channel-0",
+		"akash": "channel-1"
 	},
 	"demeris_addresses": ["feeaddress"],
 	"denoms": [
