@@ -56,8 +56,8 @@
   ],
   "block_explorer": "",
   "public_node_endpoints": {
-    "tendermint_rpc": "",
-    "cosmos_api": ""
+    "tendermint_rpc": null,
+    "cosmos_api": null
   },
   "cosmos_sdk_version": "v0.42.10"
 }
