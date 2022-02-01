@@ -18,7 +18,6 @@ func (suite *testCtx) TestChainData() {
 
 	for _, ch := range suite.chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
-			//t.Parallel()
 
 			// arrange
 			url := fmt.Sprintf(baseUrl+chainEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name)
