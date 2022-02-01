@@ -22,6 +22,8 @@ type Client struct {
 	KeyringServiceName string                       `json:"keyring_service_name"`
 	KeyringBackend     cosmosaccount.KeyringBackend `json:"keyring_backend"`
 	HDPath             string                       `json:"hd_path"`
+	Enabled            bool                         `json:"enabled"`
+	ChainName          string                       `json:"chain_name"`
 }
 
 // Option configures your client.

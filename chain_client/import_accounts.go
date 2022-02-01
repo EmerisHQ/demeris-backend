@@ -21,7 +21,6 @@ const (
 
 // GetClient is to create client and imports mnemonic and returns created chain client
 func GetClient(t *testing.T, env string, chainName string, cc Client) (c Client) {
-	var mnemonic string
 	chainInfo := utils.LoadSignleChainInfo(env, chainName, t)
 
 	var info cns.Chain
@@ -30,21 +29,24 @@ func GetClient(t *testing.T, env string, chainName string, cc Client) (c Client)
 		fmt.Printf("Error while unamrshelling chain info : %v", err)
 	}
 
-	cc.AddressPrefix = info.NodeInfo.Bech32Config.PrefixAccount
-	cc.HDPath = info.DerivationPath
+	addressPrefix := info.NodeInfo.Bech32Config.PrefixAccount
 
-	if env == StagingEnvKey {
-		mnemonic = GetMnemonic(chainName)
-		if mnemonic != "" {
-			cc.Mnemonic = mnemonic
-		}
-	}
-
-	c, err = CreateChainClient(cc.KeyringServiceName, cc.RPC, cc.AddressPrefix, t.TempDir())
+	c, err = CreateChainClient(cc.KeyringServiceName, cc.RPC, addressPrefix, t.TempDir())
 	require.NoError(t, err)
 	require.NotNil(t, c)
 
-	a, err := c.ImportMnemonic(cc.Key, cc.Mnemonic, cc.HDPath)
+	mnemonic := cc.Mnemonic
+	if env == StagingEnvKey {
+		mnemonic = GetMnemonic(chainName)
+	}
+
+	c.AddressPrefix = addressPrefix
+	c.HDPath = info.DerivationPath
+	c.Enabled = info.Enabled
+	c.Mnemonic = mnemonic
+	c.ChainName = info.ChainName
+
+	a, err := c.ImportMnemonic(cc.Key, c.Mnemonic, c.HDPath)
 	require.NoError(t, err)
 	require.NotNil(t, a)
 
