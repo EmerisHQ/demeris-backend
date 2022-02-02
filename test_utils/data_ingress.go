@@ -104,6 +104,10 @@ func initEmerisAdminStruct(data *netv1.Ingress, retIngress *EmerisAdminIngress) 
 		retIngress.Protocol = "http"
 	}
 	for _, path := range data.Spec.Rules[0].HTTP.Paths {
+		// ignore ingress paths which are not Emeris-specific (e.g. websocket on staging)
+		if !strings.Contains(path.Path, "(") {
+			continue
+		}
 		normalPath := path.Path[:strings.IndexByte(path.Path, '(')] + "/"
 		if path.Backend.Service.Name == cnsValue {
 			retIngress.CNSServerPath = normalPath

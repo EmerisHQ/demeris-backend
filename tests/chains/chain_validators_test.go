@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,6 +21,11 @@ func TestChainValidators(t *testing.T) {
 
 	// arrange
 	env := os.Getenv("ENV")
+
+	if strings.ToLower(env) == "dev" {
+		t.Skip("FIXME: Skipping in DEV. Enable after recreating the environment")
+	}
+
 	emIngress, _ := utils.LoadIngressInfo(env, t)
 	chains := utils.LoadChainsInfo(env, t)
 	client := utils.CreateNetClient(env, t)

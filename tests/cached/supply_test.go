@@ -16,6 +16,9 @@ const (
 )
 
 func TestCachedSupply(t *testing.T) {
+
+	t.Skip("FIXME: Skipped until we find a reliable way to verify cached supply (e.g. based on block-height)")
+
 	t.Parallel()
 
 	env := os.Getenv("ENV")
