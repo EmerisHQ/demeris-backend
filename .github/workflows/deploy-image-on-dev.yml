@@ -17,6 +17,8 @@ on:
   repository_dispatch:
     types: [dev-push-*]
 
+concurrency: deploy-dev
+
 jobs:
   deploy-service:
     runs-on: self-hosted
