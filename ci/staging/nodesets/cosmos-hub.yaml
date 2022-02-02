@@ -1,0 +1,146 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: cosmos-hub
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: cosmos-hub
+  app:
+    name: gaia
+    cliName: gaiad
+    daemonName: gaiad
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 20s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.005uatom
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: cosmos-hub
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 4m
+  image:
+    name: gcr.io/tendermint-dev/gaia
+    version: v6.0.0
+    build:
+      repository: https://github.com/cosmos/gaia
+  join:
+    genesis:
+      url: https://storage.googleapis.com/cosmos-hub/genesis.cosmoshub-4.json
+    seeds:
+      - address: public-seed.cosmos.vitwit.com
+        id: bf8328b66dceb4987e5cd94430af66045e59899f
+        port: 26656
+      - address: public-seed-node.cosmoshub.certus.one
+        id: ba3bacc714817218562f743178228f23678b2873
+        port: 26656
+      - address: 84.201.128.115
+        id: 3c7cad4154967a294b3ba1cc752e40e8779640ad
+        port: 26656
+    persistentPeers:
+      - address: 34.73.221.157
+        id: a2021d4c06b2ac697b5e4f935ff092581425187d
+        port: 31999
+      - address: 34.73.221.157
+        id: 8ab792795eb68b79dca3ef1c0cf22ae8d91ec9fc
+        port: 32078
+      - address: 34.74.39.196
+        id: d2b3e57171203cd62fa1795ba64d975cc3c59ca9
+        port: 32400
+      - address: 34.74.39.196
+        id: 873a030da3ee2954df8474406442113dc092d218
+        port: 30569
+      - address: 34.138.224.91
+        id: f1666ca8a1d3db717b0c5e5b0e573ad99b0a7b9d
+        port: 31337
+      - address: 34.138.224.91
+        id: 39ee37196cf94473c4b16ba3b680105e77d0780d
+        port: 31363
+      - address: 18.142.7.52
+        id: c6f03336e99b15b104048a1af056063107389441
+      - address: 34.253.212.43
+        id: 8f3e669b0671b6fc6c270657c0681c7ced47eb08
+      - address: 51.107.3.206
+        id: a4a84dbfc3392f65d0954ac2aed2df1e6847ff29
+      - address: 95.217.93.7
+        id: e47859fbf565a491852c4a2b90eae4ae446800a1
+      - address: 88.198.16.9
+        id: 1d02b4300c6b6fd1123a20502f0b3c0ce3b73654
+      - address: 65.21.204.171
+        id: eae7a0ea416905eb11eda9bd16a0438bfccfd9cb
+      - address: 54.78.237.249
+        id: 37d94724c19b334ebc41af9043a1c9152ed7a61b
+      - address: 88.198.16.9
+        id: 1d02b4300c6b6fd1123a20502f0b3c0ce3b73654
+      - address: 88.198.165.72
+        id: 691555876d88334cf665877a4d4db9a295a11ce8
+      - address: 88.99.105.146
+        id: a3ce433431b8a82bdc06ee7e24b62f062c189fe3
+      - address: 54.251.217.58
+        id: ed53d253068e44a1233798a08d82f7ac4897c5f3
+      - address: 52.214.177.8
+        id: 58b8ec1e6d810137a437b0ab5f7eb7e9cf23586e
+      - address: 54.91.194.77
+        id: 4d3569c4c86f08bf15b16a0c8475afd7cf7c94a1
+      - address: 135.181.55.240
+        id: 4e1c2471efb89239fb04a4b75f9f87177fd91d00
+      - address: 95.216.230.144
+        id: 82588f011491c6100d922d133f52fc23460b9231
+      - address: 135.181.188.16
+        id: 0393c19b176d1cf8bc560c5a8fa990301deb1a7e
+  moniker: emeris
+  persistence:
+    size: 1000Gi
+    storageClass: openebs-lvmpv
+    autoResize:
+      enabled: false
+  replicas: 3
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi
