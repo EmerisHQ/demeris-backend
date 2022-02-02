@@ -41,4 +41,6 @@ spec:
       gasPrice:
         denom: uakt
         price: "0.04"
-  paths: ["cosmos-hub", "akash"]
+  paths:
+    - sideA: cosmos-hub
+      sideB: akash
