@@ -21,7 +21,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 2888,
+  "id": 81,
   "links": [],
   "panels": [
     {
@@ -56,12 +56,12 @@
         "for": "10m",
         "frequency": "5m",
         "handler": 1,
-        "message": "The following chains' RPC endpoint is unreachable.\n\n${chain}\n\nAction: Investigate chain node health\n\nDashboard: https://grafana.alpha.starport.cloud/d/wUrOEHxnk/nodes-status?from=now-10m&to=now&orgId=1",
+        "message": "The following chains' RPC endpoint is unreachable.\n\n${chain}\n\nAction: Investigate chain node health\n\nDashboard: https://grafana.beta.starport.cloud/d/wUrOEHxnk/nodes-status?from=now-10m&to=now&orgId=1",
         "name": "Unresponsive chain RPC alert",
         "noDataState": "ok",
         "notifications": [
           {
-            "uid": "G5ZSTtJ7k"
+            "uid": "2uwvSdI7z"
           }
         ]
       },
@@ -118,7 +118,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 0,
         "y": 0
@@ -153,6 +153,134 @@
       ],
       "title": "Unresponsive RPC",
       "type": "timeseries"
+    },
+    {
+      "alert": {
+        "alertRuleTags": {},
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                5
+              ],
+              "type": "gt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "A",
+                "5m",
+                "now"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "median"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "5m",
+        "frequency": "1m",
+        "handler": 1,
+        "message": "The following chains have been disabled by Starport Operator.\nAll their nodes are marked as out-of-sync.\n\n${chain}\n\nAction: Investigate chain node health\n\nDashboard:https://grafana.beta.starport.cloud/d/wUrOEHxnk/nodes-status?orgId=1&from=now-5m&to=now",
+        "name": "Operator-disabled chains alert",
+        "noDataState": "no_data",
+        "notifications": [
+          {
+            "uid": "2uwvSdI7z"
+          }
+        ]
+      },
+      "datasource": "Loki",
+      "description": "Chains where all nodes have been marked as unavailable (out-of-sync) by the Starport Operator",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.1.0",
+      "targets": [
+        {
+          "expr": "sum by (chain) (\n  count_over_time(\n    {job=\"starport-system/starport-operator\"} \n      | logfmt \n      | level=\"warning\" \n      | msg=\"rpc endpoint not ready yet\" \n      | nodeset=~\"emeris/\\\\w+\" \n      | regexp `.+?nodeset=emeris\\/(?P<chain>[a-z|\\-]+)`\n    [5m]\n  )\n)",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+        {
+          "colorMode": "critical",
+          "op": "gt",
+          "value": 5,
+          "visible": true
+        }
+      ],
+      "title": "Operator-disabled chains",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -163,12 +291,12 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Nodes - Status",
-  "uid": "wUrOEHxnk",
-  "version": 6
+  "uid": "HcO1Rza7k",
+  "version": 3
 }
