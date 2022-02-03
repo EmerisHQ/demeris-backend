@@ -4,10 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
@@ -17,56 +14,45 @@ const (
 	channelCounterparty = "/chain/%s/primary_channel/%s"
 )
 
-func TestPrimaryChannelCounterparty(t *testing.T) {
-	t.Parallel()
+func (suite *testCtx) TestPrimaryChannelCounterparty() {
+	suite.T().Parallel()
 
-	// arrange
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	chains := utils.LoadChainsInfo(env, t)
-	require.NotNil(t, chains)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
-
-	for _, ch := range chains {
-		t.Run(ch.Name, func(t *testing.T) {
+	for _, ch := range suite.chains {
+		suite.T().Run(ch.Name, func(t *testing.T) {
 			if !ch.Enabled {
 				// checking /chain/XXX/primary_channel/ZZZ returns 400 if chain disabled
-				for _, otherChains := range chains {
+				for _, otherChains := range suite.chains {
 					if otherChains.Name != ch.Name {
 						// arrange
-						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, otherChains.Name)
+						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, otherChains.Name)
 						// act
-						resp, err := client.Get(counterPartyURL)
-						require.NoError(t, err)
+						resp, err := suite.client.Get(counterPartyURL)
+						suite.NoError(err)
 
-						require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
+						suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
 					}
 				}
 			} else {
 				var payload map[string]interface{}
 				err := json.Unmarshal(ch.Payload, &payload)
-				require.NoError(t, err)
+				suite.NoError(err)
 
 				data, err := json.Marshal(payload[primaryChannelkey])
-				require.NoError(t, err)
+				suite.NoError(err)
 
 				var expectedChannels map[string]string
 				err = json.Unmarshal(data, &expectedChannels)
-				require.NoError(t, err)
+				suite.NoError(err)
 
 				// test for existing channels
 				for counterParty, channel_name := range expectedChannels {
 					// arrange
-					counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, counterParty)
+					counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, counterParty)
 					// act
-					resp, err := client.Get(counterPartyURL)
-					require.NoError(t, err)
+					resp, err := suite.client.Get(counterPartyURL)
+					suite.NoError(err)
 
-					require.Equal(t, http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, counterParty, resp.StatusCode))
+					suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, counterParty, resp.StatusCode))
 
 					defer resp.Body.Close()
 
@@ -77,19 +63,19 @@ func TestPrimaryChannelCounterparty(t *testing.T) {
 						"counterparty": counterParty,
 						"channel_name": channel_name,
 					}
-					require.Equal(t, expectedChannelsFormatted, respValues[primaryChannelkey])
+					suite.Equal(expectedChannelsFormatted, respValues[primaryChannelkey])
 				}
 
 				// test for non-existing channels
-				for _, otherChains := range chains {
+				for _, otherChains := range suite.chains {
 					if _, ok := expectedChannels[otherChains.Name]; !ok && otherChains.Name != ch.Name {
 						// arrange
-						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath, ch.Name, otherChains.Name)
+						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, otherChains.Name)
 						// act
-						resp, err := client.Get(counterPartyURL)
-						require.NoError(t, err)
+						resp, err := suite.client.Get(counterPartyURL)
+						suite.NoError(err)
 
-						require.Equal(t, http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
+						suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
 					}
 				}
 			}

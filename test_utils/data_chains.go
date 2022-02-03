@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -23,23 +20,31 @@ type EnvChain struct {
 	Payload []byte
 }
 
-func LoadChainsInfo(env string, t *testing.T) []EnvChain {
+func LoadChainsInfo(env string) ([]EnvChain, error) {
 
-	require.NotEmpty(t, env)
+	if env == "" {
+		return nil, fmt.Errorf("got nil ENV env")
+	}
 
 	d := fmt.Sprintf(chainsFolderPath, env)
 	files, err := ioutil.ReadDir(d)
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	var chains []EnvChain
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), jsonSuffix) {
 			jFile, err := ioutil.ReadFile(d + f.Name())
-			require.NoError(t, err)
+			if err != nil {
+				return nil, err
+			}
 
 			temp := map[string]interface{}{}
 			err = json.Unmarshal(jFile, &temp)
-			require.NoError(t, err)
+			if err != nil {
+				return nil, err
+			}
 
 			ch := EnvChain{}
 			ch.Payload = jFile
@@ -49,5 +54,5 @@ func LoadChainsInfo(env string, t *testing.T) []EnvChain {
 		}
 	}
 
-	return chains
+	return chains, nil
 }

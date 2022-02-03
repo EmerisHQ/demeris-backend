@@ -2,12 +2,9 @@ package tests
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -19,7 +16,7 @@ func TestCachedSupply(t *testing.T) {
 
 	t.Skip("FIXME: Skipped until we find a reliable way to verify cached supply (e.g. based on block-height)")
 
-	t.Parallel()
+	suite.T().Parallel()
 
 	env := os.Getenv("ENV")
 	emIngress, _ := utils.LoadIngressInfo(env, t)
@@ -31,25 +28,25 @@ func TestCachedSupply(t *testing.T) {
 	// get cached supply
 	urlPattern := strings.Join([]string{baseUrl, cachedSupplyEndPoint}, "")
 
-	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	cachedResp, err := client.Get(url)
-	require.NoError(t, err)
+	url := fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	cachedResp, err := suite.client.Get(url)
+	suite.NoError(err)
 
 	defer cachedResp.Body.Close()
 
 	var cachedValues map[string]interface{}
-	utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
+	utils.RespBodyToMap(cachedResp.Body, &cachedValues, suite.T())
 
 	// get supply
 	urlPattern = strings.Join([]string{baseUrl, supplyEndPoint}, "")
-	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	supplyResp, err := client.Get(url)
-	require.NoError(t, err)
+	url = fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	supplyResp, err := suite.client.Get(url)
+	suite.NoError(err)
 
 	defer supplyResp.Body.Close()
 
 	var supplyValues map[string]interface{}
-	utils.RespBodyToMap(supplyResp.Body, &supplyValues, t)
+	utils.RespBodyToMap(supplyResp.Body, &supplyValues, suite.T())
 
-	require.Equal(t, supplyValues["supply"], cachedValues["supply"])
+	suite.Equal(supplyValues["supply"], cachedValues["supply"])
 }
