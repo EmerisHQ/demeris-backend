@@ -1,0 +1,50 @@
+name: Tag new versions
+
+on:
+  repository_dispatch:
+    types: 
+      - test-pass
+      - tag-push
+
+env:
+  UPDATE_VERSION_POLICY: '{ "dev": "patch", "staging": "minor", "prod": "major" }'
+  CHECKOUT_REF: ${{ github.event.client_payload.tag || 'master' }}
+  ENV: ${{ github.event.client_payload.env }}
+  SERVICE_NAME: github.event.client_payload.service_name
+  IMAGE_SHA: github.event.client_payload.image_sha
+
+jobs:
+  bump-tag:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: '0'
+        ref: ${{ env.CHECKOUT_REF }}
+
+    - name: Update envs .json file (dev)
+      if: ${{ env.ENV == 'dev' }}
+      env:
+        FILENAME: ./envs/dev.json
+      run: ./envs/bump.sh
+
+    - name: Update envs .json file (staging)
+      if: ${{ env.ENV == 'staging' }}
+      run: cp ./env/dev.json ./env/staging.json
+
+    - name: Update envs .json file (prod)
+      if: ${{ env.ENV == 'prod' }}
+      run: cp ./env/staging.json ./env/prod.json
+
+    - name: Commit and push updated .json file
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        file_pattern: envs/*.json
+        commit_message: "chore(${{ env.ENV }}): bump ${{ env.SERVICE_NAME }}:${{ env.IMAGE_SHA }}"
+
+    - name: Create and push tag
+      uses: anothrNick/github-tag-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+        RELEASE_BRANCHES: .*
+        DEFAULT_BUMP: ${{ fromJson(env.UPDATE_VERSION_POLICY)[env.ENV] }}
