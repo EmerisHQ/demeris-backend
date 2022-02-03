@@ -58,15 +58,16 @@ func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client
 func GetMnemonic(chName string) string {
 	var mnemonic string
 
-	if chName == "akash" {
+	switch chName {
+	case "akash":
 		mnemonic = os.Getenv(AkashMnemonicKey)
-	} else if chName == "cosmos-hub" {
+	case "cosmos-hub":
 		mnemonic = os.Getenv(CosmosMnemonicKey)
-	} else if chName == "terra" {
+	case "terra":
 		mnemonic = os.Getenv(TerraMnemonicKey)
-	} else if chName == "osmosis" {
+	case "osmosis":
 		mnemonic = os.Getenv(OsmosisMnemonicKey)
-	} else {
+	default:
 		mnemonic = os.Getenv("MNEMONIC")
 	}
 
