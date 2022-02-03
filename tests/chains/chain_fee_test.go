@@ -57,7 +57,7 @@ func (suite *testCtx) TestChainFee() {
 
 				var expectedFeeDenoms cns.DenomList
 				for _, denom := range expectedDenoms {
-					if !denom.FeeToken {
+					if denom.FeeToken {
 						expectedFeeDenoms = append(expectedFeeDenoms, denom)
 					}
 				}

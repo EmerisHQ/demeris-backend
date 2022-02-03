@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/allinbits/demeris-backend-models/tracelistener"
@@ -12,8 +14,19 @@ import (
 
 const chainValidatorsEndpoint = "chain/%s/validators"
 
-func (suite *testCtx) TestChainValidators() {
+func TestChainValidators(t *testing.T) {
 	suite.T().Parallel()
+
+	// arrange
+	env := os.Getenv("ENV")
+
+	if strings.ToLower(env) == "dev" {
+		t.Skip("FIXME: Skipping in DEV. Enable after recreating the environment")
+	}
+
+	emIngress, _ := utils.LoadIngressInfo(env, t)
+	chains := utils.LoadChainsInfo(env, t)
+	client := utils.CreateNetClient(env, t)
 
 	for _, ch := range suite.chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
