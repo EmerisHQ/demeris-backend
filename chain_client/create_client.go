@@ -111,8 +111,7 @@ func (c Client) GetAccountBalances(address, denom string) (*types.Coin, error) {
 }
 
 // AccountList returns a list of accounts.
-func (c *Client) AccountList() ([]spn.Account, error) {
-	var accounts []spn.Account
+func (c *Client) AccountList() (accounts []spn.Account, err error) {
 	infos, err := c.kr.List()
 	if err != nil {
 		return nil, err
