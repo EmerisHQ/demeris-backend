@@ -3,10 +3,8 @@ module github.com/allinbits/demeris-backend
 go 1.17
 
 replace (
-	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk v0.42.8
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/jmoiron/sqlx => github.com/abraithwaite/sqlx v1.3.2-0.20210331022513-df9bf9884350
-	github.com/tendermint/starport => github.com/tendermint/starport v0.16.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 	k8s.io/client-go => k8s.io/client-go v0.21.1
 
@@ -14,7 +12,7 @@ replace (
 
 require (
 	github.com/cockroachdb/cockroach-go/v2 v2.1.1 // indirect
-	github.com/cosmos/cosmos-sdk v0.44.3
+	github.com/cosmos/cosmos-sdk v0.42.8
 	github.com/cosmos/gaia/v5 v5.0.4 // indirect
 	github.com/cssivision/reverseproxy v0.0.1
 	github.com/ethereum/go-ethereum v1.10.15 // indirect
@@ -81,7 +79,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac // indirect
 	github.com/dvsekhvalnov/jose2go v0.0.0-20200901110807-248326c1351b // indirect
 	github.com/enigmampc/btcutil v1.0.3-0.20200723161021-e2fb6adb2a25 // indirect
-	github.com/fatih/color v1.10.0 // indirect
+	github.com/fatih/color v1.12.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -165,7 +163,7 @@ require (
 	github.com/tendermint/btcd v0.1.1 // indirect
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
-	github.com/tendermint/spm v0.1.9 // indirect
+	github.com/tendermint/spm v0.1.4 // indirect
 	github.com/tendermint/spn v0.0.0-20210406123257-decaff8dcaf9 // indirect
 	github.com/tendermint/tm-db v0.6.4 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
