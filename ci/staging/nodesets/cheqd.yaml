@@ -1,0 +1,107 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: cheqd
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: cheqd
+  app:
+    cliName: cheqd-noded
+    daemonName: cheqd-noded
+    name: cheqd
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 25ncheq
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: ki
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/cheqd
+    version: v0.4.0
+    build:
+      repository: https://github.com/cheqd/cheqd-node
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/cheqd/cheqd-node/main/persistent_chains/mainnet/genesis.json
+    seeds:
+      - id: 258a9bfb822637bfca87daaab6181c10e7fd0910
+        address: seed1.eu.cheqd.network
+        port: 26656
+      - id: f565ff792b20977face9817df6acb268d41d4092
+        address: seed2.eu.cheqd.net
+        port: 26656
+      - id: 388947cc7d901c5c06fedc4c26751634564d68e6
+        address: seed3.eu.cheqd.net
+        port: 26656
+      - id: 9b30307a2a2819790d68c04bb62f5cf4028f447e
+        address: seed1.ap.cheqd.net
+        port: 26656
+      - id: debcb3fa7d40e681d98bcc7d22278fd58a34b73a
+        address: 144.76.183.180
+        port: 1234
+    persistentPeers:
+      - id: d1ebb60825e2c29181b499f93493dd440fb87997
+        address: sentry1.eu.cheqd.net
+        port: 26656
+      - id: 513d334bb044296796939e57b522fef7fd4b9c6c
+        address: sentry2.eu.cheqd.net
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 150Gi
+    autoResize:
+      enabled: false
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi
