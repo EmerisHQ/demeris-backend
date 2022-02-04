@@ -14,19 +14,14 @@ import (
 
 const chainValidatorsEndpoint = "chain/%s/validators"
 
-func TestChainValidators(t *testing.T) {
-	suite.T().Parallel()
-
-	// arrange
+func (suite *testCtx) TestChainValidators() {
 	env := os.Getenv("ENV")
-
 	if strings.ToLower(env) == "dev" {
-		t.Skip("FIXME: Skipping in DEV. Enable after recreating the environment")
+		suite.T().Skip("FIXME: Skipping in DEV. Enable after recreating the environment")
+		return
 	}
 
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	chains := utils.LoadChainsInfo(env, t)
-	client := utils.CreateNetClient(env, t)
+	suite.T().Parallel()
 
 	for _, ch := range suite.chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {

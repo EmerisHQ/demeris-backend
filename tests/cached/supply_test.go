@@ -12,18 +12,11 @@ const (
 	supplyEndPoint       = "liquidity/cosmos/bank/v1beta1/supply"
 )
 
-func TestCachedSupply(t *testing.T) {
-
-	t.Skip("FIXME: Skipped until we find a reliable way to verify cached supply (e.g. based on block-height)")
+func (suite testCtx) TestCachedSupply() {
+	suite.T().Skip("FIXME: Skipped until we find a reliable way to verify cached supply (e.g. based on block-height)")
+	return
 
 	suite.T().Parallel()
-
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
 
 	// get cached supply
 	urlPattern := strings.Join([]string{baseUrl, cachedSupplyEndPoint}, "")
