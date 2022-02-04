@@ -130,3 +130,14 @@ func (c *Client) AccountGet(accountName string) (spn.Account, error) {
 	}
 	return toAccount(info), nil
 }
+
+// buildClientCtx builds the context for the client
+func (c *Client) BuildClientCtx(accountName string) (client.Context, error) {
+	info, err := c.kr.Key(accountName)
+	if err != nil {
+		return client.Context{}, err
+	}
+	return c.clientCtx.
+		WithFromName(accountName).
+		WithFromAddress(info.GetAddress()), nil
+}
