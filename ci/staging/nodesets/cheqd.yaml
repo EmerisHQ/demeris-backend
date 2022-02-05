@@ -47,7 +47,7 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: ki
+            value: cheqd
           - name: TRACELISTENER_DEBUG
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
