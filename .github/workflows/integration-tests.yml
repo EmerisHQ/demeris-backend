@@ -29,6 +29,7 @@ jobs:
         run: go test -v ./tests/...
         env:
           ENV: ${{ github.event.client_payload.env }}
+          TESTS_WORKDIR: ${{ github.workspace }}
 
       - name: Emit test-pass event on demeris-backend
         uses: peter-evans/repository-dispatch@v1
