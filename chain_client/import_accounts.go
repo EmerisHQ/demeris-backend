@@ -50,6 +50,10 @@ func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client
 	c.Enabled = info.Enabled
 	c.ChainName = info.ChainName
 	c.Mnemonic = mnemonic
+	c.ChainName = chainName
+	if len(info.Denoms) != 0 {
+		c.Denom = info.Denoms[0].Name
+	}
 
 	a, err := c.ImportMnemonic(cc.Key, c.Mnemonic, c.HDPath)
 	require.NoError(t, err)

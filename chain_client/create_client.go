@@ -34,6 +34,7 @@ type Client struct {
 	HDPath             string `json:"hd_path"`
 	Enabled            bool   `json:"enabled"`
 	ChainName          string `json:"chain_name"`
+	Denom              string `json:"denom"`
 }
 
 func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string) (*Client, error) {
