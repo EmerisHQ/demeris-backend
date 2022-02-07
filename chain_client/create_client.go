@@ -135,3 +135,13 @@ func (c *Client) AccountGet(accountName string) (spn.Account, error) {
 	}
 	return toAccount(info), nil
 }
+
+// GetContext return context of client
+func (c *Client) GetContext() client.Context {
+	return c.clientCtx
+}
+
+// GetKeyrin return keyring of client
+func (c *Client) GetKeyring() keyring.Keyring {
+	return c.kr
+}
