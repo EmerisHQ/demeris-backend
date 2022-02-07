@@ -18,7 +18,22 @@ type clientConfig struct {
 	SslTimeout int16 `yaml:"ssl_timeout"`
 }
 
-func CreateNetClient(env string) (*http.Client, error) {
+type HttpClient struct {
+	*http.Client
+}
+
+func NewHttpClient(env string) (*HttpClient, error) {
+	httpClient, err := createNetClient(env)
+	if err != nil {
+		return nil, err
+	}
+
+	return &HttpClient{
+		Client: httpClient,
+	}, nil
+}
+
+func createNetClient(env string) (*http.Client, error) {
 
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
