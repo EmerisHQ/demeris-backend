@@ -1,0 +1,70 @@
+{
+    "enabled": true,
+    "chain_name": "emoney",
+    "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
+    "display_name": "e-Money",
+    "primary_channel": {
+      "akash": "channel-3",
+      "cosmos-hub": "channel-1",
+      "crypto-org": "channel-5",
+      "iris": "channel-6",
+      "microtick": "channel-11",
+      "osmosis": "channel-0",
+      "persistence": "channel-8",
+      "regen": "channel-9",
+      "sentinel": "channel-10",
+      "terra": "channel-13"
+    },
+    "denoms": [
+      {
+        "name": "ungm",
+        "display_name": "NGM",
+        "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "NGM",
+        "price_id": "e-money",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 1.5,
+          "average": 1,
+          "high": 2
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 42
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "emoney",
+      "chain_id": "emoney-3",
+      "bech32_config": {
+        "main_prefix": "emoney",
+        "prefix_account": "emoney",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "emoney",
+        "acc_pub": "emoneypub",
+        "val_addr": "emoneyvaloper",
+        "val_pub": "emoneyvaloperpub",
+        "cons_addr": "emoneyvalcons",
+        "cons_pub": "emoneyvalconspub"
+      }
+    },
+    "valid_block_thresh": "5m0s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "public_node_endpoints": {
+      "tendermint_rpc": "",
+      "cosmos_api": ""
+    },
+    "cosmos_sdk_version": "v0.42.11"
+  }

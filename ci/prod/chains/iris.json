@@ -1,0 +1,72 @@
+{
+    "enabled": true,
+    "chain_name": "iris",
+    "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
+    "display_name": "IRISNet",
+    "primary_channel": {
+      "akash": "channel-11",
+      "cosmos-hub": "channel-12",
+      "crypto-org": "channel-13",
+      "emoney": "channel-25",
+      "ixo": "channel-24",
+      "microtick": "channel-22",
+      "osmosis": "channel-3",
+      "persistence": "channel-15",
+      "regen": "channel-16",
+      "sentinel": "channel-17",
+      "sifchain": "channel-19",
+      "starname": "channel-21"
+    },
+    "denoms": [
+      {
+        "name": "uiris",
+        "display_name": "IRIS",
+        "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "IRIS",
+        "price_id": "iris-network",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.2,
+          "average": 0.3,
+          "high": 0.4
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 1500000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "iris",
+      "chain_id": "irishub-1",
+      "bech32_config": {
+        "main_prefix": "iaa",
+        "prefix_account": "iaa",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "iaa",
+        "acc_pub": "iaapub",
+        "val_addr": "iaavaloper",
+        "val_pub": "iaavaloperpub",
+        "cons_addr": "iaavalcons",
+        "cons_pub": "iaavalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "public_node_endpoints": {
+      "tendermint_rpc": "",
+      "cosmos_api": ""
+    },
+    "cosmos_sdk_version": "v0.44.5"
+  }
