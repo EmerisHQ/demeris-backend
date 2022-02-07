@@ -28,7 +28,7 @@ func (suite *BaseTestSuite) SetupTest() {
 
 	suite.Chains = chains
 
-	client, err := NewHttpClient(suite.Env)
+	client, err := NewHttpClient(suite.Env, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
 	suite.Assert().NoError(err, "err value:", err)
 
 	suite.Client = client

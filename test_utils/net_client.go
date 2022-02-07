@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -20,17 +21,35 @@ type clientConfig struct {
 
 type HttpClient struct {
 	*http.Client
+	scheme   string
+	host     string
+	basePath string
 }
 
-func NewHttpClient(env string) (*HttpClient, error) {
+func NewHttpClient(env, scheme, host, basePath string) (*HttpClient, error) {
 	httpClient, err := createNetClient(env)
 	if err != nil {
 		return nil, err
 	}
 
 	return &HttpClient{
-		Client: httpClient,
+		Client:   httpClient,
+		scheme:   scheme,
+		host:     host,
+		basePath: basePath,
 	}, nil
+}
+
+func (c *HttpClient) BuildUrl(path string, args ...interface{}) string {
+	path = fmt.Sprintf(path, args...)
+
+	u := url.URL{
+		Scheme: c.scheme,
+		Host:   c.host,
+		Path:   c.basePath + path,
+	}
+
+	return u.String()
 }
 
 func createNetClient(env string) (*http.Client, error) {
