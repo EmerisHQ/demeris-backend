@@ -33,7 +33,7 @@ type Client struct {
 	ChainName          string `json:"chain_name"`
 }
 
-func CreateChainClient(nodeAddress, keyrimgServiceName, homePath string) (*Client, error) {
+func CreateChainClient(nodeAddress, keyrimgServiceName, chainID, homePath string) (*Client, error) {
 	kr, err := keyring.New(keyrimgServiceName, "test", homePath, os.Stdin)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,8 @@ func CreateChainClient(nodeAddress, keyrimgServiceName, homePath string) (*Clien
 		return nil, err
 	}
 	out := &bytes.Buffer{}
-	clientCtx := spn.NewClientCtx(kr, client, out, homePath)
+	clientCtx := spn.NewClientCtx(kr, client, out, homePath).WithChainID(chainID)
+
 	factory := spn.NewFactory(clientCtx)
 	return &Client{
 		kr:        kr,
@@ -129,15 +130,4 @@ func (c *Client) AccountGet(accountName string) (spn.Account, error) {
 		return spn.Account{}, err
 	}
 	return toAccount(info), nil
-}
-
-// buildClientCtx builds the context for the client
-func (c *Client) BuildClientCtx(accountName string) (client.Context, error) {
-	info, err := c.kr.Key(accountName)
-	if err != nil {
-		return client.Context{}, err
-	}
-	return c.clientCtx.
-		WithFromName(accountName).
-		WithFromAddress(info.GetAddress()), nil
 }

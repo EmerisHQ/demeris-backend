@@ -30,8 +30,9 @@ func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client
 	}
 
 	addressPrefix := info.NodeInfo.Bech32Config.PrefixAccount
+	chainID := info.NodeInfo.ChainID
 
-	c, err = CreateChainClient(cc.RPC, cc.KeyringServiceName, t.TempDir())
+	c, err = CreateChainClient(cc.RPC, cc.KeyringServiceName, chainID, t.TempDir())
 	require.NoError(t, err)
 	require.NotNil(t, c)
 

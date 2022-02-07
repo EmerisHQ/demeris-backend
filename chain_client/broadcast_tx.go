@@ -12,7 +12,7 @@ import (
 
 // prepareBroadcast performs checks and operations before broadcasting messages
 func (c *Client) PrepareBroadcast(ctx context.Context, clientCtx client.Context, msgs ...types.Msg) error {
-	// validate msgs.
+	// validate msgs
 	for _, msg := range msgs {
 		if err := msg.ValidateBasic(); err != nil {
 			return err
@@ -25,7 +25,12 @@ func (c *Client) PrepareBroadcast(ctx context.Context, clientCtx client.Context,
 }
 
 // broadcast directly broadcasts the messages
-func (c *Client) Broadcast(ctx context.Context, clientCtx client.Context, msgs ...types.Msg) error {
+func (c *Client) Broadcast(fromName string, ctx context.Context, clientCtx client.Context, msgs ...types.Msg) error {
+	clientCtx, err := c.BuildClientCtx(fromName)
+	if err != nil {
+		return err
+	}
+
 	if err := c.PrepareBroadcast(ctx, clientCtx, msgs...); err != nil {
 		return err
 	}
@@ -51,4 +56,15 @@ func (c *Client) handleBroadcastResult() error {
 		return fmt.Errorf("SPN error with '%d' code: %s", out.Code, out.Log)
 	}
 	return nil
+}
+
+// buildClientCtx builds the context for the client
+func (c *Client) BuildClientCtx(accountName string) (client.Context, error) {
+	info, err := c.kr.Key(accountName)
+	if err != nil {
+		return client.Context{}, err
+	}
+	return c.clientCtx.
+		WithFromName(accountName).
+		WithFromAddress(info.GetAddress()), nil
 }
