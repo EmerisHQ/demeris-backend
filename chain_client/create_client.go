@@ -33,8 +33,8 @@ type Client struct {
 	ChainName          string `json:"chain_name"`
 }
 
-func CreateChainClient(nodeAddress, keyrimgServiceName, chainID, homePath string) (*Client, error) {
-	kr, err := keyring.New(keyrimgServiceName, "test", homePath, os.Stdin)
+func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string) (*Client, error) {
+	kr, err := keyring.New(keyringServiceName, "test", homePath, os.Stdin)
 	if err != nil {
 		return nil, err
 	}
