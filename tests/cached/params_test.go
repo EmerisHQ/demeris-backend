@@ -20,8 +20,8 @@ func (suite *testCtx) TestCachedParams() {
 	// get cached params
 	urlPattern := strings.Join([]string{baseUrl, cachedParamsEndPoint}, "")
 
-	url := fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
-	cachedResp, err := suite.client.Get(url)
+	url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	cachedResp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	defer cachedResp.Body.Close()
@@ -36,8 +36,8 @@ func (suite *testCtx) TestCachedParams() {
 	// get liquidity params
 	urlPattern = strings.Join([]string{baseUrl, liquidityParamsEndPoint}, "")
 
-	url = fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
-	liquidityResp, err := suite.client.Get(url)
+	url = fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	liquidityResp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	defer liquidityResp.Body.Close()
