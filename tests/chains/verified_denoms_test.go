@@ -2,7 +2,6 @@ package tests
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -38,7 +37,7 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	}
 
 	// arrange
-	url := fmt.Sprintf(baseUrl+verifiedDenomsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	url := suite.Client.BuildUrl(verifiedDenomsEndpoint)
 	// act
 	resp, err := suite.Client.Get(url)
 	suite.NoError(err)

@@ -1,9 +1,6 @@
 package tests
 
 import (
-	"fmt"
-	"strings"
-
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
@@ -19,9 +16,7 @@ func (suite testCtx) TestCachedSupply() {
 	suite.T().Parallel()
 
 	// get cached supply
-	urlPattern := strings.Join([]string{baseUrl, cachedSupplyEndPoint}, "")
-
-	url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	url := suite.Client.BuildUrl(cachedSupplyEndPoint)
 	cachedResp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
@@ -31,9 +26,8 @@ func (suite testCtx) TestCachedSupply() {
 	utils.RespBodyToMap(cachedResp.Body, &cachedValues, suite.T())
 
 	// get supply
-	urlPattern = strings.Join([]string{baseUrl, supplyEndPoint}, "")
-	url = fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
-	supplyResp, err := suite.Client.Get(url)
+	supplyUrl := suite.Client.BuildUrl(supplyEndPoint)
+	supplyResp, err := suite.Client.Get(supplyUrl)
 	suite.NoError(err)
 
 	defer supplyResp.Body.Close()

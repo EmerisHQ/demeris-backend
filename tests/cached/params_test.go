@@ -2,9 +2,7 @@ package tests
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"strings"
 
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 )
@@ -18,9 +16,7 @@ func (suite *testCtx) TestCachedParams() {
 	suite.T().Parallel()
 
 	// get cached params
-	urlPattern := strings.Join([]string{baseUrl, cachedParamsEndPoint}, "")
-
-	url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	url := suite.Client.BuildUrl(cachedParamsEndPoint)
 	cachedResp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
@@ -34,10 +30,8 @@ func (suite *testCtx) TestCachedParams() {
 	suite.NoError(err)
 
 	// get liquidity params
-	urlPattern = strings.Join([]string{baseUrl, liquidityParamsEndPoint}, "")
-
-	url = fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
-	liquidityResp, err := suite.Client.Get(url)
+	liquidityParamsUrl := suite.Client.BuildUrl(liquidityParamsEndPoint)
+	liquidityResp, err := suite.Client.Get(liquidityParamsUrl)
 	suite.NoError(err)
 
 	defer liquidityResp.Body.Close()
