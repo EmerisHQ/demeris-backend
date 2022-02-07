@@ -2,12 +2,12 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/types"
+	tmjson "github.com/tendermint/tendermint/libs/json"
 )
 
 // prepareBroadcast performs checks and operations before broadcasting messages
@@ -25,37 +25,34 @@ func (c *Client) PrepareBroadcast(ctx context.Context, clientCtx client.Context,
 }
 
 // broadcast directly broadcasts the messages
-func (c *Client) Broadcast(fromName string, ctx context.Context, clientCtx client.Context, msgs ...types.Msg) error {
+func (c *Client) Broadcast(fromName string, ctx context.Context, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
 	clientCtx, err := c.BuildClientCtx(fromName)
 	if err != nil {
-		return err
+		return &types.TxResponse{}, err
 	}
 
 	if err := c.PrepareBroadcast(ctx, clientCtx, msgs...); err != nil {
-		return err
+		return &types.TxResponse{}, err
 	}
 
 	// broadcast tx.
 	if err := tx.BroadcastTx(clientCtx, c.factory, msgs...); err != nil {
-		return err
+		return &types.TxResponse{}, err
 	}
 
 	return c.handleBroadcastResult()
 }
 
 // handleBroadcastResult handles the result of broadcast messages result and checks if an error occurred
-func (c *Client) handleBroadcastResult() error {
-	out := struct {
-		Code int    `json:"code"`
-		Log  string `json:"raw_log"`
-	}{}
-	if err := json.NewDecoder(c.out).Decode(&out); err != nil {
-		return err
+func (c *Client) handleBroadcastResult() (*types.TxResponse, error) {
+	var out types.TxResponse
+	if err := tmjson.Unmarshal(c.out.Bytes(), &out); err != nil {
+		return &out, err
 	}
 	if out.Code > 0 {
-		return fmt.Errorf("SPN error with '%d' code: %s", out.Code, out.Log)
+		return &out, fmt.Errorf("SPN error with '%d' code: %s", out.Code, out.RawLog)
 	}
-	return nil
+	return &out, nil
 }
 
 // buildClientCtx builds the context for the client
