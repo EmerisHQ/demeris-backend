@@ -50,7 +50,7 @@ func (c *Client) handleBroadcastResult() (*types.TxResponse, error) {
 		return &out, err
 	}
 	if out.Code > 0 {
-		return &out, fmt.Errorf("tx error with '%d' code: %s", out.Code, out.RawLog)
+		return &out, fmt.Errorf("starportClient error with '%d' code: %s", out.Code, out.RawLog)
 	}
 	return &out, nil
 }
