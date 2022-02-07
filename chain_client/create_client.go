@@ -16,9 +16,12 @@ import (
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 )
 
+const (
+	KeyringBackend = "test"
+)
+
 // Client is client to interact with SPN.
 type Client struct {
-	SpnClient          spn.Client
 	kr                 keyring.Keyring
 	factory            tx.Factory
 	clientCtx          client.Context
@@ -34,7 +37,7 @@ type Client struct {
 }
 
 func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string) (*Client, error) {
-	kr, err := keyring.New(keyringServiceName, "test", homePath, os.Stdin)
+	kr, err := keyring.New(keyringServiceName, KeyringBackend, homePath, os.Stdin)
 	if err != nil {
 		return nil, err
 	}
