@@ -22,12 +22,12 @@ const (
 
 // GetClient is to create client and imports mnemonic and returns created chain client
 func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client) {
-	chainInfo := utils.LoadSignleChainInfo(env, chainName, t)
+	chainInfo := utils.LoadSingleChainInfo(env, chainName, t)
 
 	var info cns.Chain
 	err := json.Unmarshal(chainInfo.Payload, &info)
 	if err != nil {
-		fmt.Printf("Error while unamrshelling chain info : %v", err)
+		fmt.Printf("Error while unamrshalling chain info : %v", err)
 	}
 
 	addressPrefix := info.NodeInfo.Bech32Config.PrefixAccount

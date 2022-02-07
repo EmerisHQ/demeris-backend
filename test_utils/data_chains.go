@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -83,7 +86,7 @@ func LoadClientChainsInfo(env string, t *testing.T) []EnvChain {
 	return chains
 }
 
-func LoadSignleChainInfo(env string, chainName string, t *testing.T) EnvChain {
+func LoadSingleChainInfo(env string, chainName string, t *testing.T) EnvChain {
 	d := fmt.Sprintf(chainsFolderPath, env)
 	files, err := ioutil.ReadDir(d)
 	require.NoError(t, err)
