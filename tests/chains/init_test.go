@@ -23,25 +23,25 @@ type testCtx struct {
 func (suite *testCtx) SetupTest() {
 
 	suite.env = os.Getenv("ENV")
-	suite.Assert().NotEmpty(suite.env, "Got nil value for env:", suite.env)
+	suite.Require().NotEmpty(suite.env, "Got nil value for env:", suite.env)
 
 	emIngress, _, err := utils.LoadIngressInfo(suite.env)
-	suite.Assert().NoError(err, "err value:", err)
+	suite.Require().NoError(err, "err value:", err)
 
 	suite.emIngress = emIngress
 
 	chains, err := utils.LoadChainsInfo(suite.env)
-	suite.Assert().NoError(err, "err value:", err)
+	suite.Require().NoError(err, "err value:", err)
 
 	suite.chains = chains
 
 	client, err := utils.CreateNetClient(suite.env)
-	suite.Assert().NoError(err, "err value:", err)
+	suite.Require().NoError(err, "err value:", err)
 
 	suite.client = client
 
 	suite.clientChains, err = utils.LoadClientChainsInfo(suite.env)
-	suite.Assert().NoError(err, "err value:", err)
+	suite.Require().NoError(err, "err value:", err)
 }
 
 func TestSuite(t *testing.T) {

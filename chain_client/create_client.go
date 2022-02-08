@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -111,6 +112,9 @@ func (c Client) GetAccountBalances(address, denom string) (*types.Coin, error) {
 			Address: address,
 			Denom:   denom,
 		})
+	if res == nil {
+		return nil, fmt.Errorf("not able to fetch balance: got response nil")
+	}
 
 	return res.Balance, err
 }
