@@ -1,9 +1,5 @@
 package tests
 
-import (
-	utils "github.com/allinbits/demeris-backend/test_utils"
-)
-
 const (
 	cachedSupplyEndPoint = "cached/cosmos/bank/v1beta1/supply"
 	supplyEndPoint       = "liquidity/cosmos/bank/v1beta1/supply"
@@ -16,24 +12,14 @@ func (suite testCtx) TestCachedSupply() {
 	suite.T().Parallel()
 
 	// get cached supply
-	url := suite.Client.BuildUrl(cachedSupplyEndPoint)
-	cachedResp, err := suite.Client.Get(url)
-	suite.NoError(err)
-
-	defer cachedResp.Body.Close()
-
 	var cachedValues map[string]interface{}
-	utils.RespBodyToMap(cachedResp.Body, &cachedValues, suite.T())
+	err := suite.Client.GetJson(&cachedValues, cachedSupplyEndPoint)
+	suite.NoError(err)
 
 	// get supply
-	supplyUrl := suite.Client.BuildUrl(supplyEndPoint)
-	supplyResp, err := suite.Client.Get(supplyUrl)
-	suite.NoError(err)
-
-	defer supplyResp.Body.Close()
-
 	var supplyValues map[string]interface{}
-	utils.RespBodyToMap(supplyResp.Body, &supplyValues, suite.T())
+	err = suite.Client.GetJson(&supplyValues, supplyEndPoint)
+	suite.NoError(err)
 
 	suite.Equal(supplyValues["supply"], cachedValues["supply"])
 }

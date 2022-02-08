@@ -1,9 +1,6 @@
 package tests
 
 import (
-	"encoding/json"
-	"io/ioutil"
-
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 )
 
@@ -16,31 +13,13 @@ func (suite *testCtx) TestCachedParams() {
 	suite.T().Parallel()
 
 	// get cached params
-	url := suite.Client.BuildUrl(cachedParamsEndPoint)
-	cachedResp, err := suite.Client.Get(url)
-	suite.NoError(err)
-
-	defer cachedResp.Body.Close()
-
 	var cachedValues liquiditytypes.QueryParamsResponse
-	body, err := ioutil.ReadAll(cachedResp.Body)
-	suite.NoError(err)
-
-	err = json.Unmarshal(body, &cachedValues)
+	err := suite.Client.GetJson(&cachedValues, cachedParamsEndPoint)
 	suite.NoError(err)
 
 	// get liquidity params
-	liquidityParamsUrl := suite.Client.BuildUrl(liquidityParamsEndPoint)
-	liquidityResp, err := suite.Client.Get(liquidityParamsUrl)
-	suite.NoError(err)
-
-	defer liquidityResp.Body.Close()
-
 	var liquidityValues liquiditytypes.QueryParamsResponse
-	body, err = ioutil.ReadAll(liquidityResp.Body)
-	suite.NoError(err)
-
-	err = json.Unmarshal(body, &liquidityValues)
+	err = suite.Client.GetJson(&liquidityValues, liquidityParamsEndPoint)
 	suite.NoError(err)
 
 	suite.Equal(liquidityValues.Params, cachedValues.Params)
