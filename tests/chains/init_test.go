@@ -13,30 +13,35 @@ const baseUrl = "%s://%s%s"
 
 type testCtx struct {
 	suite.Suite
-	emIngress utils.EmerisIngress
-	client    *http.Client
-	chains    []utils.EnvChain
+	env          string
+	emIngress    utils.EmerisIngress
+	client       *http.Client
+	chains       []utils.EnvChain
+	clientChains []utils.EnvChain
 }
 
 func (suite *testCtx) SetupTest() {
 
-	env := os.Getenv("ENV")
-	suite.Assert().NotEmpty(env, "Got nil value for env:", env)
+	suite.env = os.Getenv("ENV")
+	suite.Assert().NotEmpty(suite.env, "Got nil value for env:", suite.env)
 
-	emIngress, _, err := utils.LoadIngressInfo(env)
+	emIngress, _, err := utils.LoadIngressInfo(suite.env)
 	suite.Assert().NoError(err, "err value:", err)
 
 	suite.emIngress = emIngress
 
-	chains, err := utils.LoadChainsInfo(env)
+	chains, err := utils.LoadChainsInfo(suite.env)
 	suite.Assert().NoError(err, "err value:", err)
 
 	suite.chains = chains
 
-	client, err := utils.CreateNetClient(env)
+	client, err := utils.CreateNetClient(suite.env)
 	suite.Assert().NoError(err, "err value:", err)
 
 	suite.client = client
+
+	suite.clientChains, err = utils.LoadClientChainsInfo(suite.env)
+	suite.Assert().NoError(err, "err value:", err)
 }
 
 func TestSuite(t *testing.T) {
