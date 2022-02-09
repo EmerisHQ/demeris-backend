@@ -149,3 +149,8 @@ func (c *Client) GetContext() client.Context {
 func (c *Client) GetKeyring() keyring.Keyring {
 	return c.kr
 }
+
+func (c *Client) GetHexAddress(accountName string) (types.AccAddress, error) {
+	info, err := c.clientCtx.Keyring.Key(accountName)
+	return info.GetAddress(), err
+}
