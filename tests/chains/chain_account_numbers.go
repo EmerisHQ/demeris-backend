@@ -4,19 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"testing"
 
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 	"github.com/allinbits/demeris-backend/models"
 	utils "github.com/allinbits/demeris-backend/test_utils"
-	"github.com/stretchr/testify/require"
 )
 
 const (
 	ChainNumbersEndpoint = "/chain/%s/numbers/%v"
 )
 
-func (suite *testCtx) TestGetChainNumbers(t *testing.T) {
+func (suite *testCtx) TestGetChainNumbers() {
 	suite.T().Parallel()
 
 	for _, ch := range suite.clientChains {
@@ -27,7 +25,7 @@ func (suite *testCtx) TestGetChainNumbers(t *testing.T) {
 			cli := chainClient.GetClient(suite.T(), suite.env, ch.Name, cc)
 
 			hexAddress, err := cc.GetHexAddress(ch.Name)
-			require.NoError(t, err)
+			suite.Require().NoError(err)
 			url := fmt.Sprintf(baseUrl+ChainNumbersEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, hexAddress)
 			// act
 			resp, err := suite.client.Get(url)
@@ -58,11 +56,11 @@ func (suite *testCtx) TestGetChainNumbers(t *testing.T) {
 				account, err := cli.AccountGet(cc.Key)
 				suite.Require().NoError(err)
 
-				require.Equal(t, cli.GetContext().ChainID, row.ChainName)
-				require.Equal(t, account.Address, row.Address)
+				suite.Require().Equal(cli.GetContext().ChainID, row.ChainName)
+				suite.Require().Equal(account.Address, row.Address)
 
-				require.NotZero(t, row.AccountNumber)
-				require.NotZero(t, row.SequenceNumber)
+				suite.Require().NotZero(row.AccountNumber)
+				suite.Require().NotZero(row.SequenceNumber)
 			}
 		})
 	}
