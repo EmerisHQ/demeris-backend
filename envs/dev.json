@@ -1,1 +1,9 @@
-{ }
+{
+  "github": {
+    "event": {
+      "client_payload": {
+        "service_name": "github.event.client_payload.image_sha"
+      }
+    }
+  }
+}
