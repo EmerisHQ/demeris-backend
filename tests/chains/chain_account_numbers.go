@@ -39,7 +39,7 @@ func (suite *testCtx) TestGetChainNumbers() {
 				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
