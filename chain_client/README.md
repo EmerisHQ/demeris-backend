@@ -4,20 +4,20 @@ This chain client will be used for integration testing for multiple chains. Ther
 
 #### Reason behind usage of v0.16.1 version of starport client.
 ```bash
-- As demeries backend supports v0.42 version of cosmos sdk, it was required to downgrade the usage of chain client to the v0.16.1 as its supports v0.42 version of [sdk](https://github.com/tendermint/starport/blob/v0.16.1/starport/pkg/spn/spn.go) .
+- As demeris backend supports v0.42 version of cosmos sdk, it was required to downgrade the usage of chain client to the v0.16.1 as its supports v0.42 version of [sdk](https://github.com/tendermint/starport/blob/v0.16.1/starport/pkg/spn/spn.go) .
 
 - we have faced import issues while using v0.19.1 [starport client](https://github.com/tendermint/starport/blob/v0.19.1/starport/pkg/cosmosclient/cosmosclient.go) as its supports v0.44 version of sdk.
 
 * we have duplicated most of the code of starport client since its context was not global and we are not able to use it in our code.
 ```
 
-#### When we have to upgrade our chainclient
+#### When we have to upgrade our chain client
 ```bash
 - If demeris backend upgrades to v0.44+ version of cosmos sdk, we can updrade our chain client to use latest version of starport. With that most of the duplicated code can be removed and we can directly use starport client methods.
 - This an [example](https://github.com/allinbits/demeris-backend/blob/prathyusha/chain_client_v44/chain_client/create_client.go) to upgrade our chain client to use latest version of starport client i.e., v0.19.1.
 ```
 
-#### How to use chain clent
+#### How to use chain client
 ```bash
 - In the first step we have to configure chains information under test_data/client/dev or staging.
 - This is how config file looks like .
