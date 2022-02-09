@@ -4,19 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"testing"
 
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 	"github.com/allinbits/demeris-backend/models"
 	utils "github.com/allinbits/demeris-backend/test_utils"
-	"github.com/stretchr/testify/require"
 )
 
 const (
 	AccountNumbersEndpoint = "account/%v/numbers"
 )
 
-func (suite *testCtx) TestGetAccountNumbers(t *testing.T) {
+func (suite *testCtx) TestGetAccountNumbers() {
 	suite.T().Parallel()
 
 	for _, ch := range suite.clientChains {
@@ -27,7 +25,7 @@ func (suite *testCtx) TestGetAccountNumbers(t *testing.T) {
 			cli := chainClient.GetClient(suite.T(), suite.env, ch.Name, cc)
 
 			hexAddress, err := cc.GetHexAddress(ch.Name)
-			require.NoError(t, err)
+			suite.Require().NoError(err)
 			url := fmt.Sprintf(baseUrl+AccountNumbersEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, hexAddress)
 			// act
 			resp, err := suite.client.Get(url)
@@ -41,11 +39,11 @@ func (suite *testCtx) TestGetAccountNumbers(t *testing.T) {
 				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
-				require.NotNil(t, respValues)
+				suite.Require().NotNil(respValues)
 
 				data, err := json.Marshal(respValues["numbers"])
 				suite.Require().NoError(err)
