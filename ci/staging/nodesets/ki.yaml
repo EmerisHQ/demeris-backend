@@ -1,0 +1,107 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: ki
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: ki
+  app:
+    cliName: kid
+    daemonName: kid
+    name: ki
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.025uxki
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: ki
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/ki
+    version: 2.0.1
+    build:
+      repository: https://github.com/KiFoundation/ki-tools
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/KiFoundation/ki-networks/v0.1/Mainnet/kichain-2/genesis.json
+    seeds:
+      - id: 24cbccfa8813accd0ebdb09e7cdb54cff2e8fcd9
+        address: 51.89.166.197
+        port: 26656
+    persistentPeers:
+      - id: 81396d4703a2e3cbd136c7324e4df5686fd48218
+        address: 35.180.8.214
+        port: 26656
+      - id: c597db55d9a609b8b77c3d37ecf1fa9a67117cc0
+        address: 144.217.82.4
+        port: 26656
+      - id: 50af457247b59aa558a26a14bd7ac4bf86eeae70
+        address: 195.201.164.223
+        port: 26656
+      - id: 81eef39d2ca9a07490857d197423da4ba5e01879
+        address: 15.188.134.35
+        port: 26656
+      - id: 5adb5ad6a6fcef624866cefdb551dafdc07f7e78
+        address: 15.188.198.188
+        port: 26656
+      - id: 41b321292cbe50c5c30017cc71c404481be0e20b
+        address: 3.38.12.5
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 160Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 4Gi
+      requests:
+        cpu: "2"
+        memory: 2Gi
