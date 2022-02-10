@@ -10,8 +10,8 @@ env:
   UPDATE_VERSION_POLICY: '{ "dev": "patch", "staging": "minor", "prod": "major" }'
   CHECKOUT_REF: ${{ github.event.client_payload.tag || 'master' }}
   ENV: ${{ github.event.client_payload.env }}
-  SERVICE_NAME: github.event.client_payload.service_name
-  IMAGE_SHA: github.event.client_payload.image_sha
+  SERVICE_NAME: ${{ github.event.client_payload.service_name }}
+  IMAGE_SHA: ${{ github.event.client_payload.image_sha }}
 
 jobs:
   bump-tag:
