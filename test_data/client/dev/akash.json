@@ -1,0 +1,8 @@
+{
+    "chain_name":"akash",
+    "rpc": "https://akash-emeris.app.alpha.starport.cloud:443",
+    "key":"akash_test",
+    "mnemonic":"crucial able shoot suffer cradle art melt lake crane outside organ mask champion force dilemma rough merit color portion hammer mimic portion mix spin",
+    "keyring_service_name":"akash"
+}
+  
