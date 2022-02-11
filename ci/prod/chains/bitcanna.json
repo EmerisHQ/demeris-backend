@@ -1,0 +1,58 @@
+{
+    "enabled": true,
+    "chain_name": "bitcanna",
+    "logo": "https://storage.googleapis.com/emeris/logos/bitcanna.svg",
+    "display_name": "BitCanna",
+    "cosmos_sdk_version": "v0.44.3",
+    "primary_channel": {
+      "osmosis": "channel-1",
+      "cosmos-hub":"channel-3"
+    },
+    "denoms": [
+      {
+        "name": "ubcna",
+        "display_name": "BCNA",
+        "logo": "https://storage.googleapis.com/emeris/logos/bitcanna.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "BCNA",
+        "price_id": "bitcanna",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.25,
+          "average": 0.25,
+          "high": 0.5
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 42
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "bcna",
+      "chain_id": "bitcanna-1",
+      "bech32_config": {
+        "main_prefix": "bcna",
+        "prefix_account": "bcna",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "bcna",
+        "acc_pub": "bcnapub",
+        "val_addr": "bcnavaloper",
+        "val_pub": "bcnavaloperpub",
+        "cons_addr": "bcnavalcons",
+        "cons_pub": "bcnavalconspub"
+      }
+    },
+    "valid_block_thresh": "20s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": ["keplr"],
+    "block_explorer": "https://www.mintscan.io/bitcanna"
+  }

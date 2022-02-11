@@ -1,0 +1,55 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: akash
+  namespace: default
+spec:
+  replicas: 2
+
+  config:
+    nodes:
+      blockThreshold: 20s
+
+  binaryName: akash
+
+  moniker: starport-alpha
+  init:
+    chainID: akash
+    bondDenom: uakt
+    assets:
+      - 10000000000000000000uakt
+
+    faucet:
+      funds: 100000000000000000uakt
+      denoms:
+        - uakt
+
+  image:
+    name: gcr.io/tendermint-dev/akash
+    version: v0.12.1
+    build:
+      repository: https://github.com/ovrclk/akash
+
+  resources:
+    validator:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+
+    sentry:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+
+  expose:
+    domain: akash.app.alpha.starport.cloud
+    grpc: true
+    rpc: true
+    api: true
+    p2p: true

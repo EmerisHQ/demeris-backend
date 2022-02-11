@@ -1,0 +1,272 @@
+{
+    "enabled": true,
+    "chain_name": "cosmos-hub",
+    "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
+    "display_name": "Cosmos Hub",
+    "primary_channel": {
+      "akash": "channel-184",
+      "crypto-org": "channel-187",
+      "emoney": "channel-202",
+      "iris": "channel-182",
+      "ixo": "channel-204",
+      "juno": "channel-207",
+      "likecoin": "channel-217",
+      "microtick": "channel-201",
+      "osmosis": "channel-141",
+      "persistence": "channel-190",
+      "regen": "channel-185",
+      "sentinel": "channel-186",
+      "sifchain": "channel-192",
+      "starname": "channel-158",
+      "terra": "channel-219",
+      "ki":"channel-223",
+      "bitcanna":"channel-232",
+      "chihuahua":"channel-229",
+      "bitsong":"channel-229",
+      "cheqd":"channel-239"
+    },
+    "denoms": [
+      {
+        "name": "poolE71FE13681A283B7015E4E4C4852B0EDA72CC97A5CDE2ECA2A6C8C06C86AC775",
+        "display_name": "Gravity 2",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G2",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "poolDFB8434D5A80B4EAFA94B6878BD5B85265AC6C5D37204AB899B1C3C52543DA7E",
+        "display_name": "Gravity 1",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G1",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "uatom",
+        "display_name": "ATOM",
+        "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "ATOM",
+        "price_id": "cosmos",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.005,
+          "average": 0.01,
+          "high": 0.03
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 10000000
+      },
+      {
+        "name": "poolD639A99414646D7136C65C6845D0EB3456EDD3D6C2C43050D3FA3A24995B0E75",
+        "display_name": "Gravity 3",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G3",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "pool2B9C24833CAA268C9081EC251693A724E8D343FC25A841FF00FD37B047BA4DEA",
+        "display_name": "Gravity 4",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G4",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "pool32DD066BE949E5FDCC7DC09EBB67C7301D0CA957C2EF56A39B37430165447DAC",
+        "display_name": "Gravity 5",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G5",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "pool4BFAFC499776D30A4FA0D6033135F00CC4EFC770D19A74CAD37433B579F77FC0",
+        "display_name": "Gravity 6",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G6",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "pool7AE391C099D1D88CC85A9FA8A0DC5650BF8DDE0DCE7D0824C073802C020A7747",
+        "display_name": "Gravity 7",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G7",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "poolF2805980C54E1474BDCCF70EF5FE881F3B8EFCF8BA3198765C01D91904521788",
+        "display_name": "Gravity 8",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G8",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "poolBD5F1AF7A8B1F068C178F1D637DF126968EC10AB204A10116E320B2B8AF4FAC2",
+        "display_name": "Gravity 9",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G9",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "poolB457CE9240C221C0F76952FED6506F74375EDD38B32A6020B7DDDFD5A4867D5C",
+        "display_name": "Gravity 10",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G10",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "poolD1121E78E731AFD35FEA13CF9FA0044A1472F73A0EE784160CCAAAAE5C7AAD7E",
+        "display_name": "Gravity 11",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G11",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "pool60EFB07817D6B193A9FADA611404B8E11D82D6B7F0D10D57D3134C93E2BF7414",
+        "display_name": "Gravity 12",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G12",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "poolCF8B847997F5EB92B9C8DBAE41656F61D6BE708B1B42D31063291813014AD63F",
+        "display_name": "Gravity 13",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G13",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      },
+      {
+        "name": "poolAC9AF7B48E4497A0A9AF109E4286464A0EF06E7C35AD79198F03AB17A6A4CCA7",
+        "display_name": "Gravity 14",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G14",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "cosmos-hub",
+      "chain_id": "cosmoshub-4",
+      "bech32_config": {
+        "main_prefix": "cosmos",
+        "prefix_account": "cosmos",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "cosmos",
+        "acc_pub": "cosmospub",
+        "val_addr": "cosmosvaloper",
+        "val_pub": "cosmosvaloperpub",
+        "cons_addr": "cosmosvalcons",
+        "cons_pub": "cosmosvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "cosmos_sdk_version": "v0.44.5"
+  }
