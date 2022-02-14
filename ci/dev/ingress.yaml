@@ -59,3 +59,13 @@ spec:
   - hosts:
     - dev.demeris.io
     secretName: emeris-cert
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-config
+  namespace: nginx-ingress
+data:
+  use-gzip: true
+  gzip-level: 1
+  gzip-min-length: 128
