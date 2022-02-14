@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -26,7 +27,7 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 
 			hexAddress, err := cli.GetHexAddress(ch.Name)
 			suite.Require().NoError(err)
-			url := fmt.Sprintf(baseUrl+getBalanceEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, hexAddress)
+			url := fmt.Sprintf(baseUrl+getBalanceEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
