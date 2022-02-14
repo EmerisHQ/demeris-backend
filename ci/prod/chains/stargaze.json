@@ -1,0 +1,58 @@
+{
+    "enabled": true,
+    "chain_name": "stargaze",
+    "logo": "https://storage.googleapis.com/emeris/logos/stars.svg",
+    "display_name": "Stargaze",
+    "primary_channel": {
+      "juno": "channel-5",
+      "osmosis": "channel-0"
+    },
+    "denoms": [
+      {
+        "name": "ustars",
+        "display_name": "Stargaze",
+        "logo": "https://storage.googleapis.com/emeris/logos/stars.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "STARS",
+        "price_id": "stargaze",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.03,
+          "average": 0.075,
+          "high": 0.12
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 50000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "stargaze",
+      "chain_id": "stargaze-1",
+      "bech32_config": {
+        "main_prefix": "stars",
+        "prefix_account": "stars",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "stars",
+        "acc_pub": "starspub",
+        "val_addr": "starsvaloper",
+        "val_pub": "starsvaloperpub",
+        "cons_addr": "starsvalcons",
+        "cons_pub": "starsvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "cosmos_sdk_version": "v0.45.0"
+  }

@@ -1,5 +1,5 @@
 {
-    "enabled": true,
+    "enabled": false,
     "chain_name": "starname",
     "logo": "https://storage.googleapis.com/emeris/logos/starname.svg",
     "display_name": "Starname",
@@ -62,9 +62,5 @@
     "derivation_path": "m/44'/234'/0'/0/0",
     "supported_wallets": [],
     "block_explorer": "\"\"",
-    "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
     "cosmos_sdk_version": "v0.44.5"
   }
