@@ -1,12 +1,13 @@
 package tests
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	apiServer "github.com/allinbits/demeris-api-server/api/chains"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
-	"github.com/allinbits/demeris-backend/models"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
@@ -26,7 +27,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 
 			hexAddress, err := cc.GetHexAddress(ch.Name)
 			suite.Require().NoError(err)
-			url := fmt.Sprintf(baseUrl+AccountNumbersEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, hexAddress)
+			url := fmt.Sprintf(baseUrl+AccountNumbersEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.client.Get(url)
 			suite.Require().NoError(err)
@@ -49,7 +50,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 				suite.Require().NoError(err)
 				suite.Require().NotNil(data)
 
-				var row []models.AuthRow
+				var row []apiServer.NumbersResponse
 				err = json.Unmarshal(data, &row)
 				suite.Require().NoError(err)
 				suite.Require().NotNil(row)
