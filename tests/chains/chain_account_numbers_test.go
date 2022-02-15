@@ -22,13 +22,13 @@ func (suite *testCtx) TestGetChainNumbers() {
 			var cc chainClient.Client
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.env, ch.Name, cc)
+			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
 
 			hexAddress, err := cc.GetHexAddress(ch.Name)
 			suite.Require().NoError(err)
-			url := fmt.Sprintf(baseUrl+ChainNumbersEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, hexAddress)
+			url := fmt.Sprintf(baseUrl+ChainNumbersEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name, hexAddress)
 			// act
-			resp, err := suite.client.Get(url)
+			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 
 			if !cli.Enabled {

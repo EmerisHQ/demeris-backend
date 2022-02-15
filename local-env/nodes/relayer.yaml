@@ -1,0 +1,46 @@
+apiVersion: apps.starport.cloud/v1
+kind: Relayer
+metadata:
+  name: relayer
+  namespace: emeris
+spec:
+  strategy: packets
+  telemetryEnabled: true
+  clearPacketsInterval: 100
+  filter: true
+  logLevel: debug
+  txConfirmation: false
+
+  chains:
+    # Cosmos Hub
+    - nodeset: cosmos-hub
+      accountPrefix: cosmos
+      hdPath: m/44'/118'/0'/0/0
+      rpcTimeout: 10s
+      maxGas: 2000000
+      defaultGas: 500000
+      maxMsgNum: 12
+      maxTxSize: 180000
+      clockDrift: 1800s
+      faucet: cosmos-hub-faucet
+      gasPrice:
+        denom: uatom
+        price: "0.04"
+
+    # Akash
+    - nodeset: akash
+      accountPrefix: akash
+      hdPath: m/44'/118'/0'/0/0
+      rpcTimeout: 10s
+      maxGas: 2000000
+      defaultGas: 250000
+      maxMsgNum: 15
+      maxTxSize: 2097152
+      clockDrift: 1800s
+      faucet: akash-faucet
+      gasPrice:
+        denom: uakt
+        price: "0.04"
+  paths:
+    - sideA: cosmos-hub
+      sideB: akash

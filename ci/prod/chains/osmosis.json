@@ -13,14 +13,19 @@
       "ixo": "channel-38",
       "juno": "channel-42",
       "likecoin": "channel-53",
-      "microtick": "channel-36",
+      "microtick": "channel-39",
       "persistence": "channel-4",
       "regen": "channel-8",
       "sentinel": "channel-2",
       "sifchain": "channel-47",
       "starname": "channel-35",
       "terra": "channel-72",
-      "ki":"channel-77"
+      "ki":"channel-77",
+      "bitcanna":"channel-51",
+      "bitsong":"channel-73",
+      "cheqd":"channel-108",
+      "chihuahua":"channel-113",
+      "stargaze":"channel-75"
     },
     "denoms": [
       {
@@ -34,8 +39,8 @@
         "price_id": "osmosis",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0,
-          "average": 0,
+          "low": 0.0,
+          "average": 0.0,
           "high": 0.12
         },
         "fetch_price": true,
@@ -81,10 +86,5 @@
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": ["keplr"],
     "block_explorer": "https://rpc-osmosis.blockapsis.com",
-    "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": "https://lcd-osmosis.blockapsis.com"
-    },
     "cosmos_sdk_version": "v0.44.5"
-  
-}
+  }

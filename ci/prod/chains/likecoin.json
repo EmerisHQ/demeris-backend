@@ -15,6 +15,7 @@
         "precision": 9,
         "verified": true,
         "stakable": true,
+        "price_id": "likecoin",
         "ticker": "LIKE",
         "fee_token": true,
         "gas_price_levels": {
@@ -53,9 +54,5 @@
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": [],
     "block_explorer": "\"\"",
-    "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
     "cosmos_sdk_version": "v0.42.9"
   }

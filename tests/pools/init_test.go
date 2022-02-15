@@ -1,8 +1,6 @@
 package tests
 
 import (
-	"net/http"
-	"os"
 	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -12,25 +10,13 @@ import (
 const baseUrl = "%s://%s%s"
 
 type testCtx struct {
-	suite.Suite
-	emIngress utils.EmerisIngress
-	client    *http.Client
+	utils.BaseTestSuite
 }
 
 func (suite *testCtx) SetupTest() {
+	suite.BaseTestSuite.SetupTest()
 
-	env := os.Getenv("ENV")
-	suite.Assert().NotEmpty(env, "Got nil value for env:", env)
-
-	emIngress, _, err := utils.LoadIngressInfo(env)
-	suite.Assert().NoError(err, "err value:", err)
-
-	suite.emIngress = emIngress
-
-	client, err := utils.CreateNetClient(env)
-	suite.Assert().NoError(err, "err value:", err)
-
-	suite.client = client
+	// placeholder for extending setup of this specific test suite
 }
 
 func TestSuite(t *testing.T) {

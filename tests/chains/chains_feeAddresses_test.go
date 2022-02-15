@@ -14,9 +14,9 @@ func (suite *testCtx) TestChainsFeeAddresses() {
 	suite.T().Parallel()
 
 	// arrange
-	url := fmt.Sprintf(baseUrl+chainsFeeAddressesEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	url := fmt.Sprintf(baseUrl+chainsFeeAddressesEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
 	// act
-	resp, err := suite.client.Get(url)
+	resp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	suite.Equal(http.StatusOK, resp.StatusCode)
@@ -28,7 +28,7 @@ func (suite *testCtx) TestChainsFeeAddresses() {
 	suite.NoError(err)
 
 	expValues := make(map[string][]map[string]interface{}, 0)
-	for _, ch := range suite.chains {
+	for _, ch := range suite.Chains {
 		if ch.Enabled {
 			var payload map[string]interface{}
 			err := json.Unmarshal(ch.Payload, &payload)

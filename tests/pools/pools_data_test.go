@@ -14,9 +14,9 @@ const (
 func (suite *testCtx) TestPoolsData() {
 	suite.T().Parallel()
 
-	url := fmt.Sprintf(baseUrl+poolsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	url := fmt.Sprintf(baseUrl+poolsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
 
-	resp, err := suite.client.Get(url)
+	resp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	suite.Equal(http.StatusOK, resp.StatusCode)

@@ -1,7 +1,7 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: akash
+  name: juno
   namespace: emeris
 spec:
   podAntiAffinity:
@@ -11,32 +11,23 @@ spec:
           topologyKey: kubernetes.io/hostname
           labelSelector:
             matchLabels:
-              nodeset: akash
+              nodeset: juno
   app:
-    cliName: akash
-    daemonName: akash
-    name: akash
-  init:
-    chainID: akash-testnet
-    bondDenom: uakt
-    assets:
-      - 100000000000000000uakt
-    faucet:
-      funds: 100000000000000000uakt
-      denoms:
-        - uakt
+    cliName: junod
+    daemonName: junod
+    name: juno
   config:
     additionalEgressRules:
       - ports:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 20s
+      blockThreshold: 15s
       configOverride:
         app:
           - key: minimum-gas-prices
             value:
-              string: 0.018uakt
+              string: 0.5ujuno
           - key: pruning
             value:
               string: custom
@@ -56,18 +47,41 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: akash
+            value: juno
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
         imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: ghcr.io/ovrclk/akash
-    version: 0.14.1
+    name: ghcr.io/cosmoscontracts/juno
+    version: v2.1.0
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/CosmosContracts/mainnet/main/juno-1/genesis.json
+    seeds:
+    - id: 2484353dab0b2c1275765b8ffa2c50b3b36158ca
+      address: seed-node.junochain.com
+    - id: ef2315d81caa27e4b0fd0f267d301569ee958893
+      address: juno-seed.blockpane.com
   moniker: emeris
   persistence:
-    size: 20Gi
+    size: 500Gi
     autoResize:
       enabled: true
-  replicas: 1
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi

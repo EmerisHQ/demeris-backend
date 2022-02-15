@@ -21,8 +21,8 @@ func (suite testCtx) TestCachedSupply() {
 	// get cached supply
 	urlPattern := strings.Join([]string{baseUrl, cachedSupplyEndPoint}, "")
 
-	url := fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
-	cachedResp, err := suite.client.Get(url)
+	url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	cachedResp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	defer cachedResp.Body.Close()
@@ -32,8 +32,8 @@ func (suite testCtx) TestCachedSupply() {
 
 	// get supply
 	urlPattern = strings.Join([]string{baseUrl, supplyEndPoint}, "")
-	url = fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
-	supplyResp, err := suite.client.Get(url)
+	url = fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	supplyResp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	defer supplyResp.Body.Close()

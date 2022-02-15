@@ -16,7 +16,7 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	suite.T().Parallel()
 
 	var chainsDenoms cns.DenomList
-	for _, ch := range suite.chains {
+	for _, ch := range suite.Chains {
 		if ch.Enabled {
 			var payload map[string]interface{}
 			err := json.Unmarshal(ch.Payload, &payload)
@@ -38,9 +38,9 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	}
 
 	// arrange
-	url := fmt.Sprintf(baseUrl+verifiedDenomsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	url := fmt.Sprintf(baseUrl+verifiedDenomsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
 	// act
-	resp, err := suite.client.Get(url)
+	resp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	var respValues map[string]interface{}
