@@ -2,31 +2,52 @@ apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
   name: cosmos-hub
-  namespace: default
+  namespace: emeris
 spec:
-  replicas: 1
-
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: cosmos-hub
   app:
     name: gaia
-
-  moniker: demeris
-
+    cliName: gaiad
+    daemonName: gaiad
   init:
-    chainID: demeris-test
+    chainID: cosmos-hub-testnet
+    bondDenom: uatom
     assets:
-      - 100000000000000000stake
       - 100000000000000000uatom
-
-  image:
-    name: gcr.io/tendermint-dev/gaia
-    version: v4.2.1
-
+    faucet:
+      funds: 100000000000000000uatom
+      denoms:
+        - uatom
   config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
     nodes:
-      startupTimeout: 30m
+      blockThreshold: 20s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.005uatom
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
       traceStoreContainer:
-        image: demeris/tracelistener
-        imagePullPolicy: Never
         env:
           - name: TRACELISTENER_FIFOPATH
             value: /trace-store/kvstore.fifo
@@ -35,10 +56,20 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: gaia
-    additionalEgressRules:
-      - to:
-          - namespaceSelector: {}
-        ports:
-          - protocol: TCP
-            port: 26257
+            value: cosmos-hub
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+    reconcilePeriod: 4m
+  image:
+    name: gcr.io/tendermint-dev/gaia
+    version: v6.0.0
+    build:
+      repository: https://github.com/cosmos/gaia
+  moniker: emeris
+  persistence:
+    size: 10Gi
+    autoResize:
+      enabled: true
+  replicas: 1

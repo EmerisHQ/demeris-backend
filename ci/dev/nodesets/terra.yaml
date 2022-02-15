@@ -1,0 +1,50 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: terra
+  namespace: default
+spec:
+  replicas: 2
+
+  binaryName: terrad
+
+  moniker: starport-alpha
+
+  init:
+    chainID: terra
+    bondDenom: uluna
+    assets:
+      - 10000000000000000000uluna
+
+    faucet:
+      funds: 100000000000000000uluna
+      denoms:
+        - uluna
+
+  image:
+    name: terramoney/core
+    version: v0.5.2
+
+  resources:
+    validator:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+
+    sentry:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+
+  expose:
+    domain: terra.app.alpha.starport.cloud
+    grpc: true
+    rpc: true
+    api: true
+    p2p: true

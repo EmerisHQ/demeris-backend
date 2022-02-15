@@ -8,7 +8,8 @@
       "osmosis": "channel-0",
       "regen": "channel-6",
       "sifchain": "channel-5",
-      "terra": "channel-7"
+      "terra": "channel-7",
+      "stargaze": "channel-20"
     },
     "denoms": [
       {
@@ -19,6 +20,7 @@
         "verified": true,
         "stakable": true,
         "ticker": "JUNO",
+        "price_id": "juno-network",
         "fee_token": true,
         "gas_price_levels": {
           "low": 0.005,
@@ -56,9 +58,5 @@
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": [],
     "block_explorer": "\"\"",
-    "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
     "cosmos_sdk_version": "v0.44.5"
   }

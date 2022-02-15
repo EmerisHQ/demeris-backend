@@ -1,0 +1,46 @@
+{
+  "chain_name": "chihuahua",
+  "derivation_path": "m/44'/639'/0'/0/0",
+  "logo": "https://app.osmosis.zone/public/assets/tokens/huahua.png",
+  "enabled": true,
+  "valid_block_thresh": "20s",
+  "display_name": "Chihuahua",
+  "cosmos_sdk_version": "v0.44.3",
+  "demeris_addresses": ["feeaddress"],
+  "primary_channel": {
+      "osmosis": "channel-7",
+      "juno":"channel-11"
+    },
+  "denoms": [
+    {
+      "display_name": "HUAHUA",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "price_id": "chihuahua-chain",
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.01, "average": 0.025, "high": 0.03},
+      "name": "uhuahua",
+      "logo": "https://storage.googleapis.com/emeris/logos/huahua.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "HUAHUA"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "chihuahua",
+    "chain_id": "chihuahua-1",
+    "bech32_config": {
+      "main_prefix": "chihuahua",
+      "prefix_account": "chihuahua",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/chihuahua"
+}
