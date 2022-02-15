@@ -1,9 +1,11 @@
 package tests
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 	"github.com/allinbits/demeris-backend/models"
@@ -11,7 +13,7 @@ import (
 )
 
 const (
-	ChainNumbersEndpoint = "/chain/%s/numbers/%v"
+	chainNumbersEndpoint = "/chain/%s/numbers/%v"
 )
 
 func (suite *testCtx) TestGetChainNumbers() {
@@ -27,7 +29,9 @@ func (suite *testCtx) TestGetChainNumbers() {
 
 			hexAddress, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
-			url := fmt.Sprintf(baseUrl+ChainNumbersEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name, hexAddress)
+
+			urlPattern := strings.Join([]string{baseUrl, chainNumbersEndpoint}, "")
+			url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
@@ -36,33 +40,34 @@ func (suite *testCtx) TestGetChainNumbers() {
 				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
-			} else {
-				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
-
-				err = resp.Body.Close()
-				suite.Require().NoError(err)
-				suite.Require().NotNil(respValues)
-
-				data, _ := json.Marshal(respValues["numbers"])
-				suite.Require().NotNil(data)
-
-				var row models.AuthRow
-				err = json.Unmarshal(data, &row)
-				suite.Require().NoError(err)
-				suite.Require().NotNil(row)
-
-				account, err := cli.AccountGet(cc.Key)
-				suite.Require().NoError(err)
-
-				suite.Require().Equal(ch.Name, row.ChainName)
-				suite.Require().Equal(account.Address, row.Address)
-
-				suite.Require().NotZero(row.AccountNumber)
-				suite.Require().NotZero(row.SequenceNumber)
+				return
 			}
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+
+			var respValues map[string]interface{}
+			utils.RespBodyToMap(resp.Body, &respValues, suite.T())
+
+			err = resp.Body.Close()
+			suite.Require().NoError(err)
+			suite.Require().NotNil(respValues)
+
+			data, _ := json.Marshal(respValues["numbers"])
+			suite.Require().NotNil(data)
+
+			var row models.AuthRow
+			err = json.Unmarshal(data, &row)
+			suite.Require().NoError(err)
+			suite.Require().NotNil(row)
+
+			account, err := cli.AccountGet(cc.Key)
+			suite.Require().NoError(err)
+
+			suite.Require().Equal(ch.Name, row.ChainName)
+			suite.Require().Equal(account.Address, row.Address)
+
+			suite.Require().NotZero(row.AccountNumber)
+			suite.Require().NotZero(row.SequenceNumber)
 		})
 	}
 }
