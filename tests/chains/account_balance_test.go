@@ -24,8 +24,9 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
 			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			suite.Require().NotNil(cli)
 
-			hexAddress, err := cli.GetHexAddress(ch.Name)
+			hexAddress, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
 			url := fmt.Sprintf(baseUrl+getBalanceEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, hex.EncodeToString(hexAddress))
 			// act
@@ -37,7 +38,7 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
 			} else {
-				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
