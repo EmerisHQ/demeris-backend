@@ -14,7 +14,7 @@ func (suite *testCtx) TestChainsData() {
 	suite.T().Parallel()
 
 	// arrange
-	url := fmt.Sprintf(baseUrl+chainsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	url := suite.Client.BuildUrl(chainsEndpoint)
 	// act
 	resp, err := suite.Client.Get(url)
 	suite.NoError(err)
@@ -30,7 +30,7 @@ func (suite *testCtx) TestChainsData() {
 	expValues := make(map[string][]map[string]interface{}, 0)
 	for _, ch := range suite.Chains {
 		if ch.Enabled {
-			chainUrl := fmt.Sprintf(baseUrl+"chain/%s", suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name)
+			chainUrl := suite.Client.BuildUrl("chain/%s", ch.Name)
 			chainResp, err := suite.Client.Get(chainUrl)
 			suite.NoError(err)
 

@@ -7,8 +7,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const baseUrl = "%s://%s%s"
-
 type testCtx struct {
 	utils.BaseTestSuite
 }
