@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	apiServer "github.com/allinbits/demeris-api-server/api/account"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
@@ -28,7 +29,9 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 
 			hexAddress, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
-			url := fmt.Sprintf(baseUrl+getBalanceEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, hex.EncodeToString(hexAddress))
+
+			urlPattern := strings.Join([]string{baseUrl, getBalanceEndpoint}, "")
+			url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
@@ -37,31 +40,32 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
-			} else {
-				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
+				return
+			}
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				err = resp.Body.Close()
-				suite.Require().NoError(err)
-				suite.Require().NotNil(respValues)
+			var respValues map[string]interface{}
+			utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
-				data, err := json.Marshal(respValues["balances"])
-				suite.Require().NoError(err)
-				suite.Require().NotNil(data)
+			err = resp.Body.Close()
+			suite.Require().NoError(err)
+			suite.Require().NotNil(respValues)
 
-				var row []apiServer.Balance
-				err = json.Unmarshal(data, &row)
-				suite.Require().NoError(err)
-				suite.Require().NotNil(row)
+			data, err := json.Marshal(respValues["balances"])
+			suite.Require().NoError(err)
+			suite.Require().NotNil(data)
 
-				for _, v := range row {
-					if v.Denom == cli.Denom {
-						bal, err := cli.GetAccountBalances(cli.Key, cli.Denom)
-						suite.Require().NoError(err)
-						suite.Require().Equal(bal.Amount, v.Amount)
-					}
+			var row []apiServer.Balance
+			err = json.Unmarshal(data, &row)
+			suite.Require().NoError(err)
+			suite.Require().NotNil(row)
+
+			for _, v := range row {
+				if v.Denom == cli.Denom {
+					bal, err := cli.GetAccountBalances(cli.Key, cli.Denom)
+					suite.Require().NoError(err)
+					suite.Require().Equal(bal.Amount, v.Amount)
 				}
 			}
 		})
