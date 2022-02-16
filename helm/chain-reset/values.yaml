@@ -1,0 +1,6 @@
+traceListener42Image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+traceListener44Image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+imagePullPolicy: Always
+
+replicas: 2
+sdkVersion: "0.44"

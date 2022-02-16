@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-scale-up
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | indent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "chart.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      initContainers:
+      - name: wait-for-reimport-data
+        image: groundnuty/k8s-wait-for:v1.3
+        imagePullPolicy: Always
+        args:
+        - "job"
+        - "{{ .Release.Name }}-reimport-data"
+      containers:
+      - name: kubectl
+        image: bitnami/kubectl
+        command: ["kubectl", "scale", "nodeset", "{{ .Values.chain }}", "--replicas={{ .Values.replicas }}", "-n", "emeris"]
+      restartPolicy: Never
+  backoffLimit: 0
