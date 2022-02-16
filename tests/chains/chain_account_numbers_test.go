@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
+	"github.com/allinbits/demeris-backend-models/tracelistener"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
-	"github.com/allinbits/demeris-backend/models"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
@@ -30,8 +29,7 @@ func (suite *testCtx) TestGetChainNumbers() {
 			hexAddress, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
 
-			urlPattern := strings.Join([]string{baseUrl, chainNumbersEndpoint}, "")
-			url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name, hex.EncodeToString(hexAddress))
+			url := suite.Client.BuildUrl(chainNumbersEndpoint, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
@@ -55,7 +53,7 @@ func (suite *testCtx) TestGetChainNumbers() {
 			data, _ := json.Marshal(respValues["numbers"])
 			suite.Require().NotNil(data)
 
-			var row models.AuthRow
+			var row tracelistener.AuthRow
 			err = json.Unmarshal(data, &row)
 			suite.Require().NoError(err)
 			suite.Require().NotNil(row)
