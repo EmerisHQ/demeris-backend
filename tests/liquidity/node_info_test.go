@@ -16,14 +16,15 @@ const (
 func (suite *testCtx) TestLiquidityStatus() {
 	suite.T().Parallel()
 
-	for _, ch := range suite.chains {
+	for _, ch := range suite.Chains {
 		if ch.Name == chainName {
 			suite.T().Run(ch.Name, func(t *testing.T) {
 
 				// arrange
-				url := fmt.Sprintf(baseUrl+liquidityNodeEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+				url := suite.Client.BuildUrl(liquidityNodeEndpoint)
+
 				// act
-				resp, err := suite.client.Get(url)
+				resp, err := suite.Client.Get(url)
 				suite.NoError(err)
 
 				defer resp.Body.Close()

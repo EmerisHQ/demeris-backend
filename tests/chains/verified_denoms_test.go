@@ -2,7 +2,6 @@ package tests
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -16,7 +15,7 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	suite.T().Parallel()
 
 	var chainsDenoms cns.DenomList
-	for _, ch := range suite.chains {
+	for _, ch := range suite.Chains {
 		if ch.Enabled {
 			var payload map[string]interface{}
 			err := json.Unmarshal(ch.Payload, &payload)
@@ -38,9 +37,9 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	}
 
 	// arrange
-	url := fmt.Sprintf(baseUrl+verifiedDenomsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	url := suite.Client.BuildUrl(verifiedDenomsEndpoint)
 	// act
-	resp, err := suite.client.Get(url)
+	resp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	var respValues map[string]interface{}
