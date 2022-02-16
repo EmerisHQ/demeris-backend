@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-disable-chain
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | indent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "chart.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      containers:
+      - name: cockroach-client
+        image: "cockroachdb/cockroach:v21.2.5"
+        args:
+        - sql
+        - --insecure
+        - --host=cockroachdb-public
+        - --database=cns
+        - -e
+        - UPDATE cns.chains SET enabled = false WHERE chain_name = '{{ .Values.chain }}';
+      restartPolicy: Never
+  backoffLimit: 0

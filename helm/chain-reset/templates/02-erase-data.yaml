@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-erase-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | indent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "chart.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      initContainers:
+      - name: wait-for-scale-down
+        image: groundnuty/k8s-wait-for:v1.3
+        imagePullPolicy: Always
+        args:
+        - "job"
+        - "{{ .Release.Name }}-scale-down"
+      containers:
+      - name: cockroach-client
+        image: "cockroachdb/cockroach:v21.2.5"
+        args:
+        - sql
+        - --insecure
+        - --host=cockroachdb-public
+        - --database=tracelistener
+        - -e
+        - DELETE FROM tracelistener.balances WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.connections WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.delegations WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.unbonding_delegations WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.denom_traces WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.channels WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.auth WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.clients WHERE chain_name='{{ .Values.chain }}';
+          DELETE FROM tracelistener.validators WHERE chain_name='{{ .Values.chain }}';
+      restartPolicy: Never
+  backoffLimit: 0
