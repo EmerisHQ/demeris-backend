@@ -17,6 +17,8 @@ on:
   repository_dispatch:
     types: [dev-push-*]
 
+concurrency: deploy-dev
+
 jobs:
   deploy-service:
     runs-on: self-hosted
@@ -29,7 +31,6 @@ jobs:
           ref: ${{ github.event.client_payload.branch_name }}
 
       - name: Deploy
-        if: ${{ github.event.client_payload.service_name != 'admin-ui' }}
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: "${{ secrets.KUBECONFIG }}"
@@ -40,8 +41,9 @@ jobs:
               --set debug=true \
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               --set image=gcr.io/tendermint-dev/"${{ github.event.client_payload.image_name }}":"${{ github.event.client_payload.image_sha }}" \
+              --set redirectURL=https://develop--emeris-admin.netlify.app/login \
               ./helm
-
+  
   ingress:
     runs-on: self-hosted
     needs: deploy-service
@@ -54,3 +56,15 @@ jobs:
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: apply -n emeris -f ci/dev/ingress.yaml
+
+  emit-integration-test:
+    runs-on: self-hosted
+    needs: deploy-service
+    steps:
+      - name: Emit integration-test event on demeris-backend
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: allinbits/demeris-backend
+          event-type: integration-test
+          client-payload: '{"env":"dev","service_name":"${{ github.event.client_payload.service_name }}","image_sha":"${{ github.event.client_payload.image_sha }}"}'

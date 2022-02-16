@@ -1,52 +1,25 @@
 package tests
 
-import (
-	"fmt"
-	"os"
-	"strings"
-	"testing"
-
-	utils "github.com/allinbits/demeris-backend/test_utils"
-	"github.com/stretchr/testify/require"
-)
-
 const (
 	cachedSupplyEndPoint = "cached/cosmos/bank/v1beta1/supply"
 	supplyEndPoint       = "liquidity/cosmos/bank/v1beta1/supply"
 )
 
-func TestCachedSupply(t *testing.T) {
-	t.Parallel()
+func (suite testCtx) TestCachedSupply() {
+	suite.T().Skip("FIXME: Skipped until we find a reliable way to verify cached supply (e.g. based on block-height)")
+	return
 
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
+	suite.T().Parallel()
 
 	// get cached supply
-	urlPattern := strings.Join([]string{baseUrl, cachedSupplyEndPoint}, "")
-
-	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	cachedResp, err := client.Get(url)
-	require.NoError(t, err)
-
-	defer cachedResp.Body.Close()
-
 	var cachedValues map[string]interface{}
-	utils.RespBodyToMap(cachedResp.Body, &cachedValues, t)
+	err := suite.Client.GetJson(&cachedValues, cachedSupplyEndPoint)
+	suite.NoError(err)
 
 	// get supply
-	urlPattern = strings.Join([]string{baseUrl, supplyEndPoint}, "")
-	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	supplyResp, err := client.Get(url)
-	require.NoError(t, err)
-
-	defer supplyResp.Body.Close()
-
 	var supplyValues map[string]interface{}
-	utils.RespBodyToMap(supplyResp.Body, &supplyValues, t)
+	err = suite.Client.GetJson(&supplyValues, supplyEndPoint)
+	suite.NoError(err)
 
-	require.Equal(t, supplyValues["supply"], cachedValues["supply"])
+	suite.Equal(supplyValues["supply"], cachedValues["supply"])
 }

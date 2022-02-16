@@ -63,6 +63,7 @@ jobs:
               --install \
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.cns-version }} \
+              --set redirectURL=https://develop--emeris-admin.netlify.app/login \
               ./helm/emeris-cns-server
   
   api-server:

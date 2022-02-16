@@ -1,42 +1,33 @@
 package tests
 
 import (
-	"fmt"
 	"net/http"
-	"os"
-	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
-	"github.com/stretchr/testify/require"
 )
 
 const (
 	poolsEndpoint = "liquidity/cosmos/liquidity/v1beta1/pools"
-	baseUrl       = "%s://%s%s"
 )
 
-func TestPoolsData(t *testing.T) {
-	t.Parallel()
+func (suite *testCtx) TestPoolsData() {
+	suite.T().Parallel()
 
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	client := utils.CreateNetClient(env, t)
+	url := suite.Client.BuildUrl(poolsEndpoint)
 
-	url := fmt.Sprintf(baseUrl+poolsEndpoint, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
+	resp, err := suite.Client.Get(url)
+	suite.NoError(err)
 
-	resp, err := client.Get(url)
-	require.NoError(t, err)
-
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	suite.Equal(http.StatusOK, resp.StatusCode)
 
 	var respValues map[string]interface{}
-	utils.RespBodyToMap(resp.Body, &respValues, t)
+	utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 	err = resp.Body.Close()
-	require.NoError(t, err)
+	suite.NoError(err)
 
-	require.NotNil(t, respValues)
+	suite.NotNil(respValues)
 
 	pools, _ := respValues["pools"]
-	require.NotEmpty(t, pools)
+	suite.NotEmpty(pools)
 }

@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -24,23 +21,31 @@ type EnvChain struct {
 	Payload []byte
 }
 
-func LoadChainsInfo(env string, t *testing.T) []EnvChain {
+func LoadChainsInfo(env string) ([]EnvChain, error) {
 
-	require.NotEmpty(t, env)
+	if env == "" {
+		return nil, fmt.Errorf("got nil ENV env")
+	}
 
 	d := fmt.Sprintf(chainsFolderPath, env)
 	files, err := ioutil.ReadDir(d)
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	var chains []EnvChain
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), jsonSuffix) {
 			jFile, err := ioutil.ReadFile(d + f.Name())
-			require.NoError(t, err)
+			if err != nil {
+				return nil, err
+			}
 
 			temp := map[string]interface{}{}
 			err = json.Unmarshal(jFile, &temp)
-			require.NoError(t, err)
+			if err != nil {
+				return nil, err
+			}
 
 			ch := EnvChain{}
 			ch.Payload = jFile
@@ -50,7 +55,78 @@ func LoadChainsInfo(env string, t *testing.T) []EnvChain {
 		}
 	}
 
-	return chains
+	return chains, nil
+}
+
+func LoadClientChainsInfo(env string) ([]EnvChain, error) {
+	if env == "" {
+		return nil, fmt.Errorf("got nil ENV env")
+	}
+
+	d := fmt.Sprintf(clientChainsFolderPath, env)
+	files, err := ioutil.ReadDir(d)
+	if err != nil {
+		return nil, err
+	}
+
+	var chains []EnvChain
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), jsonSuffix) {
+			jFile, err := ioutil.ReadFile(d + f.Name())
+			if err != nil {
+				return nil, err
+			}
+
+			temp := map[string]interface{}{}
+			err = json.Unmarshal(jFile, &temp)
+			if err != nil {
+				return nil, err
+			}
+
+			ch := EnvChain{}
+			ch.Payload = jFile
+			ch.Name = temp[nameKey].(string)
+			chains = append(chains, ch)
+		}
+	}
+
+	return chains, nil
+}
+
+func LoadSingleChainInfo(env string, chainName string) (EnvChain, error) {
+	d := fmt.Sprintf(chainsFolderPath, env)
+	files, err := ioutil.ReadDir(d)
+	if err != nil {
+		return EnvChain{}, err
+	}
+
+	var chain EnvChain
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), jsonSuffix) {
+			jFile, err := ioutil.ReadFile(d + f.Name())
+			if err != nil {
+				return EnvChain{}, err
+			}
+
+			temp := map[string]interface{}{}
+			err = json.Unmarshal(jFile, &temp)
+			if err != nil {
+				return EnvChain{}, err
+			}
+
+			ch := EnvChain{}
+			ch.Payload = jFile
+			ch.Enabled = temp[enabledKey].(bool)
+			ch.Name = temp[nameKey].(string)
+			chain = ch
+
+			if ch.Name == chainName {
+				return chain, nil
+			}
+		}
+	}
+
+	return chain, nil
 }
 
 func LoadClientChainsInfo(env string, t *testing.T) []EnvChain {

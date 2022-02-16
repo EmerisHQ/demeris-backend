@@ -1,62 +1,45 @@
 package tests
 
 import (
-	"fmt"
 	"io/ioutil"
-	"os"
-	"strings"
-	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
-	"github.com/stretchr/testify/require"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 )
 
 const (
-	baseUrl                = "%s://%s%s"
 	cachedPoolsEndPoint    = "cached/cosmos/liquidity/v1beta1/pools"
 	liquidityPoolsEndPoint = "liquidity/cosmos/liquidity/v1beta1/pools"
 )
 
-func TestCachedPools(t *testing.T) {
-	t.Parallel()
-
-	env := os.Getenv("ENV")
-	emIngress, _ := utils.LoadIngressInfo(env, t)
-	require.NotNil(t, emIngress)
-
-	client := utils.CreateNetClient(env, t)
-	require.NotNil(t, client)
+func (suite *testCtx) TestCachedPools() {
+	suite.T().Parallel()
 
 	// get cached pools
-	urlPattern := strings.Join([]string{baseUrl, cachedPoolsEndPoint}, "")
-	url := fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	cachedResp, err := client.Get(url)
-	require.NoError(t, err)
+	url := suite.Client.BuildUrl(cachedPoolsEndPoint)
+	cachedResp, err := suite.Client.Get(url)
+	suite.NoError(err)
 
 	defer cachedResp.Body.Close()
 
 	var cachedValues liquiditytypes.QueryLiquidityPoolsResponse
 	body, err := ioutil.ReadAll(cachedResp.Body)
-	require.NoError(t, err)
+	suite.NoError(err)
 
-	require.NoError(t, tmjson.Unmarshal(body, &cachedValues))
+	suite.NoError(tmjson.Unmarshal(body, &cachedValues))
 
 	// get liquidity pools
-	urlPattern = strings.Join([]string{baseUrl, liquidityPoolsEndPoint}, "")
-
-	url = fmt.Sprintf(urlPattern, emIngress.Protocol, emIngress.Host, emIngress.APIServerPath)
-	liquidityResp, err := client.Get(url)
-	require.NoError(t, err)
+	liquidityUrl := suite.Client.BuildUrl(liquidityPoolsEndPoint)
+	liquidityResp, err := suite.Client.Get(liquidityUrl)
+	suite.NoError(err)
 
 	defer liquidityResp.Body.Close()
 
 	var liquidityValues liquiditytypes.QueryLiquidityPoolsResponse
 	body, err = ioutil.ReadAll(liquidityResp.Body)
-	require.NoError(t, err)
+	suite.NoError(err)
 
-	require.NoError(t, tmjson.Unmarshal(body, &liquidityValues))
+	suite.NoError(tmjson.Unmarshal(body, &liquidityValues))
 
-	require.Equal(t, liquidityValues.Pools, cachedValues.Pools)
+	suite.Equal(liquidityValues.Pools, cachedValues.Pools)
 }

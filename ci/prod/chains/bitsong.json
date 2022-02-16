@@ -1,0 +1,47 @@
+{
+  "chain_name": "bitsong",
+  "derivation_path": "m/44'/639'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/bitsong.svg",
+  "enabled": true,
+  "valid_block_thresh": "20s",
+  "display_name": "BitSong",
+  "cosmos_sdk_version": "v0.42.10",
+  "demeris_addresses": ["feeaddress"],
+  "primary_channel": {
+      "osmosis": "channel-0",
+      "cosmos-hub": "channel-1",
+      "juno":"channel-5"
+    },
+  "denoms": [
+    {
+      "display_name": "BTSG",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": true,
+      "price_id": "bitsong",
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "gas_price_levels": { "low": 0.01, "average": 0.025, "high": 0.03},
+      "name": "ubtsg",
+      "logo": "https://storage.googleapis.com/emeris/logos/bitsong.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "BTSG"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "bitsong",
+    "chain_id": "bitsong-2b",
+    "bech32_config": {
+      "main_prefix": "bitsong",
+      "prefix_account": "bitsong",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/bitsong"
+}

@@ -2,6 +2,7 @@ package test_utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"testing"
@@ -17,5 +18,5 @@ func RespBodyToMap(jsonReader io.ReadCloser, data *map[string]interface{}, t *te
 
 func StringToMap(jsonString []byte, data *map[string]interface{}, t *testing.T) {
 	err := json.Unmarshal(jsonString, &data)
-	require.NoError(t, err)
+	require.NoError(t, err, fmt.Sprintf("tried to unmarshall: %s", jsonString))
 }
