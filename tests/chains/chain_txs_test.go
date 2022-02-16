@@ -15,7 +15,9 @@ import (
 
 const (
 	chainTxsEndpoint = "chain/%s/txs/%s"
-	randomTxHash     = "56FF608A76A01D9178039D17949F53ED8E3969752D546E5474605A67B13A42A0"
+
+	// will use this only for disabled chains
+	randomTxHash = "56FF608A76A01D9178039D17949F53ED8E3969752D546E5474605A67B13A42A0"
 )
 
 func (suite *testCtx) TestTxsEndpoint() {
@@ -26,13 +28,14 @@ func (suite *testCtx) TestTxsEndpoint() {
 			var cc chainClient.Client
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.env, ch.Name, cc)
+
+			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
 			// assert
 			if !cli.Enabled {
 				// arrange
-				url := fmt.Sprintf(baseUrl+chainTxsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, randomTxHash)
+				url := suite.Client.BuildUrl(chainTxsEndpoint, ch.Name, randomTxHash)
 				// act
-				resp, err := suite.client.Get(url)
+				resp, err := suite.Client.Get(url)
 				suite.Require().NoError(err)
 				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 				err = resp.Body.Close()
@@ -65,9 +68,9 @@ func (suite *testCtx) TestTxsEndpoint() {
 				time.Sleep(time.Second * 8)
 
 				// arrange
-				url := fmt.Sprintf(baseUrl+chainTxsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, hash)
+				url := suite.Client.BuildUrl(chainTxsEndpoint, ch.Name, hash)
 				// act
-				resp, err := suite.client.Get(url)
+				resp, err := suite.Client.Get(url)
 				suite.Require().NoError(err)
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
