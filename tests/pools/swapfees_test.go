@@ -18,7 +18,7 @@ const (
 func (suite *testCtx) TestPoolSwapFees() {
 	suite.T().Parallel()
 
-	url := fmt.Sprintf(baseUrl+poolsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	url := suite.Client.BuildUrl(poolsEndpoint)
 
 	resp, err := suite.Client.Get(url)
 	suite.Require().NoError(err)
@@ -36,7 +36,7 @@ func (suite *testCtx) TestPoolSwapFees() {
 	suite.Require().NoError(err)
 
 	for _, pool := range poolsRes.Pools {
-		url := fmt.Sprintf(baseUrl+swapfeesendpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, pool.Id)
+		url := suite.Client.BuildUrl(swapfeesendpoint, pool.Id)
 		resp, err := suite.Client.Get(url)
 		suite.Require().NoError(err)
 		suite.Require().Equal(http.StatusOK, resp.StatusCode)
@@ -46,9 +46,11 @@ func (suite *testCtx) TestPoolSwapFees() {
 
 		var fees api.SwapFeesResponse
 		suite.Require().NoError(json.Unmarshal(data, &fees))
-		suite.Require().NotEmpty(fees.Fees)
-
-		suite.Require().True(fees.Fees.IsAllPositive())
+		suite.Require().NotEmpty(fees)
+		if len(fees.Fees) != 0 {
+			suite.NotEmpty(fees.Fees, fmt.Sprintf("Pool:%d", pool.Id))
+			suite.True(fees.Fees.IsAllPositive(), fmt.Sprintf("Pool:%d", pool.Id))
+		}
 
 		err = resp.Body.Close()
 		suite.Require().NoError(err)

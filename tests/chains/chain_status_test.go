@@ -21,7 +21,7 @@ func (suite *testCtx) TestChainStatus() {
 			t.Parallel()
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+statusEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name)
+			url := suite.Client.BuildUrl(statusEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)

@@ -26,7 +26,7 @@ func (suite *testCtx) TestChainValidators() {
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			// arrange
-			url := fmt.Sprintf(baseUrl+chainValidatorsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name)
+			url := suite.Client.BuildUrl(chainValidatorsEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)

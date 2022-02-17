@@ -27,7 +27,7 @@ require (
 	github.com/iamolegga/enviper v1.4.0 // indirect
 	github.com/jackc/pgx/v4 v4.15.0 // indirect
 	github.com/jmoiron/sqlx v1.3.3 // indirect
-	github.com/lib/pq v1.10.4
+	github.com/lib/pq v1.10.4 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/spf13/viper v1.10.1 // indirect
 	github.com/stretchr/testify v1.7.1-0.20210427113832-6241f9ab9942
@@ -44,7 +44,7 @@ require (
 
 require (
 	github.com/alicebob/miniredis/v2 v2.18.0 // indirect
-	github.com/allinbits/demeris-backend-models v1.0.2-0.20220214093947-8c4541cccad4
+	github.com/allinbits/demeris-backend-models v1.1.0
 	github.com/allinbits/emeris-utils v1.0.1
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/tendermint/starport v0.16.1

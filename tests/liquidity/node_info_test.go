@@ -21,7 +21,8 @@ func (suite *testCtx) TestLiquidityStatus() {
 			suite.T().Run(ch.Name, func(t *testing.T) {
 
 				// arrange
-				url := fmt.Sprintf(baseUrl+liquidityNodeEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+				url := suite.Client.BuildUrl(liquidityNodeEndpoint)
+
 				// act
 				resp, err := suite.Client.Get(url)
 				suite.NoError(err)

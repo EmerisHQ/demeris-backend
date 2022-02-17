@@ -22,7 +22,7 @@ func (suite *testCtx) TestChainSupply() {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+chainSupplyEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name)
+			url := suite.Client.BuildUrl(chainSupplyEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)

@@ -1,7 +1,6 @@
 package test_utils
 
 import (
-	"net/http"
 	"os"
 
 	"github.com/stretchr/testify/suite"
@@ -12,7 +11,7 @@ type BaseTestSuite struct {
 	Env       string
 	EmIngress EmerisIngress
 	Chains    []EnvChain
-	Client    *http.Client
+	Client    *HttpClient
 }
 
 func (suite *BaseTestSuite) SetupTest() {
@@ -29,7 +28,7 @@ func (suite *BaseTestSuite) SetupTest() {
 
 	suite.Chains = chains
 
-	client, err := CreateNetClient(suite.Env)
+	client, err := NewHttpClient(suite.Env, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
 	suite.Assert().NoError(err, "err value:", err)
 
 	suite.Client = client
