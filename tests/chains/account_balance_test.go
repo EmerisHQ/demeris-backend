@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	models "github.com/allinbits/demeris-backend-models/api"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
@@ -53,19 +54,18 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			suite.Require().NoError(err)
 			suite.Require().NotNil(data)
 
-			//TODO: Modify below code once https://github.com/allinbits/demeris-backend-models/pull/20 is merged
-			// var row []apiServer.Balance
-			// err = json.Unmarshal(data, &row)
-			// suite.Require().NoError(err)
-			// suite.Require().NotNil(row)
+			var row []models.Balance
+			err = json.Unmarshal(data, &row)
+			suite.Require().NoError(err)
+			suite.Require().NotNil(row)
 
-			// for _, v := range row {
-			// 	if v.Denom == cli.Denom {
-			// 		bal, err := cli.GetAccountBalances(cli.Key, cli.Denom)
-			// 		suite.Require().NoError(err)
-			// 		suite.Require().Equal(bal.Amount, v.Amount)
-			// 	}
-			// }
+			for _, v := range row {
+				if v.BaseDenom == cli.Denom {
+					bal, err := cli.GetAccountBalances(cli.Key, cli.Denom)
+					suite.Require().NoError(err)
+					suite.Require().Equal(bal.Amount, v.Amount)
+				}
+			}
 		})
 	}
 }

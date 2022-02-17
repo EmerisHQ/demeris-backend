@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	models "github.com/allinbits/demeris-backend-models/api"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
@@ -13,7 +12,7 @@ import (
 )
 
 const (
-	AccountNumbersEndpoint = "account/%v/numbers"
+	accountNumbersEndpoint = "account/%v/numbers"
 )
 
 func (suite *testCtx) TestGetAccountNumbers() {
@@ -30,8 +29,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			hexAddress, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
 
-			urlPattern := strings.Join([]string{baseUrl, AccountNumbersEndpoint}, "")
-			url := fmt.Sprintf(urlPattern, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, hex.EncodeToString(hexAddress))
+			url := suite.Client.BuildUrl(accountNumbersEndpoint, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
