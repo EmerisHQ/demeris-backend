@@ -1,0 +1,97 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: stargaze
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: stargaze
+  app:
+    cliName: starsd
+    daemonName: starsd
+    name: stargaze
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.1ustars
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: stargaze
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/stargaze
+    version: v2.0.0
+    build:
+      repository: https://github.com/public-awesome/stargaze
+  join:
+    genesis:
+      url: https://storage.googleapis.com/emeris/genesis/stargaze-1.json
+    seeds:
+      - address: 174.138.124.7
+        id: 70ed826888f102c7c1ceb4d07287956628a53508
+        port: 36656
+      - address: 104.248.101.113
+        id: 722079345d941cd2da3daedea548c909d9b83ec5
+        port: 36656
+      - address: sg-seed.blockpane.com
+        id: d5fc4f479c4e212c96dff5704bb2468ea03b8ae3
+        port: 26656
+      - address: stargaze.seed.rhinostake.com
+        id: babc3f3f7804933265ec9c40ad94f4da8e9e0017
+        port: 16656
+  moniker: emeris
+  persistence:
+    size: 650Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 8Gi
+      requests:
+        cpu: "1"
+        memory: 4Gi
