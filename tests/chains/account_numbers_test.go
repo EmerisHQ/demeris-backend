@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	getBalanceEndpoint = "/account/%v/balance"
+	accountNumbersEndpoint = "account/%v/numbers"
 )
 
-func (suite *testCtx) TestGetBalanceOfAnyAccount() {
+func (suite *testCtx) TestGetAccountNumbers() {
 	suite.T().Parallel()
 
 	for _, ch := range suite.clientChains {
@@ -29,11 +29,18 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			hexAddress, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
 
-			url := suite.Client.BuildUrl(getBalanceEndpoint, hex.EncodeToString(hexAddress))
+			url := suite.Client.BuildUrl(accountNumbersEndpoint, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 
+			if !cli.Enabled {
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				err = resp.Body.Close()
+				suite.Require().NoError(err)
+
+				return
+			}
 			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
@@ -42,21 +49,10 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
 
-			if !cli.Enabled {
-				return
-			}
+			var numbers models.AccountNumbersResponse
+			suite.Require().NoError(json.Unmarshal(data, &numbers))
+			suite.Require().NotEmpty(numbers.Numbers)
 
-			var balances models.BalancesResponse
-			suite.Require().NoError(json.Unmarshal(data, &balances))
-			suite.Require().NotEmpty(balances.Balances)
-
-			for _, v := range balances.Balances {
-				if v.BaseDenom == cli.Denom && cli.Enabled {
-					bal, err := cli.GetAccountBalances(hexAddress.String(), cli.Denom)
-					suite.Require().NoError(err)
-					suite.Require().Equal(bal.String(), v.Amount)
-				}
-			}
 		})
 	}
 }
