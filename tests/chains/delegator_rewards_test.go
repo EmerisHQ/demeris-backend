@@ -23,14 +23,15 @@ func (suite *testCtx) TestDelegatorRewards() {
 			var cc chainClient.Client
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.env, ch.Name, cc)
+
+			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
 			address, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
+
 			// arrange
-			url := fmt.Sprintf(baseUrl+delegatorRewardsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath,
-				hex.EncodeToString(address), ch.Name)
+			url := suite.Client.BuildUrl(delegatorRewardsEndpoint, hex.EncodeToString(address), ch.Name)
 			// act
-			resp, err := suite.client.Get(url)
+			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 			// assert
 			if !cli.Enabled {

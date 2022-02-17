@@ -10,7 +10,7 @@
       "emoney": "channel-17",
       "iris": "channel-8",
       "ixo": "channel-15",
-      "osmosis": "channel-9",
+      "osmosis": "channel-16",
       "persistence": "channel-10",
       "regen": "channel-11",
       "sentinel": "channel-13",
@@ -25,7 +25,7 @@
         "verified": true,
         "stakable": true,
         "ticker": "TICK",
-        "price_id": "1",
+        "price_id": "microtick",
         "fee_token": true,
         "gas_price_levels": {
           "low": 0.0005,
@@ -63,9 +63,5 @@
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": [],
     "block_explorer": "\"\"",
-    "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
     "cosmos_sdk_version": "v0.42.10"
   }

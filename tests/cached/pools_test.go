@@ -1,9 +1,7 @@
 package tests
 
 import (
-	"fmt"
 	"io/ioutil"
-	"strings"
 
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -18,9 +16,8 @@ func (suite *testCtx) TestCachedPools() {
 	suite.T().Parallel()
 
 	// get cached pools
-	urlPattern := strings.Join([]string{baseUrl, cachedPoolsEndPoint}, "")
-	url := fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
-	cachedResp, err := suite.client.Get(url)
+	url := suite.Client.BuildUrl(cachedPoolsEndPoint)
+	cachedResp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	defer cachedResp.Body.Close()
@@ -32,10 +29,8 @@ func (suite *testCtx) TestCachedPools() {
 	suite.NoError(tmjson.Unmarshal(body, &cachedValues))
 
 	// get liquidity pools
-	urlPattern = strings.Join([]string{baseUrl, liquidityPoolsEndPoint}, "")
-
-	url = fmt.Sprintf(urlPattern, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
-	liquidityResp, err := suite.client.Get(url)
+	liquidityUrl := suite.Client.BuildUrl(liquidityPoolsEndPoint)
+	liquidityResp, err := suite.Client.Get(liquidityUrl)
 	suite.NoError(err)
 
 	defer liquidityResp.Body.Close()

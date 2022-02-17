@@ -17,16 +17,16 @@ const (
 func (suite *testCtx) TestPrimaryChannelCounterparty() {
 	suite.T().Parallel()
 
-	for _, ch := range suite.chains {
+	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			if !ch.Enabled {
 				// checking /chain/XXX/primary_channel/ZZZ returns 400 if chain disabled
-				for _, otherChains := range suite.chains {
+				for _, otherChains := range suite.Chains {
 					if otherChains.Name != ch.Name {
 						// arrange
-						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, otherChains.Name)
+						counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.Name, otherChains.Name)
 						// act
-						resp, err := suite.client.Get(counterPartyURL)
+						resp, err := suite.Client.Get(counterPartyURL)
 						suite.NoError(err)
 
 						suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
@@ -47,9 +47,9 @@ func (suite *testCtx) TestPrimaryChannelCounterparty() {
 				// test for existing channels
 				for counterParty, channel_name := range expectedChannels {
 					// arrange
-					counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, counterParty)
+					counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.Name, counterParty)
 					// act
-					resp, err := suite.client.Get(counterPartyURL)
+					resp, err := suite.Client.Get(counterPartyURL)
 					suite.NoError(err)
 
 					suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, counterParty, resp.StatusCode))
@@ -67,12 +67,12 @@ func (suite *testCtx) TestPrimaryChannelCounterparty() {
 				}
 
 				// test for non-existing channels
-				for _, otherChains := range suite.chains {
+				for _, otherChains := range suite.Chains {
 					if _, ok := expectedChannels[otherChains.Name]; !ok && otherChains.Name != ch.Name {
 						// arrange
-						counterPartyURL := fmt.Sprintf(baseUrl+channelCounterparty, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name, otherChains.Name)
+						counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.Name, otherChains.Name)
 						// act
-						resp, err := suite.client.Get(counterPartyURL)
+						resp, err := suite.Client.Get(counterPartyURL)
 						suite.NoError(err)
 
 						suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))

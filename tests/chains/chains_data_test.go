@@ -14,9 +14,9 @@ func (suite *testCtx) TestChainsData() {
 	suite.T().Parallel()
 
 	// arrange
-	url := fmt.Sprintf(baseUrl+chainsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath)
+	url := suite.Client.BuildUrl(chainsEndpoint)
 	// act
-	resp, err := suite.client.Get(url)
+	resp, err := suite.Client.Get(url)
 	suite.NoError(err)
 
 	suite.Equal(http.StatusOK, resp.StatusCode)
@@ -28,10 +28,10 @@ func (suite *testCtx) TestChainsData() {
 	suite.NoError(err)
 
 	expValues := make(map[string][]map[string]interface{}, 0)
-	for _, ch := range suite.chains {
+	for _, ch := range suite.Chains {
 		if ch.Enabled {
-			chainUrl := fmt.Sprintf(baseUrl+"chain/%s", suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath, ch.Name)
-			chainResp, err := suite.client.Get(chainUrl)
+			chainUrl := suite.Client.BuildUrl("chain/%s", ch.Name)
+			chainResp, err := suite.Client.Get(chainUrl)
 			suite.NoError(err)
 
 			suite.Equal(http.StatusOK, chainResp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, chainResp.StatusCode))

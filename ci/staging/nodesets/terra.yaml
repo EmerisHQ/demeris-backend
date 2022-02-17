@@ -1,0 +1,105 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: terra
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: terra
+  app:
+    cliName: terrad
+    daemonName: terrad
+    name: terra
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 20s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.01uluna
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: terra
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: terramoney/core
+    version: v0.5.13
+  join:
+    genesis:
+      url: https://columbus-genesis.s3.ap-northeast-1.amazonaws.com/columbus-5-genesis.json
+    seeds:
+      - id: e999fc20aa5b87c1acef8677cf495ad85061cfb9
+        address: seed.terra.delightlabs.io
+      - id: 6d8e943c049a80c161a889cb5fcf3d184215023e
+        address: public-seed2.terra.dev
+      - id: 87048bf71526fb92d73733ba3ddb79b7a83ca11e
+        address: public-seed.terra.dev
+      - id: 877c6b9f8fae610a4e886604399b33c0c7a985e2
+        address: terra.mainnet.seed.forbole.com
+        port: 10056
+      - id: 92bcd725fb130530263704a4716da9c942becfa7
+        address: seed.mcontrol.ml
+      - id: 7080247c1c78f86c6df77f3e714fb4983ac3c94f
+        address: seed.terra-mainnet.sabai.finance
+      - id: eb67380db62292506d41f28b1b77785a62a0f298
+        address: seed.terra.kkvalidator.com
+      - id: 4f2d05162119a665b267599d3c86a936d65a9af0
+        address: seed.terra.rockx.com
+      - id: 4df743bfcf507e603411c712d8a9b3adb5e44498
+        address: seed.terra.genesislab.net
+      - id: 6ddd22cca53d2f0d03043614fc9f76acc72def8c
+        address: seed.terra-mainnet.everstake.one
+  moniker: emeris
+  persistence:
+    size: 1200Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 32Gi
+      requests:
+        cpu: "1"
+        memory: 32Gi
+

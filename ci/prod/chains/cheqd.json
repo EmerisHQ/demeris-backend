@@ -1,0 +1,58 @@
+{
+    "enabled": true,
+    "chain_name": "cheqd",
+    "logo": "https://storage.googleapis.com/emeris/logos/cheq.svg",
+    "display_name": "cheqd",
+    "cosmos_sdk_version": "v0.44.5",
+    "primary_channel": {
+      "cosmos-hub": "channel-1",
+      "osmosis": "channel-0"
+    },
+    "denoms": [
+      {
+        "display_name": "CHEQ",
+        "stakable": true,
+        "fee_token": true,
+        "fetch_price": true,
+        "price_id": "cheqd-network",
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 42,
+        "gas_price_levels": {
+          "low": 25,
+          "average": 30,
+          "high": 50
+        },
+        "name": "ncheq",
+        "logo": "https://storage.googleapis.com/emeris/logos/cheq.svg",
+        "verified": true,
+        "precision": 9,
+        "ticker": "CHEQ"
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "cheqd",
+      "chain_id": "cheqd-mainnet-1",
+      "bech32_config": {
+        "main_prefix": "cheqd",
+        "prefix_account": "cheqd",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "cheqd",
+        "acc_pub": "cheqdpub",
+        "val_addr": "cheqdvaloper",
+        "val_pub": "cheqdvaloperpub",
+        "cons_addr": "cheqdvalcons",
+        "cons_pub": "cheqdvalconspub"
+      }
+    },
+    "valid_block_thresh": "20s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": ["keplr"],
+    "block_explorer": "\"\""
+  }

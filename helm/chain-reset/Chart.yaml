@@ -1,0 +1,5 @@
+apiVersion: v2
+name: chain-reset
+description: reset a chain in Emeris by deleting data from database and re-importing with tracelistener
+version: 0.0.1
+appVersion: 0.0.1

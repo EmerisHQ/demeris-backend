@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-enable-chain
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | indent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "chart.labels" . | indent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      initContainers:
+      - name: wait-for-scale-up
+        image: groundnuty/k8s-wait-for:v1.3
+        imagePullPolicy: Always
+        args:
+        - "job"
+        - "{{ .Release.Name }}-scale-up"
+      - name: wait-for-nodes-ready
+        image: groundnuty/k8s-wait-for:v1.3
+        imagePullPolicy: Always
+        args:
+        - "pod"
+        - "-lnodeset={{ .Release.Name }}"
+      containers:
+      - name: cockroach-client
+        image: "cockroachdb/cockroach:v21.2.5"
+        args:
+        - sql
+        - --insecure
+        - --host=cockroachdb-public
+        - --database=cns
+        - -e
+        - UPDATE cns.chains SET enabled = true WHERE chain_name = '{{ .Values.chain }}';
+      restartPolicy: Never
+  backoffLimit: 0
