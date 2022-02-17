@@ -1,0 +1,123 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: sommelier
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: sommelier
+  app:
+    cliName: sommelier
+    daemonName: sommelier
+    name: sommelier
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.005usomm
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: sommelier
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/sommelier
+    # name: ghcr.io/peggyjv/sommelier-sommelier
+    version: v3.1.1
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/PeggyJV/SommelierNetwork/main/genesis.json
+    persistentPeers:
+      - id: e1d1dd22a63b1899ac51c8c96416f77c8ef98231
+        address: 65.108.57.224
+        port: 26656
+      - id: c94fd60124e3656df54ff965d178e36c760c195d
+        address: 65.108.57.224
+        port: 26656
+      - id: 65cc609f9ae965323bd03d1b84f7fa340e6b6c7d
+        address: 51.38.52.210
+        port: 36656
+      - id: 877561c4a8f9e66548d467a4057ba4789e586c3d
+        address: 185.146.148.109
+        port: 26656
+      - id: 759a61eade50cb48e2a6f974fab679096d1de916
+        address: 35.233.221.80
+        port: 26656
+      - id: 14ac13745a563876740b72637ab9a3539542fe2b
+        address: 35.247.55.203
+        port: 26656
+      - id: bebf759f5706137168e3a7158e4495865a04cca9
+        address: 35.230.37.28
+        port: 26656
+      - id: 80340e014f8433ce023b93e0e8644feac9ac6dd0
+        address: 3.65.177.133
+        port: 26656
+      - id: b23c862feba8ef4179bb8b9e37523e65c432c810
+        address: sommelier.standardcryptovc.com
+        port: 26656
+      - id: a96d69179e4b72f728b9dd4dbe40400701515fee
+        address: 80.64.208.51
+        port: 26656
+      - id: 048d66b8b8b1b6bf5d088dd04e91cc52d38a09d8
+        address: 35.215.30.79
+        port: 26656
+      - id: b2900b9e964c12dc2de17fd974bb452bca894f83
+        address: 51.79.231.186
+        port: 26656
+      - id: e1d1dd22a63b1899ac51c8c96416f77c8ef98231
+        address: sommelier.tendermint.cloud
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 200Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "1"
+        memory: 2Gi

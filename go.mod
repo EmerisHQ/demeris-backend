@@ -44,7 +44,7 @@ require (
 
 require (
 	github.com/alicebob/miniredis/v2 v2.18.0 // indirect
-	github.com/allinbits/demeris-backend-models v1.0.2-0.20220214093947-8c4541cccad4
+	github.com/allinbits/demeris-backend-models v1.1.0
 	github.com/allinbits/emeris-utils v1.0.1
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/tendermint/starport v0.16.1
