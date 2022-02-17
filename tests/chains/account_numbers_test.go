@@ -4,11 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	models "github.com/allinbits/demeris-backend-models/api"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
 const (
@@ -43,21 +43,15 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			}
 			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-			var respValues map[string]interface{}
-			utils.RespBodyToMap(resp.Body, &respValues, suite.T())
+			data, err := ioutil.ReadAll(resp.Body)
+			suite.Require().NoError(err)
 
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
-			suite.Require().NotNil(respValues)
 
-			data, err := json.Marshal(respValues["numbers"])
-			suite.Require().NoError(err)
-			suite.Require().NotNil(data)
-
-			var row []models.AccountNumbersResponse
-			err = json.Unmarshal(data, &row)
-			suite.Require().NoError(err)
-			suite.Require().NotNil(row)
+			var numbers models.AccountNumbersResponse
+			suite.Require().NoError(json.Unmarshal(data, &numbers))
+			suite.Require().NotEmpty(numbers.Numbers)
 
 		})
 	}

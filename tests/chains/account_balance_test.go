@@ -4,11 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	models "github.com/allinbits/demeris-backend-models/api"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
 const (
@@ -34,36 +34,27 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 
-			if !cli.Enabled {
-				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
-				err = resp.Body.Close()
-				suite.Require().NoError(err)
-
-				return
-			}
 			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-			var respValues map[string]interface{}
-			utils.RespBodyToMap(resp.Body, &respValues, suite.T())
+			data, err := ioutil.ReadAll(resp.Body)
+			suite.Require().NoError(err)
 
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
-			suite.Require().NotNil(respValues)
 
-			data, err := json.Marshal(respValues["balances"])
-			suite.Require().NoError(err)
-			suite.Require().NotNil(data)
+			if !cli.Enabled {
+				return
+			}
 
-			var row []models.Balance
-			err = json.Unmarshal(data, &row)
-			suite.Require().NoError(err)
-			suite.Require().NotNil(row)
+			var balances models.BalancesResponse
+			suite.Require().NoError(json.Unmarshal(data, &balances))
+			suite.Require().NotEmpty(balances.Balances)
 
-			for _, v := range row {
-				if v.BaseDenom == cli.Denom {
-					bal, err := cli.GetAccountBalances(cc.Key, cli.Denom)
+			for _, v := range balances.Balances {
+				if v.BaseDenom == cli.Denom && cli.Enabled {
+					bal, err := cli.GetAccountBalances(hexAddress.String(), cli.Denom)
 					suite.Require().NoError(err)
-					suite.Require().Equal(bal.Amount, v.Amount)
+					suite.Require().Equal(bal.String(), v.Amount)
 				}
 			}
 		})
