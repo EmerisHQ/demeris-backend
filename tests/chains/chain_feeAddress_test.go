@@ -17,7 +17,7 @@ func (suite *testCtx) TestChainFeeAddress() {
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			// arrange
-			url := fmt.Sprintf(baseUrl+chainFeeAddressEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name)
+			url := suite.Client.BuildUrl(chainFeeAddressEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)

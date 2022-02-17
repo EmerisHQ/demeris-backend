@@ -2,7 +2,6 @@ package tests
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -14,7 +13,7 @@ func (suite *testCtx) TestChainsFeeAddresses() {
 	suite.T().Parallel()
 
 	// arrange
-	url := fmt.Sprintf(baseUrl+chainsFeeAddressesEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	url := suite.Client.BuildUrl(chainsFeeAddressesEndpoint)
 	// act
 	resp, err := suite.Client.Get(url)
 	suite.NoError(err)

@@ -20,7 +20,7 @@ func (suite *testCtx) TestAnnualProvisions() {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+mintAnnualProvisionsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name)
+			url := suite.Client.BuildUrl(mintAnnualProvisionsEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)

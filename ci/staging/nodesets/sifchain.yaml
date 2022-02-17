@@ -1,0 +1,109 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: sifchain
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: sifchain
+  app:
+    cliName: sifnoded
+    daemonName: sifnoded
+    name: sifchain
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.25rowan
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: sifchain
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/sifchain
+    version: v0.10.1
+    build:
+      repository: https://github.com/Sifchain/sifnode
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/Sifchain/networks/master/betanet/sifchain-1/genesis.json
+    persistentPeers:
+      - address: 44.235.108.41
+        id: 0d4981bdaf4d5d73bad00af3b1fa9d699e4d3bc0
+        port: 26656
+      - address: 13.55.247.60
+        id: bcc2d07a14a8a0b3aa202e9ac106dec0bef91fda
+        port: 26656
+      - address: 34.248.110.88
+        id: 663dec65b754aceef5fcccb864048305208e7eb2
+        port: 26656
+      - address: 52.76.185.17
+        id: 0120f0a48e7e81cc98829ef4f5b39480f11ecd5a
+        port: 26656
+      - address: 44.238.121.65
+        id: 6535497f0152293d773108774a705b86c2249a9c
+        port: 26656
+      - address: 34.255.133.248
+        id: fdf5cffc2b20a20fab954d3b6785e9c382762d14
+        port: 26656
+      - address: 13.211.43.177
+        id: 8c240f71f9e060277ce18dc09d82d3bbb05d1972
+        port: 26656
+      - address: 18.138.208.95
+        id: 9fbcb6bd5a7f20a716564157c4f6296d2faf5f64
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 500Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 2Gi

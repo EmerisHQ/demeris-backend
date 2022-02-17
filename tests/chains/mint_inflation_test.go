@@ -20,7 +20,7 @@ func (suite *testCtx) TestMintInflation() {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 
 			// arrange
-			url := fmt.Sprintf(baseUrl+mintInflationEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath, ch.Name)
+			url := suite.Client.BuildUrl(mintInflationEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)

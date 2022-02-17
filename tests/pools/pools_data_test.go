@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"net/http"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -14,7 +13,7 @@ const (
 func (suite *testCtx) TestPoolsData() {
 	suite.T().Parallel()
 
-	url := fmt.Sprintf(baseUrl+poolsEndpoint, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
+	url := suite.Client.BuildUrl(poolsEndpoint)
 
 	resp, err := suite.Client.Get(url)
 	suite.NoError(err)
