@@ -1,0 +1,61 @@
+{
+    "enabled": true,
+    "chain_name": "akash",
+    "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
+    "display_name": "Akash",
+    "primary_channel": {
+      "cosmos-hub": "channel-0"
+    },
+    "denoms": [
+      {
+        "name": "uakt",
+        "display_name": "AKT",
+        "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "AKT",
+        "price_id": "akash-network",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.036,
+          "average": 0.09,
+          "high": 0.108
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 40000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "akash",
+      "chain_id": "akash-testnet",
+      "bech32_config": {
+        "main_prefix": "akash",
+        "prefix_account": "akash",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "akash",
+        "acc_pub": "akashpub",
+        "val_addr": "akashvaloper",
+        "val_pub": "akashvaloperpub",
+        "cons_addr": "akashvalcons",
+        "cons_pub": "akashvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "public_node_endpoints": {
+      "tendermint_rpc": ["http://localhost:8000/v1/chain/akash/rpc"],
+      "cosmos_api": ["http://localhost:8000/v1/chain/akash/api"]
+    },
+    "cosmos_sdk_version": "v0.44.5"
+  }
