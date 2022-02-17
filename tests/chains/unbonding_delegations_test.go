@@ -79,7 +79,6 @@ func (suite *testCtx) TestUnbondingDelegations() {
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
 
-			// TODO: modify backend-model dependency version in go.mod once api-server models are included in backend-models repo
 			var undelegations api.UnbondingDelegationsResponse
 			suite.Require().NoError(json.Unmarshal(data, &undelegations))
 			suite.Require().NotEmpty(undelegations.UnbondingDelegations)
