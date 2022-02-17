@@ -1,16 +1,18 @@
 package tests
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
+	"github.com/allinbits/demeris-backend-models/api"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 )
 
 const (
-	chainTxsEndpoint = "account/%v/delegatorrewards/%s"
-	randomTxHash     = "56FF608A76A01D9178039D17949F53ED8E3969752D546E5474605A67B13A42A0"
+	delegatorRewardsEndpoint = "account/%v/delegatorrewards/%s"
 )
 
 func (suite *testCtx) TestDelegatorRewards() {
@@ -25,8 +27,8 @@ func (suite *testCtx) TestDelegatorRewards() {
 			address, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
 			// arrange
-			url := fmt.Sprintf(baseUrl+chainTxsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath,
-				address, ch.Name)
+			url := fmt.Sprintf(baseUrl+delegatorRewardsEndpoint, suite.emIngress.Protocol, suite.emIngress.Host, suite.emIngress.APIServerPath,
+				hex.EncodeToString(address), ch.Name)
 			// act
 			resp, err := suite.client.Get(url)
 			suite.Require().NoError(err)
@@ -36,11 +38,18 @@ func (suite *testCtx) TestDelegatorRewards() {
 
 			} else {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+
+				data, err := ioutil.ReadAll(resp.Body)
+				suite.Require().NoError(err)
+
+				// TODO: modify backend-model dependency version in go.mod once api-server models are included in backend-models repo
+				var rewards api.DelegatorRewardsResponse
+				suite.Require().NoError(json.Unmarshal(data, &rewards))
+				suite.Require().NotEmpty(rewards.Rewards)
 			}
+
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
-
-			//TODO: make DelegatorRewardsResponse public in api-server
 		})
 	}
 }
