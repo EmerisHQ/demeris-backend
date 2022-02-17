@@ -21,8 +21,6 @@ const (
 )
 
 func (suite *testCtx) TestTxsEndpoint() {
-	suite.T().Parallel()
-
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
 			var cc chainClient.Client

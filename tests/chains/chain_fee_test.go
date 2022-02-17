@@ -13,8 +13,6 @@ import (
 const chainFeeEndpoint = "chain/%s/fee"
 
 func (suite *testCtx) TestChainFee() {
-	suite.T().Parallel()
-
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			// arrange

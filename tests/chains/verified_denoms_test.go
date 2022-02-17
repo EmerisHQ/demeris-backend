@@ -12,8 +12,6 @@ const (
 )
 
 func (suite *testCtx) TestVerifiedDenoms() {
-	suite.T().Parallel()
-
 	var chainsDenoms cns.DenomList
 	for _, ch := range suite.Chains {
 		if ch.Enabled {

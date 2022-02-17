@@ -13,8 +13,6 @@ import (
 const chainBech32Endpoint = "chain/%s/bech32"
 
 func (suite *testCtx) TestChainBech32() {
-	suite.T().Parallel()
-
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			// arrange
