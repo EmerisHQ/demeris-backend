@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	models "github.com/allinbits/demeris-backend-models/api"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
@@ -55,11 +56,10 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			suite.Require().NoError(err)
 			suite.Require().NotNil(data)
 
-			// TODO :: Have to update this after merging (https://github.com/allinbits/demeris-backend-models/pull/20).
-			// var row []models.NumbersResponse
-			// err = json.Unmarshal(data, &row)
-			// suite.Require().NoError(err)
-			// suite.Require().NotNil(row)
+			var row []models.AccountNumbersResponse
+			err = json.Unmarshal(data, &row)
+			suite.Require().NoError(err)
+			suite.Require().NotNil(row)
 
 		})
 	}
