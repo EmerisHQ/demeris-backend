@@ -61,7 +61,7 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 
 			for _, v := range row {
 				if v.BaseDenom == cli.Denom {
-					bal, err := cli.GetAccountBalances(cli.Key, cli.Denom)
+					bal, err := cli.GetAccountBalances(cc.Key, cli.Denom)
 					suite.Require().NoError(err)
 					suite.Require().Equal(bal.Amount, v.Amount)
 				}
