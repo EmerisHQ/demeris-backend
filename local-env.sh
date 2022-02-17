@@ -3,10 +3,13 @@
 CLUSTER_NAME=emeris
 REBUILD=false
 NO_CHAINS=false
+MONITORING=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
+STARPORT_OPERATOR_VERSION=v0.0.1-alpha.45
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
 PRICE_ORACLE_REPO=git@github.com:allinbits/emeris-price-oracle.git
 CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
+SDK_SERVICE_REPO=git@github.com:allinbits/sdk-service.git
 TICKET_WATCHER_REPO=git@github.com:allinbits/emeris-ticket-watcher.git
 RPC_WATCHER_REPO=git@github.com:allinbits/emeris-rpcwatcher.git
 API_SERVER_REPO=git@github.com:allinbits/demeris-api-server.git
@@ -21,10 +24,8 @@ usage()
     echo -e "  down \t\t Tear down the development environment"
     echo -e "  connect-sql \t Connect to database using cockroach built-in SQL Client"
     echo -e "\nFlags:"
-    echo -e "  -p, --port \t\t The local port at which the api will be served"
-    echo -e "  -a, --address \t\t The address at which the api will be served, defaults to 127.0.0.1"
     echo -e "  -n, --cluster-name \t Kind cluster name"
-    echo -e "  -b, --rebuild \t\t Whether to (re)build docker images"
+    echo -e "  -b, --rebuild \t Whether to (re)build docker images"
     echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
     echo -e "  -m, --monitoring \t Setup monitoring infrastructure"
     echo -e "  -h, --help \t\t Show this menu\n"
@@ -52,16 +53,6 @@ key="$1"
 case $key in
     -n|--cluster-name)
     CLUSTER_NAME="$2"
-    shift
-    shift
-    ;;
-    -p|--port)
-    PORT="$2"
-    shift
-    shift
-    ;;
-    -a|--address)
-    ADDRESS="$2"
     shift
     shift
     ;;
@@ -138,7 +129,7 @@ nodes:
     hostPort: 8000
     protocol: TCP
   - containerPort: 30443
-    hostPort: 443
+    hostPort: 8443
     protocol: TCP
   - containerPort: 30090
     hostPort: 9090
@@ -152,16 +143,6 @@ EOF
     ### Ensure emeris namespace
     kubectl create namespace emeris &> /dev/null
     kubectl config set-context kind-$CLUSTER_NAME --namespace=emeris &> /dev/null
-
-    ### Apply CRDs
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
-    kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
 
     ### Ensure nginx ingress controller is deployed
     echo -e "${green}\xE2\x9C\x94${reset} Ensure nginx ingress controller is installed and running"
@@ -193,16 +174,15 @@ EOF
         &> /dev/null
 
     ### Ensure starport-operator is deployed
-
     if [ ! -d .starport-operator/.git ]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Cloning starport-operator repo"
         git clone $STARPORT_OPERATOR_REPO .starport-operator &> /dev/null
     else
-        echo -e "${green}\xE2\x9C\x94${reset} Fetching starport-operator latest changes"
+        echo -e "${green}\xE2\x9C\x94${reset} Fetching starport-operator $STARPORT_OPERATOR_VERSION"
         cd .starport-operator
-        git pull $STARPORT_OPERATOR_REPO &> /dev/null
-        git checkout v0.0.1-alpha.45
+        git pull &> /dev/null
+        git checkout $STARPORT_OPERATOR_VERSION
         cd ..
     fi
 
@@ -213,7 +193,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace starport-system \
         --set webHooksEnabled=false \
-        --set enableAntiAffinity=false \
+        --set workerCount=5 \
         .starport-operator/helm/starport-operator \
         &> /dev/null
 
@@ -255,10 +235,12 @@ EOF
         then
             echo -e "${green}\xE2\x9C\x94${reset} Cloning tracelistener repo"
             git clone $TRACELISTENER_REPO .tracelistener &> /dev/null
+            git checkout main
         else
             echo -e "${green}\xE2\x9C\x94${reset} Fetching tracelistener latest changes"
             cd .tracelistener
-            git pull $TRACELISTENER_REPO &> /dev/null
+            git checkout main
+            git pull &> /dev/null
             cd ..
         fi
         echo -e "${green}\xE2\x9C\x94${reset} Building emeris/tracelistener image"
@@ -269,9 +251,34 @@ EOF
     echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/tracelistener image to cluster"
     kind load docker-image emeris/tracelistener --name $CLUSTER_NAME &> /dev/null
 
-    ### Setup chains
+    ### Ensure tracelistener44 image
+    if [ "$(docker images -q emeris/tracelistener44 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/tracelistener44 already exists"
+    else
+        if [ ! -d .tracelistener/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning tracelistener repo"
+            git clone $TRACELISTENER_REPO .tracelistener &> /dev/null
+            git checkout sdk-44-support
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching tracelistener44 latest changes"
+            cd .tracelistener
+            git checkout sdk-44-support
+            git pull &> /dev/null
+            cd ..
+        fi
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/tracelistener44 image"
+        cd .tracelistener
+        docker build -t emeris/tracelistener44 --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/tracelistener44 image to cluster"
+    kind load docker-image emeris/tracelistener44 --name $CLUSTER_NAME &> /dev/null
+
+    ### Setup nodes
     if [ "$NO_CHAINS" = "false" ]; then
-      echo -e "${green}\xE2\x9C\x94${reset} Create/update chains"
+      echo -e "${green}\xE2\x9C\x94${reset} Create/update nodes"
       kubectl apply \
           --context kind-$CLUSTER_NAME \
           -f local-env/nodes
@@ -289,7 +296,7 @@ EOF
         else
             echo -e "${green}\xE2\x9C\x94${reset} Fetching cns-server latest changes"
             cd .cns-server
-            git pull $CNS_SERVER_REPO &> /dev/null
+            git pull &> /dev/null
             cd ..
         fi
         cd .cns-server
@@ -306,6 +313,9 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
+        --set redirectURL=http://localhost:3000/login \
+        --set test=true \
+        --set resources=null \
         .cns-server/helm/ \
         &> /dev/null
 
@@ -321,7 +331,7 @@ EOF
         else
             echo -e "${green}\xE2\x9C\x94${reset} Fetching api-server latest changes"
             cd .api-server
-            git pull $API_SERVER_REPO &> /dev/null
+            git pull &> /dev/null
             cd ..
         fi
         cd .api-server
@@ -336,7 +346,10 @@ EOF
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
+        --set replicas=1 \
         --set imagePullPolicy=Never \
+        --set serviceMonitorEnabled=$MONITORING \
+        --set resources=null \
         .api-server/helm \
         &> /dev/null
 
@@ -352,7 +365,7 @@ EOF
             else
                 echo -e "${green}\xE2\x9C\x94${reset} Fetching rpcwatcher latest changes"
                 cd .rpcwatcher
-                git pull $RPC_WATCHER_REPO &> /dev/null
+                git pull &> /dev/null
                 cd ..
             fi
             cd .rpcwatcher
@@ -368,6 +381,7 @@ EOF
             --kube-context kind-$CLUSTER_NAME \
             --namespace emeris \
             --set imagePullPolicy=Never \
+            --set resources=null \
             .rpcwatcher/helm \
             &> /dev/null
 
@@ -383,7 +397,7 @@ EOF
         else
             echo -e "${green}\xE2\x9C\x94${reset} Fetching ticket-watcher latest changes"
             cd .ticket-watcher
-            git pull $TICKET_WATCHER_REPO &> /dev/null
+            git pull &> /dev/null
             cd ..
         fi
         cd .ticket-watcher
@@ -399,6 +413,7 @@ EOF
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
         --set imagePullPolicy=Never \
+        --set resources=null \
         .ticket-watcher/helm \
         &> /dev/null
 
@@ -414,7 +429,7 @@ EOF
         else
             echo -e "${green}\xE2\x9C\x94${reset} Fetching price-oracle latest changes"
             cd .price-oracle
-            git pull $PRICE_ORACLE_REPO &> /dev/null
+            git pull &> /dev/null
             cd ..
         fi
         cd .price-oracle
@@ -429,8 +444,78 @@ EOF
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
+        --set replicas=1 \
         --set imagePullPolicy=Never \
+        --set resources=null \
         .price-oracle/helm \
+        &> /dev/null
+
+    ### Ensure sdk-service-42 image
+    if [ "$(docker images -q emeris/sdk-service-42 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service-42 already exists"
+    else
+        if [ ! -d .sdk-service/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning sdk-service repo"
+            git clone $SDK_SERVICE_REPO .sdk-service &> /dev/null
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching sdk-service latest changes"
+            cd .sdk-service
+            git pull &> /dev/null
+            cd ..
+        fi
+        cd .sdk-service
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/sdk-service-42 image"
+        docker build -t emeris/sdk-service-42 --build-arg SDK_TARGET=v42 --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/sdk-service-42 image to cluster"
+    kind load docker-image emeris/sdk-service-42 --name $CLUSTER_NAME &> /dev/null
+
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/sdk-service-42"
+    helm upgrade sdk-service-42 \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
+        --set imagePullPolicy=Never \
+        --set image=emeris/sdk-service-42 \
+        --set resources=null \
+        .sdk-service/helm/ \
+        &> /dev/null
+
+    ### Ensure sdk-service-44 image
+    if [ "$(docker images -q emeris/sdk-service-44 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/sdk-service-44 already exists"
+    else
+        if [ ! -d .sdk-service/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning sdk-service repo"
+            git clone $SDK_SERVICE_REPO .sdk-service &> /dev/null
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching sdk-service latest changes"
+            cd .sdk-service
+            git pull &> /dev/null
+            cd ..
+        fi
+        cd .sdk-service
+        echo -e "${green}\xE2\x9C\x94${reset} Building emeris/sdk-service-44 image"
+        docker build -t emeris/sdk-service-44 --build-arg SDK_TARGET=v44 --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/sdk-service-44 image to cluster"
+    kind load docker-image emeris/sdk-service-44 --name $CLUSTER_NAME &> /dev/null
+
+    echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/sdk-service-44"
+    helm upgrade sdk-service-44 \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
+        --set imagePullPolicy=Never \
+        --set image=emeris/sdk-service-44 \
+        --set resources=null \
+        .sdk-service/helm/ \
         &> /dev/null
 
     ## Ensure Emeris ingress
@@ -441,8 +526,19 @@ EOF
         -f local-env/ingress.yaml
 
     ## Setup monitoring infrastructure
-    if [ "$MONITORING" = "true" ]; then
+    if [ "$MONITORING" = "true" ]
+    then
       echo -e "${green}\xE2\x9C\x94${reset} Deploying monitoring"
+      ### Apply CRDs
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+      kubectl --context kind-$CLUSTER_NAME --namespace emeris apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.43/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
+      
       helm upgrade monitoring-stack \
           --install \
           --create-namespace \
@@ -457,6 +553,23 @@ EOF
         --context kind-$CLUSTER_NAME \
         --namespace emeris \
         -f local-env/service-monitors.yaml
+    fi
+
+    ### Setup relayer
+    if [ "$NO_CHAINS" = "false" ]; then
+      echo -e "${green}\xE2\x9C\x94${reset} Create/update relayer"
+      kubectl apply \
+          --context kind-$CLUSTER_NAME \
+          -f local-env/relayer.yaml
+    fi
+
+    ### Setup chains
+    if [ "$NO_CHAINS" = "false" ]; then
+      for f in local-env/chains/*
+      do
+      echo -e "${green}\xE2\x9C\x94${reset} Create/update $(basename $f .json)"
+      curl -X POST -d @$f http://localhost:8000/v1/cns/add
+      done
     fi
 fi
 

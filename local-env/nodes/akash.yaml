@@ -4,14 +4,6 @@ metadata:
   name: akash
   namespace: emeris
 spec:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          topologyKey: kubernetes.io/hostname
-          labelSelector:
-            matchLabels:
-              nodeset: akash
   app:
     cliName: akash
     daemonName: akash
@@ -31,22 +23,7 @@ spec:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 20s
-      configOverride:
-        app:
-          - key: minimum-gas-prices
-            value:
-              string: 0.018uakt
-          - key: pruning
-            value:
-              string: custom
-          - key: pruning-keep-recent
-            value:
-              string: "362880"
-          - key: pruning-interval
-            value:
-              string: "100"
-      startupTimeout: 1h
+      startupTimeout: 5m
       traceStoreContainer:
         env:
           - name: TRACELISTENER_FIFOPATH
@@ -59,15 +36,15 @@ spec:
             value: akash
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
-        imagePullPolicy: Always
-    reconcilePeriod: 5m
+        image: emeris/tracelistener
+        imagePullPolicy: Never
+    reconcilePeriod: 1m
   image:
     name: ghcr.io/ovrclk/akash
     version: 0.14.1
   moniker: emeris
   persistence:
-    size: 20Gi
+    size: 10Gi
     autoResize:
       enabled: true
   replicas: 1

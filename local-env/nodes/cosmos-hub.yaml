@@ -4,14 +4,6 @@ metadata:
   name: cosmos-hub
   namespace: emeris
 spec:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          topologyKey: kubernetes.io/hostname
-          labelSelector:
-            matchLabels:
-              nodeset: cosmos-hub
   app:
     name: gaia
     cliName: gaiad
@@ -31,22 +23,7 @@ spec:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 20s
-      configOverride:
-        app:
-          - key: minimum-gas-prices
-            value:
-              string: 0.005uatom
-          - key: pruning
-            value:
-              string: custom
-          - key: pruning-keep-recent
-            value:
-              string: "362880"
-          - key: pruning-interval
-            value:
-              string: "100"
-      startupTimeout: 1h
+      startupTimeout: 5m
       traceStoreContainer:
         env:
           - name: TRACELISTENER_FIFOPATH
@@ -59,9 +36,9 @@ spec:
             value: cosmos-hub
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
-        imagePullPolicy: Always
-    reconcilePeriod: 4m
+        image: emeris/tracelistener44
+        imagePullPolicy: Never
+    reconcilePeriod: 1m
   image:
     name: gcr.io/tendermint-dev/gaia
     version: v6.0.0

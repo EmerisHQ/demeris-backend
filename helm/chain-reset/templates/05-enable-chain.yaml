@@ -1,3 +1,4 @@
+{{- if .Values.enableChain }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -37,3 +38,4 @@ spec:
         - UPDATE cns.chains SET enabled = true WHERE chain_name = '{{ .Values.chain }}';
       restartPolicy: Never
   backoffLimit: 0
+{{- end }}
