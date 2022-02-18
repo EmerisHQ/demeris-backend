@@ -120,3 +120,4 @@ bin
 .rpcwatcher
 .ticket-watcher
 .sdk-service
+.emeris-frontend
