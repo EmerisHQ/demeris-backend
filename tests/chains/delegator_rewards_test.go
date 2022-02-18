@@ -16,8 +16,6 @@ const (
 )
 
 func (suite *testCtx) TestDelegatorRewards() {
-	suite.T().Parallel()
-
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
 			var cc chainClient.Client
