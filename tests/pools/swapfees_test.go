@@ -16,8 +16,6 @@ const (
 )
 
 func (suite *testCtx) TestPoolSwapFees() {
-	suite.T().Parallel()
-
 	url := suite.Client.BuildUrl(poolsEndpoint)
 
 	resp, err := suite.Client.Get(url)
