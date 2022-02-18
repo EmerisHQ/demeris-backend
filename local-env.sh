@@ -4,6 +4,7 @@ CLUSTER_NAME=emeris
 REBUILD=false
 NO_CHAINS=false
 MONITORING=false
+ENABLE_FRONTEND=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 STARPORT_OPERATOR_VERSION=v0.0.1-alpha.45
 TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
@@ -13,6 +14,7 @@ SDK_SERVICE_REPO=git@github.com:allinbits/sdk-service.git
 TICKET_WATCHER_REPO=git@github.com:allinbits/emeris-ticket-watcher.git
 RPC_WATCHER_REPO=git@github.com:allinbits/emeris-rpcwatcher.git
 API_SERVER_REPO=git@github.com:allinbits/demeris-api-server.git
+FRONTEND_REPO=git@github.com:allinbits/demeris.git
 KIND_CONFIG=""
 
 usage()
@@ -24,11 +26,12 @@ usage()
     echo -e "  down \t\t Tear down the development environment"
     echo -e "  connect-sql \t Connect to database using cockroach built-in SQL Client"
     echo -e "\nFlags:"
-    echo -e "  -n, --cluster-name \t Kind cluster name"
-    echo -e "  -b, --rebuild \t Whether to (re)build docker images"
+    echo -e "  -fe, --enable-frontend Enable frontend"
+    echo -e "  -n,  --cluster-name \t Kind cluster name"
+    echo -e "  -b,  --rebuild \t Whether to (re)build docker images"
     echo -e "  -nc, --no-chains \t Do not deploy chains inside the cluster"
-    echo -e "  -m, --monitoring \t Setup monitoring infrastructure"
-    echo -e "  -h, --help \t\t Show this menu\n"
+    echo -e "  -m,  --monitoring \t Setup monitoring infrastructure"
+    echo -e "  -h,  --help \t\t Show this menu\n"
     exit 1
 }
 
@@ -66,6 +69,10 @@ case $key in
     ;;
     -nc|--no-chains)
     NO_CHAINS=true
+    shift
+    ;;
+    -fe|--enable-frontend)
+    ENABLE_FRONTEND=true
     shift
     ;;
     -h|--help)
@@ -355,35 +362,35 @@ EOF
 
     ### Ensure rpcwatcher image
     if [ "$(docker images -q emeris/rpcwatcher 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
+    then
+        echo -e "${green}\xE2\x9C\x94${reset} Image emeris/rpcwatcher already exists"
+    else
+        if [ ! -d .rpcwatcher/.git ]
         then
-            echo -e "${green}\xE2\x9C\x94${reset} Image emeris/rpcwatcher already exists"
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning emeris/rpcwatcher repo"
+            git clone $RPC_WATCHER_REPO .rpcwatcher &> /dev/null
         else
-            if [ ! -d .rpcwatcher/.git ]
-            then
-                echo -e "${green}\xE2\x9C\x94${reset} Cloning emeris/rpcwatcher repo"
-                git clone $RPC_WATCHER_REPO .rpcwatcher &> /dev/null
-            else
-                echo -e "${green}\xE2\x9C\x94${reset} Fetching rpcwatcher latest changes"
-                cd .rpcwatcher
-                git pull &> /dev/null
-                cd ..
-            fi
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching rpcwatcher latest changes"
             cd .rpcwatcher
-            echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/rpcwatcher image"
-            docker build -t emeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+            git pull &> /dev/null
             cd ..
         fi
-        echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/rpcwatcher image to cluster"
-        kind load docker-image emeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
+        cd .rpcwatcher
+        echo -e "${green}\xE2\x9C\x94${reset} Re-building emeris/rpcwatcher image"
+        docker build -t emeris/rpcwatcher --build-arg GIT_TOKEN=$GITHUB_TOKEN -f Dockerfile .
+        cd ..
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} Pushing emeris/rpcwatcher image to cluster"
+    kind load docker-image emeris/rpcwatcher --name $CLUSTER_NAME &> /dev/null
 
-        helm upgrade rpcwatcher \
-            --install \
-            --kube-context kind-$CLUSTER_NAME \
-            --namespace emeris \
-            --set imagePullPolicy=Never \
-            --set resources=null \
-            .rpcwatcher/helm \
-            &> /dev/null
+    helm upgrade rpcwatcher \
+        --install \
+        --kube-context kind-$CLUSTER_NAME \
+        --namespace emeris \
+        --set imagePullPolicy=Never \
+        --set resources=null \
+        .rpcwatcher/helm \
+        &> /dev/null
 
     ### Ensure ticket-watcher image
     if [ "$(docker images -q emeris/ticket-watcher 2> /dev/null)" != "" ] && [ "$REBUILD" = "false" ]
@@ -447,6 +454,7 @@ EOF
         --set replicas=1 \
         --set imagePullPolicy=Never \
         --set resources=null \
+        --set fixerKey=$FIXER_KEY \
         .price-oracle/helm \
         &> /dev/null
 
@@ -474,7 +482,7 @@ EOF
     kind load docker-image emeris/sdk-service-42 --name $CLUSTER_NAME &> /dev/null
 
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/sdk-service-42"
-    helm upgrade sdk-service-42 \
+    helm upgrade sdk-service-v42 \
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
@@ -508,7 +516,7 @@ EOF
     kind load docker-image emeris/sdk-service-44 --name $CLUSTER_NAME &> /dev/null
 
     echo -e "${green}\xE2\x9C\x94${reset} Deploying emeris/sdk-service-44"
-    helm upgrade sdk-service-44 \
+    helm upgrade sdk-service-v44 \
         --install \
         --kube-context kind-$CLUSTER_NAME \
         --namespace emeris \
@@ -565,12 +573,51 @@ EOF
 
     ### Setup chains
     if [ "$NO_CHAINS" = "false" ]; then
+      echo -e "${green}\xE2\x9C\x94${reset} Waiting for CNS to be ready"
+      kubectl wait pod \
+        --context kind-$CLUSTER_NAME \
+        --namespace ingress-nginx \
+        --for=condition=ready \
+        --selector=app.kubernetes.io/name=emeris-cns-server \
+        --timeout=90s \
+        &> /dev/null
       for f in local-env/chains/*
       do
       echo -e "${green}\xE2\x9C\x94${reset} Create/update $(basename $f .json)"
       curl -X POST -d @$f http://localhost:8000/v1/cns/add
       done
     fi
+
+    ### Start frontend
+    if [ "$ENABLE_FRONTEND" = "true" ]; then
+        if [ ! -d .emeris-frontend/.git ]
+        then
+            echo -e "${green}\xE2\x9C\x94${reset} Cloning emeris-frontend repo"
+            git clone $FRONTEND_REPO .emeris-frontend &> /dev/null
+        else
+            echo -e "${green}\xE2\x9C\x94${reset} Fetching emeris-frontend latest changes"
+            cd .emeris-frontend
+            git pull &> /dev/null
+            cd ..
+        fi
+
+        echo -e "${green}\xE2\x9C\x94${reset} Starting emeris-frontend"
+        docker run -d --name emeris-frontend --rm \
+            -v ${PWD}/.emeris-frontend:/app \
+            -w /app \
+            -p 3000:3000 \
+            -e PORT=3000 \
+            -e VUE_APP_HUB_CHAIN=cosmos-hub-testnet \
+            -e VUE_APP_EMERIS_PROD_ENDPOINT=http://localhost:8000/v1 \
+            -e VUE_APP_EMERIS_PROD_LIQUIDITY_ENDPOINT=http://localhost:8000/v1/liquidity \
+            --entrypoint /bin/bash \
+            node:16 -c \
+            "npm ci && npm run serve"
+
+        echo -e "${green}\xE2\x9C\x94${reset} Waiting for emeris-frontend to be ready..."
+        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:3000)" != "200" ]]; do sleep 3; done
+    fi
+    echo -e "${green}\xE2\x9C\x94${reset} All done"
 fi
 
 if [ "$COMMAND" = "down" ]
@@ -580,6 +627,7 @@ then
         echo -e "${green}\xE2\x9C\x94${reset} Deleting cluster $CLUSTER_NAME"
         kind delete cluster --name $CLUSTER_NAME &> /dev/null
     fi
+    docker stop emeris-frontend
 fi
 
 if [ "$COMMAND" = "connect-sql" ]
