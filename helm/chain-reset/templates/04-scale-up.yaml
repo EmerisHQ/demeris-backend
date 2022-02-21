@@ -22,6 +22,16 @@ spec:
       containers:
       - name: kubectl
         image: bitnami/kubectl
-        command: ["kubectl", "scale", "nodeset", "{{ .Values.chain }}", "--replicas={{ .Values.replicas }}", "-n", "emeris"]
+        command: ["kubectl", "apply", "-f", "/tmp/chains/nodeset.yaml", "-n", "emeris"]
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp/chains
       restartPolicy: Never
+      volumes:
+      - name: tmp
+        configMap:
+          name: {{ .Release.Name }}
+          items:
+          - key: nodeset.yaml
+            path: nodeset.yaml
   backoffLimit: 0
