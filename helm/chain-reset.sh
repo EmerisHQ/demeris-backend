@@ -78,7 +78,7 @@ assert_executable_exists docker
 
 YAML_FILE="${SCRIPT_DIR}/../ci/${ENVIRONMENT}/nodesets/${CHAIN}.yaml"
 
-echo "-- Moving temporary chain YAML file\n"
+echo -e "-- Moving temporary chain YAML file\n"
 DEST_FILE="${SCRIPT_DIR}/${RESET_DIR}/${CHAIN}.yaml"
 cp ${YAML_FILE} "${SCRIPT_DIR}/${RESET_DIR}"
 
