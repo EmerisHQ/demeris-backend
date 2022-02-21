@@ -1,0 +1,117 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: comdex
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: comdex
+  app:
+    cliName: comdex
+    daemonName: comdex
+    name: comdex
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.005ucmdx
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: comdex
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/comdex
+    version: v0.0.4
+  join:
+    genesis:
+      url: https://comdex-mainnet-genesis.s3.ap-southeast-1.amazonaws.com/genesis.json
+    seeds:
+      - id: aef35f45db2d9f5590baa088c27883ac3d5e0b33
+        address: 3.108.102.92
+        port: 26656
+      - id: 7ca14a1d156299999eba9c394ca060368022d52f
+        address: 54.194.178.110
+        port: 26656 
+    persistentPeers:
+      - id: f74518ad134630da8d2405570f6a3639954c985f
+        address: 65.0.173.217
+        port: 26656
+      - id: d478882a80674fa10a32da63cc20cae13e3a2a57
+        address: 43.204.0.243
+        port: 26656
+      - id: 61d743ea796ad1e1ff838c9e84adb38dfffd1d9d
+        address: 15.235.9.222
+        port: 26656
+      - id: b8468f64788a17dbf34a891d9cd29d54b2b6485d
+        address: 194.163.178.25
+        port: 26656
+      - id: d8b74791ee56f1b345d822f62bd9bc969668d8df
+        address: 194.163.128.55
+        port: 36656
+      - id: 81444353d70bab79742b8da447a9564583ed3d6a
+        address: 164.68.105.248
+        port: 26656
+      - id: 5b1ceb8110da4e90c38c794d574eb9418a7574d6
+        address: 43.254.41.56
+        port: 26656
+      - id: 98b4522a541a69007d87141184f146a8f04be5b9
+        address: 40.112.90.170
+        port: 26656
+      - id: 9a59b6dc59903d036dd476de26e8d2b9f1acf466
+        address: 195.201.195.111
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 200Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "1"
+        memory: 2Gi
