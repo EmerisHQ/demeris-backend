@@ -92,6 +92,6 @@ helm install "${CHAIN}" \
 echo "-- Deleting temporary chain YAML file\n"
 rm "${DEST_FILE}"
 
-echo "-- You can monitor the progress with 'kubectl get jobs'\n"
+echo -e "-- You can monitor the progress with 'kubectl get jobs'\n"
 
 echo "-- Once chain nodes are fully synced (3/3), do not forget to helm uninstall ${CHAIN}"
