@@ -46,5 +46,9 @@
     }
   },
   "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["http://seed-1.mainnet.rizon.world:26657"],
+        "cosmos_api": ["http://seed-1.mainnet.rizon.world:1317"]
+      },
   "block_explorer": "https://www.mintscan.io/rizon"
 }

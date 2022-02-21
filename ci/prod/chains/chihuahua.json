@@ -41,6 +41,10 @@
       "prefix_operator": "oper"
     }
   },
+  "public_node_endpoints": {
+      "tendermint_rpc": ["https://rpc.chihuahua.wtf:443"],
+      "cosmos_api": ["https://api.chihuahua.wtf:443"]
+    },
   "supported_wallets": ["keplr"],
   "block_explorer": "https://www.mintscan.io/chihuahua"
 }
