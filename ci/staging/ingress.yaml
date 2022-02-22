@@ -142,6 +142,28 @@ spec:
             name: cheqd
             port:
               number: 26657
+ 
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/chihuahua/websocket
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: chihuahua
+            port:
+              number: 26657
+              
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/comdex/websocket
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: comdex
+            port:
+              number: 26657              
 
   - host: staging.demeris.io
     http:
@@ -151,6 +173,17 @@ spec:
         backend:
           service:
             name: crypto-org
+            port:
+              number: 26657
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/desmos/websocket
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: desmos
             port:
               number: 26657
 
@@ -217,6 +250,17 @@ spec:
         backend:
           service:
             name: likecoin
+            port:
+              number: 26657
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/lum/websocket
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: lum
             port:
               number: 26657
 
@@ -316,6 +360,17 @@ spec:
         backend:
           service:
             name: sifchain
+            port:
+              number: 26657
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/sommelier/websocket
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: sommelier
             port:
               number: 26657
 
