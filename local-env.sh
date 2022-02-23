@@ -184,7 +184,10 @@ EOF
     if [ ! -d .starport-operator/.git ]
     then
         echo -e "${green}\xE2\x9C\x94${reset} Cloning starport-operator repo"
-        git clone $STARPORT_OPERATOR_REPO .starport-operator &> /dev/null
+        git clone $STARPORT_OPERATOR_REPO .starport-operator &> /dev/null        
+        cd .starport-operator
+        git checkout $STARPORT_OPERATOR_VERSION
+        cd ..
     else
         echo -e "${green}\xE2\x9C\x94${reset} Fetching starport-operator $STARPORT_OPERATOR_VERSION"
         cd .starport-operator
