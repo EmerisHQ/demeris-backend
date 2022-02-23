@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/allinbits/demeris-backend-models/api"
+	api "github.com/allinbits/demeris-api-server/api/account"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 )
 
