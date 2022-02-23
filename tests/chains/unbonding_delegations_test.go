@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/allinbits/demeris-backend-models/api"
+	api "github.com/allinbits/demeris-api-server/api/account"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
