@@ -1,0 +1,55 @@
+{
+  "chain_name": "comdex",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/comdex.svg",
+  "enabled": true,
+  "valid_block_thresh": "20s",
+  "display_name": "Comdex",
+  "cosmos_sdk_version": "v0.45.1",
+  "demeris_addresses": ["feeaddress"],
+  "primary_channel": {
+    "osmosis": "channel-1"
+    },
+  "denoms": [
+    {
+      "display_name": "Comdex",
+      "stakable": true,
+      "fee_token": true,
+      "gas_price_levels": { "low": 0.25, "average": 0.3, "high": 0.5},
+      "fetch_price": true,
+      "price_id": "comdex",
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42,
+      "name": "ucmdx",
+      "logo": "https://storage.googleapis.com/emeris/logos/comdex.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "CMDX"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "comdex",
+    "chain_id": "comdex-1",
+    "bech32_config": {
+      "main_prefix": "comdex",
+      "prefix_account": "comdex",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper",
+      "acc_addr": "comdex",
+      "acc_pub": "comdexpub",
+      "val_addr": "comdexvaloper",
+      "val_pub": "comdexvaloperpub",
+      "cons_addr": "comdexvalcons",
+      "cons_pub": "comdexvalconspub"
+    }
+  },
+  "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc.comdex.one:443"],
+        "cosmos_api": ["https://rest.comdex.one:443"]
+      },
+  "block_explorer": "https://www.mintscan.io/comdex"
+}

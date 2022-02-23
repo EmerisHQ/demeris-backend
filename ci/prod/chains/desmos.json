@@ -1,0 +1,61 @@
+{
+    "enabled": true,
+    "chain_name": "desmos",
+    "logo": "https://storage.googleapis.com/emeris/logos/dsm.svg",
+    "display_name": "desmos",
+    "primary_channel": {
+      "osmosis": "channel-2"
+    },
+    "denoms": [
+      {
+        "name": "udsm",
+        "display_name": "DSM",
+        "logo": "https://storage.googleapis.com/emeris/logos/dsm.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "DSM",
+        "price_id": "desmos",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.03,
+          "average": 0.075,
+          "high": 0.12
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 50000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "desmos",
+      "chain_id": "desmos-mainnet",
+      "bech32_config": {
+        "main_prefix": "desmos",
+        "prefix_account": "desmos",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "desmos",
+        "acc_pub": "desmospub",
+        "val_addr": "desmosvaloper",
+        "val_pub": "desmosvaloperpub",
+        "cons_addr": "desmosvalcons",
+        "cons_pub": "desmosvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/852'/0'/0/0",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc.mainnet.desmos.network:443"],
+        "cosmos_api": ["https://api.mainnet.desmos.network:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/desmos",
+    "cosmos_sdk_version": "v0.44.5"
+  }

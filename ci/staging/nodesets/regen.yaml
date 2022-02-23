@@ -1,0 +1,96 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: regen
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: regen
+  app:
+    cliName: regen
+    daemonName: regen
+    name: regen
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.015uregen
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: regen
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/regen
+    version: v2.1.0
+  join:
+    genesis:
+      url: https://github.com/regen-network/mainnet/raw/main/regen-1/genesis.json
+    seeds:
+      - address: 104.131.169.70
+        id: 69975e7afdf731a165e40449fcffc75167a084fc
+        port: 26656
+      - address: 116.203.182.185
+        id: d35d652b6cb3bf7d6cb8d4bd7c036ea03e7be2ab
+        port: 26656
+      - address: 3.98.38.91
+        id: ffacd3202ded6945fed12fa4fd715b1874985b8c
+        port: 26656
+    persistentPeers:
+      - address: regen.rpc.vitwit.com
+        id: aebb8431609cb126a977592446f5de252d8b7fa1
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 350Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 2Gi

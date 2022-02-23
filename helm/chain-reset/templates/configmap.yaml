@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "chart.labels" . | indent 4 }}
+data:
+  nodeset.yaml: |-
+{{ .Files.Get .Values.nodesetFile | indent 4}}

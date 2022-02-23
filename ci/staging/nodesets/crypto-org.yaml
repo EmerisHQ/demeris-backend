@@ -1,0 +1,94 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: crypto-org
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: crypto-org
+  app:
+    cliName: chain-maind
+    daemonName: chain-maind
+    name: crypto-org
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.0125basecro
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: crypto-org
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/crypto-com
+    version: v3.3.3
+    build:
+      repository: https://github.com/crypto-org-chain/chain-main
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/crypto-org-chain/mainnet/main/crypto-org-chain-mainnet-1/genesis.json
+    seeds:
+      - address: seed-0.crypto.org
+        id: 87c3adb7d8f649c51eebe0d3335d8f9e28c362f2
+        port: 26656
+      - address: seed-1.crypto.org
+        id: e1d7ff02b78044795371beb1cd5fb803f9389256
+        port: 26656
+      - address: seed-2.crypto.org
+        id: 2c55809558a4e491e9995962e10c026eb9014655
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 1000Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 2Gi
