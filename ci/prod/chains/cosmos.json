@@ -240,6 +240,20 @@
         },
         "fetch_price": false,
         "relayer_denom": false
+      },
+      {
+        "name": "poolFD005C5AB01714A4B62E87F5213F5D5CDE357773D70712916A93664BCE5A6931",
+        "display_name": "Gravity 15",
+        "precision": 6,
+        "verified": true,
+        "ticker": "G15",
+        "gas_price_levels": {
+          "low": 0,
+          "average": 0,
+          "high": 0
+        },
+        "fetch_price": false,
+        "relayer_denom": false
       }
     ],
     "demeris_addresses": [

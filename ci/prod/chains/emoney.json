@@ -13,7 +13,8 @@
       "persistence": "channel-8",
       "regen": "channel-9",
       "sentinel": "channel-10",
-      "terra": "channel-13"
+      "terra": "channel-13",
+      "sifchain":"channel-14"
     },
     "denoms": [
       {
@@ -62,9 +63,5 @@
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": [],
     "block_explorer": "\"\"",
-    "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
     "cosmos_sdk_version": "v0.42.11"
   }

@@ -52,7 +52,11 @@
     },
     "valid_block_thresh": "20s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://mainnet-node.like.co:443/rpc/"],
+        "cosmos_api": ["https://mainnet-node.like.co:443"]
+      },
+    "block_explorer": "https://likecoin.bigdipper.live/",
     "cosmos_sdk_version": "v0.42.9"
   }
