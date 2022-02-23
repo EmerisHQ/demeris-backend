@@ -54,5 +54,9 @@
     "valid_block_thresh": "20s",
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": ["keplr"],
-    "block_explorer": "\"\""
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc.cheqd.net:443"],
+        "cosmos_api": ["https://api.cheqd.net:443"]
+      },
+    "block_explorer": "https://explorer.cheqd.io"
   }

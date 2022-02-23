@@ -1,0 +1,66 @@
+{
+    "enabled": true,
+    "chain_name": "sifchain",
+    "logo": "https://storage.googleapis.com/emeris/logos/rowan.svg",
+    "display_name": "Sifchain",
+    "primary_channel": {
+      "cosmos-hub":"channel-0",
+      "osmosis": "channel-17",
+      "iris":"channel-8",
+      "akash":"channel-2",
+      "sentinel":"channel-1",
+      "persistence":"channel-7",
+      "crypto-org": "channel-9",
+      "emoney": "channel-19",
+      "juno": "channel-14",
+      "regen": "channel-10"
+    },
+    "denoms": [
+      {
+        "name": "rowan",
+        "display_name": "ROWAN",
+        "logo": "https://storage.googleapis.com/emeris/logos/rowan.svg",
+        "precision": 18,
+        "verified": true,
+        "stakable": true,
+        "ticker": "ROWAN",
+        "price_id": "sifchain",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 250000000000,
+          "average": 500000000000,
+          "high": 1000000000000
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 50000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "sifchain",
+      "chain_id": "sifchain-1",
+      "bech32_config": {
+        "main_prefix": "sif",
+        "prefix_account": "sif",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "sif",
+        "acc_pub": "sifpub",
+        "val_addr": "sifvaloper",
+        "val_pub": "sifvaloperpub",
+        "cons_addr": "sifvalcons",
+        "cons_pub": "sifvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/118'/0'/0/0",
+    "supported_wallets": [],
+    "block_explorer": "\"\"",
+    "cosmos_sdk_version": "v0.44.5"
+  }

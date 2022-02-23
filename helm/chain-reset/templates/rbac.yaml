@@ -12,6 +12,7 @@ rules:
   - nodesets
   - nodesets/scale
   verbs:
+  - create
   - get
   - list
   - patch

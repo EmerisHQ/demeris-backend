@@ -25,7 +25,11 @@
       "bitsong":"channel-73",
       "cheqd":"channel-108",
       "chihuahua":"channel-113",
-      "stargaze":"channel-75"
+      "stargaze":"channel-75",
+      "sommelier":"channel-165",
+      "desmos":"channel-135",
+      "lum":"channel-115",
+      "comdex":"channel-87"
     },
     "denoms": [
       {
@@ -85,6 +89,10 @@
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": ["keplr"],
-    "block_explorer": "https://rpc-osmosis.blockapsis.com",
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc-osmosis.blockapsis.com:443"],
+        "cosmos_api": ["https://lcd-osmosis.blockapsis.com:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/osmosis",
     "cosmos_sdk_version": "v0.44.5"
   }
