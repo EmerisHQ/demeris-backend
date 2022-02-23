@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	models "github.com/allinbits/demeris-backend-models/api"
+	models "github.com/allinbits/demeris-api-server/api/account"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 )
 
@@ -49,7 +49,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
 
-			var numbers models.AccountNumbersResponse
+			var numbers models.NumbersResponse
 			suite.Require().NoError(json.Unmarshal(data, &numbers))
 			suite.Require().NotEmpty(numbers.Numbers)
 
