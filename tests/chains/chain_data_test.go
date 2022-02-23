@@ -14,8 +14,6 @@ const (
 )
 
 func (suite *testCtx) TestChainData() {
-	suite.T().Parallel()
-
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 

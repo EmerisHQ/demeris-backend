@@ -11,8 +11,6 @@ import (
 const chainsEndpoint = "chains"
 
 func (suite *testCtx) TestChainsData() {
-	suite.T().Parallel()
-
 	// arrange
 	url := suite.Client.BuildUrl(chainsEndpoint)
 	// act

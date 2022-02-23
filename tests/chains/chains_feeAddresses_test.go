@@ -10,8 +10,6 @@ import (
 const chainsFeeAddressesEndpoint = "chains/fee/addresses"
 
 func (suite *testCtx) TestChainsFeeAddresses() {
-	suite.T().Parallel()
-
 	// arrange
 	url := suite.Client.BuildUrl(chainsFeeAddressesEndpoint)
 	// act

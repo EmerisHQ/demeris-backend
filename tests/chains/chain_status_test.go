@@ -14,12 +14,8 @@ const (
 )
 
 func (suite *testCtx) TestChainStatus() {
-	suite.T().Parallel()
-
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
-			t.Parallel()
-
 			// arrange
 			url := suite.Client.BuildUrl(statusEndpoint, ch.Name)
 			// act
