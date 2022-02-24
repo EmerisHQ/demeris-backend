@@ -1,0 +1,119 @@
+apiVersion: apps.starport.cloud/v1
+kind: Relayer
+metadata:
+  labels:
+    worker-name: none
+  name: relayer
+  namespace: emeris
+spec:
+  chains:
+  - accountPrefix: cosmos
+    clockDrift: 1800s
+    faucet: cosmos-hub-faucet
+    gasAdjustment: "0.1"
+    gasPrice:
+      denom: uatom
+      price: "0.02"
+    hdPath: m/44'/118'/0'/0/0
+    maxGas: 500000
+    maxMsgNum: 15
+    maxTxSize: 2097152
+    nodeset: cosmos-hub
+    rpcTimeout: 10s
+    storePrefix: ibc
+    trustThreshold:
+      denominator: 3
+      numerator: 1
+    trustingPeriod: 14days
+  - accountPrefix: akash
+    clockDrift: 1800s
+    faucet: akash-faucet
+    gasAdjustment: "0.1"
+    gasPrice:
+      denom: uakt
+      price: "0.02"
+    hdPath: m/44'/118'/0'/0/0
+    maxGas: 500000
+    maxMsgNum: 15
+    maxTxSize: 2097152
+    nodeset: akash
+    rpcTimeout: 10s
+    storePrefix: ibc
+    trustThreshold:
+      denominator: 3
+      numerator: 1
+    trustingPeriod: 14days
+  - accountPrefix: terra
+    clockDrift: 1800s
+    faucet: terra-faucet
+    gasAdjustment: "0.1"
+    gasPrice:
+      denom: uluna
+      price: "0.02"
+    hdPath: m/44'/330'/0'/0/0
+    maxGas: 500000
+    maxMsgNum: 15
+    maxTxSize: 2097152
+    nodeset: terra
+    rpcTimeout: 10s
+    storePrefix: ibc
+    trustThreshold:
+      denominator: 3
+      numerator: 1
+    trustingPeriod: 14days
+  clearPacketsInterval: 600
+  filter: true
+  logLevel: debug
+  paths:
+  - sideA: cosmos-hub
+    sideB: terra
+  - sideA: cosmos-hub
+    sideB: akash
+  - sideA: akash
+    sideB: terra
+  resources: {}
+  strategy: packets
+  telemetryEnabled: false
+  txConfirmation: true
+status:
+  chainStatus:
+  - account: cosmos1v4he54aaal8qsk94dfmm7dvcvtup63er7plq5w
+    id: cosmos-hub-testnet
+  - account: akash1vgp2w5pmmttu9ap74kjj0cduulvk5ppe896h0g
+    id: akash-testnet
+  - account: terra13euwg84qq9xg4ku96lw8dsyt0s43cwke50xpq2
+    id: terra-testnet
+  chains: cosmos-hub-testnet, akash-testnet, terra-testnet
+  channels: cosmos-hub-testnet <-> terra-testnet, akash-testnet <-> cosmos-hub-testnet,
+    akash-testnet <-> terra-testnet
+  paths:
+  - cosmos-hub-testnet:
+      channelID: channel-0
+      clientID: 07-tendermint-0
+      connectionID: connection-0
+      portID: transfer
+    terra-testnet:
+      channelID: channel-0
+      clientID: 07-tendermint-0
+      connectionID: connection-0
+      portID: transfer
+  - akash-testnet:
+      channelID: channel-0
+      clientID: 07-tendermint-0
+      connectionID: connection-0
+      portID: transfer
+    cosmos-hub-testnet:
+      channelID: channel-1
+      clientID: 07-tendermint-1
+      connectionID: connection-1
+      portID: transfer
+  - akash-testnet:
+      channelID: channel-1
+      clientID: 07-tendermint-1
+      connectionID: connection-1
+      portID: transfer
+    terra-testnet:
+      channelID: channel-1
+      clientID: 07-tendermint-1
+      connectionID: connection-1
+      portID: transfer

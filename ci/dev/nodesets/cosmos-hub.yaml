@@ -1,21 +1,13 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: akash
+  name: cosmos-hub
   namespace: emeris
 spec:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          topologyKey: kubernetes.io/hostname
-          labelSelector:
-            matchLabels:
-              nodeset: akash
   app:
-    cliName: akash
-    daemonName: akash
-    name: akash
+    cliName: gaiad
+    daemonName: gaiad
+    name: cosmos-hub
   config:
     additionalEgressRules:
       - ports:
@@ -23,7 +15,8 @@ spec:
             protocol: TCP
     nodes:
       blockThreshold: 20s
-      startupTimeout: 1h
+      crisisSkipAssertInvariants: false
+      startupTimeout: 30m
       traceStoreContainer:
         env:
           - name: TRACELISTENER_FIFOPATH
@@ -33,10 +26,10 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: akash
+            value: cosmos-hub
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:main
         imagePullPolicy: Always
         resources:
           limits:
@@ -47,8 +40,24 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: gcr.io/tendermint-dev/akash
-    version: v0.14.1
+    name: gcr.io/tendermint-dev/gaia
+    version: v6.0.3
+  init:
+    assets:
+      - 10000000000000000000000uatom
+    bondDenom: uatom
+    chainID: cosmos-hub-testnet
+    faucet:
+      creditAmount: 10000000
+      denoms:
+        - uatom
+      domain: faucet.cosmos-hub-emeris.app.alpha.starport.cloud
+      funds: 10000000000000000000000uatom
+      legacySend: false
+      maxCredit: 100000000
+      replicas: 1
+    stakeAmount: 1000000uatom
+  moniker: emeris
   persistence:
     autoResize:
       enabled: true
@@ -56,23 +65,6 @@ spec:
       threshold: 80
     size: 15G
   replicas: 1
-  moniker: emeris
-  init:
-    assets:
-      - 10000000000000000000uakt
-    bondDenom: uakt
-    chainID: akash-testnet
-    faucet:
-      creditAmount: 10000000
-      denoms:
-        - uakt
-      domain: faucet.akash-emeris.app.alpha.starport.cloud
-      funds: 10000000000000000000000uakt
-      legacySend: false
-      maxCredit: 100000000
-      replicas: 1
-    stakeAmount: 10000000000uakt
-
   resources:
     validator:
       requests:
@@ -88,9 +80,8 @@ spec:
       limits:
         cpu: 100m
         memory: 256Mi
-
   expose:
-    domain: akash-emeris.app.alpha.starport.cloud
+    domain: gaia.app.alpha.starport.cloud
     grpc: true
     rpc: true
     api: true
