@@ -37,7 +37,7 @@ spec:
           - name: TRACELISTENER_DEBUG
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener:stable
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         resources:
           limits:
             cpu: "1"
@@ -48,8 +48,8 @@ spec:
     reconcilePeriod: 5m
   image:
     name: orai/orai
-    version: v0.40.3-alpine
-    imagePullPolicy: always
+    version: 0.40.3-alpine
+    imagePullPolicy: IfNotPresent
   join:
     genesis:
       url: https://raw.githubusercontent.com/oraichain/oraichain-static-files/master/mainnet-static-files/genesis.json
