@@ -5,3 +5,4 @@ imagePullPolicy: Always
 sdkVersion: "0.44"
 
 nodesetFile: /tmp/foo
+enableChain: true
