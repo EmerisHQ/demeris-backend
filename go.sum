@@ -161,6 +161,8 @@ github.com/alicebob/miniredis/v2 v2.18.0/go.mod h1:gquAfGbzn92jvtrSC69+6zZnwSODV
 github.com/allegro/bigcache v1.2.1-0.20190218064605-e24eb225f156/go.mod h1:Cb/ax3seSYIx7SuZdm2G2xzfwmv3TPSk2ucNfQESPXM=
 github.com/allinbits/demeris-api-server v0.0.0-20220217054035-4cc00143aea9 h1:BHWCNl1FoHTwvkyNlkoWMYCoZia+akWxGLNdZTFhVEk=
 github.com/allinbits/demeris-api-server v0.0.0-20220217054035-4cc00143aea9/go.mod h1:zlmVeNKNkTQcO0y188cH/2YuMjvgT/9L0qhAhYUyvVc=
+github.com/allinbits/demeris-api-server v0.0.0-20220225115818-58657f9eaad3 h1:LWpqjKMszFpog+O1R/oNupZOqwbFTdU0Qo5vhEsc2zU=
+github.com/allinbits/demeris-api-server v0.0.0-20220225115818-58657f9eaad3/go.mod h1:nOdUrWMpB/LUQj0pul6bElCwGw30yrbj41wFviNKyYo=
 github.com/allinbits/demeris-backend-models v0.0.0-20211116145636-4485bb7af3c0/go.mod h1:qloDLoSG+TzdDoayuxEUbygiQZlrV/WYcWHafEoXM/I=
 github.com/allinbits/demeris-backend-models v1.0.0/go.mod h1:P/PDgyB6Y/GcBcODjzHDfAT+WtDl86Qqq/LIbwHJAPI=
 github.com/allinbits/demeris-backend-models v1.1.0 h1:yumzcdjlVDO2yCFc2t7BhFTwqFBFwOkW2pqyEJb6q+M=
@@ -168,6 +170,9 @@ github.com/allinbits/demeris-backend-models v1.1.0/go.mod h1:QPKxm9tGHF8+jKwBx8f
 github.com/allinbits/emeris-cns-server v0.0.0-20211201093144-fa626186dded/go.mod h1:FuP1e/sGgjXI/pJ0ipHmEWLHHQWMPwnT8rDFz2WKKUE=
 github.com/allinbits/emeris-utils v1.0.1 h1:zFmyLoE6a1RqaY863oM66kBeuPIGVm2uyv9H/axhjbg=
 github.com/allinbits/emeris-utils v1.0.1/go.mod h1:tMkUvBItgKYJZJUx8zpE9QWm+lqUb4MvT3fKohYOoHI=
+github.com/allinbits/emeris-utils v1.1.1 h1:x9oEPATvNvRkMVVoewLXlo+5rULpiEygvjH7MBwCv2c=
+github.com/allinbits/emeris-utils v1.1.1/go.mod h1:tMkUvBItgKYJZJUx8zpE9QWm+lqUb4MvT3fKohYOoHI=
+github.com/allinbits/sdk-service-meta v0.0.0-20220114142340-a44e073d0b27 h1:7HQKXS3wg2EXMh6l7/1hrCec7dwukvizvh+g2zU+/mo=
 github.com/allinbits/sdk-service-meta v0.0.0-20220114142340-a44e073d0b27/go.mod h1:ZOehmlZy3nTRgpDE6hImQ5TzwXF8B4QIypYzOMgcO4Q=
 github.com/allinbits/starport-operator v0.0.1-alpha.26/go.mod h1:rhYpjy5c3QXjSS0SGxeDU/vVuxwLFeni1MJbpBTKXqo=
 github.com/allinbits/starport-operator v0.0.1-alpha.45/go.mod h1:8KNM5J00CtUCwjlnvMY/YpTbXBqHj04ER+SXi8PAWRI=
@@ -1603,6 +1608,7 @@ go.uber.org/zap v1.17.0/go.mod h1:MXVU+bhUf/A7Xi2HNOnopQOrmycQ5Ih87HtOu4q5SSo=
 go.uber.org/zap v1.19.1/go.mod h1:j3DNczoxDZroyBnOT1L/Q79cfUMGZxlv/9dzN7SM1rI=
 go.uber.org/zap v1.21.0 h1:WefMeulhovoZ2sYXz7st6K0sLj7bBhpiFaud4r4zST8=
 go.uber.org/zap v1.21.0/go.mod h1:wjWOCqI0f2ZZrJF/UufIOkiC8ii6tm1iqIsLo76RfJw=
+goa.design/goa/v3 v3.5.3 h1:uxB9EdsgUH9Q2t9gyiCpwWMghMKolsGWc5I9fMr6ZS8=
 goa.design/goa/v3 v3.5.3/go.mod h1:/IM4tkWGghlQ55SvA3z3sRrf6p3Ju2/+UCyd1Kf+xBM=
 goa.design/plugins/v3 v3.5.3/go.mod h1:3w2XsaOCeZrsL3reI/Do1UpEcLj54ktPIiaYFKrjy28=
 golang.org/x/crypto v0.0.0-20170930174604-9419663f5a44/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=

@@ -187,3 +187,35 @@ func (c *Client) GetUnbondingDelegations(address string) (stakingtypes.Unbonding
 
 	return res.UnbondingResponses, err
 }
+
+// GetBondedValidators returns bonded validators list
+func (c *Client) GetUnbondedValidators() (stakingtypes.Validators, error) {
+	res, err := stakingtypes.NewQueryClient(c.clientCtx).
+		Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{
+			Status: stakingtypes.BondStatusUnbonded,
+		})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, fmt.Errorf("not able to fetch validators: got response nil")
+	}
+
+	return res.Validators, err
+}
+
+// GetStakingBalance returns delegation balance of delegator address
+func (c *Client) GetDelegations(address string) (stakingtypes.DelegationResponses, error) {
+	res, err := stakingtypes.NewQueryClient(c.clientCtx).
+		DelegatorDelegations(context.Background(), &stakingtypes.QueryDelegatorDelegationsRequest{
+			DelegatorAddr: address,
+		})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, fmt.Errorf("not able to fetch delegator delegations: got response nil")
+	}
+
+	return res.DelegationResponses, err
+}
