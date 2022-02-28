@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/tendermint/starport/starport/pkg/spn"
 	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
@@ -153,4 +154,36 @@ func (c *Client) GetKeyring() keyring.Keyring {
 func (c *Client) GetHexAddress(accountName string) (types.AccAddress, error) {
 	info, err := c.clientCtx.Keyring.Key(accountName)
 	return info.GetAddress(), err
+}
+
+// GetBondedValidators returns bonded validators list
+func (c *Client) GetBondedValidators() (stakingtypes.Validators, error) {
+	res, err := stakingtypes.NewQueryClient(c.clientCtx).
+		Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{
+			Status: stakingtypes.BondStatusBonded,
+		})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, fmt.Errorf("not able to fetch validators: got response nil")
+	}
+
+	return res.Validators, err
+}
+
+// GetUnbondingDelegations returns unbonding delegations of delegator address
+func (c *Client) GetUnbondingDelegations(address string) (stakingtypes.UnbondingDelegations, error) {
+	res, err := stakingtypes.NewQueryClient(c.clientCtx).
+		DelegatorUnbondingDelegations(context.Background(), &stakingtypes.QueryDelegatorUnbondingDelegationsRequest{
+			DelegatorAddr: address,
+		})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, fmt.Errorf("not able to fetch unbonding delegations: got response nil")
+	}
+
+	return res.UnbondingResponses, err
 }
