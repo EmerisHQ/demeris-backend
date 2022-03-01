@@ -21,6 +21,6 @@ spec:
         - --host=cockroachdb-public
         - --database=cns
         - -e
-        - UPDATE cns.chains SET enabled = false WHERE chain_name = '{{ .Values.chain }}';
+        - UPDATE cns.chains SET enabled = false WHERE chain_name = '{{- include "targetChain" . }}';
       restartPolicy: Never
   backoffLimit: 0

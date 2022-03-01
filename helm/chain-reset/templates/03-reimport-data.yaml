@@ -15,7 +15,7 @@ spec:
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: {{ .Values.chain }}-0
+          claimName: "{{- include "targetChain" . }}-{{ .Values.useDisk }}"
       initContainers:
       - name: wait-for-erase-data
         image: groundnuty/k8s-wait-for:v1.3
@@ -34,7 +34,7 @@ spec:
         - name: TRACELISTENER_TYPE
           value: gaia
         - name: TRACELISTENER_CHAINNAME
-          value: {{ .Values.chain }}
+          value: "{{- include "targetChain" . }}"
         volumeMounts:
         - mountPath: /home/nonroot/data
           name: data
