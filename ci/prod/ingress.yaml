@@ -1,0 +1,55 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emeris
+  namespace: emeris
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_cache static-cache;
+      proxy_cache_valid 2s;
+      add_header X-Cache-Status $upstream_cache_status;
+      gzip on;
+      gzip_types text/html text/plain application/xml application/json;
+      gzip_min_length 128;
+spec:
+  rules:
+    - host: api.emeris.com
+      http:
+        paths:
+          - path: /v1/liquidity(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cosmos-hub
+                port:
+                  number: 1317
+          - path: /v1/oracle(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: price-oracle
+                port:
+                  number: 8000
+          - path: /v1/cns(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: cns-server
+                port:
+                  number: 8000
+          - path: /v1(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: api-server
+                port:
+                  number: 8000
+  tls:
+    - hosts:
+        - api.emeris.com
+      secretName: emeris-cert

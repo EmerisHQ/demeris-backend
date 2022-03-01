@@ -6,6 +6,7 @@ RESET_DIR="chain-reset"
 CHAIN=""
 SDK_VERSION="0.42"
 ENVIRONMENT="staging"
+SKIP_SCALE_DOWN=false
 
 usage()
 {
@@ -15,6 +16,7 @@ usage()
     echo -e "  -c, --chain \t\t The chain name (e.g. rizon, cosmos-hub)"
     echo -e "  -s, --sdk \t\t The SDK version of the chain (e.g. 0.42, 0.44), defaults to 0.42"
     echo -e "  -e, --env \t\t Environment name, defaults to staging"
+    echo -e "  -d, --down \t\t Skip scaling down the nodeset, defaults to false"
     echo -e "  -h, --help \t\t Show this menu\n"
     exit 1
 }
@@ -53,6 +55,11 @@ case $key in
     shift
     shift
     ;;
+    -d|--down)
+    SKIP_SCALE_DOWN="$2"
+    shift
+    shift
+    ;;
     -h|--help)
     usage
     shift
@@ -75,7 +82,7 @@ fi
 
 YAML_FILE="${SCRIPT_DIR}/../ci/${ENVIRONMENT}/nodesets/${CHAIN}.yaml"
 
-echo "-- Launcing bulk import job\n"
+echo -e "-- Launching bulk import job\n"
 helm install "${CHAIN}" \
   --set sdkVersion="${SDK_VERSION}" \
   --set-file nodesetFile="${YAML_FILE}" \

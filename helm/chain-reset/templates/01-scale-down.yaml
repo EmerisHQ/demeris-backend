@@ -22,6 +22,10 @@ spec:
       containers:
       - name: kubectl
         image: bitnami/kubectl
+        {{- if .Values.skipScaleDown }}
+        command: ["echo", "Do not scale down nodeset. Skipping..."]
+        {{- else }}
         command: ["kubectl", "scale", "nodeset", "{{- include "targetChain" . }}", "--replicas=0", "-n", "emeris"]
+        {{- end }}
       restartPolicy: Never
   backoffLimit: 0
