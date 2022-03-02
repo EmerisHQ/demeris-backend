@@ -1,4 +1,4 @@
-name: Delete Emeris Dev Environment
+name: Recreate Emeris Dev Environment
 
 on: 
   workflow_dispatch:
@@ -11,11 +11,9 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec:
-          - |
-            helm install redis --namespace emeris
-            helm repo add bitnami https://charts.bitnami.com/bitnami
-            helm repo update
+          exec: |
+            helm repo add bitnami https://charts.bitnami.com/bitnami;
+            helm repo update;
             helm upgrade redis \
             --install \
             --namespace emeris \
@@ -31,10 +29,9 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec:
-          - |
-            helm repo add cockroachdb https://charts.cockroachdb.com/
-            helm repo update
+          exec: |
+            helm repo add cockroachdb https://charts.cockroachdb.com/;
+            helm repo update;
             helm upgrade cockroachdb \
             --install \
             --version 6.0.8 \
@@ -227,3 +224,27 @@ jobs:
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: install --namespace emeris -f ./ci/dev/relayers
+
+  cosmos-hub:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy
+        uses: wei/curl@v1
+        with:
+          args: -X POST -d .ci/dev/chains/cosmos-hub.json https://dev.demeris.io/v1/cns/add
+
+  akash:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy
+        uses: wei/curl@v1
+        with:
+          args: -X POST -d .ci/dev/chains/akash.json https://dev.demeris.io/v1/cns/add
+
+  terra:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy
+        uses: wei/curl@v1
+        with:
+          args: -X POST -d .ci/dev/chains/terra.json https://dev.demeris.io/v1/cns/add
