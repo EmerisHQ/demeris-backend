@@ -17,7 +17,9 @@ on:
   repository_dispatch:
     types: [dev-push-*]
 
-concurrency: deploy-dev
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
 
 jobs:
   deploy-service:
