@@ -60,10 +60,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Get cns-server version
-        run: |
-          echo 'CNS_SERVER=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq -r '.["cns-server"]' >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+        run: echo "CNS_SERVER=$(cat ./envs/dev.json | jq -r '.["cns-server"]')" >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
         uses: peter-evans/repository-dispatch@v1
@@ -220,7 +217,7 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: install --namespace emeris -f ./ci/dev/nodesets
+          command: apply --namespace emeris -f ./ci/dev/nodesets
 
   relayers:
     runs-on: self-hosted
@@ -232,7 +229,7 @@ jobs:
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: install --namespace emeris -f ./ci/dev/relayers
+          command: apply --namespace emeris -f ./ci/dev/relayers
 
   cosmos-hub:
     needs: cns-server
