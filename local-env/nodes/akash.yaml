@@ -40,8 +40,8 @@ spec:
         imagePullPolicy: Never
     reconcilePeriod: 1m
   image:
-    name: ghcr.io/ovrclk/akash
-    version: 0.14.1
+    name: gcr.io/tendermint-dev/akash
+    version: v0.14.1
   moniker: emeris
   persistence:
     size: 10Gi

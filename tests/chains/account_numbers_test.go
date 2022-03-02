@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	models "github.com/allinbits/demeris-backend-models/api"
+	models "github.com/allinbits/demeris-api-server/api/account"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
 )
 
@@ -32,13 +32,6 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 
-			if !cli.Enabled {
-				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
-				err = resp.Body.Close()
-				suite.Require().NoError(err)
-
-				return
-			}
 			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
@@ -47,8 +40,14 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
 
-			var numbers models.AccountNumbersResponse
+			var numbers models.NumbersResponse
 			suite.Require().NoError(json.Unmarshal(data, &numbers))
+
+			if !cli.Enabled {
+				suite.Require().Empty(numbers.Numbers)
+				return
+			}
+
 			suite.Require().NotEmpty(numbers.Numbers)
 
 		})

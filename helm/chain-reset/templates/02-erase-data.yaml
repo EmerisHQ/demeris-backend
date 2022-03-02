@@ -28,14 +28,14 @@ spec:
         - --host=cockroachdb-public
         - --database=tracelistener
         - -e
-        - DELETE FROM tracelistener.balances WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.connections WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.delegations WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.unbonding_delegations WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.denom_traces WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.channels WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.auth WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.clients WHERE chain_name='{{ .Values.chain }}';
-          DELETE FROM tracelistener.validators WHERE chain_name='{{ .Values.chain }}';
+        - DELETE FROM tracelistener.balances WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.connections WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.delegations WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.unbonding_delegations WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.denom_traces WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.channels WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.auth WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.clients WHERE chain_name='{{- include "targetChain" . }}';
+          DELETE FROM tracelistener.validators WHERE chain_name='{{- include "targetChain" . }}';
       restartPolicy: Never
   backoffLimit: 0
