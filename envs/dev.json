@@ -1,9 +1,11 @@
 {
-  "github": {
-    "event": {
-      "client_payload": {
-        "service_name": "github.event.client_payload.image_sha"
-      }
-    }
-  }
+  "api-server": "1e876db7d2fa2cf1ee586b199e3f0008b734ac4b",
+  "cns-server": "e007f871da6135ca7776139ee15ad068380fc9a8",
+  "daggregation": "d131b2ef30f1e41fe0f6c8cbeaa2f130738cb4e2",
+  "dexinfo": "30573df87a3ea1a586f55d0a1c8d3143f6bed1d5",
+  "price-oracle": "a77decf302712e630943eb44cdb6d5323dddda68",
+  "rpcwatcher": "dfdafbe76ed03d5879e74870e5a83db8e8c32bf0",
+  "sdk-service-v42": "1e9248ff6c3450f994a6b443f8bd253ccb8fa9df",
+  "sdk-service-v44": "1e9248ff6c3450f994a6b443f8bd253ccb8fa9df",
+  "ticket-watcher": "6d0a1613379d0deb0748fd2ab1a4047c42752539"
 }
