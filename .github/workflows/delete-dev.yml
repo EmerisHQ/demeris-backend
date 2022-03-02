@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       delete_nodesets:
-        description: 'Whether to also delete NodeSet resources'     
+        description: 'Whether to delete NodeSet resources'
         required: true
         default: 'false'
       delete_faucets:
-        description: 'Whether to also delete Faucet resources'     
+        description: 'Whether to delete Faucet resources'
         required: true
         default: 'false'
       delete_relayers:
-        description: 'Whether to also delete Relayer resources'     
+        description: 'Whether to delete Relayer resources'
         required: true
         default: 'false'
 
@@ -89,7 +89,7 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall admin-ui --namespace emeris
+          exec: helm uninstall daggregation --namespace emeris
 
   dexinfo:
     runs-on: self-hosted
@@ -98,7 +98,7 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall admin-ui --namespace emeris
+          exec: helm uninstall dexinfo --namespace emeris
 
   sdk-service-v42:
     runs-on: self-hosted
@@ -107,7 +107,7 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall admin-ui --namespace emeris
+          exec: helm uninstall sdk-service-v42 --namespace emeris
 
   sdk-service-v44:
     runs-on: self-hosted
@@ -116,7 +116,7 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall admin-ui --namespace emeris
+          exec: helm uninstall sdk-service-v44 --namespace emeris
 
   ingress:
     runs-on: self-hosted
@@ -130,15 +130,6 @@ jobs:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: delete --namespace emeris -f ci/dev/ingress.yaml
 
-  pvcs:
-    runs-on: self-hosted
-    steps:
-      - name: Delete
-        uses: steebchen/kubectl@v2.0.0
-        with:
-          config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete --all pvc --namespace emeris
-
   nodesets:
     if: ${{ github.event.inputs.delete_nodesets == 'true' }}
     runs-on: self-hosted
@@ -148,6 +139,16 @@ jobs:
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: delete --all nodesets --namespace emeris
+
+  pvcs:
+    if: ${{ github.event.inputs.delete_nodesets == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --all pvc --namespace emeris
 
   faucets:
     if: ${{ github.event.inputs.delete_faucets == 'true' }}

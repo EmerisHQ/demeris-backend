@@ -2,19 +2,6 @@ name: Delete Emeris Dev Environment
 
 on: 
   workflow_dispatch:
-    inputs:
-      create_nodesets:
-        description: 'Whether to create NodeSet resources'
-        required: true
-        default: 'false'
-      create_faucets:
-        description: 'Whether to create Faucet resources'
-        required: true
-        default: 'false'
-      create_relayers:
-        description: 'Whether to also delete Relayer resources'     
-        required: true
-        default: 'false'
 
 jobs:
   redis:
@@ -154,53 +141,89 @@ jobs:
           event-type: dev-push-ticket-watcher
           client-payload: '{"repo_name":"emeris-ticket-watcher","branch_name":"main","image_name":"emeris-ticket-watcher","image_sha":"${{ TICKET_WATCHER }}","service_name":"ticket-watcher"}'
 
-  admin-ui:
+  daggregation:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Get daggregation version
+        run: |
+          echo 'DAGGREGATION=<<EOF' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq '.["daggregation"]' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
 
-      - name: Uninstall
-        uses: WyriHaximus/github-action-helm3@v2
+      - name: Call repository_dispatch on demeris-backend
+        uses: peter-evans/repository-dispatch@v1
         with:
-          kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall admin-ui --namespace emeris
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: allinbits/demeris-backend
+          event-type: dev-push-daggregation
+          client-payload: '{"repo_name":"daggregation","branch_name":"master","image_name":"emeris-daggregation","image_sha":"${{ DAGGREGATION }}","service_name":"daggregation"}'
 
-  pvcs:
+  dexinfo:
     runs-on: self-hosted
     steps:
-      - name: Delete
-        uses: steebchen/kubectl@v2.0.0
+      - name: Get dexinfo version
+        run: |
+          echo 'DEXINFO=<<EOF' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq '.["dexinfo"]' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Call repository_dispatch on demeris-backend
+        uses: peter-evans/repository-dispatch@v1
         with:
-          config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete --all pvc --namespace emeris
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: allinbits/demeris-backend
+          event-type: dev-push-dexinfo
+          client-payload: '{"repo_name":"emeris-dexinfo","branch_name":"main","image_name":"emeris-dexinfo","image_sha":"${{ DEXINFO }}","service_name":"dexinfo"}'
+
+  sdk-service-v42:
+    runs-on: self-hosted
+    steps:
+      - name: Get sdk-service-v42 version
+        run: |
+          echo 'SDK_SERVICE_42=<<EOF' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq '.["sdk-service-v42"]' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Call repository_dispatch on demeris-backend
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: allinbits/demeris-backend
+          event-type: dev-push-sdk-service-v42
+          client-payload: '{"repo_name":"sdk-service","branch_name":"main","image_name":"emeris-sdk-service-v42","image_sha":"${{ SDK_SERVICE_42 }}","service_name":"sdk-service-v42"}'
+
+  sdk-service-v44:
+    runs-on: self-hosted
+    steps:
+      - name: Get sdk-service-v44 version
+        run: |
+          echo 'SDK_SERVICE_44=<<EOF' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq '.["sdk-service-v44"]' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Call repository_dispatch on demeris-backend
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: allinbits/demeris-backend
+          event-type: dev-push-sdk-service-v44
+          client-payload: '{"repo_name":"sdk-service","branch_name":"main","image_name":"emeris-sdk-service-v44","image_sha":"${{ SDK_SERVICE_44 }}","service_name":"sdk-service-v44"}'
+
 
   nodesets:
-    if: ${{ github.event.inputs.delete_nodesets == 'true' }}
     runs-on: self-hosted
     steps:
-      - name: Delete
+      - name: Install nodesets
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete --all nodesets --namespace emeris
-
-  faucets:
-    if: ${{ github.event.inputs.delete_faucets == 'true' }}
-    runs-on: self-hosted
-    steps:
-      - name: Delete
-        uses: steebchen/kubectl@v2.0.0
-        with:
-          config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete --all faucets --namespace emeris
+          command: install --namespace emeris -f ./ci/dev/nodesets
 
   relayers:
-    if: ${{ github.event.inputs.delete_relayers == 'true' }}
     runs-on: self-hosted
     steps:
-      - name: Delete
+      - name: Install relayers
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete --all relayers --namespace emeris
+          command: install --namespace emeris -f ./ci/dev/relayers
