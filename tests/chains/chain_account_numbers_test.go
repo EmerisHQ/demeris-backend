@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	chainNumbersEndpoint = "/chain/%s/numbers/%v"
+	chainNumbersEndpoint = "chain/%s/numbers/%v"
 )
 
 func (suite *testCtx) TestGetChainNumbers() {
@@ -27,7 +27,7 @@ func (suite *testCtx) TestGetChainNumbers() {
 			hexAddress, err := cli.GetHexAddress(cc.Key)
 			suite.Require().NoError(err)
 
-			url := suite.Client.BuildUrl(chainNumbersEndpoint, hex.EncodeToString(hexAddress))
+			url := suite.Client.BuildUrl(chainNumbersEndpoint, ch.Name, hex.EncodeToString(hexAddress))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
@@ -61,9 +61,6 @@ func (suite *testCtx) TestGetChainNumbers() {
 
 			suite.Require().Equal(ch.Name, row.ChainName)
 			suite.Require().Equal(account.Address, row.Address)
-
-			suite.Require().NotZero(row.AccountNumber)
-			suite.Require().NotZero(row.SequenceNumber)
 		})
 	}
 }

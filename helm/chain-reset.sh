@@ -65,32 +65,21 @@ esac
 done
 set -- "${POSITIONAL[@]}"
 
+assert_executable_exists helm
+
 if [[ ! "$CHAIN" ]]
 then
     echo -e "${red}Error:${reset} chain name is required\n"
     usage
 fi
 
-assert_executable_exists kind
-assert_executable_exists helm
-assert_executable_exists kubectl
-assert_executable_exists docker
-
 YAML_FILE="${SCRIPT_DIR}/../ci/${ENVIRONMENT}/nodesets/${CHAIN}.yaml"
-
-echo -e "-- Moving temporary chain YAML file\n"
-DEST_FILE="${SCRIPT_DIR}/${RESET_DIR}/${CHAIN}.yaml"
-cp ${YAML_FILE} "${SCRIPT_DIR}/${RESET_DIR}"
 
 echo "-- Launcing bulk import job\n"
 helm install "${CHAIN}" \
-  --set chain="${CHAIN}" \
   --set sdkVersion="${SDK_VERSION}" \
-  --set nodesetFile="${CHAIN}.yaml" \
+  --set-file nodesetFile="${YAML_FILE}" \
   "${SCRIPT_DIR}/${RESET_DIR}"
-
-echo "-- Deleting temporary chain YAML file\n"
-rm "${DEST_FILE}"
 
 echo -e "-- You can monitor the progress with 'kubectl get jobs'\n"
 

@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         args:
         - "pod"
-        - "-lnodeset={{ .Release.Name }}"
+        - "-lnodeset={{- include "targetChain" . }}"
       containers:
       - name: cockroach-client
         image: "cockroachdb/cockroach:v21.2.5"
@@ -35,7 +35,7 @@ spec:
         - --host=cockroachdb-public
         - --database=cns
         - -e
-        - UPDATE cns.chains SET enabled = true WHERE chain_name = '{{ .Values.chain }}';
+        - UPDATE cns.chains SET enabled = true WHERE chain_name = '{{- include "targetChain" . }}';
       restartPolicy: Never
   backoffLimit: 0
 {{- end }}

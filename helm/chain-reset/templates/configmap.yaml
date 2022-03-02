@@ -7,4 +7,4 @@ metadata:
     {{- include "chart.labels" . | indent 4 }}
 data:
   nodeset.yaml: |-
-{{ .Files.Get .Values.nodesetFile | indent 4}}
+{{ .Values.nodesetFile | indent 4 }}

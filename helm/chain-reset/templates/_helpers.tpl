@@ -6,3 +6,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Chart.AppVersion }}
 {{- if .Values.labels }}{{ toYaml .Values.labels}}{{- end }}
 {{- end }}
+
+{{- define "targetChain" -}}
+{{- if .Values.chain -}}
+{{- .Values.chain -}}
+{{- else -}}
+{{- .Values.nodesetFile | regexFind "name: (.*)" | replace "name: " "" -}}
+{{- end -}}
+{{- end -}}
