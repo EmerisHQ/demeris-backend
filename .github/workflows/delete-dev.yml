@@ -1,4 +1,4 @@
-name: Reset Emeris Dev Environment
+name: Delete Emeris Dev Environment
 
 on: 
   workflow_dispatch:

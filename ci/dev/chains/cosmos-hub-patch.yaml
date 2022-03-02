@@ -1,6 +1,0 @@
-spec:
-  expose:
-    domain: cosmos-hub-emeris.app.alpha.starport.cloud
-    grpc: true
-    rpc: true
-    api: true
