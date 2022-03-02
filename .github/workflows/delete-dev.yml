@@ -60,7 +60,7 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall rpcwatcher --namespace emeris
+          exec: helm uninstall emeris-rpcwatcher --namespace emeris
 
   price-oracle:
     runs-on: self-hosted

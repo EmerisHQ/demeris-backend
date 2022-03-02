@@ -61,6 +61,7 @@ jobs:
           command: apply -n emeris -f ci/dev/ingress.yaml
 
   emit-integration-test:
+    if: ${{ github.event.client_payload.deploy_type == 'deploy_dev' }}
     runs-on: self-hosted
     needs: deploy-service
     steps:
