@@ -2,29 +2,81 @@ apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
   name: terra
-  namespace: default
+  namespace: emeris
 spec:
-  replicas: 2
-
-  binaryName: terrad
-
-  moniker: starport-alpha
-
+  app:
+    cliName: terrad
+    daemonName: terrad
+    name: terra
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 20s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.01uluna
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: terra
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: terramoney/core
+    version: v0.5.13
   init:
-    chainID: terra
+    chainID: bombay-12
     bondDenom: uluna
     assets:
       - 10000000000000000000uluna
-
     faucet:
       funds: 100000000000000000uluna
       denoms:
         - uluna
-
-  image:
-    name: terramoney/core
-    version: v0.5.2
-
+      domain: faucet.terra-emeris.app.alpha.starport.cloud
+      legacySend: false
+      maxCredit: 100000000
+      replicas: 1
+    stakeAmount: 1000000uluna
+  moniker: emeris
+  persistence:
+    autoResize:
+      enabled: true
+      increment: 5G
+      threshold: 80
+    size: 15G
+  replicas: 1
   resources:
     validator:
       requests:
@@ -33,7 +85,6 @@ spec:
       limits:
         cpu: 100m
         memory: 256Mi
-
     sentry:
       requests:
         cpu: 50m
@@ -41,7 +92,6 @@ spec:
       limits:
         cpu: 100m
         memory: 256Mi
-
   expose:
     domain: terra.app.alpha.starport.cloud
     grpc: true
