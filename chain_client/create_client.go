@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/go-bip39"
 	"github.com/tendermint/starport/starport/pkg/spn"
@@ -92,16 +93,17 @@ func (c *Client) AccountCreate(accountName, mnemonic, hdPath string) (spn.Accoun
 	if err != nil {
 		return spn.Account{}, err
 	}
-	account := toAccount(info)
+	account := c.ToAccount(info)
 	account.Mnemonic = mnemonic
 	return account, nil
 }
 
-func toAccount(info keyring.Info) spn.Account {
-	ko, _ := keyring.Bech32KeyOutput(info)
+func (c Client) ToAccount(info keyring.Info) spn.Account {
+	ko, _ := sdktypes.Bech32ifyAddressBytes(c.AddressPrefix, info.GetAddress())
+
 	return spn.Account{
-		Name:    ko.Name,
-		Address: ko.Address,
+		Name:    info.GetName(),
+		Address: ko,
 	}
 }
 
@@ -126,18 +128,19 @@ func (c *Client) AccountList() (accounts []spn.Account, err error) {
 		return nil, err
 	}
 	for _, info := range infos {
-		accounts = append(accounts, toAccount(info))
+		accounts = append(accounts, c.ToAccount(info))
 	}
 	return accounts, nil
 }
 
 // AccountGet retrieves an account by name from the keyring.
-func (c *Client) AccountGet(accountName string) (spn.Account, error) {
+func (c Client) AccountGet(accountName string) (spn.Account, error) {
 	info, err := c.kr.Key(accountName)
 	if err != nil {
 		return spn.Account{}, err
 	}
-	return toAccount(info), nil
+
+	return c.ToAccount(info), nil
 }
 
 // GetContext return context of client
