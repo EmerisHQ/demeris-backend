@@ -2,7 +2,7 @@
 	"chain_name": "terra",
 	"derivation_path": "m/44'/330'/0'/0/0",
 	"logo": "https://storage.googleapis.com/emeris/logos/terra.svg",
-	"enabled": false,
+	"enabled": true,
 	"valid_block_thresh": "10s",
 	"minimum_thresh_relayer_balance": 42,
 	"display_name": "Terra Emeris",
@@ -111,5 +111,7 @@
 		},
 		"docker_image": "terramoney/core",
 		"docker_image_version": "v0.5.5"
-	}
+	},
+	"supported_wallets": [],
+	"block_explorer": "\"\""
 }
