@@ -75,9 +75,9 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/osmosis
-    version: v6.0.0
-    build:
-      repository: https://github.com/osmosis-labs/osmosis
+    version: v7.0.2
+  #  build:
+  #    repository: https://github.com/osmosis-labs/osmosis
   join:
     genesis:
       url: https://storage.googleapis.com/emeris/genesis/osmosis-1.json
