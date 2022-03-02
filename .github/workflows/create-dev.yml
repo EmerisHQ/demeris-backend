@@ -68,7 +68,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-cns-server
-          client-payload: '{"repo_name":"emeris-cns-server","branch_name":"main","image_name":"emeris-cns-server","image_sha":"${{ CNS_SERVER }}","service_name":"cns-server"}'
+          client-payload: '{"repo_name":"emeris-cns-server","branch_name":"main","image_name":"emeris-cns-server","image_sha":"${{ env.CNS_SERVER }}","service_name":"cns-server"}'
 
   api-server:
     runs-on: self-hosted
@@ -85,7 +85,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-api-server
-          client-payload: '{"repo_name":"demeris-api-server","branch_name":"main","image_name":"emeris-api-server","image_sha":"${{ API_SERVER }}","service_name":"api-server"}'
+          client-payload: '{"repo_name":"demeris-api-server","branch_name":"main","image_name":"emeris-api-server","image_sha":"${{ env.API_SERVER }}","service_name":"api-server"}'
 
   rpcwatcher:
     runs-on: self-hosted
@@ -102,7 +102,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-emeris-rpcwatcher
-          client-payload: '{"repo_name":"emeris-rpcwatcher","branch_name":"main","image_name":"emeris-rpcwatcher","image_sha":"${{ RPC_WATCHER }}","service_name":"emeris-rpcwatcher"}'
+          client-payload: '{"repo_name":"emeris-rpcwatcher","branch_name":"main","image_name":"emeris-rpcwatcher","image_sha":"${{ env.RPC_WATCHER }}","service_name":"emeris-rpcwatcher"}'
 
   price-oracle:
     runs-on: self-hosted
@@ -119,7 +119,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-price-oracle-server
-          client-payload: '{"repo_name":"emeris-price-oracle","branch_name":"main","image_name":"emeris-price-oracle","image_sha":"${{ PRICE_ORACLE }}","service_name":"price-oracle"}'
+          client-payload: '{"repo_name":"emeris-price-oracle","branch_name":"main","image_name":"emeris-price-oracle","image_sha":"${{ env.PRICE_ORACLE }}","service_name":"price-oracle"}'
 
   ticket-watcher:
     runs-on: self-hosted
@@ -136,7 +136,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-ticket-watcher
-          client-payload: '{"repo_name":"emeris-ticket-watcher","branch_name":"main","image_name":"emeris-ticket-watcher","image_sha":"${{ TICKET_WATCHER }}","service_name":"ticket-watcher"}'
+          client-payload: '{"repo_name":"emeris-ticket-watcher","branch_name":"main","image_name":"emeris-ticket-watcher","image_sha":"${{ env.TICKET_WATCHER }}","service_name":"ticket-watcher"}'
 
   daggregation:
     runs-on: self-hosted
@@ -153,7 +153,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-daggregation
-          client-payload: '{"repo_name":"daggregation","branch_name":"master","image_name":"emeris-daggregation","image_sha":"${{ DAGGREGATION }}","service_name":"daggregation"}'
+          client-payload: '{"repo_name":"daggregation","branch_name":"master","image_name":"emeris-daggregation","image_sha":"${{ env.DAGGREGATION }}","service_name":"daggregation"}'
 
   dexinfo:
     runs-on: self-hosted
@@ -170,7 +170,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-dexinfo
-          client-payload: '{"repo_name":"emeris-dexinfo","branch_name":"main","image_name":"emeris-dexinfo","image_sha":"${{ DEXINFO }}","service_name":"dexinfo"}'
+          client-payload: '{"repo_name":"emeris-dexinfo","branch_name":"main","image_name":"emeris-dexinfo","image_sha":"${{ env.DEXINFO }}","service_name":"dexinfo"}'
 
   sdk-service-v42:
     runs-on: self-hosted
@@ -187,7 +187,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-sdk-service-v42
-          client-payload: '{"repo_name":"sdk-service","branch_name":"main","image_name":"emeris-sdk-service-v42","image_sha":"${{ SDK_SERVICE_42 }}","service_name":"sdk-service-v42"}'
+          client-payload: '{"repo_name":"sdk-service","branch_name":"main","image_name":"emeris-sdk-service-v42","image_sha":"${{ env.SDK_SERVICE_42 }}","service_name":"sdk-service-v42"}'
 
   sdk-service-v44:
     runs-on: self-hosted
@@ -204,7 +204,7 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: dev-push-sdk-service-v44
-          client-payload: '{"repo_name":"sdk-service","branch_name":"main","image_name":"emeris-sdk-service-v44","image_sha":"${{ SDK_SERVICE_44 }}","service_name":"sdk-service-v44"}'
+          client-payload: '{"repo_name":"sdk-service","branch_name":"main","image_name":"emeris-sdk-service-v44","image_sha":"${{ env.SDK_SERVICE_44 }}","service_name":"sdk-service-v44"}'
 
 
   nodesets:
