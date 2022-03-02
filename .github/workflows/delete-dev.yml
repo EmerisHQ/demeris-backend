@@ -140,16 +140,6 @@ jobs:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: delete --all nodesets --namespace emeris
 
-  pvcs:
-    if: ${{ github.event.inputs.delete_nodesets == 'true' }}
-    runs-on: self-hosted
-    steps:
-      - name: Delete
-        uses: steebchen/kubectl@v2.0.0
-        with:
-          config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete --all pvc --namespace emeris
-
   faucets:
     if: ${{ github.event.inputs.delete_faucets == 'true' }}
     runs-on: self-hosted
