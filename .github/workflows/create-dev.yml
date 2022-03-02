@@ -1,0 +1,9 @@
+name: Recreate Emeris Dev Environment
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  DummyJob:
+    steps:
+      - name: DummyStep
