@@ -18,7 +18,7 @@ on:
     types: [dev-push-*]
 
 concurrency:
-  group: deploy-dev
+  group: ${{ github.event.client_payload.deploy_type || deploy_dev }}
   cancel-in-progress: false
 
 jobs:
