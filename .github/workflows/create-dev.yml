@@ -62,7 +62,7 @@ jobs:
       - name: Get cns-server version
         run: |
           echo 'CNS_SERVER=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["cns-server"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["cns-server"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -82,7 +82,7 @@ jobs:
       - name: Get api-server version
         run: |
           echo 'API_SERVER=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["api-server"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["api-server"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -102,7 +102,7 @@ jobs:
       - name: Get rpc-watcher version
         run: |
           echo 'RPC_WATCHER=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["rpcwatcher"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["rpcwatcher"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -122,7 +122,7 @@ jobs:
       - name: Get price-oracle version
         run: |
           echo 'PRICE_ORACLE=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["price-oracle"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["price-oracle"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -142,7 +142,7 @@ jobs:
       - name: Get ticket-watcher version
         run: |
           echo 'TICKET_WATCHER=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["ticket-watcher"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["ticket-watcher"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -162,7 +162,7 @@ jobs:
       - name: Get daggregation version
         run: |
           echo 'DAGGREGATION=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["daggregation"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["daggregation"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -182,7 +182,7 @@ jobs:
       - name: Get dexinfo version
         run: |
           echo 'DEXINFO=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["dexinfo"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["dexinfo"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -202,7 +202,7 @@ jobs:
       - name: Get sdk-service-v42 version
         run: |
           echo 'SDK_SERVICE_42=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["sdk-service-v42"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["sdk-service-v42"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
@@ -222,7 +222,7 @@ jobs:
       - name: Get sdk-service-v44 version
         run: |
           echo 'SDK_SERVICE_44=<<EOF' >> $GITHUB_ENV
-          cat ./envs/dev.json | jq '.["sdk-service-v44"]' >> $GITHUB_ENV
+          cat ./envs/dev.json | jq -r '.["sdk-service-v44"]' >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
 
       - name: Call repository_dispatch on demeris-backend
