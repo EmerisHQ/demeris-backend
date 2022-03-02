@@ -56,6 +56,9 @@ jobs:
   cns-server:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get cns-server version
         run: |
           echo 'CNS_SERVER=<<EOF' >> $GITHUB_ENV
@@ -73,6 +76,9 @@ jobs:
   api-server:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get api-server version
         run: |
           echo 'API_SERVER=<<EOF' >> $GITHUB_ENV
@@ -90,6 +96,9 @@ jobs:
   rpcwatcher:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get rpc-watcher version
         run: |
           echo 'RPC_WATCHER=<<EOF' >> $GITHUB_ENV
@@ -107,6 +116,9 @@ jobs:
   price-oracle:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get price-oracle version
         run: |
           echo 'PRICE_ORACLE=<<EOF' >> $GITHUB_ENV
@@ -124,6 +136,9 @@ jobs:
   ticket-watcher:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get ticket-watcher version
         run: |
           echo 'TICKET_WATCHER=<<EOF' >> $GITHUB_ENV
@@ -141,6 +156,9 @@ jobs:
   daggregation:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get daggregation version
         run: |
           echo 'DAGGREGATION=<<EOF' >> $GITHUB_ENV
@@ -158,6 +176,9 @@ jobs:
   dexinfo:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get dexinfo version
         run: |
           echo 'DEXINFO=<<EOF' >> $GITHUB_ENV
@@ -175,6 +196,9 @@ jobs:
   sdk-service-v42:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get sdk-service-v42 version
         run: |
           echo 'SDK_SERVICE_42=<<EOF' >> $GITHUB_ENV
@@ -192,6 +216,9 @@ jobs:
   sdk-service-v44:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Get sdk-service-v44 version
         run: |
           echo 'SDK_SERVICE_44=<<EOF' >> $GITHUB_ENV
@@ -210,6 +237,9 @@ jobs:
   nodesets:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Install nodesets
         uses: steebchen/kubectl@v2.0.0
         with:
@@ -219,6 +249,9 @@ jobs:
   relayers:
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Install relayers
         uses: steebchen/kubectl@v2.0.0
         with:
@@ -226,24 +259,51 @@ jobs:
           command: install --namespace emeris -f ./ci/dev/relayers
 
   cosmos-hub:
+    needs: cns-server
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Sleep for 1 min
+        uses: whatnick/wait-action@master
+        with:
+          time: '1m'
+
       - name: Deploy
         uses: wei/curl@v1
         with:
           args: -X POST -d .ci/dev/chains/cosmos-hub.json https://dev.demeris.io/v1/cns/add
 
   akash:
+    needs: cns-server
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Sleep for 1 min
+        uses: whatnick/wait-action@master
+        with:
+          time: '1m'
+
       - name: Deploy
         uses: wei/curl@v1
         with:
           args: -X POST -d .ci/dev/chains/akash.json https://dev.demeris.io/v1/cns/add
 
   terra:
+    needs: cns-server
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Sleep for 1 min
+        uses: whatnick/wait-action@master
+        with:
+          time: '1m'
+
       - name: Deploy
         uses: wei/curl@v1
         with:
