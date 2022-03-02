@@ -15,7 +15,7 @@
       "relayer_denom": true,
       "minimum_thresh_relayer_balance": 42,
       "gas_price_levels": { "low": 0.5, "average": 1, "high": 2 },
-      "name": "urowan",
+      "name": "xrowan",
       "logo": "https://storage.googleapis.com/emeris/logos/rowan.svg",
       "verified": true,
       "precision": 6,
