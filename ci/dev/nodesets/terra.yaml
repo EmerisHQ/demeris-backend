@@ -93,7 +93,7 @@ spec:
         cpu: 100m
         memory: 256Mi
   expose:
-    domain: terra.app.alpha.starport.cloud
+    domain: terra-emeris.app.alpha.starport.cloud
     grpc: true
     rpc: true
     api: true
