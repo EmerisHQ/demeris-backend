@@ -45,7 +45,7 @@ jobs:
               --set image=gcr.io/tendermint-dev/"${{ github.event.client_payload.image_name }}":"${{ github.event.client_payload.image_sha }}" \
               --set daggregationPublicBaseUrl=https://dev.demeris.io/v1/daggregation \
               --set redirectURL=https://develop--emeris-admin.netlify.app/login \
-              --set environment=test \
+              --set test=true \
               ./helm
   
   ingress:
