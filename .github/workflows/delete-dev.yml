@@ -6,15 +6,15 @@ on:
       delete_nodesets:
         description: 'Whether to delete NodeSet resources'
         required: true
-        default: 'false'
+        default: 'true'
       delete_faucets:
         description: 'Whether to delete Faucet resources'
         required: true
-        default: 'false'
+        default: 'true'
       delete_relayers:
         description: 'Whether to delete Relayer resources'
         required: true
-        default: 'false'
+        default: 'true'
 
 jobs:
   redis:
