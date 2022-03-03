@@ -319,7 +319,7 @@ jobs:
       - name: Deploy
         uses: wei/curl@v1
         with:
-          args: -X POST -d .ci/dev/chains/cosmos-hub.json https://dev.demeris.io/v1/cns/add
+          args: -X POST -d @ci/dev/chains/cosmos-hub.json https://dev.demeris.io/v1/cns/add
 
   akash:
     needs: cns-server
@@ -336,7 +336,7 @@ jobs:
       - name: Deploy
         uses: wei/curl@v1
         with:
-          args: -X POST -d .ci/dev/chains/akash.json https://dev.demeris.io/v1/cns/add
+          args: -X POST -d @ci/dev/chains/akash.json https://dev.demeris.io/v1/cns/add
 
   terra:
     needs: cns-server
@@ -353,4 +353,4 @@ jobs:
       - name: Deploy
         uses: wei/curl@v1
         with:
-          args: -X POST -d .ci/dev/chains/terra.json https://dev.demeris.io/v1/cns/add
+          args: -X POST -d @ci/dev/chains/terra.json https://dev.demeris.io/v1/cns/add
