@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
+
   redis:
     runs-on: self-hosted
     steps:

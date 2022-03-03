@@ -2,6 +2,7 @@ name: Delete Emeris Dev Environment
 
 on: 
   workflow_dispatch:
+
     inputs:
       delete_nodesets:
         description: 'Whether to delete NodeSet resources'
