@@ -35,10 +35,9 @@ jobs:
             helm repo update;
             helm upgrade cockroachdb \
             --install \
-            --version 6.0.8 \
+            --version 7.0.0 \
             --namespace emeris \
             --set tls.enabled=false \
-            --set config.single-node=true \
             --set statefulset.replicas=3 \
             cockroachdb/cockroachdb
 
@@ -304,53 +303,28 @@ jobs:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: apply --namespace emeris -f ./ci/dev/relayers
 
-  cosmos-hub:
+  cns-chains:
     needs: cns-server
     runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Sleep for 2 min
-        uses: whatnick/wait-action@master
+      - name: Install relayers
+        uses: steebchen/kubectl@v2.0.0
         with:
-          time: '2m'
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: |
+            wait pod \
+            --namespace emeris \
+            --for=condition=ready \
+            --selector=app.kubernetes.io/name=emeris-cns-server \
+            --timeout=180s
 
-      - name: Deploy
-        uses: wei/curl@v1
-        with:
-          args: -X POST -d @ci/dev/chains/cosmos-hub.json https://dev.demeris.io/v1/cns/add
+      - name: Deploy chains to CNS
+        run: |
+          for f in @ci/dev/chains/*
+          do
+            curl -X POST -d @$f https://dev.demeris.io/v1/cns/add
+          done
 
-  akash:
-    needs: cns-server
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Sleep for 2 min
-        uses: whatnick/wait-action@master
-        with:
-          time: '2m'
-
-      - name: Deploy
-        uses: wei/curl@v1
-        with:
-          args: -X POST -d @ci/dev/chains/akash.json https://dev.demeris.io/v1/cns/add
-
-  terra:
-    needs: cns-server
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Sleep for 2 min
-        uses: whatnick/wait-action@master
-        with:
-          time: '2m'
-
-      - name: Deploy
-        uses: wei/curl@v1
-        with:
-          args: -X POST -d @ci/dev/chains/terra.json https://dev.demeris.io/v1/cns/add
