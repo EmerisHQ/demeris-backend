@@ -297,6 +297,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Wait for chains to boot
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: |
+            wait pod \
+            --namespace emeris \
+            --for="condition=ready" \
+            --selector="nodeset in (akash, terra, cosmos-hub)" \
+            --timeout=180s
+
       - name: Install relayers
         uses: steebchen/kubectl@v2.0.0
         with:
@@ -310,14 +321,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install relayers
+      - name: Wait for CNS to boot
         uses: steebchen/kubectl@v2.0.0
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: |
             wait pod \
             --namespace emeris \
-            --for=condition=ready \
+            --for="condition=ready" \
             --selector="app.kubernetes.io/name=emeris-cns-server" \
             --timeout=180s
 
