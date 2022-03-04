@@ -46,7 +46,7 @@ spec:
     assets:
       - 10000000000000000000000uatom
     bondDenom: uatom
-    chainID: cosmos-hub-testnet
+    chainID: cosmoshub-testnet
     faucet:
       creditAmount: 10000000
       denoms:
