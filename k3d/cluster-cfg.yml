@@ -1,0 +1,29 @@
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: emeris
+kubeAPI:
+  hostPort: "6445"
+registries:
+  create: # creates a default registry to be used with the cluster; same as `--registry-create registry.localhost`
+    name: tilt-registry
+    host: "0.0.0.0"
+    hostPort: "5000"
+token: superSecretToken
+ports:
+  - port: 8000:80
+    nodeFilters:
+      - loadbalancer
+options:
+  k3s:
+    extraArgs:
+      - arg: --tls-san=127.0.0.1
+        nodeFilters:
+          - server:*
+      - arg: --no-deploy=traefik
+        nodeFilters:
+          - server:*
+    nodeLabels:
+      - label: ingress-ready=true
+        nodeFilters:
+          - server:0
