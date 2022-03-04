@@ -15,20 +15,6 @@ spec:
             protocol: TCP
     nodes:
       blockThreshold: 20s
-      configOverride:
-        app:
-          - key: minimum-gas-prices
-            value:
-              string: 0.01uluna
-          - key: pruning
-            value:
-              string: custom
-          - key: pruning-keep-recent
-            value:
-              string: "362880"
-          - key: pruning-interval
-            value:
-              string: "100"
       startupTimeout: 1h
       traceStoreContainer:
         env:
