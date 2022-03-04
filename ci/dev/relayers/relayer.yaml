@@ -4,17 +4,7 @@ metadata:
   name: relayer
   namespace: emeris
 spec:
-  mode:
-    clients:
-      enabled: true
-      refresh: true
-      misbehaviour: true
-    packets:
-      enabled: true
-      clearInterval: 100
-      clearOnStart: true
-      filter: false
-      txConfirmation: true
+  filter: true
 
   chains:
     - nodeset: cosmos-hub
@@ -32,7 +22,7 @@ spec:
     - nodeset: terra
       faucet: terra-faucet
       gasPrice:
-        price: "0.001"
+        price: "0.01"
       accountPrefix: terra
 
   paths:
