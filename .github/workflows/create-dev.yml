@@ -318,7 +318,7 @@ jobs:
             wait pod \
             --namespace emeris \
             --for=condition=ready \
-            --selector=app.kubernetes.io/name=emeris-cns-server \
+            --selector="app.kubernetes.io/name=emeris-cns-server" \
             --timeout=180s
 
       - name: Deploy chains to CNS
