@@ -4,72 +4,43 @@ metadata:
   name: relayer
   namespace: emeris
 spec:
+  mode:
+    clients:
+      enabled: true
+      refresh: true
+      misbehaviour: true
+    packets:
+      enabled: true
+      clearInterval: 100
+      clearOnStart: true
+      filter: false
+      txConfirmation: true
+
   chains:
-  - accountPrefix: cosmos
-    clockDrift: 1800s
-    faucet: cosmos-hub-faucet
-    gasAdjustment: "0.1"
-    gasPrice:
-      denom: uatom
-      price: "0.02"
-    hdPath: m/44'/118'/0'/0/0
-    maxGas: 500000
-    maxMsgNum: 15
-    maxTxSize: 2097152
-    nodeset: cosmos-hub
-    rpcTimeout: 10s
-    storePrefix: ibc
-    trustThreshold:
-      denominator: 3
-      numerator: 1
-    trustingPeriod: 14days
-  - accountPrefix: akash
-    clockDrift: 1800s
-    faucet: akash-faucet
-    gasAdjustment: "0.1"
-    gasPrice:
-      denom: uakt
-      price: "0.02"
-    hdPath: m/44'/118'/0'/0/0
-    maxGas: 500000
-    maxMsgNum: 15
-    maxTxSize: 2097152
-    nodeset: akash
-    rpcTimeout: 10s
-    storePrefix: ibc
-    trustThreshold:
-      denominator: 3
-      numerator: 1
-    trustingPeriod: 14days
-  - accountPrefix: terra
-    clockDrift: 1800s
-    faucet: terra-faucet
-    gasAdjustment: "0.1"
-    gasPrice:
-      denom: uluna
-      price: "0.02"
-    hdPath: m/44'/330'/0'/0/0
-    maxGas: 500000
-    maxMsgNum: 15
-    maxTxSize: 2097152
-    nodeset: terra
-    rpcTimeout: 10s
-    storePrefix: ibc
-    trustThreshold:
-      denominator: 3
-      numerator: 1
-    trustingPeriod: 14days
-  clearPacketsInterval: 600
-  filter: true
-  logLevel: debug
+    - nodeset: cosmos-hub
+      faucet: cosmos-hub-faucet
+      gasPrice:
+        price: "0.001"
+      accountPrefix: cosmos
+
+    - nodeset: akash
+      faucet: akash-faucet
+      gasPrice:
+        price: "0.001"
+      accountPrefix: akash
+
+    - nodeset: terra
+      faucet: terra-faucet
+      gasPrice:
+        price: "0.001"
+      accountPrefix: terra
+
   paths:
-  - sideA: cosmos-hub
-    sideB: terra
-  - sideA: cosmos-hub
-    sideB: akash
-  - sideA: akash
-    sideB: terra
-  resources: {}
-  strategy: packets
-  telemetryEnabled: false
-  txConfirmation: true
+    - sideA: cosmos-hub
+      sideB: akash
+
+    - sideA: cosmos-hub
+      sideB: terra
+
+    - sideA: terra
+      sideB: akash
