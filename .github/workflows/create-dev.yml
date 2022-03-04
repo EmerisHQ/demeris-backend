@@ -297,6 +297,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      # Give the other jobs an opportunity to create their resources
+      # Otherwise the 'kubectl wait' query will immediately fail (no resources found)
+      - name: Sleep for 1 min
+        uses: whatnick/wait-action@master
+        with:
+          time: '1m'
+
+      - name: Wait for chains to boot
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: |
+            wait pod \
+            --namespace emeris \
+            --for="condition=ready" \
+            --selector="nodeset in (akash, terra, cosmos-hub)" \
+            --timeout=180s
+
       - name: Install relayers
         uses: steebchen/kubectl@v2.0.0
         with:
@@ -309,6 +327,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      # Give the other jobs an opportunity to create their resources
+      # Otherwise the 'kubectl wait' query will immediately fail (no resources found)
+      - name: Sleep for 1 min
+        uses: whatnick/wait-action@master
+        with:
+          time: '1m'
 
       - name: Wait for CNS to boot
         uses: steebchen/kubectl@v2.0.0
