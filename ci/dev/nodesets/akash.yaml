@@ -14,7 +14,6 @@ spec:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 20s
       startupTimeout: 1h
       traceStoreContainer:
         env:

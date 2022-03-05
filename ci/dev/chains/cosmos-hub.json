@@ -4,8 +4,8 @@
   "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
   "display_name": "Cosmos Hub Emeris",
   "primary_channel": {
-    "akash": "channel-1",
-    "terra": "channel-0"
+    "akash": "channel-0",
+    "terra": "channel-1"
   },
   "denoms": [
     {
