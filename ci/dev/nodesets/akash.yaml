@@ -2,33 +2,67 @@ apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
   name: akash
-  namespace: default
+  namespace: emeris
 spec:
-  replicas: 2
-
+  app:
+    cliName: akash
+    daemonName: akash
+    name: akash
   config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
     nodes:
-      blockThreshold: 20s
-
-  binaryName: akash
-
-  moniker: starport-alpha
-  init:
-    chainID: akash
-    bondDenom: uakt
-    assets:
-      - 10000000000000000000uakt
-
-    faucet:
-      funds: 100000000000000000uakt
-      denoms:
-        - uakt
-
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: akash
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/akash
-    version: v0.12.1
-    build:
-      repository: https://github.com/ovrclk/akash
+    version: v0.14.1
+  persistence:
+    autoResize:
+      enabled: true
+      increment: 5G
+      threshold: 80
+    size: 15G
+  replicas: 1
+  moniker: emeris
+  init:
+    assets:
+      - 10000000000000000000uakt
+    bondDenom: uakt
+    chainID: akash-testnet
+    faucet:
+      creditAmount: 10000000
+      denoms:
+        - uakt
+      domain: faucet.akash-emeris.app.alpha.starport.cloud
+      funds: 10000000000000000000000uakt
+      legacySend: false
+      maxCredit: 100000000
+      replicas: 1
+    stakeAmount: 10000000000uakt
 
   resources:
     validator:
@@ -38,7 +72,6 @@ spec:
       limits:
         cpu: 100m
         memory: 256Mi
-
     sentry:
       requests:
         cpu: 50m
@@ -48,7 +81,7 @@ spec:
         memory: 256Mi
 
   expose:
-    domain: akash.app.alpha.starport.cloud
+    domain: akash-emeris.app.alpha.starport.cloud
     grpc: true
     rpc: true
     api: true

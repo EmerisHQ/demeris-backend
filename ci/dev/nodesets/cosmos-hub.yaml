@@ -1,21 +1,21 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: terra
+  name: cosmos-hub
   namespace: emeris
 spec:
   app:
-    cliName: terrad
-    daemonName: terrad
-    name: terra
+    cliName: gaiad
+    daemonName: gaiad
+    name: cosmos-hub
   config:
     additionalEgressRules:
       - ports:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 20s
-      startupTimeout: 1h
+      crisisSkipAssertInvariants: false
+      startupTimeout: 30m
       traceStoreContainer:
         env:
           - name: TRACELISTENER_FIFOPATH
@@ -25,7 +25,7 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: terra
+            value: cosmos-hub
           - name: TRACELISTENER_DEBUG
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
@@ -39,22 +39,23 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: terramoney/core
-    version: v0.5.13
+    name: gcr.io/tendermint-dev/gaia
+    version: v6.0.3
   init:
-    chainID: terra
-    bondDenom: uluna
     assets:
-      - 10000000000000000000uluna
+      - 10000000000000000000000uatom
+    bondDenom: uatom
+    chainID: cosmoshub-testnet
     faucet:
-      funds: 100000000000000000uluna
+      creditAmount: 10000000
       denoms:
-        - uluna
-      domain: faucet.terra-emeris.app.alpha.starport.cloud
+        - uatom
+      domain: faucet.cosmos-hub-emeris.app.alpha.starport.cloud
+      funds: 10000000000000000000000uatom
       legacySend: false
       maxCredit: 100000000
       replicas: 1
-    stakeAmount: 1000000uluna
+    stakeAmount: 1000000uatom
   moniker: emeris
   persistence:
     autoResize:
@@ -79,7 +80,7 @@ spec:
         cpu: 100m
         memory: 256Mi
   expose:
-    domain: terra-emeris.app.alpha.starport.cloud
+    domain: cosmos-hub-emeris.app.alpha.starport.cloud
     grpc: true
     rpc: true
     api: true

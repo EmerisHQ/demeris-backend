@@ -1,0 +1,36 @@
+apiVersion: apps.starport.cloud/v1
+kind: Relayer
+metadata:
+  name: relayer
+  namespace: emeris
+spec:
+  filter: true
+
+  chains:
+    - nodeset: cosmos-hub
+      faucet: cosmos-hub-faucet
+      gasPrice:
+        price: "0.001"
+      accountPrefix: cosmos
+
+    - nodeset: akash
+      faucet: akash-faucet
+      gasPrice:
+        price: "0.001"
+      accountPrefix: akash
+
+    - nodeset: terra
+      faucet: terra-faucet
+      gasPrice:
+        price: "0.01"
+      accountPrefix: terra
+
+  paths:
+    - sideA: cosmos-hub
+      sideB: akash
+
+    - sideA: cosmos-hub
+      sideB: terra
+
+    - sideA: terra
+      sideB: akash
