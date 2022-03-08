@@ -87,6 +87,8 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			nodeRes, err := sdktx.NewServiceClient(cli.GetContext()).GetTx(context.Background(), &sdktx.GetTxRequest{Hash: hash})
 			suite.Require().NoError(err)
 			suite.Require().NotEmpty(nodeRes.TxResponse)
+			suite.Require().Equal(hash, nodeRes.TxResponse.TxHash)
+			suite.Require().Equal(uint32(0), nodeRes.TxResponse.Code)
 		})
 	}
 }
