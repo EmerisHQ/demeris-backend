@@ -11,6 +11,7 @@ import (
 
 	txModels "github.com/allinbits/demeris-api-server/api/tx"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	utils "github.com/allinbits/demeris-backend/test_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -82,10 +83,14 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
 
-			time.Sleep(time.Second * 8)
-
-			nodeRes, err := sdktx.NewServiceClient(cli.GetContext()).GetTx(context.Background(), &sdktx.GetTxRequest{Hash: hash})
+			var nodeRes *sdktx.GetTxResponse
+			err = utils.RetryOnError(func() error {
+				var innerErr error
+				nodeRes, innerErr = sdktx.NewServiceClient(cli.GetContext()).GetTx(context.Background(), &sdktx.GetTxRequest{Hash: hash})
+				return innerErr
+			}, 500*time.Millisecond, 20)
 			suite.Require().NoError(err)
+
 			suite.Require().NotEmpty(nodeRes.TxResponse)
 			suite.Require().Equal(hash, nodeRes.TxResponse.TxHash)
 			suite.Require().Equal(uint32(0), nodeRes.TxResponse.Code)
