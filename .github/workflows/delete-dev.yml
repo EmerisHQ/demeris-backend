@@ -3,7 +3,160 @@ name: Delete Emeris Dev Environment
 on: 
   workflow_dispatch:
 
+    inputs:
+      delete_nodesets:
+        description: 'Whether to delete NodeSet resources'
+        required: true
+        default: 'true'
+      delete_faucets:
+        description: 'Whether to delete Faucet resources'
+        required: true
+        default: 'true'
+      delete_relayers:
+        description: 'Whether to delete Relayer resources'
+        required: true
+        default: 'true'
+
 jobs:
-  DummyJob:
+  redis:
+    runs-on: self-hosted
     steps:
-      - name: DummyStep
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall redis --namespace emeris
+
+  cockroachdb:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall cockroachdb --namespace emeris
+
+  cns-server:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall cns-server --namespace emeris
+  
+  api-server:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall api-server --namespace emeris
+
+  rpcwatcher:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall emeris-rpcwatcher --namespace emeris
+
+  price-oracle:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm uninstall price-oracle --namespace emeris
+
+  ticket-watcher:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: |
+            helm uninstall ticket-watcher --namespace emeris
+
+  daggregation:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall daggregation --namespace emeris
+
+  dexinfo:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall dexinfo --namespace emeris
+
+  sdk-service-v42:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall sdk-service-v42 --namespace emeris
+
+  sdk-service-v44:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall sdk-service-v44 --namespace emeris
+
+  ingress:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --namespace emeris -f ci/dev/ingress.yaml
+
+  nodesets:
+    if: ${{ github.event.inputs.delete_nodesets == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --all nodesets --namespace emeris
+
+  faucets:
+    if: ${{ github.event.inputs.delete_faucets == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --all faucets --namespace emeris
+
+  relayers:
+    if: ${{ github.event.inputs.delete_relayers == 'true' }}
+    runs-on: self-hosted
+    steps:
+      - name: Delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --all relayers --namespace emeris
