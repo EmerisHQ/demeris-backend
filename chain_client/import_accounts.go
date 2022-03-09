@@ -19,7 +19,7 @@ const (
 )
 
 // GetClient is to create client and imports mnemonic and returns created chain client
-func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client) {
+func GetClient(t *testing.T, env string, chainName string, cc ChainClient) (c *ChainClient) {
 	chainInfo, err := utils.LoadSingleChainInfo(env, chainName)
 	require.NoError(t, err)
 
@@ -30,7 +30,7 @@ func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client
 	addressPrefix := info.NodeInfo.Bech32Config.PrefixAccount
 	chainID := info.NodeInfo.ChainID
 
-	c, err = CreateChainClient(cc.RPC, cc.KeyringServiceName, chainID, t.TempDir())
+	c, err = CreateChainClient(cc.NodeAddr, cc.KeyringServiceName, chainID, t.TempDir())
 	require.NoError(t, err)
 	require.NotNil(t, c)
 

@@ -11,7 +11,7 @@ import (
 )
 
 // prepareBroadcast performs checks and operations before broadcasting messages
-func (c *Client) PrepareBroadcast(ctx context.Context, clientCtx client.Context, msgs ...types.Msg) error {
+func (c *ChainClient) PrepareBroadcast(ctx context.Context, clientCtx client.Context, msgs ...types.Msg) error {
 	// validate msgs
 	for _, msg := range msgs {
 		if err := msg.ValidateBasic(); err != nil {
@@ -25,7 +25,7 @@ func (c *Client) PrepareBroadcast(ctx context.Context, clientCtx client.Context,
 }
 
 // SignTx signs tx and return tx bytes
-func (c *Client) SignTx(ctx context.Context, fromName string, clientCtx client.Context, msgs ...types.Msg) ([]byte, error) {
+func (c *ChainClient) SignTx(ctx context.Context, fromName string, clientCtx client.Context, msgs ...types.Msg) ([]byte, error) {
 	clientCtx, err := c.BuildClientCtx(fromName)
 	if err != nil {
 		return []byte{}, err
@@ -53,7 +53,7 @@ func (c *Client) SignTx(ctx context.Context, fromName string, clientCtx client.C
 }
 
 // broadcast directly broadcasts the messages
-func (c *Client) Broadcast(fromName string, ctx context.Context, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
+func (c *ChainClient) Broadcast(fromName string, ctx context.Context, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
 	clientCtx, err := c.BuildClientCtx(fromName)
 	if err != nil {
 		return &types.TxResponse{}, err
@@ -72,7 +72,7 @@ func (c *Client) Broadcast(fromName string, ctx context.Context, clientCtx clien
 }
 
 // handleBroadcastResult handles the result of broadcast messages result and checks if an error occurred
-func (c *Client) handleBroadcastResult() (*types.TxResponse, error) {
+func (c *ChainClient) handleBroadcastResult() (*types.TxResponse, error) {
 	var out types.TxResponse
 	if err := tmjson.Unmarshal(c.out.Bytes(), &out); err != nil {
 		return &out, err
@@ -84,7 +84,7 @@ func (c *Client) handleBroadcastResult() (*types.TxResponse, error) {
 }
 
 // buildClientCtx builds the context for the client
-func (c *Client) BuildClientCtx(accountName string) (client.Context, error) {
+func (c *ChainClient) BuildClientCtx(accountName string) (client.Context, error) {
 	info, err := c.kr.Key(accountName)
 	if err != nil {
 		return client.Context{}, err

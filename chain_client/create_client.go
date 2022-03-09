@@ -23,14 +23,14 @@ const (
 	KeyringBackend = "test"
 )
 
-// Client is client to interact with SPN.
-type Client struct {
+// ChainClient is client to interact with SPN.
+type ChainClient struct {
 	kr                 keyring.Keyring
 	factory            tx.Factory
 	clientCtx          client.Context
 	out                *bytes.Buffer
 	AddressPrefix      string `json:"account_address_prefix"`
-	RPC                string `json:"rpc"`
+	NodeAddr           string `json:"node_addr"`
 	Key                string `json:"key"`
 	Mnemonic           string `json:"mnemonic"`
 	KeyringServiceName string `json:"keyring_service_name"`
@@ -40,21 +40,21 @@ type Client struct {
 	Denom              string `json:"denom"`
 }
 
-func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string) (*Client, error) {
+func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string) (*ChainClient, error) {
 	kr, err := keyring.New(keyringServiceName, KeyringBackend, homePath, os.Stdin)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := rpchttp.New(nodeAddress, "/websocket")
+	wsClient, err := rpchttp.New(nodeAddress, "/websocket")
 	if err != nil {
 		return nil, err
 	}
 	out := &bytes.Buffer{}
-	clientCtx := spn.NewClientCtx(kr, client, out, homePath).WithChainID(chainID)
+	clientCtx := spn.NewClientCtx(kr, wsClient, out, homePath).WithChainID(chainID).WithNodeURI(nodeAddress)
 
 	factory := spn.NewFactory(clientCtx)
-	return &Client{
+	return &ChainClient{
 		kr:        kr,
 		factory:   factory,
 		clientCtx: clientCtx,
@@ -63,7 +63,7 @@ func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string
 }
 
 // ImportMnemonic is to import existing account mnemonic in keyring
-func (c Client) ImportMnemonic(keyName, mnemonic, hdPath string) (acc spn.Account, err error) {
+func (c ChainClient) ImportMnemonic(keyName, mnemonic, hdPath string) (acc spn.Account, err error) {
 	acc, err = c.AccountCreate(keyName, mnemonic, hdPath)
 	if err != nil {
 		return acc, err
@@ -73,7 +73,7 @@ func (c Client) ImportMnemonic(keyName, mnemonic, hdPath string) (acc spn.Accoun
 }
 
 // AccountCreate creates an account by name and mnemonic (optional) in the keyring.
-func (c *Client) AccountCreate(accountName, mnemonic, hdPath string) (spn.Account, error) {
+func (c *ChainClient) AccountCreate(accountName, mnemonic, hdPath string) (spn.Account, error) {
 	if mnemonic == "" {
 		entropySeed, err := bip39.NewEntropy(256)
 		if err != nil {
@@ -99,7 +99,7 @@ func (c *Client) AccountCreate(accountName, mnemonic, hdPath string) (spn.Accoun
 	return account, nil
 }
 
-func (c Client) ToAccount(info keyring.Info) spn.Account {
+func (c ChainClient) ToAccount(info keyring.Info) spn.Account {
 	ko, _ := sdktypes.Bech32ifyAddressBytes(c.AddressPrefix, info.GetAddress())
 
 	return spn.Account{
@@ -109,7 +109,7 @@ func (c Client) ToAccount(info keyring.Info) spn.Account {
 }
 
 // GetAccountBalances returns the balance of the account
-func (c Client) GetAccountBalances(address, denom string) (*types.Coin, error) {
+func (c ChainClient) GetAccountBalances(address, denom string) (*types.Coin, error) {
 	res, err := banktypes.NewQueryClient(c.clientCtx).
 		Balance(context.Background(), &banktypes.QueryBalanceRequest{
 			Address: address,
@@ -123,7 +123,7 @@ func (c Client) GetAccountBalances(address, denom string) (*types.Coin, error) {
 }
 
 // AccountList returns a list of accounts.
-func (c *Client) AccountList() (accounts []spn.Account, err error) {
+func (c *ChainClient) AccountList() (accounts []spn.Account, err error) {
 	infos, err := c.kr.List()
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func (c *Client) AccountList() (accounts []spn.Account, err error) {
 }
 
 // AccountGet retrieves an account by name from the keyring.
-func (c Client) AccountGet(accountName string) (spn.Account, error) {
+func (c ChainClient) AccountGet(accountName string) (spn.Account, error) {
 	info, err := c.kr.Key(accountName)
 	if err != nil {
 		return spn.Account{}, err
@@ -145,22 +145,23 @@ func (c Client) AccountGet(accountName string) (spn.Account, error) {
 }
 
 // GetContext return context of client
-func (c *Client) GetContext() client.Context {
+func (c *ChainClient) GetContext() client.Context {
 	return c.clientCtx
 }
 
-// GetKeyrin return keyring of client
-func (c *Client) GetKeyring() keyring.Keyring {
+// GetKeyring return keyring of client
+func (c *ChainClient) GetKeyring() keyring.Keyring {
 	return c.kr
 }
 
-func (c *Client) GetHexAddress(accountName string) (types.AccAddress, error) {
+// GetHexAddress return hex address from given account name
+func (c *ChainClient) GetHexAddress(accountName string) (types.AccAddress, error) {
 	info, err := c.clientCtx.Keyring.Key(accountName)
 	return info.GetAddress(), err
 }
 
 // GetBondedValidators returns bonded validators list
-func (c *Client) GetBondedValidators() (stakingtypes.Validators, error) {
+func (c *ChainClient) GetBondedValidators() (stakingtypes.Validators, error) {
 	res, err := stakingtypes.NewQueryClient(c.clientCtx).
 		Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{
 			Status: stakingtypes.BondStatusBonded,
@@ -176,7 +177,7 @@ func (c *Client) GetBondedValidators() (stakingtypes.Validators, error) {
 }
 
 // GetUnbondingDelegations returns unbonding delegations of delegator address
-func (c *Client) GetUnbondingDelegations(address string) (stakingtypes.UnbondingDelegations, error) {
+func (c *ChainClient) GetUnbondingDelegations(address string) (stakingtypes.UnbondingDelegations, error) {
 	res, err := stakingtypes.NewQueryClient(c.clientCtx).
 		DelegatorUnbondingDelegations(context.Background(), &stakingtypes.QueryDelegatorUnbondingDelegationsRequest{
 			DelegatorAddr: address,
@@ -191,8 +192,8 @@ func (c *Client) GetUnbondingDelegations(address string) (stakingtypes.Unbonding
 	return res.UnbondingResponses, err
 }
 
-// GetBondedValidators returns bonded validators list
-func (c *Client) GetUnbondedValidators() (stakingtypes.Validators, error) {
+// GetUnbondedValidators returns bonded validators list
+func (c *ChainClient) GetUnbondedValidators() (stakingtypes.Validators, error) {
 	res, err := stakingtypes.NewQueryClient(c.clientCtx).
 		Validators(context.Background(), &stakingtypes.QueryValidatorsRequest{
 			Status: stakingtypes.BondStatusUnbonded,
@@ -207,8 +208,8 @@ func (c *Client) GetUnbondedValidators() (stakingtypes.Validators, error) {
 	return res.Validators, err
 }
 
-// GetStakingBalance returns delegation balance of delegator address
-func (c *Client) GetDelegations(address string) (stakingtypes.DelegationResponses, error) {
+// GetDelegations returns delegation balance of delegator address
+func (c *ChainClient) GetDelegations(address string) (stakingtypes.DelegationResponses, error) {
 	res, err := stakingtypes.NewQueryClient(c.clientCtx).
 		DelegatorDelegations(context.Background(), &stakingtypes.QueryDelegatorDelegationsRequest{
 			DelegatorAddr: address,

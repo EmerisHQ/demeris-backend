@@ -22,7 +22,7 @@ const (
 func (suite *testCtx) TestUnbondingDelegations() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
-			var cc chainClient.Client
+			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
 			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)

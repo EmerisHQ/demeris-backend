@@ -18,7 +18,7 @@ const (
 func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
-			var cc chainClient.Client
+			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
 			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
@@ -28,6 +28,7 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			suite.Require().NoError(err)
 
 			url := suite.Client.BuildUrl(getBalanceEndpoint, hex.EncodeToString(hexAddress))
+			suite.T().Log("url", url)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
