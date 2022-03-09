@@ -173,6 +173,9 @@ require (
 	github.com/tendermint/spm v0.0.0-20210524110815-6d7452d2dc4a // indirect
 	github.com/tendermint/spn v0.0.0-20210406123257-decaff8dcaf9 // indirect
 	github.com/tendermint/tm-db v0.6.4 // indirect
+	github.com/tidwall/gjson v1.14.0 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	github.com/urfave/cli/v2 v2.3.0 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da // indirect
