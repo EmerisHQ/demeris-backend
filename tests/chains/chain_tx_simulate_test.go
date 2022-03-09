@@ -73,6 +73,10 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			suite.Require().NotEmpty(feesRes)
 			suite.Require().Greater(feesRes.GasUsed, uint64(0))
 
+			if ch.Name == "terra" {
+				suite.Require().NotEmpty(feesRes.Fees)
+			}
+
 			err = resp.Body.Close()
 			suite.Require().NoError(err)
 		})
