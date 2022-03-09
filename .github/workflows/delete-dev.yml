@@ -1,20 +1,21 @@
-name: Reset Emeris Dev Environment
+name: Delete Emeris Dev Environment
 
 on: 
   workflow_dispatch:
+
     inputs:
       delete_nodesets:
-        description: 'Whether to also delete NodeSet resources'     
+        description: 'Whether to delete NodeSet resources'
         required: true
-        default: 'false'
+        default: 'true'
       delete_faucets:
-        description: 'Whether to also delete Faucet resources'     
+        description: 'Whether to delete Faucet resources'
         required: true
-        default: 'false'
+        default: 'true'
       delete_relayers:
-        description: 'Whether to also delete Relayer resources'     
+        description: 'Whether to delete Relayer resources'
         required: true
-        default: 'false'
+        default: 'true'
 
 jobs:
   redis:
@@ -38,9 +39,6 @@ jobs:
   cns-server:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Uninstall
         uses: WyriHaximus/github-action-helm3@v2
         with:
@@ -50,9 +48,6 @@ jobs:
   api-server:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Uninstall
         uses: WyriHaximus/github-action-helm3@v2
         with:
@@ -62,21 +57,15 @@ jobs:
   rpcwatcher:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Uninstall
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall rpcwatcher --namespace emeris
+          exec: helm uninstall emeris-rpcwatcher --namespace emeris
 
   price-oracle:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Uninstall
         uses: WyriHaximus/github-action-helm3@v2
         with:
@@ -87,9 +76,6 @@ jobs:
   ticket-watcher:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Uninstall
         uses: WyriHaximus/github-action-helm3@v2
         with:
@@ -97,17 +83,41 @@ jobs:
           exec: |
             helm uninstall ticket-watcher --namespace emeris
 
-  admin-ui:
+  daggregation:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Uninstall
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG }}'
-          exec: helm uninstall admin-ui --namespace emeris
+          exec: helm uninstall daggregation --namespace emeris
+
+  dexinfo:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall dexinfo --namespace emeris
+
+  sdk-service-v42:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall sdk-service-v42 --namespace emeris
+
+  sdk-service-v44:
+    runs-on: self-hosted
+    steps:
+      - name: Uninstall
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: '${{ secrets.KUBECONFIG }}'
+          exec: helm uninstall sdk-service-v44 --namespace emeris
 
   ingress:
     runs-on: self-hosted
@@ -120,15 +130,6 @@ jobs:
         with:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: delete --namespace emeris -f ci/dev/ingress.yaml
-
-  pvcs:
-    runs-on: self-hosted
-    steps:
-      - name: Delete
-        uses: steebchen/kubectl@v2.0.0
-        with:
-          config: ${{ secrets.KUBECONFIG_B64 }}
-          command: delete --all pvc --namespace emeris
 
   nodesets:
     if: ${{ github.event.inputs.delete_nodesets == 'true' }}

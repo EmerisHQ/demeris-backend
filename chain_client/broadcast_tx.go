@@ -24,6 +24,34 @@ func (c *Client) PrepareBroadcast(ctx context.Context, clientCtx client.Context,
 	return nil
 }
 
+// SignTx signs tx and return tx bytes
+func (c *Client) SignTx(ctx context.Context, fromName string, clientCtx client.Context, msgs ...types.Msg) ([]byte, error) {
+	clientCtx, err := c.BuildClientCtx(fromName)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if err := c.PrepareBroadcast(ctx, clientCtx, msgs...); err != nil {
+		return []byte{}, err
+	}
+
+	txf, err := tx.PrepareFactory(clientCtx, c.factory)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	unsignedTx, err := tx.BuildUnsignedTx(txf, msgs...)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	err = tx.Sign(txf, clientCtx.GetFromName(), unsignedTx, true)
+	if err != nil {
+		return []byte{}, err
+	}
+	return clientCtx.TxConfig.TxEncoder()(unsignedTx.GetTx())
+}
+
 // broadcast directly broadcasts the messages
 func (c *Client) Broadcast(fromName string, ctx context.Context, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
 	clientCtx, err := c.BuildClientCtx(fromName)

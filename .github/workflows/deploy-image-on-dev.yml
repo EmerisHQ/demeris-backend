@@ -17,7 +17,9 @@ on:
   repository_dispatch:
     types: [dev-push-*]
 
-concurrency: deploy-dev
+concurrency:
+  group: ${{ github.event.client_payload.deploy_type }}
+  cancel-in-progress: false
 
 jobs:
   deploy-service:
@@ -43,6 +45,7 @@ jobs:
               --set image=gcr.io/tendermint-dev/"${{ github.event.client_payload.image_name }}":"${{ github.event.client_payload.image_sha }}" \
               --set daggregationPublicBaseUrl=https://dev.demeris.io/v1/daggregation \
               --set redirectURL=https://develop--emeris-admin.netlify.app/login \
+              --set test=true \
               ./helm
   
   ingress:
@@ -59,6 +62,7 @@ jobs:
           command: apply -n emeris -f ci/dev/ingress.yaml
 
   emit-integration-test:
+    if: ${{ github.event.client_payload.deploy_type == 'deploy_dev' }}
     runs-on: self-hosted
     needs: deploy-service
     steps:

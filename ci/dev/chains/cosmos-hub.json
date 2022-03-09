@@ -4,8 +4,8 @@
   "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
   "display_name": "Cosmos Hub Emeris",
   "primary_channel": {
-    "akash": "channel-1",
-    "terra": "channel-0"
+    "akash": "channel-0",
+    "terra": "channel-1"
   },
   "denoms": [
     {
@@ -65,11 +65,13 @@
   },
   "valid_block_thresh": "10s",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "supported_wallets": [],
+  "supported_wallets": [
+    "keplr"
+  ],
   "block_explorer": "",
   "public_node_endpoints": {
     "tendermint_rpc": null,
     "cosmos_api": null
   },
-  "cosmos_sdk_version": "v0.42.10"
+  "cosmos_sdk_version": "v0.44.3"
 }
