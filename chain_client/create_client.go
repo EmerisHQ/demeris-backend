@@ -30,7 +30,7 @@ type ChainClient struct {
 	clientCtx          client.Context
 	out                *bytes.Buffer
 	AddressPrefix      string `json:"account_address_prefix"`
-	NodeAddr           string `json:"node_addr"`
+	RPC                string `json:"rpc"`
 	Key                string `json:"key"`
 	Mnemonic           string `json:"mnemonic"`
 	KeyringServiceName string `json:"keyring_service_name"`
