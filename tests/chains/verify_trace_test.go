@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -31,10 +32,8 @@ func (suite *testCtx) TestVerifyTrace() {
 	}
 	var chainA, chainB test_utils.EnvChain
 	for {
-		// a := rand.Intn(len(enabledChains))
-		// b := rand.Intn(len(enabledChains))
-		a := 0
-		b := 1
+		a := rand.Intn(len(enabledChains))
+		b := rand.Intn(len(enabledChains))
 		if a != b {
 			chainA = enabledChains[a]
 			chainB = enabledChains[b]
