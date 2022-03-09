@@ -115,6 +115,10 @@ func (c ChainClient) GetAccountBalances(address, denom string) (*types.Coin, err
 			Address: address,
 			Denom:   denom,
 		})
+
+	if err != nil {
+		return nil, err
+	}
 	if res == nil {
 		return nil, fmt.Errorf("not able to fetch balance: got response nil")
 	}
