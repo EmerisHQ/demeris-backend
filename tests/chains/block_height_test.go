@@ -1,18 +1,18 @@
 package tests
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
+	"github.com/allinbits/demeris-api-server/api/block"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
-	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 )
 
 const (
-	blockHeightEndpoint = "block_results?height=%v"
+	blockHeightEndpoint = "block_results?height=%d"
 )
 
 func (suite *testCtx) TestBlockHeight() {
@@ -28,31 +28,41 @@ func (suite *testCtx) TestBlockHeight() {
 					return
 				}
 
-				//Get latestblock suing client from tmservice
-				latestBlockQuery := tmservice.NewServiceClient(cli.GetContext())
-				latestBlockRes, err := latestBlockQuery.GetLatestBlock(context.Background(), &tmservice.GetLatestBlockRequest{})
+				//get block results from the cosmos node
+				cRes, err := suite.Client.Get(cc.RPC + "/block_results")
+				suite.Require().NoError(err)
+				data, err := ioutil.ReadAll(cRes.Body)
 				suite.Require().NoError(err)
 
-				fmt.Println("block height......", latestBlockRes.Block.Header.Height)
+				err = cRes.Body.Close()
+				suite.Require().NoError(err)
 
-				//get block results from the endpoint
-				url := suite.Client.BuildUrl(blockHeightEndpoint, latestBlockRes.Block.Header.Height)
+				var cosmosBlock block.BlockHeightResp
+				err = json.Unmarshal(data, &cosmosBlock)
+				suite.Require().NoError(err)
+
+				//get block results from the env
+				encodedStr := suite.Client.BuildUrl(blockHeightEndpoint, cosmosBlock.Result.Block.Height)
+				actualUrl, err := url.PathUnescape(encodedStr)
+				suite.Require().NoError(err)
+
 				// act
-				resp, err := suite.Client.Get(url)
+				resp, err := suite.Client.Get(actualUrl)
 				suite.Require().NoError(err)
 
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				data, err := ioutil.ReadAll(resp.Body)
+				blockData, err := ioutil.ReadAll(resp.Body)
 				suite.Require().NoError(err)
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
 
 				var block interface{}
-				err = json.Unmarshal(data, block)
+				err = json.Unmarshal(blockData, block)
 				suite.Require().NoError(err)
 
+				suite.Require().Equal(cosmosBlock, block)
 			}
 		})
 	}
