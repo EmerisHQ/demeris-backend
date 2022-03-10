@@ -122,7 +122,7 @@ func (suite *testCtx) TestGetDestTxn() {
 	// build and broadcast ibc transfer message
 	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName], token, fromAddr, rec_account.Address, timeoutHeight, 0)
 
-	_, err = cliA.Broadcast(ccA.Key, context.Background(), cliA.GetContext(), msg)
+	txRes, err := cliA.Broadcast(ccA.Key, context.Background(), cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
 	time.Sleep(time.Second * 8)
@@ -133,4 +133,30 @@ func (suite *testCtx) TestGetDestTxn() {
 
 	// check updated balance
 	suite.Require().Equal(uint64(100), postBalance.Amount.BigInt().Uint64()-prevBalance.Amount.BigInt().Uint64())
+
+	fmt.Println(txRes.TxHash)
+	url := suite.Client.BuildUrl(getDestTxnEndpoint, chainA.Name, chainB.Name, txRes.TxHash)
+	// act
+	respDestTx, err := suite.Client.Get(url)
+	suite.Require().NoError(err)
+	suite.Require().Equal(http.StatusOK, respDestTx.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
+
+	destTxnBody, err := ioutil.ReadAll(respDestTx.Body)
+	suite.Require().NoError(err)
+	var resultDestTx map[string]interface{}
+	suite.Require().NoError(json.Unmarshal(destTxnBody, &resultDestTx))
+
+	fmt.Println(resultDestTx)
+
+	url = suite.Client.BuildUrl(chainTxsEndpoint, chainA.Name, txRes.TxHash)
+	// act
+	respTxn, err := suite.Client.Get(url)
+	suite.Require().NoError(err)
+	suite.Require().Equal(http.StatusOK, respTxn.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
+
+	txnBody, err := ioutil.ReadAll(respTxn.Body)
+	suite.Require().NoError(err)
+	var resultTxn map[string]interface{}
+	suite.Require().NoError(json.Unmarshal(txnBody, &resultTxn))
+	fmt.Println(resultTxn)
 }
