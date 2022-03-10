@@ -31,7 +31,7 @@
 	"genesis_hash": "genesis_hash",
 	"node_info": {
 		"endpoint": "terra",
-		"chain_id": "bombay-12",
+		"chain_id": "terra",
 		"bech32_config": {
 			"main_prefix": "terra",
 			"prefix_account": "terra",
