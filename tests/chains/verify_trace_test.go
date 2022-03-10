@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,6 +23,7 @@ const (
 )
 
 func (suite *testCtx) TestVerifyTrace() {
+	suite.T().Parallel()
 	// filter enabled chains
 	var enabledChains []test_utils.EnvChain
 	for _, chain := range suite.Chains {
@@ -36,8 +36,10 @@ func (suite *testCtx) TestVerifyTrace() {
 	// pick 2 random chains
 	var chainA, chainB test_utils.EnvChain
 	for {
-		a := rand.Intn(len(enabledChains))
-		b := rand.Intn(len(enabledChains))
+		// a := rand.Intn(len(enabledChains))
+		// b := rand.Intn(len(enabledChains))
+		a := 0
+		b := 1
 		if a != b {
 			chainA = enabledChains[a]
 			chainB = enabledChains[b]
@@ -72,10 +74,7 @@ func (suite *testCtx) TestVerifyTrace() {
 	var chainAData map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(chainA.Payload, &chainAData))
 
-	channelBytes, err := json.Marshal(chainAData["primary_channel"])
-	suite.Require().NoError(err)
-	var primary_channels map[string]string
-	suite.Require().NoError(json.Unmarshal(channelBytes, &primary_channels))
+	primary_channels := chainAData["primary_channel"].(map[string]interface{})
 
 	// get chainA denom
 	denomBytes, err := json.Marshal(chainAData["denoms"])
@@ -113,19 +112,19 @@ func (suite *testCtx) TestVerifyTrace() {
 	}
 
 	// build IBC denom hash
-	ibcDenom := strings.ToUpper(fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("transfer/%s/%s", primary_channels[ccB.ChainName], denoms[0]["name"].(string))))))
+	ibcDenom := strings.ToUpper(fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("transfer/%s/%s", primary_channels[ccB.ChainName].(string), denoms[0]["name"].(string))))))
 
 	// get account B balance before IBC transaction
 	prevBalance, err := cliB.GetAccountBalances(rec_account.Address, fmt.Sprintf("ibc/%s", ibcDenom))
 	suite.Require().NoError(err)
 
 	// build and broadcast ibc transfer message
-	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName], token, fromAddr, rec_account.Address, timeoutHeight, 0)
+	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName].(string), token, fromAddr, rec_account.Address, timeoutHeight, 0)
 
 	_, err = cliA.Broadcast(ccA.Key, context.Background(), cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
-	time.Sleep(time.Second * 8)
+	time.Sleep(time.Second * 10)
 
 	// get account B balance after IBC transaction
 	postBalance, err := cliB.GetAccountBalances(rec_account.Address, fmt.Sprintf("ibc/%s", ibcDenom))
@@ -133,4 +132,27 @@ func (suite *testCtx) TestVerifyTrace() {
 
 	// check updated balance
 	suite.Require().Equal(uint64(100), postBalance.Amount.BigInt().Uint64()-prevBalance.Amount.BigInt().Uint64())
+
+	url := suite.Client.BuildUrl(verifyTraceEndpoint, chainB.Name, ibcDenom)
+	// act
+	respTrace, err := suite.Client.Get(url)
+	suite.Require().NoError(err)
+	suite.Require().Equal(http.StatusOK, respTrace.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
+
+	body, err := ioutil.ReadAll(respTrace.Body)
+	suite.Require().NoError(err)
+	var result map[string]interface{}
+	suite.Require().NoError(json.Unmarshal(body, &result))
+
+	var chainBData map[string]interface{}
+	suite.Require().NoError(json.Unmarshal(chainB.Payload, &chainBData))
+	primary_channels = chainBData["primary_channel"].(map[string]interface{})
+	fmt.Println(result)
+	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["base_denom"].(string), denoms[0]["name"].(string))
+	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["path"].(string), fmt.Sprintf("transfer/%s", primary_channels[chainA.Name].(string)))
+	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["verified"].(bool), denoms[0]["verified"].(bool))
+	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["chain_name"].(string), chainB.Name)
+	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["counterparty_name"].(string), chainA.Name)
+	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["channel"].(string), primary_channels[chainA.Name].(string))
+
 }
