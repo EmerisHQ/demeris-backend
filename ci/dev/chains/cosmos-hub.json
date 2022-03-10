@@ -47,7 +47,7 @@
   "genesis_hash": "genesis_hash",
   "node_info": {
     "endpoint": "cosmos-hub",
-    "chain_id": "cosmos-hub-testnet",
+    "chain_id": "cosmoshub-testnet",
     "bech32_config": {
       "main_prefix": "cosmos",
       "prefix_account": "cosmos",
