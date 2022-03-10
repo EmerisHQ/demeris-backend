@@ -25,6 +25,12 @@ spec:
         price: "0.01"
       accountPrefix: terra
 
+    - nodeset: crypto-org
+      faucet: crypto-org-faucet
+      gasPrice:
+        price: "0.025"
+      accountPrefix: cro
+
   paths:
     - sideA: cosmos-hub
       sideB: akash
@@ -34,3 +40,12 @@ spec:
 
     - sideA: terra
       sideB: akash
+
+    - sideA: cosmos-hub
+      sideB: crypto-org
+
+    - sideA: akash
+      sideB: crypto-org
+
+    - sideA: terra
+      sideB: crypto-org

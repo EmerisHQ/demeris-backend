@@ -1,20 +1,20 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: terra
+  name: crypto-org
   namespace: emeris
 spec:
   app:
-    cliName: terrad
-    daemonName: terrad
-    name: terra
+    cliName: chain-maind
+    daemonName: chain-maind
+    name: crypto-org
   config:
     additionalEgressRules:
       - ports:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 20s
+      crisisSkipAssertInvariants: false
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -25,7 +25,7 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: terra
+            value: crypto-org
           - name: TRACELISTENER_DEBUG
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
@@ -39,22 +39,23 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: terramoney/core
-    version: v0.5.13
+    name: gcr.io/tendermint-dev/crypto-com
+    version: v3.3.3
   init:
-    chainID: terra
-    bondDenom: uluna
     assets:
-      - 10000000000000000000uluna
+      - 1000000000000000000000basecro
+    bondDenom: basecro
+    chainID: cryptoorg-testnet
     faucet:
-      funds: 100000000000000000uluna
+      creditAmount: 10000000
       denoms:
-        - uluna
-      domain: faucet.terra-emeris.app.alpha.starport.cloud
+        - basecro
+      domain: faucet.crypto-org-emeris.app.alpha.starport.cloud
+      funds: 1000000000000000000000basecro
       legacySend: false
       maxCredit: 100000000
       replicas: 1
-    stakeAmount: 1000000uluna
+    stakeAmount: 1000000basecro
   moniker: emeris
   persistence:
     autoResize:
@@ -79,7 +80,7 @@ spec:
         cpu: 100m
         memory: 256Mi
   expose:
-    domain: terra-emeris.app.alpha.starport.cloud
+    domain: crypto-org.app.alpha.starport.cloud
     grpc: true
     rpc: true
     api: true
