@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-enable-chain
+  name: 05-{{ .Release.Name }}-enable-chain
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | indent 4 }}
@@ -19,7 +19,7 @@ spec:
         imagePullPolicy: Always
         args:
         - "job"
-        - "{{ .Release.Name }}-scale-up"
+        - "04-{{ .Release.Name }}-scale-up"
       - name: wait-for-nodes-ready
         image: groundnuty/k8s-wait-for:v1.3
         imagePullPolicy: Always

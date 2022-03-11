@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-scale-down
+  name: 01-{{ .Release.Name }}-scale-down
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | indent 4 }}
@@ -18,7 +18,7 @@ spec:
         imagePullPolicy: Always
         args:
         - "job"
-        - "{{ .Release.Name }}-disable-chain"
+        - "00-{{ .Release.Name }}-disable-chain"
       containers:
       - name: kubectl
         image: bitnami/kubectl

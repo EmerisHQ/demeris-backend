@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-disable-chain
+  name: 00-{{ .Release.Name }}-disable-chain
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | indent 4 }}

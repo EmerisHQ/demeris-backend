@@ -65,13 +65,13 @@ spec:
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
         imagePullPolicy: Always
-        resources:
-          limits:
-            cpu: "1"
-            memory: 2Gi
-          requests:
-            cpu: 100m
-            memory: 1Gi
+#        resources:
+#          limits:
+#            cpu: "1"
+#            memory: 2Gi
+#          requests:
+#            cpu: 100m
+#            memory: 1Gi
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/osmosis
@@ -182,11 +182,11 @@ spec:
     autoResize:
       enabled: true
   replicas: 4
-  resources:
-    sentry:
-      limits:
-        cpu: "4"
-        memory: 16Gi
-      requests:
-        cpu: "2"
-        memory: 8Gi
+#  resources:
+#    sentry:
+#      limits:
+#        cpu: "4"
+#        memory: 16Gi
+#      requests:
+#        cpu: "2"
+#        memory: 8Gi

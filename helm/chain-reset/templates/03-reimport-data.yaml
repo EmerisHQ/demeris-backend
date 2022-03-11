@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Release.Name }}-reimport-data
+  name: 03-{{ .Release.Name }}-reimport-data
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "chart.labels" . | indent 4 }}
@@ -22,7 +22,7 @@ spec:
         imagePullPolicy: Always
         args:
         - "job"
-        - "{{ .Release.Name }}-erase-data"
+        - "02-{{ .Release.Name }}-erase-data"
       containers:
       - name: tracelistener
         image: "{{- if eq .Values.sdkVersion "0.44" }}{{ .Values.traceListener44Image }}{{- else }}{{ .Values.traceListener42Image }}{{ end }}"
