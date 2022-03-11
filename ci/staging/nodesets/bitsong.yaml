@@ -108,7 +108,7 @@ spec:
         port: 36656
   moniker: emeris
   persistence:
-    size: 150Gi
+    size: 350Gi
     autoResize:
       enabled: true
   replicas: 2
