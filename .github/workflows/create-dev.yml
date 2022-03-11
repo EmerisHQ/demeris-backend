@@ -348,7 +348,7 @@ jobs:
 
       - name: Deploy chains to CNS
         run: |
-          for f in @ci/dev/chains/*
+          for f in "./ci/dev/chains/"*
           do
             curl -X POST -d @$f https://dev.demeris.io/v1/cns/add
           done

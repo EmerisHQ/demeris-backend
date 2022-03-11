@@ -32,16 +32,16 @@ spec:
       accountPrefix: cro
 
   paths:
-    - sideA: osmosis
+    - sideA: cosmos-hub
       sideB: akash
 
-    - sideA: osmosis
+    - sideA: cosmos-hub
       sideB: terra
 
     - sideA: terra
       sideB: akash
 
-    - sideA: osmosis
+    - sideA: cosmos-hub
       sideB: crypto-org
 
     - sideA: akash

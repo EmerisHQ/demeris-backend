@@ -4,9 +4,7 @@
   "logo": "https://storage.googleapis.com/emeris/logos/osmosis.svg",
   "display_name": "Osmosis Emeris",
   "primary_channel": {
-    "akash": "channel-0",
-    "terra": "channel-1",
-    "crypto-org": "channel-2"
+
   },
   "denoms": [
     {
