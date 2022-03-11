@@ -7,11 +7,11 @@ spec:
   filter: true
 
   chains:
-    - nodeset: osmosis
-      faucet: osmosis-faucet
+    - nodeset: cosmos-hub
+      faucet: cosmos-hub-faucet
       gasPrice:
         price: "0.001"
-      accountPrefix: osmo
+      accountPrefix: cosmos
 
     - nodeset: akash
       faucet: akash-faucet
