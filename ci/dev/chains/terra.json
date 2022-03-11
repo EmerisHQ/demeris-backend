@@ -8,7 +8,8 @@
 	"display_name": "Terra Emeris",
 	"primary_channel": {
 		"cosmos-hub": "channel-0",
-		"akash": "channel-1"
+		"akash": "channel-1",
+		"crypto-org": "channel-2"
 	},
 	"demeris_addresses": ["feeaddress"],
 	"denoms": [

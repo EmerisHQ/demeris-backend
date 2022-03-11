@@ -5,7 +5,8 @@
   "display_name": "Akash Emeris",
   "primary_channel": {
     "cosmos-hub": "channel-0",
-    "terra": "channel-1"
+    "terra": "channel-1",
+    "crypto-org": "channel-2"
   },
   "denoms": [
     {
