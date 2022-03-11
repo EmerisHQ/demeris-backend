@@ -4,7 +4,7 @@
   "logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
   "display_name": "Crypto.org Emeris",
   "primary_channel": {
-    "cosmos-hub": "channel-0",
+    "osmosis": "channel-0",
     "akash": "channel-1",
     "terra": "channel-2"
   },

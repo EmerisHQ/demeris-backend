@@ -7,11 +7,11 @@ spec:
   filter: true
 
   chains:
-    - nodeset: cosmos-hub
-      faucet: cosmos-hub-faucet
+    - nodeset: osmosis
+      faucet: osmosis-faucet
       gasPrice:
         price: "0.001"
-      accountPrefix: cosmos
+      accountPrefix: osmo
 
     - nodeset: akash
       faucet: akash-faucet
@@ -32,16 +32,16 @@ spec:
       accountPrefix: cro
 
   paths:
-    - sideA: cosmos-hub
+    - sideA: osmosis
       sideB: akash
 
-    - sideA: cosmos-hub
+    - sideA: osmosis
       sideB: terra
 
     - sideA: terra
       sideB: akash
 
-    - sideA: cosmos-hub
+    - sideA: osmosis
       sideB: crypto-org
 
     - sideA: akash

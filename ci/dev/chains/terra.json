@@ -7,7 +7,7 @@
 	"minimum_thresh_relayer_balance": 42,
 	"display_name": "Terra Emeris",
 	"primary_channel": {
-		"cosmos-hub": "channel-0",
+		"osmosis": "channel-0",
 		"akash": "channel-1",
 		"crypto-org": "channel-2"
 	},
