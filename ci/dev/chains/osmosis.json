@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "chain_name": "osmosis",
   "logo": "https://storage.googleapis.com/emeris/logos/osmosis.svg",
   "display_name": "Osmosis Emeris",

@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "chain_name": "cosmos-hub",
   "logo": "https://storage.googleapis.com/emeris/logos/atom.svg",
   "display_name": "Cosmos Hub Emeris",
