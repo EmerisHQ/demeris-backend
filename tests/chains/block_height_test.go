@@ -17,8 +17,8 @@ const (
 
 func (suite *testCtx) TestBlockHeight() {
 	for _, ch := range suite.clientChains {
-		suite.Run(ch.Name, func() {
-			if ch.Name == "cosmos-hub" {
+		if ch.Name == "cosmos-hub" {
+			suite.Run(ch.Name, func() {
 				var cc chainClient.Client
 				err := json.Unmarshal(ch.Payload, &cc)
 				suite.Require().NoError(err)
@@ -63,7 +63,7 @@ func (suite *testCtx) TestBlockHeight() {
 				suite.Require().NoError(err)
 
 				suite.Require().Equal(cosmosBlock, block)
-			}
-		})
+			})
+		}
 	}
 }
