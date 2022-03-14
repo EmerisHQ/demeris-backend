@@ -67,20 +67,20 @@ spec:
   resources:
     validator:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
     sentry:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
   expose:
-    domain: crypto-org.app.alpha.starport.cloud
+    domain: crypto-org-emeris.app.alpha.starport.cloud
     grpc: true
     rpc: true
     api: true
