@@ -88,9 +88,8 @@ spec:
   moniker: emeris
   persistence:
     size: 300Gi
-    storageClass: openebs-lvmpv
     autoResize:
-      enabled: false
+      enabled: true
   replicas: 2
   resources:
     sentry:
