@@ -1,0 +1,87 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: iris
+  namespace: emeris
+spec:
+  app:
+    cliName: iris
+    daemonName: iris
+    name: iris
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: iris
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/iris
+    version: v1.2.1
+  persistence:
+    autoResize:
+      enabled: true
+      increment: 5G
+      threshold: 80
+    size: 15G
+  replicas: 1
+  moniker: emeris
+  init:
+    assets:
+      - 100000000000000000uiris
+    bondDenom: uiris
+    chainID: iris-testnet
+    faucet:
+      creditAmount: 10000000
+      denoms:
+        - uiris
+      domain: faucet.iris-emeris.app.alpha.starport.cloud
+      funds: 100000000000000000uiris
+      legacySend: false
+      maxCredit: 100000000
+      replicas: 1
+    stakeAmount: 10000000000uiris
+  resources:
+    validator:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+    sentry:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+
+  expose:
+    domain: iris-emeris.app.alpha.starport.cloud
+    grpc: true
+    rpc: true
+    api: true
+    p2p: true

@@ -6,7 +6,8 @@
   "primary_channel": {
     "akash": "channel-0",
     "terra": "channel-1",
-    "crypto-org": "channel-2"
+    "crypto-org": "channel-2",
+    "iris": "channel-3"
   },
   "denoms": [
     {
