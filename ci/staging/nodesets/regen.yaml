@@ -62,7 +62,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/regen
-    version: v2.1.0
+    version: v3.0.0
   join:
     genesis:
       url: https://github.com/regen-network/mainnet/raw/main/regen-1/genesis.json

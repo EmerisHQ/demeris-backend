@@ -62,6 +62,11 @@
   },
   "valid_block_thresh": "30s",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "supported_wallets": [],
-  "block_explorer": "\"\""
+  "supported_wallets": ["keplr"],
+  "block_explorer": "\"\"",
+  "cosmos_sdk_version": "v0.44.3",
+  "public_node_endpoints": {
+    "tendermint_rpc": null,
+    "cosmos_api": null
+  }
 }
