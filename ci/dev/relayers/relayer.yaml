@@ -35,6 +35,13 @@ spec:
       accountPrefix: cro
       hdPath: m/44'/394'/0'/0/0
 
+    - nodeset: iris
+      faucet: iris-faucet
+      gasPrice:
+        price: "0.2"
+      accountPrefix: iaa
+      hdPath: m/44'/118'/0'/0/0
+
   paths:
     - sideA: cosmos-hub
       sideB: akash
@@ -53,3 +60,15 @@ spec:
 
     - sideA: terra
       sideB: crypto-org
+
+    - sideA: cosmos-hub
+      sideB: iris
+
+    - sideA: akash
+      sideB: iris
+
+    - sideA: terra
+      sideB: iris
+
+    - sideA: crypto-org
+      sideB: iris
