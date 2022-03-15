@@ -1,8 +1,8 @@
 {
     "chain_name": "cosmos-hub",
     "rpc": "https://cosmos-hub.emeris:26657",
+    "address": "cosmos1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u0tvx7u",
     "key":"test_key",
     "mnemonic":"unable grass pipe pear glue forward gold truck victory pause fragile scan mask morning develop floor treat essence vendor solid surprise theme process sign",
     "keyring_service_name":"cosmos"
 }
-  

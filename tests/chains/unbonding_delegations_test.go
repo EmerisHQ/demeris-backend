@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -25,13 +24,13 @@ func (suite *testCtx) TestUnbondingDelegations() {
 			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
-
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
 			if !cli.Enabled {
 				return
 			}
 
-			address, err := cli.GetHexAddress(cc.Key)
+			address, err := cli.GetAccAddress(cc.Key)
 			suite.Require().NoError(err)
 
 			expectedUndelegations, err := cli.GetUnbondingDelegations(address.String())
@@ -54,7 +53,7 @@ func (suite *testCtx) TestUnbondingDelegations() {
 
 				// perform unbonding transaction
 				msg := stakingtypes.NewMsgUndelegate(address, valAddr, sdk.NewCoin(cli.Denom, sdk.NewInt(100)))
-				_, err = cli.Broadcast(cc.Key, context.Background(), cli.GetContext(), msg)
+				_, err = cli.Broadcast(cc.Key, cli.GetContext(), msg)
 				suite.Require().NoError(err)
 
 				// wait few sec to confirm

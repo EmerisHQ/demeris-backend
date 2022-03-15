@@ -29,6 +29,7 @@ type ChainClient struct {
 	factory            tx.Factory
 	clientCtx          client.Context
 	out                *bytes.Buffer
+	Address            string `json:"address"`
 	AddressPrefix      string `json:"account_address_prefix"`
 	RPC                string `json:"rpc"`
 	Key                string `json:"key"`
@@ -158,10 +159,14 @@ func (c *ChainClient) GetKeyring() keyring.Keyring {
 	return c.kr
 }
 
-// GetHexAddress return hex address from given account name
-func (c *ChainClient) GetHexAddress(accountName string) (types.AccAddress, error) {
+// GetAccAddress return hex address from given account name
+func (c *ChainClient) GetAccAddress(accountName string) (types.AccAddress, error) {
 	info, err := c.clientCtx.Keyring.Key(accountName)
-	return info.GetAddress(), err
+	if err != nil {
+		return nil, err
+	}
+
+	return info.GetAddress(), nil
 }
 
 // GetBondedValidators returns bonded validators list

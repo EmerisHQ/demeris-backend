@@ -21,10 +21,11 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			hexAddress, err := cli.GetHexAddress(cc.Key)
+			hexAddress, err := cli.GetAccAddress(cc.Key)
 			suite.Require().NoError(err)
 
 			url := suite.Client.BuildUrl(accountNumbersEndpoint, hex.EncodeToString(hexAddress))

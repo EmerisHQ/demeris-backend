@@ -28,7 +28,9 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
 
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
+
 			// assert
 			if !cli.Enabled {
 				return
@@ -55,7 +57,7 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			// perform bank send tx
 			msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(10))))
 
-			txBytes, err := cli.SignTx(context.Background(), cc.Key, cli.GetContext(), msg)
+			txBytes, err := cli.SignTx(cc.Key, cli.GetContext(), msg)
 			suite.Require().NoError(err)
 
 			postBytes, err := json.Marshal(txModels.TxRequest{

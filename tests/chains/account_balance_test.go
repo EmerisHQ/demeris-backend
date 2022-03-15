@@ -9,6 +9,7 @@ import (
 
 	models "github.com/allinbits/demeris-api-server/api/account"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -21,13 +22,18 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			hexAddress, err := cli.GetHexAddress(cc.Key)
-			suite.Require().NoError(err)
+			accAddr, err := sdktypes.AccAddressFromBech32(cc.Address)
 
-			url := suite.Client.BuildUrl(getBalanceEndpoint, hex.EncodeToString(hexAddress))
+			if accAddr.Empty() {
+				accAddr, err = cli.GetAccAddress(cc.Key)
+				suite.Require().NoError(err)
+			}
+
+			url := suite.Client.BuildUrl(getBalanceEndpoint, hex.EncodeToString(accAddr))
 			suite.T().Log("url", url)
 			// act
 			resp, err := suite.Client.Get(url)
@@ -51,7 +57,7 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 
 			for _, v := range balances.Balances {
 				if v.BaseDenom == cli.Denom && cli.Enabled {
-					bal, err := cli.GetAccountBalances(hexAddress.String(), cli.Denom)
+					bal, err := cli.GetAccountBalances(accAddr.String(), cli.Denom)
 					suite.Require().NoError(err)
 					suite.Require().Equal(bal.String(), v.Amount)
 				}
