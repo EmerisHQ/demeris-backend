@@ -51,10 +51,10 @@
         "prefix_validator": "cncl",
         "prefix_consensus": "cons",
         "prefix_public": "pub",
-        "prefix_operator": "oper",
+        "prefix_operator": "​",
         "acc_addr": "cro",
         "acc_pub": "cropub",
-        "val_addr": "crocncloper",
+        "val_addr": "crocncl",
         "val_pub": "crocncloperpub",
         "cons_addr": "crocnclcons",
         "cons_pub": "crocnclconspub"
