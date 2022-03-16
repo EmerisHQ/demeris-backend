@@ -1,0 +1,103 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: ixo
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: ixo
+  app:
+    cliName: ixod
+    daemonName: ixod
+    name: ixo
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.005uixo
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: ixo
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/ixo
+    version: v1.6.0
+    # build:
+    #   repository: https://github.com/ixofoundation/ixo-blockchain
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/ixofoundation/genesis/master/impacthub-3/genesis.json
+    persistentPeers:
+      - address: 18.163.242.188
+        id: c95af93f0386f8e19e65997262c9f874d1901dc5
+        port: 26656
+      - id: dde3d8aacfef1490ef4ae43698e3e2648bb8363c
+        address: 80.64.208.42
+        port: 26656
+      - id: f0d4546fa5e0c2d84a4244def186b9da3c12ba1a
+        address: 46.166.138.214
+        port: 26656
+      - id: c95af93f0386f8e19e65997262c9f874d1901dc5
+        address: 18.163.242.188
+        port: 26656
+      - id: cbe8c6a5a77f861db8edb1426b734f2cf1fa4020
+        address: 18.166.133.210
+        port: 26656
+      - id: 36e4738c7efcf353d3048e5e6073406d045bae9d
+        address: 80.64.208.43
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 200Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "1"
+        memory: 2Gi
