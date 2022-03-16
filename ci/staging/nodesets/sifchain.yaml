@@ -50,7 +50,7 @@ spec:
             value: sifchain
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
         imagePullPolicy: Always
         resources:
           limits:
@@ -62,7 +62,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/sifchain
-    version: v0.10.1
+    version: v0.11.0
     build:
       repository: https://github.com/Sifchain/sifnode
   join:

@@ -50,7 +50,7 @@ spec:
             value: ki
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
         imagePullPolicy: Always
         resources:
           limits:
