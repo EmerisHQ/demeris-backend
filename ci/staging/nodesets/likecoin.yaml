@@ -1,0 +1,91 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: likecoin
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: likecoin
+  app:
+    cliName: liked
+    daemonName: liked
+    name: likecoin
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.5nanolike
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: likecoin
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/likecoin
+    version: fotan-1.1
+    build:
+      repository: https://github.com/likecoin/likecoin-chain
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/likecoin/mainnet/master/genesis.json
+    seeds:
+    - address: 34.82.131.35
+      id: 913bd0f4bea4ef512ffba39ab90eae84c1420862
+      port: 26656
+    - address: nnkken.dev
+      id: e44a2165ac573f84151671b092aa4936ac305e2a
+      port: 26656
+  moniker: emeris
+  persistence:
+    size: 300Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: 500m
+        memory: 2Gi
