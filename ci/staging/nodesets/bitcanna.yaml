@@ -79,7 +79,7 @@ spec:
   persistence:
     size: 350Gi
     autoResize:
-      enabled: false
+      enabled: true
   replicas: 2
   resources:
     sentry:
