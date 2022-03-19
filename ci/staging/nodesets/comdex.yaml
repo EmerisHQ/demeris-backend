@@ -62,7 +62,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/comdex
-    version: v0.0.4
+    version: v0.1.1
   join:
     genesis:
       url: https://comdex-mainnet-genesis.s3.ap-southeast-1.amazonaws.com/genesis.json
