@@ -1,7 +1,7 @@
 {
     "enabled": true,
     "chain_name": "sommelier",
-    "logo": "https://app.osmosis.zone/public/assets/tokens/somm.png",
+    "logo": "https://storage.googleapis.com/emeris/logos/somm.svg",
     "display_name": "sommelier",
     "primary_channel": {
       "osmosis": "channel-0"
@@ -10,7 +10,7 @@
       {
         "name": "usomm",
         "display_name": "SOMM",
-        "logo": "https://app.osmosis.zone/public/assets/tokens/somm.png",
+        "logo": "https://storage.googleapis.com/emeris/logos/somm.svg",
         "precision": 6,
         "verified": true,
         "stakable": true,

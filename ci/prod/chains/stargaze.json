@@ -1,5 +1,5 @@
 {
-    "enabled": true,
+    "enabled": false,
     "chain_name": "stargaze",
     "logo": "https://storage.googleapis.com/emeris/logos/stars.svg",
     "display_name": "Stargaze",
@@ -54,5 +54,5 @@
     "derivation_path": "m/44'/118'/0'/0/0",
     "supported_wallets": [],
     "block_explorer": "\"\"",
-    "cosmos_sdk_version": "v0.45.0"
+    "cosmos_sdk_version": "v0.44.0"
   }

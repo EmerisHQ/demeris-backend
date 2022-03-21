@@ -64,10 +64,6 @@
     "derivation_path": "m/44'/394'/0'/0/0",
     "supported_wallets": [],
     "block_explorer": "\"\"",
-    "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
     "cosmos_sdk_version": "v0.44.5"
   
 }

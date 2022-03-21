@@ -17,7 +17,7 @@
       "stakable": true,
       "fee_token": true,
       "fetch_price": true,
-      "price_id": "chihuahua-chain",
+      "price_id": "chihuahua-token",
       "relayer_denom": true,
       "minimum_thresh_relayer_balance": 42,
       "gas_price_levels": { "low": 0.01, "average": 0.025, "high": 0.03},

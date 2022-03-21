@@ -23,7 +23,7 @@
         "precision": 18,
         "verified": true,
         "stakable": true,
-        "ticker": "ROWAN",
+        "ticker": "EROWAN",
         "price_id": "sifchain",
         "fee_token": true,
         "gas_price_levels": {
