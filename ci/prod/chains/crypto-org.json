@@ -62,8 +62,12 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/394'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc-crypto-org.keplr.app:443"],
+        "cosmos_api": ["https://lcd-crypto-org.keplr.app:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/crypto-org",
     "cosmos_sdk_version": "v0.44.5"
   
 }
