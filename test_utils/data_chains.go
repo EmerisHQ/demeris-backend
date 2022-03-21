@@ -94,36 +94,26 @@ func LoadClientChainsInfo(env string) ([]EnvChain, error) {
 
 func LoadSingleChainInfo(env string, chainName string) (EnvChain, error) {
 	d := fmt.Sprintf(chainsFolderPath, env)
-	files, err := ioutil.ReadDir(d)
+
+	fileName := chainName + jsonSuffix
+
+	var chain EnvChain
+	jFile, err := ioutil.ReadFile(d + fileName)
 	if err != nil {
 		return EnvChain{}, err
 	}
 
-	var chain EnvChain
-	for _, f := range files {
-		if strings.HasSuffix(f.Name(), jsonSuffix) {
-			jFile, err := ioutil.ReadFile(d + f.Name())
-			if err != nil {
-				return EnvChain{}, err
-			}
-
-			temp := map[string]interface{}{}
-			err = json.Unmarshal(jFile, &temp)
-			if err != nil {
-				return EnvChain{}, err
-			}
-
-			ch := EnvChain{}
-			ch.Payload = jFile
-			ch.Enabled = temp[enabledKey].(bool)
-			ch.Name = temp[nameKey].(string)
-			chain = ch
-
-			if ch.Name == chainName {
-				return chain, nil
-			}
-		}
+	temp := map[string]interface{}{}
+	err = json.Unmarshal(jFile, &temp)
+	if err != nil {
+		return EnvChain{}, err
 	}
+
+	ch := EnvChain{}
+	ch.Payload = jFile
+	ch.Enabled = temp[enabledKey].(bool)
+	ch.Name = temp[nameKey].(string)
+	chain = ch
 
 	return chain, nil
 }
