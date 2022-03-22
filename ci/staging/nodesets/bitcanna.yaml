@@ -1,7 +1,7 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: stargaze
+  name: bitcanna
   namespace: emeris
 spec:
   podAntiAffinity:
@@ -11,11 +11,11 @@ spec:
           topologyKey: kubernetes.io/hostname
           labelSelector:
             matchLabels:
-              nodeset: stargaze
+              nodeset: bitcanna
   app:
-    cliName: starsd
-    daemonName: starsd
-    name: stargaze
+    cliName: bcnad
+    daemonName: bcnad
+    name: bitcanna
   config:
     additionalEgressRules:
       - ports:
@@ -27,7 +27,7 @@ spec:
         app:
           - key: minimum-gas-prices
             value:
-              string: 0.1ustars
+              string: 0.25ubcna
           - key: pruning
             value:
               string: custom
@@ -47,7 +47,7 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: stargaze
+            value: bitcanna
           - name: TRACELISTENER_DEBUG
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
@@ -61,27 +61,23 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: gcr.io/tendermint-dev/stargaze
-    version: v3.0.0
+    name: gcr.io/tendermint-dev/bitcanna
+    version: v.1.3.1
+    build:
+      repository: https://github.com/BitCannaGlobal/bcna
   join:
     genesis:
-      url: https://storage.googleapis.com/emeris/genesis/stargaze-1.json
+      url: https://raw.githubusercontent.com/BitCannaGlobal/bcna/main/genesis.json
     seeds:
-      - address: 174.138.124.7
-        id: 70ed826888f102c7c1ceb4d07287956628a53508
-        port: 36656
-      - address: 104.248.101.113
-        id: 722079345d941cd2da3daedea548c909d9b83ec5
-        port: 36656
-      - address: sg-seed.blockpane.com
-        id: d5fc4f479c4e212c96dff5704bb2468ea03b8ae3
-        port: 26656
-      - address: stargaze.seed.rhinostake.com
-        id: babc3f3f7804933265ec9c40ad94f4da8e9e0017
-        port: 16656
+    - address: seed1.bitcanna.io
+      id: d6aa4c9f3ccecb0cc52109a95962b4618d69dd3f
+      port: 26656
+    - address: seed2.bitcanna.io
+      id: 23671067d0fd40aec523290585c7d8e91034a771
+      port: 26656
   moniker: emeris
   persistence:
-    size: 650Gi
+    size: 350Gi
     autoResize:
       enabled: true
   replicas: 2
@@ -89,7 +85,7 @@ spec:
     sentry:
       limits:
         cpu: "2"
-        memory: 8Gi
+        memory: 4Gi
       requests:
         cpu: "1"
-        memory: 4Gi
+        memory: 2Gi
