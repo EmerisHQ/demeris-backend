@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	KeyringBackend = "test"
+	KeyringBackendTest = "test"
 )
 
 // ChainClient is client to interact with SPN.
@@ -42,7 +42,7 @@ type ChainClient struct {
 }
 
 func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string) (*ChainClient, error) {
-	kr, err := keyring.New(keyringServiceName, KeyringBackend, homePath, os.Stdin)
+	kr, err := keyring.New(keyringServiceName, KeyringBackendTest, homePath, os.Stdin)
 	if err != nil {
 		return nil, err
 	}

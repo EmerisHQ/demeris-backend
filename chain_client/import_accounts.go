@@ -6,6 +6,7 @@ import (
 
 	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -29,6 +30,7 @@ func GetClient(env string, chainName string, cc ChainClient, dir string) (c *Cha
 		return nil, err
 	}
 
+	initSDKConfig(info.NodeInfo.Bech32Config)
 	c, err = CreateChainClient(cc.RPC, cc.KeyringServiceName, info.NodeInfo.ChainID, dir)
 	if err != nil {
 		return nil, err
@@ -49,7 +51,19 @@ func GetClient(env string, chainName string, cc ChainClient, dir string) (c *Cha
 		c.Denom = info.Denoms[0].Name
 	}
 
+	_, err = c.ImportMnemonic(cc.Key, c.Mnemonic, c.HDPath)
+	if err != nil {
+		return nil, err
+	}
+
 	return c, nil
+}
+
+func initSDKConfig(config cns.Bech32Config) {
+	sdkConfig := sdk.GetConfig()
+	sdkConfig.SetBech32PrefixForAccount(config.Bech32PrefixAccAddr(), config.Bech32PrefixAccPub())
+	sdkConfig.SetBech32PrefixForValidator(config.Bech32PrefixValAddr(), config.Bech32PrefixValPub())
+	sdkConfig.SetBech32PrefixForConsensusNode(config.Bech32PrefixConsAddr(), config.Bech32PrefixConsPub())
 }
 
 // GetMnemonic returns the mnemonic of particular chain for staging accounts
