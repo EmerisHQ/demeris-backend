@@ -60,7 +60,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://impacthub.ixo.world:443/rpc"],
+        "cosmos_api": ["https://impacthub.ixo.world:443/rest"]
+      },
+    "block_explorer": "https://blockscan.ixo.world",
     "cosmos_sdk_version": "v0.42.9"
   }

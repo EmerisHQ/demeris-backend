@@ -14,7 +14,6 @@ spec:
           - port: 26257
             protocol: TCP
     nodes:
-      crisisSkipAssertInvariants: false
       startupTimeout: 30m
       traceStoreContainer:
         env:
@@ -28,7 +27,7 @@ spec:
             value: cosmos-hub
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
         imagePullPolicy: Always
         resources:
           limits:
@@ -67,18 +66,18 @@ spec:
   resources:
     validator:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
     sentry:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
   expose:
     domain: cosmos-hub-emeris.app.alpha.starport.cloud
     grpc: true

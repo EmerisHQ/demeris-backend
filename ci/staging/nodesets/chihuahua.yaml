@@ -1,7 +1,7 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: comdex
+  name: chihuahua
   namespace: emeris
 spec:
   podAntiAffinity:
@@ -11,11 +11,11 @@ spec:
           topologyKey: kubernetes.io/hostname
           labelSelector:
             matchLabels:
-              nodeset: comdex
+              nodeset: chihuahua
   app:
-    cliName: comdex
-    daemonName: comdex
-    name: comdex
+    cliName: chihuahuad
+    daemonName: chihuahuad
+    name: chihuahua
   config:
     additionalEgressRules:
       - ports:
@@ -27,7 +27,7 @@ spec:
         app:
           - key: minimum-gas-prices
             value:
-              string: 0.005ucmdx
+              string: 0.005uhuahua
           - key: pruning
             value:
               string: custom
@@ -47,10 +47,10 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: comdex
+            value: chihuahua
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
         imagePullPolicy: Always
         resources:
           limits:
@@ -61,57 +61,41 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: gcr.io/tendermint-dev/comdex
-    version: v0.1.1
+    name: gcr.io/tendermint-dev/chihuahua
+    version: v1.1.1
+    build:
+      repository: https://github.com/ChihuahuaChain/chihuahua/
   join:
     genesis:
-      url: https://comdex-mainnet-genesis.s3.ap-southeast-1.amazonaws.com/genesis.json
+      url: https://raw.githubusercontent.com/ChihuahuaChain/mainnet/main/genesis.json
     seeds:
-      - id: aef35f45db2d9f5590baa088c27883ac3d5e0b33
-        address: 3.108.102.92
-        port: 26656
-      - id: 7ca14a1d156299999eba9c394ca060368022d52f
-        address: 54.194.178.110
-        port: 26656 
+      - id: 4936e377b4d4f17048f8961838a5035a4d21240c
+        address: chihuahua-seed-01.mercury-nodes.net
+        port: 29540
     persistentPeers:
-      - id: f74518ad134630da8d2405570f6a3639954c985f
-        address: 65.0.173.217
+      - id: b140eb36b20f3d201936c4757d5a1dcbf03a42f1
+        address: 216.238.79.138
         port: 26656
-      - id: d478882a80674fa10a32da63cc20cae13e3a2a57
-        address: 43.204.0.243
+      - id: 19900e1d2b10be9c6672dae7abd1827c8e1aad1e
+        address: 161.97.96.253
         port: 26656
-      - id: 61d743ea796ad1e1ff838c9e84adb38dfffd1d9d
-        address: 15.235.9.222
+      - id: c382a9a0d4c0606d785d2c7c2673a0825f7c53b2
+        address: 88.99.94.120
         port: 26656
-      - id: b8468f64788a17dbf34a891d9cd29d54b2b6485d
-        address: 194.163.178.25
-        port: 26656
-      - id: d8b74791ee56f1b345d822f62bd9bc969668d8df
-        address: 194.163.128.55
-        port: 36656
-      - id: 81444353d70bab79742b8da447a9564583ed3d6a
-        address: 164.68.105.248
-        port: 26656
-      - id: 5b1ceb8110da4e90c38c794d574eb9418a7574d6
-        address: 43.254.41.56
-        port: 26656
-      - id: 98b4522a541a69007d87141184f146a8f04be5b9
-        address: 40.112.90.170
-        port: 26656
-      - id: 9a59b6dc59903d036dd476de26e8d2b9f1acf466
-        address: 195.201.195.111
+      - id: a5dfb048e4ed5c3b7d246aea317ab302426b37a1
+        address: 137.184.250.180
         port: 26656
   moniker: emeris
   persistence:
-    size: 200Gi
+    size: 300Gi
     autoResize:
       enabled: true
   replicas: 2
   resources:
     sentry:
       limits:
-        cpu: "4"
+        cpu: "2"
         memory: 8Gi
       requests:
         cpu: "1"
-        memory: 2Gi
+        memory: 4Gi

@@ -79,6 +79,7 @@ echo "-- Launcing bulk import job\n"
 helm install "${CHAIN}" \
   --set sdkVersion="${SDK_VERSION}" \
   --set-file nodesetFile="${YAML_FILE}" \
+  --namespace emeris \
   "${SCRIPT_DIR}/${RESET_DIR}"
 
 echo -e "-- You can monitor the progress with 'kubectl get jobs'\n"

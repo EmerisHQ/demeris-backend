@@ -1,20 +1,19 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: terra
+  name: iris
   namespace: emeris
 spec:
   app:
-    cliName: terrad
-    daemonName: terrad
-    name: terra
+    cliName: iris
+    daemonName: iris
+    name: iris
   config:
     additionalEgressRules:
       - ports:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 20s
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -25,7 +24,7 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: terra
+            value: iris
           - name: TRACELISTENER_DEBUG
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
@@ -39,23 +38,8 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: terramoney/core
-    version: v0.5.13
-  init:
-    chainID: terra
-    bondDenom: uluna
-    assets:
-      - 10000000000000000000uluna
-    faucet:
-      funds: 100000000000000000uluna
-      denoms:
-        - uluna
-      domain: faucet.terra-emeris.app.alpha.starport.cloud
-      legacySend: false
-      maxCredit: 100000000
-      replicas: 1
-    stakeAmount: 1000000uluna
-  moniker: emeris
+    name: gcr.io/tendermint-dev/iris
+    version: v1.2.1
   persistence:
     autoResize:
       enabled: true
@@ -63,6 +47,22 @@ spec:
       threshold: 80
     size: 15G
   replicas: 1
+  moniker: emeris
+  init:
+    assets:
+      - 100000000000000000uiris
+    bondDenom: uiris
+    chainID: iris-testnet
+    faucet:
+      creditAmount: 10000000
+      denoms:
+        - uiris
+      domain: faucet.iris-emeris.app.alpha.starport.cloud
+      funds: 100000000000000000uiris
+      legacySend: false
+      maxCredit: 100000000
+      replicas: 1
+    stakeAmount: 10000000000uiris
   resources:
     validator:
       requests:
@@ -78,8 +78,9 @@ spec:
       limits:
         cpu: 400m
         memory: 512Mi
+
   expose:
-    domain: terra-emeris.app.alpha.starport.cloud
+    domain: iris-emeris.app.alpha.starport.cloud
     grpc: true
     rpc: true
     api: true
