@@ -25,7 +25,6 @@ const (
 
 // ChainClient is client to interact with SPN.
 type ChainClient struct {
-	kr                 keyring.Keyring
 	factory            tx.Factory
 	clientCtx          client.Context
 	out                *bytes.Buffer
@@ -56,7 +55,6 @@ func CreateChainClient(nodeAddress, keyringServiceName, chainID, homePath string
 
 	factory := spn.NewFactory(clientCtx)
 	return &ChainClient{
-		kr:        kr,
 		factory:   factory,
 		clientCtx: clientCtx,
 		out:       out,
@@ -85,13 +83,13 @@ func (c *ChainClient) AccountCreate(accountName, mnemonic, hdPath string) (spn.A
 			return spn.Account{}, err
 		}
 	}
-	algos, _ := c.kr.SupportedAlgorithms()
+	algos, _ := c.clientCtx.Keyring.SupportedAlgorithms()
 	algo, err := keyring.NewSigningAlgoFromString(string(hd.Secp256k1Type), algos)
 	if err != nil {
 		return spn.Account{}, err
 	}
 
-	info, err := c.kr.NewAccount(accountName, mnemonic, "", hdPath, algo)
+	info, err := c.clientCtx.Keyring.NewAccount(accountName, mnemonic, "", hdPath, algo)
 	if err != nil {
 		return spn.Account{}, err
 	}
@@ -129,7 +127,7 @@ func (c ChainClient) GetAccountBalances(address, denom string) (*types.Coin, err
 
 // AccountList returns a list of accounts.
 func (c *ChainClient) AccountList() (accounts []spn.Account, err error) {
-	infos, err := c.kr.List()
+	infos, err := c.clientCtx.Keyring.List()
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +139,7 @@ func (c *ChainClient) AccountList() (accounts []spn.Account, err error) {
 
 // AccountGet retrieves an account by name from the keyring.
 func (c ChainClient) AccountGet(accountName string) (spn.Account, error) {
-	info, err := c.kr.Key(accountName)
+	info, err := c.clientCtx.Keyring.Key(accountName)
 	if err != nil {
 		return spn.Account{}, err
 	}
@@ -156,7 +154,7 @@ func (c *ChainClient) GetContext() client.Context {
 
 // GetKeyring return keyring of client
 func (c *ChainClient) GetKeyring() keyring.Keyring {
-	return c.kr
+	return c.clientCtx.Keyring
 }
 
 // GetAccAddress return hex address from given account name

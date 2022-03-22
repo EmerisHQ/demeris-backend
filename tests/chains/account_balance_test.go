@@ -34,7 +34,6 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			}
 
 			url := suite.Client.BuildUrl(getBalanceEndpoint, hex.EncodeToString(accAddr))
-			suite.T().Log("url", url)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
