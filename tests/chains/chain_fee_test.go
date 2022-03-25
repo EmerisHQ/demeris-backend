@@ -18,6 +18,7 @@ func (suite *testCtx) TestChainFee() {
 			// arrange
 			url := suite.Client.BuildUrl(chainFeeEndpoint, ch.Name)
 			// act
+			suite.T().Log(url)
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)
 
@@ -59,7 +60,7 @@ func (suite *testCtx) TestChainFee() {
 						expectedFeeDenoms = append(expectedFeeDenoms, denom)
 					}
 				}
-				suite.ElementsMatch(expectedFeeDenoms, denoms)
+				suite.Equal(expectedFeeDenoms, denoms)
 			}
 		})
 	}

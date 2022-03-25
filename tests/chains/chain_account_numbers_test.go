@@ -25,10 +25,10 @@ func (suite *testCtx) TestGetChainNumbers() {
 			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			hexAddress, err := cli.GetAccAddress(cc.Key)
+			accAddr, err := cli.GetAccAddress(cc.Key)
 			suite.Require().NoError(err)
 
-			url := suite.Client.BuildUrl(chainNumbersEndpoint, ch.Name, hex.EncodeToString(hexAddress))
+			url := suite.Client.BuildUrl(chainNumbersEndpoint, ch.Name, hex.EncodeToString(accAddr))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)

@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/cosmos/cosmos-sdk/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -108,7 +107,7 @@ func (c ChainClient) ToAccount(info keyring.Info) spn.Account {
 }
 
 // GetAccountBalances returns the balance of the account
-func (c ChainClient) GetAccountBalances(address, denom string) (*types.Coin, error) {
+func (c ChainClient) GetAccountBalances(address, denom string) (*sdktypes.Coin, error) {
 	res, err := banktypes.NewQueryClient(c.clientCtx).
 		Balance(context.Background(), &banktypes.QueryBalanceRequest{
 			Address: address,
@@ -158,7 +157,7 @@ func (c *ChainClient) GetKeyring() keyring.Keyring {
 }
 
 // GetAccAddress return hex address from given account name
-func (c *ChainClient) GetAccAddress(accountName string) (types.AccAddress, error) {
+func (c *ChainClient) GetAccAddress(accountName string) (sdktypes.AccAddress, error) {
 	info, err := c.clientCtx.Keyring.Key(accountName)
 	if err != nil {
 		return nil, err

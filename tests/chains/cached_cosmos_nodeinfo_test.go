@@ -20,10 +20,11 @@ func (suite *testCtx) TestCachedCosmosNodeinfo() {
 	for _, ch := range suite.clientChains {
 		if ch.Name == "cosmos-hub" {
 			suite.Run(ch.Name, func() {
-				var cc chainClient.Client
+				var cc chainClient.ChainClient
 				err := json.Unmarshal(ch.Payload, &cc)
 				suite.Require().NoError(err)
-				cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+				cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+				suite.Require().NoError(err)
 				suite.Require().NotNil(cli)
 
 				url := suite.Client.BuildUrl(cachedCosmosNodeEndpoint)
@@ -50,14 +51,8 @@ func (suite *testCtx) TestCachedCosmosNodeinfo() {
 				nodeInfoRes, err := nodeInfoQuery.GetNodeInfo(context.Background(), &tmservice.GetNodeInfoRequest{})
 				suite.Require().NoError(err)
 
-				n1, err := tmjson.Marshal(nodeInfo)
-				suite.Require().NoError(err)
-
-				n2, err := tmjson.Marshal(nodeInfoRes)
-				suite.Require().NoError(err)
-
 				// match result
-				suite.Require().Equal(string(n1), string(n2))
+				suite.Require().Equal(nodeInfo.DefaultNodeInfo.Network, nodeInfoRes.DefaultNodeInfo.Network)
 			})
 		}
 	}

@@ -15,5 +15,24 @@ generate-swagger:
 	go generate ${BASEPKG}/docs
 	@rm docs/docs.go
 
+int-tests:
+	telepresence connect --context gke_tendermint-dev_us-east1_starport-cloud-staging -- go test -v ./test/e2e \
+
+
 $(OBJS):
 	go build -o build/$@ -ldflags='-X main.Version=${BRANCH}-${COMMIT}' ${EXTRAFLAGS} ${BASEPKG}/cmd/$@
+
+## find or download telepresence
+#.PHONY: telepresence
+#telepresence: TELEPRESENCE_VERSION?=2.3.7
+#telepresence:
+#ifeq (, $(wildcard $(CURRENT_DIR)/bin/telepresence))
+#	@{ \
+#	set -e ;\
+#	echo "Installing telepresence to $(CURRENT_DIR)/bin" ;\
+#	mkdir -p $(CURRENT_DIR)/bin ;\
+#	curl -sfL https://app.getambassador.io/download/tel2/$(UNAME)/amd64/$(TELEPRESENCE_VERSION)/telepresence -o $(CURRENT_DIR)/bin/telepresence ;\
+#	chmod a+x $(CURRENT_DIR)/bin/telepresence ;\
+#	}
+#endif
+#TELEPRESENCE=$(CURRENT_DIR)/bin/telepresence

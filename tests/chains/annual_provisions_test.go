@@ -14,6 +14,9 @@ const (
 )
 
 func (suite *testCtx) TestAnnualProvisions() {
+	if suite.Env == "staging" {
+		suite.T().Skip("skipping annual provisions")
+	}
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 

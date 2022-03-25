@@ -16,6 +16,7 @@
         "verified": true,
         "stakable": true,
         "ticker": "LIKE",
+        "price_id": "likecoin",
         "fee_token": true,
         "gas_price_levels": {
           "low": 4,
