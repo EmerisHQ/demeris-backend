@@ -50,7 +50,7 @@ spec:
             value: regen
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:1.0.0
         imagePullPolicy: Always
         resources:
           limits:
