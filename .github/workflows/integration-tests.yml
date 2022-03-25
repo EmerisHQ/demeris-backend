@@ -54,4 +54,5 @@ jobs:
         run: make staging-int-tests
         shell: bash
         env:
+          ENV: 'staging'
           KUBECONFIG: '${{ secrets.KUBECONFIG_STAGING }}'
