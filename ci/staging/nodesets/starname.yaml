@@ -50,7 +50,7 @@ spec:
             value: starname
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:1.0.0
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
         imagePullPolicy: Always
         resources:
           limits:
