@@ -1,7 +1,7 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: ki
+  name: emoney
   namespace: emeris
 spec:
   podAntiAffinity:
@@ -11,23 +11,23 @@ spec:
           topologyKey: kubernetes.io/hostname
           labelSelector:
             matchLabels:
-              nodeset: ki
+              nodeset: emoney
   app:
-    cliName: kid
-    daemonName: kid
-    name: ki
+    cliName: emd
+    daemonName: emd
+    name: emoney
   config:
     additionalEgressRules:
       - ports:
           - port: 26257
             protocol: TCP
     nodes:
-      blockThreshold: 15s
+      blockThreshold: 3m
       configOverride:
         app:
           - key: minimum-gas-prices
             value:
-              string: 0.025uxki
+              string: 0.1ungm
           - key: pruning
             value:
               string: custom
@@ -47,7 +47,7 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: ki
+            value: emoney
           - name: TRACELISTENER_DEBUG
             value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
@@ -61,47 +61,61 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: gcr.io/tendermint-dev/ki
-    version: 2.0.1
+    name: gcr.io/tendermint-dev/e-money
+    version: v1.1.4
     build:
-      repository: https://github.com/KiFoundation/ki-tools
+      repository: https://github.com/e-money/em-ledger
   join:
     genesis:
-      url: https://raw.githubusercontent.com/KiFoundation/ki-networks/v0.1/Mainnet/kichain-2/genesis.json
-    seeds:
-      - id: 24cbccfa8813accd0ebdb09e7cdb54cff2e8fcd9
-        address: 51.89.166.197
-        port: 26656
+      url: https://raw.githubusercontent.com/e-money/networks/master/emoney-3/genesis.json
     persistentPeers:
-      - id: 81396d4703a2e3cbd136c7324e4df5686fd48218
-        address: 35.180.8.214
+      - id: 6420ef5087accdff4a87df5331d07da5de568743
+        address: 18.194.208.47
+        port: 28656
+      - id: f49bf0e3d6d6057499ceb6613854af37a3da532a
+        address: 3.121.126.177
+        port: 28656
+      - id: ecec8933d80da5fccda6bdd72befe7e064279fc1
+        address: 207.180.213.123
+        port: 26676
+      - id: 0ad7bc7687112e212bac404670aa24cd6116d097
+        address: 50.18.83.75
         port: 26656
-      - id: c597db55d9a609b8b77c3d37ecf1fa9a67117cc0
-        address: 144.217.82.4
+      - id: 1723e34f45f54584f44d193ce9fd9c65271ca0b3
+        address: 13.124.62.83
         port: 26656
-      - id: 50af457247b59aa558a26a14bd7ac4bf86eeae70
-        address: 195.201.164.223
+      - id: 34eca4a9142bf9c087a987b572c114dad67a8cc5
+        address: 172.105.148.191
         port: 26656
-      - id: 81eef39d2ca9a07490857d197423da4ba5e01879
-        address: 15.188.134.35
+      - id: 0b186517e4d82eb4c000a567e486b7b96bf19752
+        address: 44.195.95.22
         port: 26656
-      - id: 5adb5ad6a6fcef624866cefdb551dafdc07f7e78
-        address: 15.188.198.188
+      - id: eed66085c975189e3d498fe61af2fcfb3da34924
+        address: 217.79.184.40
         port: 26656
-      - id: 41b321292cbe50c5c30017cc71c404481be0e20b
-        address: 3.38.12.5
+      - id: 226d713acb10a1cd09b3b890406b886d7b071cf2
+        address: 10.105.2.101
+        port: 26656
+      - id: 552cb87c40f879c8c41005eeb36030502671e7a4
+        address: 18.156.91.213
+        port: 26656
+      - id: 170255a4a9b120786d2d6c3931ebf0125087cca0
+        address: 62.171.171.139
+        port: 26656
+      - id: d12ac664ff9766e0535c836173111e3eed462e79
+        address: 185.144.83.157
         port: 26656
   moniker: emeris
   persistence:
-    size: 200Gi
+    size: 100Gi
     autoResize:
       enabled: true
   replicas: 2
   resources:
     sentry:
       limits:
-        cpu: "4"
+        cpu: "2"
         memory: 4Gi
       requests:
-        cpu: "2"
+        cpu: 500m
         memory: 2Gi
