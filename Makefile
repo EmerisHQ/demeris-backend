@@ -17,7 +17,7 @@ generate-swagger:
 
 staging-int-tests: telepresence
 	$(TELEPRESENCE) connect \
-		--kubeconfig $(KUBECFG)
+		--kubeconfig $(KUBECONFIG)
 		--namespace emeris \
 		-- go test -v ./tests/... \
 
