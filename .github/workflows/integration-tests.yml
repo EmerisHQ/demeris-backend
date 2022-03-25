@@ -56,9 +56,9 @@ jobs:
           GIT_TOKEN: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           run: git config --global url."https://git:${GIT_TOKEN}@github.com".insteadOf "https://github.com"
 
-        - name: Run tests
-          run: make staging-int-tests
-            shell: bash
-            env:
-              ENV: 'staging'
-              KUBECONFIG: '${{ secrets.KUBECONFIG_STAGING }}'
+      - name: Run tests
+        run: make staging-int-tests
+        shell: bash
+        env:
+          ENV: 'staging'
+          KUBECONFIG: '${{ secrets.KUBECONFIG_STAGING }}'
