@@ -1,7 +1,7 @@
 apiVersion: apps.starport.cloud/v1
 kind: NodeSet
 metadata:
-  name: ki
+  name: persistence
   namespace: emeris
 spec:
   podAntiAffinity:
@@ -11,11 +11,11 @@ spec:
           topologyKey: kubernetes.io/hostname
           labelSelector:
             matchLabels:
-              nodeset: ki
+              nodeset: persistence
   app:
-    cliName: kid
-    daemonName: kid
-    name: ki
+    cliName: persistenceCore
+    daemonName: persistenceCore
+    name: persistence
   config:
     additionalEgressRules:
       - ports:
@@ -27,7 +27,7 @@ spec:
         app:
           - key: minimum-gas-prices
             value:
-              string: 0.025uxki
+              string: 0.0075uxprt
           - key: pruning
             value:
               string: custom
@@ -47,10 +47,10 @@ spec:
           - name: TRACELISTENER_TYPE
             value: gaia
           - name: TRACELISTENER_CHAINNAME
-            value: ki
+            value: persistence
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
         imagePullPolicy: Always
         resources:
           limits:
@@ -61,47 +61,62 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: gcr.io/tendermint-dev/ki
-    version: 2.0.1
-    build:
-      repository: https://github.com/KiFoundation/ki-tools
+    name: gcr.io/tendermint-dev/persistence
+    version: v0.2.3
   join:
     genesis:
-      url: https://raw.githubusercontent.com/KiFoundation/ki-networks/v0.1/Mainnet/kichain-2/genesis.json
-    seeds:
-      - id: 24cbccfa8813accd0ebdb09e7cdb54cff2e8fcd9
-        address: 51.89.166.197
-        port: 26656
+      url: https://raw.githubusercontent.com/persistenceOne/genesisTransactions/master/core-1/final_genesis.json
     persistentPeers:
-      - id: 81396d4703a2e3cbd136c7324e4df5686fd48218
-        address: 35.180.8.214
+      - id: 876946a947850952383347724206d067d7032b22
+        address: 3.137.86.151
         port: 26656
-      - id: c597db55d9a609b8b77c3d37ecf1fa9a67117cc0
-        address: 144.217.82.4
+      - id: ecc00c5a7abd057ea5ca4a94c48d1d937bbab34a
+        address: 34.118.19.56
         port: 26656
-      - id: 50af457247b59aa558a26a14bd7ac4bf86eeae70
-        address: 195.201.164.223
+      - id: ac7e6aab726e842b92c06b8ebbf5a3616872ee80
+        address: 128.1.133.107
         port: 26656
-      - id: 81eef39d2ca9a07490857d197423da4ba5e01879
-        address: 15.188.134.35
+      - id: b9dab7a1a5ffd16d43b19e40a8020db84e8dfffd
+        address: 3.14.116.246
+        port: 44456
+      - id: 60385a36ea72a2985bd8450c95b8df8be2adebb8
+        address: 54.95.235.242
         port: 26656
-      - id: 5adb5ad6a6fcef624866cefdb551dafdc07f7e78
-        address: 15.188.198.188
+      - id: a92ff1da2020e5cbc9b05527e9e39c34a84e8a27
+        address: 34.72.57.218
         port: 26656
-      - id: 41b321292cbe50c5c30017cc71c404481be0e20b
-        address: 3.38.12.5
+      - id: e15524629aee25fea01f62d26c4e062bfda94b70
+        address: 35.247.171.7
+        port: 26656
+      - id: 7c106099b8d07085431a97387e5a5db2d1ecd71d
+        address: 18.223.209.36
+        port: 26656
+      - id: b19a3cf4d9938b41539729d027bf2e3c1a4e1fbb
+        address: 85.214.130.157
+        port: 26656
+      - id: 7cc92a9e3dcad37e5e7b3adf7814c37070fa9787
+        address: 161.97.187.189
+        port: 26656
+      - id: 7b9839cd3e994c44cbd747d1ddc51ee695f60e58
+        address: 157.90.134.48
+        port: 26656
+      - id: cfb529bd0325fc884296518655f1f315bc42dd0c
+        address: 185.144.83.165
+        port: 26656
+      - id: 01102f3c84e6602e30e1e39498e242cbb60a0b73
+        address: 178.62.103.7
         port: 26656
   moniker: emeris
   persistence:
-    size: 200Gi
+    size: 400Gi
     autoResize:
       enabled: true
   replicas: 2
   resources:
     sentry:
       limits:
-        cpu: "4"
+        cpu: "2"
         memory: 4Gi
       requests:
-        cpu: "2"
+        cpu: "1"
         memory: 2Gi

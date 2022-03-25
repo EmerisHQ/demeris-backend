@@ -43,7 +43,6 @@ func (suite *testCtx) TestDelegatorRewards() {
 
 				var rewards api.DelegatorRewardsResponse
 				suite.Require().NoError(json.Unmarshal(data, &rewards))
-				suite.Require().NotEmpty(rewards.Rewards)
 			}
 
 			err = resp.Body.Close()

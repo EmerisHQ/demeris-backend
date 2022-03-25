@@ -73,7 +73,7 @@ spec:
       address: juno-seed.blockpane.com
   moniker: emeris
   persistence:
-    size: 500Gi
+    size: 1000Gi
     autoResize:
       enabled: true
   replicas: 2
