@@ -83,18 +83,15 @@ fi
 YAML_FILE="${SCRIPT_DIR}/../ci/${ENVIRONMENT}/nodesets/${CHAIN}.yaml"
 
 # replace tracelistener docker version in nodeset
-TEMP_FILE=$(mktemp --suffix ".yml")
-sed '/gcr.io\/tendermint-dev\/emeris-tracelistener/ s/:main/:'${TRACELISTENER_VERSION}'/' $YAML_FILE > $TEMP_FILE
+sed -i '/gcr.io\/tendermint-dev\/emeris-tracelistener/ s/:/:'${TRACELISTENER_VERSION}'/2; s/'${TRACELISTENER_VERSION}'.*/'${TRACELISTENER_VERSION}'/' $YAML_FILE
 
 echo "-- Launcing bulk import job\n"
-helm install "${CHAIN}" \
+helm template "${CHAIN}" \
   --set sdkVersion="${SDK_VERSION}",traceListenerVersion="${TRACELISTENER_VERSION}" \
-  --set-file nodesetFile="${TEMP_FILE}" \
+  --set-file nodesetFile="${YAML_FILE}" \
   --namespace emeris \
   "${SCRIPT_DIR}/${RESET_DIR}"
 
 echo -e "-- You can monitor the progress with 'kubectl get jobs'\n"
 
 echo "-- Once chain nodes are fully synced (3/3), do not forget to helm uninstall ${CHAIN}"
-
-rm $TEMP_FILE
