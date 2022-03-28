@@ -16,7 +16,7 @@ usage()
     echo -e "  -c, --chain \t\t The chain name (e.g. rizon, cosmos-hub)"
     echo -e "  -s, --sdk \t\t The SDK version of the chain (e.g. 0.42, 0.44), defaults to 0.42"
     echo -e "  -e, --env \t\t Environment name, defaults to staging"
-    echo -e "  -t, --tracelistener \t\t Tracelistener docker image version (e.g. 1.0.0, 1.1.0), defaults to main"
+    echo -e "  -t, --tracelistener \t\t Tracelistener docker image version (e.g. v1.0.0, v1.1.0), defaults to main"
     echo -e "  --erase-tables \t Database tables to be cleared, defaults to all"
     echo -e "  --import-modules \t Modules to be bulk imported, defaults to all"
     echo -e "  -h, --help \t\t Show this menu\n"
