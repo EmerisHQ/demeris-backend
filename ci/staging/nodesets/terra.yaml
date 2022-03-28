@@ -55,7 +55,7 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: 2Gi
+            memory: 4Gi
           requests:
             cpu: 100m
             memory: 1Gi
@@ -97,9 +97,9 @@ spec:
   resources:
     sentry:
       limits:
-        cpu: "2"
+        cpu: "4"
         memory: 32Gi
       requests:
-        cpu: "1"
-        memory: 32Gi
+        cpu: "2"
+        memory: 16Gi
 

@@ -27,7 +27,13 @@ spec:
       - name: tracelistener
         image: "{{- if eq .Values.sdkVersion "0.44" }}{{ printf "%s:%s" .Values.traceListener44Image .Values.traceListenerVersion }}{{- else }}{{ printf "%s:%s" .Values.traceListener42Image .Values.traceListenerVersion }}{{ end }}"
         imagePullPolicy: Always
-        args: ["-import", "/home/nonroot/data/application.db"]
+        args: 
+          - "-import"
+          - "/home/nonroot/data/application.db"
+          {{- if .Values.importModules }}
+          - "-import-modules"
+          - {{ .Values.importModules }}
+          {{ end }}
         env:
         - name: TRACELISTENER_DATABASECONNECTIONURL
           value: postgres://root@cockroachdb-public:26257?sslmode=disable
