@@ -19,41 +19,41 @@ func (suite *testCtx) TestChainBech32() {
 			url := suite.Client.BuildUrl(chainBech32Endpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
 				err = resp.Body.Close()
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				data, err := json.Marshal(respValues["bech32_config"])
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				var bech32 cns.Bech32Config
 				err = json.Unmarshal(data, &bech32)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				suite.NotEmpty(bech32)
+				suite.Require().NotEmpty(bech32)
 
 				var payload map[string]interface{}
 				err = json.Unmarshal(ch.Payload, &payload)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				data, err = json.Marshal(payload["node_info"])
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				var expectedNodeInfo cns.NodeInfo
 				err = json.Unmarshal(data, &expectedNodeInfo)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				suite.Equal(expectedNodeInfo.Bech32Config, bech32)
+				suite.Require().Equal(expectedNodeInfo.Bech32Config, bech32)
 			}
 		})
 	}

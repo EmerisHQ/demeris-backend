@@ -27,29 +27,29 @@ func (suite *testCtx) TestChainValidators() {
 			url := suite.Client.BuildUrl(chainValidatorsEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
 				err = resp.Body.Close()
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				suite.NotEmpty(respValues["validators"])
+				suite.Require().NotEmpty(respValues["validators"])
 
 				for _, validator := range respValues["validators"].([]interface{}) {
 					var row tracelistener.ValidatorRow
 					data, err := json.Marshal(validator)
-					suite.NoError(err)
+					suite.Require().NoError(err)
 
 					err = json.Unmarshal(data, &row)
-					suite.NoError(err)
+					suite.Require().NoError(err)
 				}
 			}
 		})
