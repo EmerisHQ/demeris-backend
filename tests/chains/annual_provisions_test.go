@@ -19,7 +19,6 @@ func (suite *testCtx) TestAnnualProvisions() {
 	}
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
-
 			// arrange
 			url := suite.Client.BuildUrl(mintAnnualProvisionsEndpoint, ch.Name)
 			// act

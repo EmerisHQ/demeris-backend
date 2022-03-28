@@ -15,6 +15,8 @@ usage()
     echo -e "  -c, --chain \t\t The chain name (e.g. rizon, cosmos-hub)"
     echo -e "  -s, --sdk \t\t The SDK version of the chain (e.g. 0.42, 0.44), defaults to 0.42"
     echo -e "  -e, --env \t\t Environment name, defaults to staging"
+    echo -e "  --erase-tables \t Database tables to be cleared, defaults to all"
+    echo -e "  --import-modules \t Modules to be bulk imported, defaults to all"
     echo -e "  -h, --help \t\t Show this menu\n"
     exit 1
 }
@@ -53,6 +55,16 @@ case $key in
     shift
     shift
     ;;
+    --import-modules)
+    IMPORT_MODULES="$2"
+    shift
+    shift
+    ;;
+    --erase-tables)
+    ERASE_TABLES="$2"
+    shift
+    shift
+    ;;
     -h|--help)
     usage
     shift
@@ -75,10 +87,16 @@ fi
 
 YAML_FILE="${SCRIPT_DIR}/../ci/${ENVIRONMENT}/nodesets/${CHAIN}.yaml"
 
+escape_commas() { echo "${1//,/\\,}"; }
+ERASE_TABLES="$(escape_commas $ERASE_TABLES)"
+IMPORT_MODULES="$(escape_commas $IMPORT_MODULES)"
+
 echo "-- Launcing bulk import job\n"
 helm install "${CHAIN}" \
   --set sdkVersion="${SDK_VERSION}" \
   --set-file nodesetFile="${YAML_FILE}" \
+  --set eraseTables="${ERASE_TABLES}" \
+  --set importModules="${IMPORT_MODULES}" \
   --namespace emeris \
   "${SCRIPT_DIR}/${RESET_DIR}"
 
