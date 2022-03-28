@@ -25,7 +25,7 @@
       "verified": true,
       "stakable": true,
       "ticker": "TICK",
-      "price_id": "1",
+      "price_id": "microtick",
       "fee_token": true,
       "gas_price_levels": {
         "low": 0.0005,
