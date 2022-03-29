@@ -55,10 +55,10 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: 2Gi
+            memory: 4Gi
           requests:
             cpu: 100m
-            memory: 1Gi
+            memory: 2Gi
     reconcilePeriod: 4m
   image:
     name: gcr.io/tendermint-dev/gaia
@@ -131,7 +131,7 @@ spec:
         id: 0393c19b176d1cf8bc560c5a8fa990301deb1a7e
   moniker: emeris
   persistence:
-    size: 1000Gi
+    size: 1500Gi
     autoResize:
       enabled: true
   replicas: 3
@@ -139,7 +139,7 @@ spec:
     sentry:
       limits:
         cpu: "4"
-        memory: 8Gi
+        memory: 16Gi
       requests:
         cpu: "2"
         memory: 4Gi

@@ -50,7 +50,7 @@ spec:
             value: rizon
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
         imagePullPolicy: Always
         resources:
           limits:
@@ -62,7 +62,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/rizon
-    version: v0.2.8
+    version: v0.3.0
   join:
     genesis:
       url: https://raw.githubusercontent.com/rizon-world/mainnet/master/genesis.json
@@ -85,8 +85,8 @@ spec:
   resources:
     sentry:
       limits:
-        cpu: "2"
+        cpu: "4"
         memory: 8Gi
       requests:
-        cpu: "1"
+        cpu: "2"
         memory: 4Gi

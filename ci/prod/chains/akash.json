@@ -5,17 +5,8 @@
     "display_name": "Akash",
     "primary_channel": {
       "cosmos-hub": "channel-17",
-      "crypto-org": "channel-18",
-      "emoney": "channel-30",
-      "iris": "channel-16",
-      "ixo": "channel-29",
-      "microtick": "channel-28",
       "osmosis": "channel-9",
-      "persistence": "channel-20",
-      "regen": "channel-21",
-      "sentinel": "channel-22",
-      "sifchain": "channel-24",
-      "starname": "channel-27"
+      "sifchain": "channel-24"
     },
     "denoms": [
       {
@@ -62,11 +53,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
     "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
+        "tendermint_rpc": ["https://rpc-akash.ecostake.com:443"],
+        "cosmos_api": ["https://rest-akash.ecostake.com:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/akash",
     "cosmos_sdk_version": "v0.44.5"
   }

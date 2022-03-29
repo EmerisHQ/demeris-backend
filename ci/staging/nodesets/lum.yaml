@@ -1,0 +1,111 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: lum
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: lum
+  app:
+    cliName: lumd
+    daemonName: lumd
+    name: lum
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      configOverride:
+        app:
+          - key: minimum-gas-prices
+            value:
+              string: 0.001ulum
+          - key: pruning
+            value:
+              string: custom
+          - key: pruning-keep-recent
+            value:
+              string: "362880"
+          - key: pruning-interval
+            value:
+              string: "100"
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: lum
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/lum
+    version: v1.0.5
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/lum-network/mainnet/master/genesis.json
+    seeds:
+      - address: peer-1.mainnet.lum.network
+        id: 19ad16527c98b782ee35df56b65a3a251bd99971
+        port: 26656
+    persistentPeers:
+      - address: peer-0.mainnet.lum.network
+        id: b47626b9d78ed7ed3c413304387026f907c70cbe
+        port: 26656
+      - address: 65.108.77.38
+        id: e12fcc7d9fc9b8b2901aec950f161418794cccf0
+        port: 26656
+      - address: 202.61.239.130
+        id: 4166de0e7721b6eec9c776abf2c38c40e7f820c5
+        port: 26656
+      - address: 46.166.140.180
+        id: fbaeeff89ec94a4f6c4a2a61e24af7d06b3be0c8
+        port: 26656
+      - address: 35.181.76.160
+        id: 5a29947212a2615e43dac54deb55356a162e173a
+        port: 26656
+      - address: 46.101.251.76
+        id: 5ea36d78ae774c9086c2d3fc8b91f12aa4bf3029
+        port: 26656
+      - address: 34.209.132.0
+        id: 433c60a5bc0a693484b7af26208922b84773117e
+        port: 26656
+      - address: 54.214.134.223
+        id: 9afac13ba62fbfaf8d06867c30007162511093c0
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 250Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "1"
+        memory: 4Gi

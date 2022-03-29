@@ -19,6 +19,9 @@ spec:
         args:
         - "job"
         - "{{ .Release.Name }}-scale-down"
+      - name: wait-pods-down
+        image: bitnami/kubectl
+        command: ["kubectl", "wait", "pod", "--selector", "nodeset={{- include "targetChain" . }}", "--for=delete", "-n", "emeris"]
       containers:
       - name: resetchain
         image: "gcr.io/tendermint-dev/emeris-tracelistener-resetchain:main"
@@ -27,5 +30,9 @@ spec:
         - "{{- include "targetChain" . }}"
         - -db
         - postgresql://root@cockroachdb-public:26257/tracelistener?sslmode=disable
+        {{- if .Values.eraseTables }}
+        - -tables
+        - {{ .Values.eraseTables }}
+        {{ end }}
       restartPolicy: Never
   backoffLimit: 0

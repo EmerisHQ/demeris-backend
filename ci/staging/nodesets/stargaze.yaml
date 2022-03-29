@@ -62,9 +62,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/stargaze
-    version: v2.0.0
-    build:
-      repository: https://github.com/public-awesome/stargaze
+    version: v3.0.0
   join:
     genesis:
       url: https://storage.googleapis.com/emeris/genesis/stargaze-1.json
@@ -90,8 +88,8 @@ spec:
   resources:
     sentry:
       limits:
-        cpu: "2"
+        cpu: "4"
         memory: 8Gi
       requests:
-        cpu: "1"
+        cpu: "2"
         memory: 4Gi

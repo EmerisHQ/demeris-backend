@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -48,7 +47,7 @@ func (suite *testCtx) TestVerifyTrace() {
 	}
 
 	// create clients and accounts for above picked chains
-	var ccA, ccB chainClient.Client
+	var ccA, ccB chainClient.ChainClient
 	for _, ch := range suite.clientChains {
 		if ch.Name == chainA.Name {
 			err := json.Unmarshal(ch.Payload, &ccA)
@@ -58,12 +57,15 @@ func (suite *testCtx) TestVerifyTrace() {
 			suite.Require().NoError(err)
 		}
 	}
-	cliB := chainClient.GetClient(suite.T(), suite.Env, chainB.Name, ccB)
+	cliB, err := chainClient.GetClient(suite.Env, chainB.Name, ccB, suite.T().TempDir())
+	suite.NoError(err)
 	suite.Require().NotNil(cliB)
-	rec_account, err := cliB.AccountGet(ccB.Key)
+	recAccount, err := cliB.AccountGet(ccB.Key)
 	suite.Require().NoError(err)
 
-	cliA := chainClient.GetClient(suite.T(), suite.Env, chainA.Name, ccA)
+	cliA, err := chainClient.GetClient(suite.Env, chainA.Name, ccA, suite.T().TempDir())
+	suite.NoError(err)
+
 	suite.Require().NotNil(cliA)
 	send_account, err := cliA.AccountGet(ccA.Key)
 	suite.Require().NoError(err)
@@ -115,19 +117,19 @@ func (suite *testCtx) TestVerifyTrace() {
 	ibcDenom := strings.ToUpper(fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("transfer/%s/%s", primary_channels[ccB.ChainName].(string), denoms[0]["name"].(string))))))
 
 	// get account B balance before IBC transaction
-	prevBalance, err := cliB.GetAccountBalances(rec_account.Address, fmt.Sprintf("ibc/%s", ibcDenom))
+	prevBalance, err := cliB.GetAccountBalances(recAccount.Address, fmt.Sprintf("ibc/%s", ibcDenom))
 	suite.Require().NoError(err)
 
 	// build and broadcast ibc transfer message
-	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName].(string), token, fromAddr, rec_account.Address, timeoutHeight, 0)
+	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName].(string), token, fromAddr, recAccount.Address, timeoutHeight, 0)
 
-	_, err = cliA.Broadcast(ccA.Key, context.Background(), cliA.GetContext(), msg)
+	_, err = cliA.Broadcast(ccA.Key, cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
 	time.Sleep(time.Second * 10)
 
 	// get account B balance after IBC transaction
-	postBalance, err := cliB.GetAccountBalances(rec_account.Address, fmt.Sprintf("ibc/%s", ibcDenom))
+	postBalance, err := cliB.GetAccountBalances(recAccount.Address, fmt.Sprintf("ibc/%s", ibcDenom))
 	suite.Require().NoError(err)
 
 	// check updated balance

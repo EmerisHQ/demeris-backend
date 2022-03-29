@@ -4,16 +4,8 @@
     "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
     "display_name": "e-Money",
     "primary_channel": {
-      "akash": "channel-3",
       "cosmos-hub": "channel-1",
-      "crypto-org": "channel-5",
-      "iris": "channel-6",
-      "microtick": "channel-11",
       "osmosis": "channel-0",
-      "persistence": "channel-8",
-      "regen": "channel-9",
-      "sentinel": "channel-10",
-      "terra": "channel-13",
       "sifchain":"channel-14"
     },
     "denoms": [
@@ -61,7 +53,11 @@
     },
     "valid_block_thresh": "5m0s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc-emoney.keplr.app:443"],
+        "cosmos_api": ["https://lcd-emoney.keplr.app:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/emoney",
     "cosmos_sdk_version": "v0.42.11"
   }

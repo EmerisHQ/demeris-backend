@@ -82,15 +82,15 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 350Gi
+    size: 600Gi
     autoResize:
       enabled: true
   replicas: 2
   resources:
     sentry:
       limits:
-        cpu: "2"
-        memory: 4Gi
+        cpu: "8"
+        memory: 8Gi
       requests:
-        cpu: "1"
+        cpu: "2"
         memory: 2Gi

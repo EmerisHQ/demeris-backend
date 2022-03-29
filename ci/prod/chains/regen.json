@@ -4,18 +4,9 @@
     "logo": "https://storage.googleapis.com/emeris/logos/regen.svg",
     "display_name": "Regen",
     "primary_channel": {
-      "akash": "channel-10",
       "cosmos-hub": "channel-11",
-      "crypto-org": "channel-12",
-      "emoney": "channel-35",
-      "iris": "channel-9",
-      "ixo": "channel-31",
-      "microtick": "channel-30",
       "osmosis": "channel-1",
-      "persistence": "channel-14",
-      "sentinel": "channel-15",
-      "sifchain": "channel-28",
-      "starname": "channel-29"
+      "sifchain": "channel-28"
     },
     "denoms": [
       {
@@ -62,7 +53,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["http://rpc.regen.forbole.com:80"],
+        "cosmos_api": ["https://regen.stakesystems.io:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/regen",
     "cosmos_sdk_version": "v0.44.3"
   }

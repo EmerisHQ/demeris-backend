@@ -50,7 +50,7 @@ spec:
             value: chihuahua
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
         imagePullPolicy: Always
         resources:
           limits:
@@ -94,8 +94,8 @@ spec:
   resources:
     sentry:
       limits:
-        cpu: "2"
+        cpu: "4"
         memory: 8Gi
       requests:
-        cpu: "1"
+        cpu: "2"
         memory: 4Gi
