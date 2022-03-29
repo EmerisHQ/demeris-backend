@@ -221,7 +221,7 @@ func (c *Client) GetDelegations(address string) (stakingtypes.DelegationResponse
 	return res.DelegationResponses, err
 }
 
-func (c *Client) GetAccountNumbers(address string) (authtypes.AccountI, error) {
+func (c *Client) GetAccountInfo(address string) (authtypes.AccountI, error) {
 	res, err := authtypes.NewQueryClient(c.clientCtx).
 		Account(context.Background(), &authtypes.QueryAccountRequest{
 			Address: address,

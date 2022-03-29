@@ -55,7 +55,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			suite.Require().NoError(err)
 
 			// query account numbers from cli
-			accNum, err := cli.GetAccountNumbers(account.Address)
+			accNum, err := cli.GetAccountInfo(account.Address)
 			suite.Require().NoError(err)
 
 			// comapre account and sequence numbers

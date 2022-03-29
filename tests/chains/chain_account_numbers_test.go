@@ -62,11 +62,8 @@ func (suite *testCtx) TestGetChainNumbers() {
 			suite.Require().Equal(ch.Name, row.ChainName)
 			suite.Require().Equal(account.Address, row.Address)
 
-			suite.Require().NotZero(row.SequenceNumber)
-			suite.Require().NotZero(row.AccountNumber)
-
 			// get account and sequence numbers using cli
-			acc, err := cli.GetAccountNumbers(account.Address)
+			acc, err := cli.GetAccountInfo(account.Address)
 			suite.Require().NoError(err)
 
 			suite.Require().Equal(row.AccountNumber, acc.GetAccountNumber())
