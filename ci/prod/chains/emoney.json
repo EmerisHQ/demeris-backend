@@ -4,16 +4,8 @@
     "logo": "https://storage.googleapis.com/emeris/logos/e-money.svg",
     "display_name": "e-Money",
     "primary_channel": {
-      "akash": "channel-3",
       "cosmos-hub": "channel-1",
-      "crypto-org": "channel-5",
-      "iris": "channel-6",
-      "microtick": "channel-11",
       "osmosis": "channel-0",
-      "persistence": "channel-8",
-      "regen": "channel-9",
-      "sentinel": "channel-10",
-      "terra": "channel-13",
       "sifchain":"channel-14"
     },
     "denoms": [

@@ -18,6 +18,7 @@ func (suite *testCtx) TestChainBech32() {
 			// arrange
 			url := suite.Client.BuildUrl(chainBech32Endpoint, ch.Name)
 			// act
+			suite.T().Log(url)
 			resp, err := suite.Client.Get(url)
 			suite.NoError(err)
 

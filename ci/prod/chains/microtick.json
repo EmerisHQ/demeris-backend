@@ -4,17 +4,8 @@
     "logo": "https://storage.googleapis.com/emeris/logos/microtick.svg",
     "display_name": "Microtick",
     "primary_channel": {
-      "akash": "channel-5",
       "cosmos-hub": "channel-6",
-      "crypto-org": "channel-7",
-      "emoney": "channel-17",
-      "iris": "channel-8",
-      "ixo": "channel-15",
-      "osmosis": "channel-16",
-      "persistence": "channel-10",
-      "regen": "channel-11",
-      "sentinel": "channel-13",
-      "starname": "channel-4"
+      "osmosis": "channel-16"
     },
     "denoms": [
       {

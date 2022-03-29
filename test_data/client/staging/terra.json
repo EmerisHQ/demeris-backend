@@ -1,8 +1,8 @@
 {
     "chain_name": "terra",
-    "node_address": "https://terra-emeris.app.alpha.starport.cloud:443",
+    "rpc": "http://terra.emeris:26657",
+    "address": "terra1kv78eyqqfz4jsdazql3yk9a209m0nq587x367v",
     "key":"terra_test",
     "mnemonic":"age airport attend curtain medal arrow always kitchen gift egg poet satoshi write benefit unlock century output waste quality anchor system liberty photo culture",
-    "keyring_service_name":"beta"
-  }
-  
+    "keyring_service_name":"terra"
+}

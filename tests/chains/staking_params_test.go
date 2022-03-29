@@ -18,11 +18,12 @@ const (
 func (suite *testCtx) TestStakingParams() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
-			var cc chainClient.Client
+			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
 
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
 
 			// arrange
 			url := suite.Client.BuildUrl(stakingParamsEndpoint, ch.Name)
