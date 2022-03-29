@@ -4,16 +4,8 @@
     "logo": "https://storage.googleapis.com/emeris/logos/starname.svg",
     "display_name": "Starname",
     "primary_channel": {
-      "akash": "channel-7",
       "cosmos-hub": "channel-0",
-      "crypto-org": "channel-9",
-      "iris": "channel-11",
-      "ixo": "channel-17",
-      "microtick": "channel-16",
-      "osmosis": "channel-12",
-      "persistence": "channel-13",
-      "regen": "channel-14",
-      "sentinel": "channel-15"
+      "osmosis": "channel-12"
     },
     "denoms": [
       {

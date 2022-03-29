@@ -22,7 +22,6 @@ type EnvChain struct {
 }
 
 func LoadChainsInfo(env string) ([]EnvChain, error) {
-
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
 	}

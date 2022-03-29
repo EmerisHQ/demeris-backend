@@ -30,5 +30,9 @@ spec:
         - "{{- include "targetChain" . }}"
         - -db
         - postgresql://root@cockroachdb-public:26257/tracelistener?sslmode=disable
+        {{- if .Values.eraseTables }}
+        - -tables
+        - {{ .Values.eraseTables }}
+        {{ end }}
       restartPolicy: Never
   backoffLimit: 0

@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -23,11 +22,12 @@ const (
 func (suite *testCtx) TestTxsEndpoint() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
-			var cc chainClient.Client
+			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
 
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
 			// assert
 			if !cli.Enabled {
 				// arrange
@@ -58,7 +58,7 @@ func (suite *testCtx) TestTxsEndpoint() {
 
 				// perform bank send tx
 				msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(100))))
-				txRes, err := cli.Broadcast(cc.Key, context.Background(), cli.GetContext(), msg)
+				txRes, err := cli.Broadcast(cc.Key, cli.GetContext(), msg)
 				suite.Require().NoError(err)
 
 				hash := txRes.TxHash
