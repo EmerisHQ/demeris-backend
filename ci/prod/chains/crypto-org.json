@@ -4,18 +4,9 @@
     "logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
     "display_name": "Crypto.org",
     "primary_channel": {
-      "akash": "channel-24",
       "cosmos-hub": "channel-27",
-      "emoney": "channel-42",
-      "iris": "channel-23",
-      "ixo": "channel-41",
-      "microtick": "channel-40",
       "osmosis": "channel-10",
-      "persistence": "channel-29",
-      "regen": "channel-25",
-      "sentinel": "channel-26",
-      "sifchain": "channel-33",
-      "starname": "channel-39"
+      "sifchain": "channel-33"
     },
     "denoms": [
       {

@@ -59,7 +59,7 @@ func (suite *testCtx) TestChainFee() {
 						expectedFeeDenoms = append(expectedFeeDenoms, denom)
 					}
 				}
-				suite.Require().ElementsMatch(expectedFeeDenoms, denoms)
+				suite.Require().Equal(expectedFeeDenoms, denoms)
 			}
 		})
 	}

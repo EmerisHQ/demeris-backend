@@ -18,12 +18,13 @@ const (
 func (suite *testCtx) TestDelegatorRewards() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
-			var cc chainClient.Client
+			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
 
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
-			address, err := cli.GetHexAddress(cc.Key)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
+			address, err := cli.GetAccAddress(cc.Key)
 			suite.Require().NoError(err)
 
 			// arrange

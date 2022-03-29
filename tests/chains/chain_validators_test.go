@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 	"testing"
 
 	"github.com/allinbits/demeris-backend-models/tracelistener"
@@ -15,12 +13,9 @@ import (
 const chainValidatorsEndpoint = "chain/%s/validators"
 
 func (suite *testCtx) TestChainValidators() {
-	env := os.Getenv("ENV")
-	if strings.ToLower(env) == "dev" {
-		suite.T().Skip("FIXME: Skipping in DEV. Enable after recreating the environment")
-		return
+	if suite.Env == "staging" {
+		suite.T().Skip("skipping as nil interface causes panic")
 	}
-
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			// arrange

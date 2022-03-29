@@ -4,18 +4,9 @@
     "logo": "https://storage.googleapis.com/emeris/logos/persistence.svg",
     "display_name": "Persistence",
     "primary_channel": {
-      "akash": "channel-20",
       "cosmos-hub": "channel-24",
-      "crypto-org": "channel-23",
-      "emoney": "channel-31",
-      "iris": "channel-19",
-      "ixo": "channel-30",
-      "microtick": "channel-28",
       "osmosis": "channel-6",
-      "regen": "channel-21",
-      "sentinel": "channel-22",
-      "sifchain": "channel-26",
-      "starname": "channel-27"
+      "sifchain": "channel-26"
     },
     "denoms": [
       {

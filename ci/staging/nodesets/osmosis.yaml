@@ -68,7 +68,7 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: 2Gi
+            memory: 3Gi
           requests:
             cpu: 100m
             memory: 1Gi
@@ -176,7 +176,7 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 1500Gi
+    size: 1800Gi
     autoResize:
       enabled: true
   replicas: 4
