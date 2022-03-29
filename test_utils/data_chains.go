@@ -94,8 +94,7 @@ func LoadClientChainsInfo(env string) ([]EnvChain, error) {
 
 func LoadSingleChainInfo(env string, chainName string) (EnvChain, error) {
 	d := fmt.Sprintf(chainsFolderPath, env)
-
-	fileName := chainName + jsonSuffix
+	fileName := fmt.Sprintf("%s%s", chainName, jsonSuffix)
 
 	var chain EnvChain
 	jFile, err := ioutil.ReadFile(d + fileName)
