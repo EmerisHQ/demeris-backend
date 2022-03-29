@@ -41,6 +41,7 @@ func (suite *testCtx) TestBlockHeight() {
 				var cosmosBlock coretypes.ResultBlock
 				err = json.Unmarshal(data, &cosmosBlock)
 				suite.Require().NoError(err)
+				suite.Require().NotNil(cosmosBlock.Block)
 
 				//get block results from the env
 				encodedStr := suite.Client.BuildUrl(blockHeightEndpoint, cosmosBlock.Block.Height)
