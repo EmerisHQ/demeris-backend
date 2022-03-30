@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/go-bip39"
@@ -228,4 +229,25 @@ func (c *ChainClient) GetDelegations(address string) (stakingtypes.DelegationRes
 	}
 
 	return res.DelegationResponses, err
+}
+
+func (c *ChainClient) GetAccountInfo(address string) (authtypes.AccountI, error) {
+	res, err := authtypes.NewQueryClient(c.clientCtx).
+		Account(context.Background(), &authtypes.QueryAccountRequest{
+			Address: address,
+		})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, fmt.Errorf("not to fetch account numbers : got response nil")
+	}
+
+	var accountI authtypes.AccountI
+	err = c.GetContext().InterfaceRegistry.UnpackAny(res.Account, &accountI)
+	if err != nil {
+		return nil, err
+	}
+
+	return accountI, err
 }
