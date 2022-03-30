@@ -21,22 +21,22 @@ func (suite *testCtx) TestMintInflation() {
 			url := suite.Client.BuildUrl(mintInflationEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			defer resp.Body.Close()
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
 				//expect a numeric value
 				inflation := respValues[inflationKey]
-				suite.NotZero(inflation)
+				suite.Require().NotZero(inflation)
 			}
 		})
 	}

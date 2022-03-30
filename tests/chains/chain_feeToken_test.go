@@ -3,11 +3,12 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"testing"
 
 	chainModels "github.com/allinbits/demeris-api-server/api/chains"
+	"github.com/allinbits/demeris-backend-models/cns"
+	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
 const chainFeeTokenEndpoint = "chain/%s/fee/token"
@@ -19,29 +20,49 @@ func (suite *testCtx) TestChainFeeToken() {
 			url := suite.Client.BuildUrl(chainFeeTokenEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				data, err := ioutil.ReadAll(resp.Body)
-				suite.NoError(err)
+				var respValues map[string]interface{}
+				utils.RespBodyToMap(resp.Body, &respValues, t)
 
-				var denoms chainModels.FeeResponse
+				err = resp.Body.Close()
+				suite.Require().NoError(err)
+
+				data, err := json.Marshal(respValues["fee_tokens"])
+				suite.Require().NoError(err)
+
+				var denoms []chainModels.FeeResponse
 				err = json.Unmarshal(data, &denoms)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				suite.NotEmpty(denoms)
+				suite.Require().NotEmpty(denoms)
 
-				var expectedDenoms chainModels.FeeResponse
-				err = json.Unmarshal(ch.Payload, &expectedDenoms)
-				suite.NoError(err)
-				suite.NotNil(expectedDenoms)
+				var payload map[string]interface{}
+				err = json.Unmarshal(ch.Payload, &payload)
+				suite.Require().NoError(err)
 
-				suite.ElementsMatch(denoms, expectedDenoms)
+				data, err = json.Marshal(payload["denoms"])
+				suite.Require().NoError(err)
+
+				var expectedDenoms cns.DenomList
+				err = json.Unmarshal(data, &expectedDenoms)
+				suite.Require().NoError(err)
+
+				var expectedFeeDenoms cns.DenomList
+				for _, denom := range expectedDenoms {
+					if denom.FeeToken {
+						expectedFeeDenoms = append(expectedFeeDenoms, denom)
+					}
+				}
+
+				suite.Require().Equal(len(expectedFeeDenoms), len(denoms))
+				suite.Require().ElementsMatch(expectedFeeDenoms, denoms)
 			}
 		})
 	}

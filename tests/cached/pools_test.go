@@ -18,28 +18,28 @@ func (suite *testCtx) TestCachedPools() {
 	// get cached pools
 	url := suite.Client.BuildUrl(cachedPoolsEndPoint)
 	cachedResp, err := suite.Client.Get(url)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	defer cachedResp.Body.Close()
 
 	var cachedValues liquiditytypes.QueryLiquidityPoolsResponse
 	body, err := ioutil.ReadAll(cachedResp.Body)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	suite.NoError(tmjson.Unmarshal(body, &cachedValues))
 
 	// get liquidity pools
 	liquidityUrl := suite.Client.BuildUrl(liquidityPoolsEndPoint)
 	liquidityResp, err := suite.Client.Get(liquidityUrl)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	defer liquidityResp.Body.Close()
 
 	var liquidityValues liquiditytypes.QueryLiquidityPoolsResponse
 	body, err = ioutil.ReadAll(liquidityResp.Body)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
-	suite.NoError(tmjson.Unmarshal(body, &liquidityValues))
+	suite.Require().NoError(tmjson.Unmarshal(body, &liquidityValues))
 
-	suite.Equal(liquidityValues.Pools, cachedValues.Pools)
+	suite.Require().Equal(liquidityValues.Pools, cachedValues.Pools)
 }

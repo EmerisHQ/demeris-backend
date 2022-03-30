@@ -22,25 +22,25 @@ func (suite *testCtx) TestPrimaryChannels() {
 			url := suite.Client.BuildUrl(primaryChannelsEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			defer resp.Body.Close()
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
 				data, err := json.Marshal(respValues[primaryChannelskey])
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				var channels []cns.DbStringMap
 				err = json.Unmarshal(data, &channels)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				formattedChannels := make(map[string]string, len(channels))
 				for _, channel := range channels {
@@ -49,16 +49,16 @@ func (suite *testCtx) TestPrimaryChannels() {
 
 				var payload map[string]interface{}
 				err = json.Unmarshal(ch.Payload, &payload)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				data, err = json.Marshal(payload["primary_channel"])
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				var expectedChannels map[string]string
 				err = json.Unmarshal(data, &expectedChannels)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				suite.Equal(expectedChannels, formattedChannels)
+				suite.Require().Equal(expectedChannels, formattedChannels)
 			}
 		})
 	}
