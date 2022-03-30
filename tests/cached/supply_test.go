@@ -14,12 +14,12 @@ func (suite testCtx) TestCachedSupply() {
 	// get cached supply
 	var cachedValues map[string]interface{}
 	err := suite.Client.GetJson(&cachedValues, cachedSupplyEndPoint)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	// get supply
 	var supplyValues map[string]interface{}
 	err = suite.Client.GetJson(&supplyValues, supplyEndPoint)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
-	suite.Equal(supplyValues["supply"], cachedValues["supply"])
+	suite.Require().Equal(supplyValues["supply"], cachedValues["supply"])
 }
