@@ -24,13 +24,13 @@ func (suite *testCtx) TestChainData() {
 			url := suite.Client.BuildUrl(chainEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				var expValues map[string]interface{}
@@ -38,7 +38,7 @@ func (suite *testCtx) TestChainData() {
 				utils.StringToMap(ch.Payload, &expValues, t)
 
 				// response is nested one level down
-				suite.Equal(expValues, respValues[respChainKey].(map[string]interface{}))
+				suite.Require().Equal(expValues, respValues[respChainKey].(map[string]interface{}))
 			}
 		})
 	}

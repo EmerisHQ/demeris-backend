@@ -15,12 +15,12 @@ func (suite *testCtx) TestCachedParams() {
 	// get cached params
 	var cachedValues liquiditytypes.QueryParamsResponse
 	err := suite.Client.GetJson(&cachedValues, cachedParamsEndPoint)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	// get liquidity params
 	var liquidityValues liquiditytypes.QueryParamsResponse
 	err = suite.Client.GetJson(&liquidityValues, liquidityParamsEndPoint)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
-	suite.Equal(liquidityValues.Params, cachedValues.Params)
+	suite.Require().Equal(liquidityValues.Params, cachedValues.Params)
 }
