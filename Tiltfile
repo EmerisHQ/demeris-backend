@@ -66,13 +66,13 @@ k8s_kind('Relayer')
 
 # tracelistener images
 docker_build(
-    'emeris/tracelistener',
+    'emeris/tracelistener-v42',
     '../tracelistener',
     build_args={'GIT_TOKEN': GITHUB_TOKEN, 'SDK_TARGET': 'v42'},
 )
 
 docker_build(
-    'emeris/tracelistener44',
+    'emeris/tracelistener-v44',
     '../tracelistener',
     build_args={'GIT_TOKEN': GITHUB_TOKEN, 'SDK_TARGET': 'v44'},
 )

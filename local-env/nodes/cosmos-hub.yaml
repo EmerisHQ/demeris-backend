@@ -36,7 +36,7 @@ spec:
             value: cosmos-hub
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: emeris/tracelistener44
+        image: emeris/tracelistener-v44
         imagePullPolicy: Never
     reconcilePeriod: 1m
   image:
