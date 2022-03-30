@@ -36,7 +36,7 @@ spec:
             value: akash
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: emeris/tracelistener
+        image: emeris/tracelistener-v42
         imagePullPolicy: Never
     reconcilePeriod: 1m
   image:
