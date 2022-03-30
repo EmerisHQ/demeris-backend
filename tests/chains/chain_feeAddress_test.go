@@ -18,25 +18,25 @@ func (suite *testCtx) TestChainFeeAddress() {
 			url := suite.Client.BuildUrl(chainFeeAddressEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var payload map[string]interface{}
 				err := json.Unmarshal(ch.Payload, &payload)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
 				err = resp.Body.Close()
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				suite.Equal(payload["demeris_addresses"], respValues["fee_address"])
+				suite.Require().Equal(payload["demeris_addresses"], respValues["fee_address"])
 			}
 		})
 	}
