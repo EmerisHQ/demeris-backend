@@ -37,6 +37,16 @@ spec:
           - key: pruning-interval
             value:
               string: "100"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -73,7 +83,7 @@ spec:
       address: juno-seed.blockpane.com
   moniker: emeris
   persistence:
-    size: 1000Gi
+    size: 200Gi
     autoResize:
       enabled: true
   replicas: 2
