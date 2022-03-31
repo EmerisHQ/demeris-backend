@@ -5,17 +5,8 @@
     "display_name": "Akash",
     "primary_channel": {
       "cosmos-hub": "channel-17",
-      "crypto-org": "channel-18",
-      "emoney": "channel-30",
-      "iris": "channel-16",
-      "ixo": "channel-29",
-      "microtick": "channel-28",
       "osmosis": "channel-9",
-      "persistence": "channel-20",
-      "regen": "channel-21",
-      "sentinel": "channel-22",
-      "sifchain": "channel-24",
-      "starname": "channel-27"
+      "sifchain": "channel-24"
     },
     "denoms": [
       {

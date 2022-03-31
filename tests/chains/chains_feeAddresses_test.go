@@ -14,22 +14,22 @@ func (suite *testCtx) TestChainsFeeAddresses() {
 	url := suite.Client.BuildUrl(chainsFeeAddressesEndpoint)
 	// act
 	resp, err := suite.Client.Get(url)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
-	suite.Equal(http.StatusOK, resp.StatusCode)
+	suite.Require().Equal(http.StatusOK, resp.StatusCode)
 
 	var respValues map[string]interface{}
 	utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 	err = resp.Body.Close()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	expValues := make(map[string][]map[string]interface{}, 0)
 	for _, ch := range suite.Chains {
 		if ch.Enabled {
 			var payload map[string]interface{}
 			err := json.Unmarshal(ch.Payload, &payload)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			expValues["fee_addresses"] = append(expValues["fee_addresses"], map[string]interface{}{
 				"chain_name":  ch.Name,
@@ -39,11 +39,11 @@ func (suite *testCtx) TestChainsFeeAddresses() {
 	}
 
 	expValuesData, err := json.Marshal(expValues)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	var expValuesInterface map[string]interface{}
 	err = json.Unmarshal(expValuesData, &expValuesInterface)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
-	suite.ElementsMatch(expValuesInterface["fee_addresses"], respValues["fee_addresses"])
+	suite.Require().ElementsMatch(expValuesInterface["fee_addresses"], respValues["fee_addresses"])
 }

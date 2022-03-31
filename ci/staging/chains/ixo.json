@@ -24,14 +24,14 @@
       "verified": true,
       "stakable": true,
       "ticker": "IXO",
-      "price_id": "1",
+      "price_id": "ixo",
       "fee_token": true,
       "gas_price_levels": {
         "low": 0.01,
         "average": 0.025,
         "high": 0.04
       },
-      "fetch_price": false,
+      "fetch_price": true,
       "relayer_denom": true,
       "minimum_thresh_relayer_balance": 42
     }

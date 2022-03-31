@@ -18,16 +18,17 @@ const (
 func (suite *testCtx) TestGetChainNumbers() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
-			var cc chainClient.Client
+			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			hexAddress, err := cli.GetHexAddress(cc.Key)
+			accAddr, err := cli.GetAccAddress(cc.Key)
 			suite.Require().NoError(err)
 
-			url := suite.Client.BuildUrl(chainNumbersEndpoint, ch.Name, hex.EncodeToString(hexAddress))
+			url := suite.Client.BuildUrl(chainNumbersEndpoint, ch.Name, hex.EncodeToString(accAddr))
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
@@ -61,6 +62,13 @@ func (suite *testCtx) TestGetChainNumbers() {
 
 			suite.Require().Equal(ch.Name, row.ChainName)
 			suite.Require().Equal(account.Address, row.Address)
+
+			// get account and sequence numbers using cli
+			acc, err := cli.GetAccountInfo(account.Address)
+			suite.Require().NoError(err)
+
+			suite.Require().Equal(row.AccountNumber, acc.GetAccountNumber())
+			suite.Require().Equal(row.SequenceNumber, acc.GetSequence())
 		})
 	}
 }

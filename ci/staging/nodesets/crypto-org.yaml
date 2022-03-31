@@ -55,10 +55,10 @@ spec:
         resources:
           limits:
             cpu: "1"
-            memory: 2Gi
+            memory: 4Gi
           requests:
             cpu: 100m
-            memory: 1Gi
+            memory: 2Gi
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/crypto-com
@@ -87,8 +87,8 @@ spec:
   resources:
     sentry:
       limits:
+        cpu: "4"
+        memory: 16Gi
+      requests:
         cpu: "2"
         memory: 4Gi
-      requests:
-        cpu: "1"
-        memory: 2Gi
