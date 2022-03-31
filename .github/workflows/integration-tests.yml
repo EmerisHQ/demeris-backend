@@ -26,9 +26,8 @@ jobs:
         run: git config --global url."https://git:${GIT_TOKEN}@github.com".insteadOf "https://github.com"
 
       - name: Run tests
-        run: go test -v ./tests/...
+        run: make ${{ github.event.client_payload.env }}-int-tests
         env:
-          ENV: ${{ github.event.client_payload.env }}
           TESTS_WORKDIR: ${{ github.workspace }}
 
       - name: Emit test-pass event on demeris-backend
@@ -57,8 +56,6 @@ jobs:
           run: git config --global url."https://git:${GIT_TOKEN}@github.com".insteadOf "https://github.com"
 
       - name: Run tests
-        run: make staging-int-tests
-        shell: bash
+        run: make ${{ github.event.client_payload.env }}-int-tests
         env:
-          ENV: 'staging'
           KUBECONFIG: '${{ secrets.KUBECONFIG_STAGING }}'

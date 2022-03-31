@@ -15,6 +15,9 @@ generate-swagger:
 	go generate ${BASEPKG}/docs
 	@rm docs/docs.go
 
+dev-int-tests:
+	go test -v ./tests/...
+
 staging-int-tests: telepresence
 	$(TELEPRESENCE) connect \
 		--kubeconfig $(KUBECONFIG)
