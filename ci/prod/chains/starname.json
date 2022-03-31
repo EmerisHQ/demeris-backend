@@ -5,7 +5,7 @@
     "display_name": "Starname",
     "primary_channel": {
       "cosmos-hub": "channel-0",
-      "osmosis": "channel-12"
+      "osmosis": "channel-2"
     },
     "denoms": [
       {
