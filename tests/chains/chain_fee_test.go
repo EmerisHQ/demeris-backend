@@ -3,11 +3,11 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
-	"github.com/allinbits/demeris-backend-models/cns"
-	utils "github.com/allinbits/demeris-backend/test_utils"
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 )
 
 const chainFeeEndpoint = "chain/%s/fee"
@@ -27,39 +27,23 @@ func (suite *testCtx) TestChainFee() {
 			} else {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				data, err := ioutil.ReadAll(resp.Body)
+				suite.Require().NoError(err)
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
 
-				data, err := json.Marshal(respValues["denoms"])
-				suite.Require().NoError(err)
-
-				var denoms cns.DenomList
+				var denoms chainModels.FeeResponse
 				err = json.Unmarshal(data, &denoms)
 				suite.Require().NoError(err)
 
 				suite.Require().NotEmpty(denoms)
 
-				var payload map[string]interface{}
-				err = json.Unmarshal(ch.Payload, &payload)
+				var expectedDenoms chainModels.FeeResponse
+				err = json.Unmarshal(ch.Payload, &expectedDenoms)
 				suite.Require().NoError(err)
 
-				data, err = json.Marshal(payload["denoms"])
-				suite.Require().NoError(err)
-
-				var expectedDenoms cns.DenomList
-				err = json.Unmarshal(data, &expectedDenoms)
-				suite.Require().NoError(err)
-
-				var expectedFeeDenoms cns.DenomList
-				for _, denom := range expectedDenoms {
-					if denom.FeeToken {
-						expectedFeeDenoms = append(expectedFeeDenoms, denom)
-					}
-				}
-				suite.Require().Equal(expectedFeeDenoms, denoms)
+				suite.Require().Equal(expectedDenoms.Denoms, denoms.Denoms)
 			}
 		})
 	}

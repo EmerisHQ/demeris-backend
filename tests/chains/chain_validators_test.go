@@ -3,19 +3,17 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 	"github.com/allinbits/demeris-backend-models/tracelistener"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
 const chainValidatorsEndpoint = "chain/%s/validators"
 
 func (suite *testCtx) TestChainValidators() {
-	if suite.Env == "staging" {
-		suite.T().Skip("skipping as nil interface causes panic")
-	}
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			// arrange
@@ -30,15 +28,17 @@ func (suite *testCtx) TestChainValidators() {
 			} else {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				data, err := ioutil.ReadAll(resp.Body)
+				suite.Require().NoError(err)
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
 
-				suite.Require().NotEmpty(respValues["validators"])
+				var val chainModels.ValidatorsResponse
+				err = json.Unmarshal(data, &val)
+				suite.Require().NoError(err)
 
-				for _, validator := range respValues["validators"].([]interface{}) {
+				for _, validator := range val.Validators {
 					var row tracelistener.ValidatorRow
 					data, err := json.Marshal(validator)
 					suite.Require().NoError(err)

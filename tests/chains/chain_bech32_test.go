@@ -3,11 +3,12 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 	"github.com/allinbits/demeris-backend-models/cns"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
 const chainBech32Endpoint = "chain/%s/bech32"
@@ -27,16 +28,14 @@ func (suite *testCtx) TestChainBech32() {
 			} else {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				data, err := ioutil.ReadAll(resp.Body)
+				suite.Require().NoError(err)
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
 
-				data, err := json.Marshal(respValues["bech32_config"])
-				suite.Require().NoError(err)
-
-				var bech32 cns.Bech32Config
+				// var bech32 cns.Bech32Config
+				var bech32 chainModels.Bech32ConfigResponse
 				err = json.Unmarshal(data, &bech32)
 				suite.Require().NoError(err)
 
@@ -53,7 +52,7 @@ func (suite *testCtx) TestChainBech32() {
 				err = json.Unmarshal(data, &expectedNodeInfo)
 				suite.Require().NoError(err)
 
-				suite.Require().Equal(expectedNodeInfo.Bech32Config, bech32)
+				suite.Require().Equal(expectedNodeInfo.Bech32Config, bech32.Bech32Config)
 			}
 		})
 	}
