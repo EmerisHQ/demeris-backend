@@ -50,7 +50,7 @@ spec:
             value: sentinel
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:1.2.0
         imagePullPolicy: Always
         resources:
           limits:
