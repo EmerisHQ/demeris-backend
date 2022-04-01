@@ -62,7 +62,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/sentinel
-    version: v0.8.3
+    version: v0.9.0
     build:
       repository: https://github.com/sentinel-official/hub
   join:
