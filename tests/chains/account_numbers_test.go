@@ -51,6 +51,22 @@ func (suite *testCtx) TestGetAccountNumbers() {
 
 			suite.Require().NotEmpty(numbers.Numbers)
 
+			// get account information
+			account, err := cli.AccountGet(cc.Key)
+			suite.Require().NoError(err)
+
+			// query account numbers from cli
+			accNum, err := cli.GetAccountInfo(account.Address)
+			suite.Require().NoError(err)
+
+			// comapre account and sequence numbers
+			for _, v := range numbers.Numbers {
+				if v.ChainName == ch.Name {
+					suite.Require().Equal(accNum.GetAccountNumber(), v.AccountNumber)
+					suite.Require().Equal(accNum.GetSequence(), v.SequenceNumber)
+					return
+				}
+			}
 		})
 	}
 }
