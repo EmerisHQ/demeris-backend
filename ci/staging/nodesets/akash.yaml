@@ -37,6 +37,16 @@ spec:
           - key: pruning-interval
             value:
               string: "100"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*'  
       startupTimeout: 1h
       traceStoreContainer:
         env:

@@ -37,6 +37,16 @@ spec:
           - key: pruning-interval
             value:
               string: "100"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -62,7 +72,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/regen
-    version: v2.1.0
+    version: v3.0.0
   join:
     genesis:
       url: https://github.com/regen-network/mainnet/raw/main/regen-1/genesis.json

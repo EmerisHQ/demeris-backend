@@ -37,6 +37,16 @@ spec:
           - key: pruning-interval
             value:
               string: "100"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -90,7 +100,7 @@ spec:
         address: seed.terra-mainnet.everstake.one
   moniker: emeris
   persistence:
-    size: 1200Gi
+    size: 2000Gi
     autoResize:
       enabled: true
   replicas: 2
