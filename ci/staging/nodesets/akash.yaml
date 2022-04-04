@@ -108,7 +108,7 @@ spec:
         id: a2a3ffe7ac122a218e1f59c32a670f04b8fd3033
   moniker: emeris
   persistence:
-    size: 600Gi
+    size: 100Gi
     autoResize:
       enabled: true
   replicas: 2
