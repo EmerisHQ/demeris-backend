@@ -42,8 +42,6 @@ func (suite *testCtx) TestMintInflation() {
 				var inflation chainModels.InflationResponse
 				err = json.Unmarshal(data, &inflation)
 				suite.Require().NoError(err)
-
-				suite.Require().NotZero(inflation.Inflation)
 			}
 		})
 	}
