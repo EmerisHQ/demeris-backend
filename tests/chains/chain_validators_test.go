@@ -13,9 +13,6 @@ import (
 const chainValidatorsEndpoint = "chain/%s/validators"
 
 func (suite *testCtx) TestChainValidators() {
-	if suite.Env == "staging" {
-		suite.T().Skip("skipping as nil interface causes panic")
-	}
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.Name, func(t *testing.T) {
 			// arrange

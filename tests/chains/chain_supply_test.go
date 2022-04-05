@@ -3,11 +3,11 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 )
 
 const (
@@ -33,13 +33,13 @@ func (suite *testCtx) TestChainSupply() {
 			} else {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
-
-				data, err := json.Marshal(respValues[supplyKey])
+				data, err := ioutil.ReadAll(resp.Body)
 				suite.Require().NoError(err)
 
-				var coins sdk.Coins
+				err = resp.Body.Close()
+				suite.Require().NoError(err)
+
+				var coins chainModels.SupplyResponse
 				err = json.Unmarshal(data, &coins)
 				suite.Require().NoError(err)
 
