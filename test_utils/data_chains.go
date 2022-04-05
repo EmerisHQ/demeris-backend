@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+
+	"github.com/allinbits/demeris-backend-models/cns"
 )
 
 const (
@@ -92,27 +94,20 @@ func LoadClientChainsInfo(env string) ([]EnvChain, error) {
 	return chains, nil
 }
 
-func LoadSingleChainInfo(env string, chainName string) (EnvChain, error) {
+func LoadSingleChainInfo(env string, chainName string) (cns.Chain, error) {
 	d := fmt.Sprintf(chainsFolderPath, env)
 	fileName := fmt.Sprintf("%s%s", chainName, jsonSuffix)
 
-	var chain EnvChain
+	var chain cns.Chain
 	jFile, err := ioutil.ReadFile(d + fileName)
 	if err != nil {
-		return EnvChain{}, err
+		return chain, err
 	}
 
-	temp := map[string]interface{}{}
-	err = json.Unmarshal(jFile, &temp)
+	err = json.Unmarshal(jFile, &chain)
 	if err != nil {
-		return EnvChain{}, err
+		return chain, err
 	}
-
-	ch := EnvChain{}
-	ch.Payload = jFile
-	ch.Enabled = temp[enabledKey].(bool)
-	ch.Name = temp[nameKey].(string)
-	chain = ch
 
 	return chain, nil
 }

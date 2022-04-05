@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"os"
 
 	"github.com/allinbits/demeris-backend-models/cns"
@@ -19,13 +18,8 @@ const (
 
 // GetClient is to create client and imports mnemonic and returns created chain client
 func GetClient(env string, chainName string, cc ChainClient, dir string) (c *ChainClient, err error) {
-	chainInfo, err := utils.LoadSingleChainInfo(env, chainName)
-	if err != nil {
-		return nil, err
-	}
-
-	var info cns.Chain
-	err = json.Unmarshal(chainInfo.Payload, &info)
+	// get chain info
+	info, err := utils.LoadSingleChainInfo(env, chainName)
 	if err != nil {
 		return nil, err
 	}
