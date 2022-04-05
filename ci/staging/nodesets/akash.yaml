@@ -37,6 +37,16 @@ spec:
           - key: pruning-interval
             value:
               string: "100"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*'  
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -50,7 +60,7 @@ spec:
             value: akash
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:1.2.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -98,7 +108,7 @@ spec:
         id: a2a3ffe7ac122a218e1f59c32a670f04b8fd3033
   moniker: emeris
   persistence:
-    size: 600Gi
+    size: 100Gi
     autoResize:
       enabled: true
   replicas: 2

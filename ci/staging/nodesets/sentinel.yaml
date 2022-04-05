@@ -37,6 +37,16 @@ spec:
           - key: pruning-interval
             value:
               string: "100"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -50,7 +60,7 @@ spec:
             value: sentinel
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:1.2.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -62,7 +72,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/sentinel
-    version: v0.8.3
+    version: v0.9.2
     build:
       repository: https://github.com/sentinel-official/hub
   join:
