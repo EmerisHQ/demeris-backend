@@ -117,7 +117,7 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 200Gi
+    size: 100Gi
     autoResize:
       enabled: true
   replicas: 2
