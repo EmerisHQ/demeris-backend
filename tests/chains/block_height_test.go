@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/allinbits/demeris-api-server/api/block"
+	blockModels "github.com/allinbits/demeris-api-server/api/block"
 	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 const (
@@ -37,12 +38,13 @@ func (suite *testCtx) TestBlockHeight() {
 				err = cRes.Body.Close()
 				suite.Require().NoError(err)
 
-				var cosmosBlock block.BlockHeightResp
+				var cosmosBlock coretypes.ResultBlock
 				err = json.Unmarshal(data, &cosmosBlock)
 				suite.Require().NoError(err)
+				suite.Require().NotNil(cosmosBlock.Block)
 
 				//get block results from the env
-				encodedStr := suite.Client.BuildUrl(blockHeightEndpoint, cosmosBlock.Result.Block.Height)
+				encodedStr := suite.Client.BuildUrl(blockHeightEndpoint, cosmosBlock.Block.Height)
 				actualUrl, err := url.PathUnescape(encodedStr)
 				suite.Require().NoError(err)
 
@@ -58,11 +60,11 @@ func (suite *testCtx) TestBlockHeight() {
 				err = resp.Body.Close()
 				suite.Require().NoError(err)
 
-				var block interface{}
+				var block blockModels.BlockHeightResp
 				err = json.Unmarshal(blockData, block)
 				suite.Require().NoError(err)
 
-				suite.Require().Equal(cosmosBlock, block)
+				suite.Require().Equal(cosmosBlock, block.Result)
 			})
 		}
 	}
