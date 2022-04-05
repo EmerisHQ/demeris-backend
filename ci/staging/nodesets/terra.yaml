@@ -100,7 +100,7 @@ spec:
         address: seed.terra-mainnet.everstake.one
   moniker: emeris
   persistence:
-    size: 2000Gi
+    size: 250Gi
     autoResize:
       enabled: true
   replicas: 2
