@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -16,41 +15,43 @@ const (
 
 func (suite *testCtx) TestPrimaryChannelCounterparty() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.Name, func(t *testing.T) {
+		suite.T().Run(ch.ChainName, func(t *testing.T) {
 			if !ch.Enabled {
 				// checking /chain/XXX/primary_channel/ZZZ returns 400 if chain disabled
 				for _, otherChains := range suite.Chains {
-					if otherChains.Name != ch.Name {
+					if otherChains.ChainName != ch.ChainName {
 						// arrange
-						counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.Name, otherChains.Name)
+						counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.ChainName, otherChains.ChainName)
 						// act
 						resp, err := suite.Client.Get(counterPartyURL)
 						suite.Require().NoError(err)
 
-						suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
+						suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.ChainName, otherChains.ChainName, resp.StatusCode))
 					}
 				}
 			} else {
-				var payload map[string]interface{}
-				err := json.Unmarshal(ch.Payload, &payload)
-				suite.Require().NoError(err)
+				// var payload map[string]interface{}
+				// err := json.Unmarshal(ch.Payload, &payload)
+				// suite.Require().NoError(err)
 
-				data, err := json.Marshal(payload[primaryChannelkey])
-				suite.Require().NoError(err)
+				// data, err := json.Marshal(payload[primaryChannelkey])
+				// suite.Require().NoError(err)
 
-				var expectedChannels map[string]string
-				err = json.Unmarshal(data, &expectedChannels)
-				suite.Require().NoError(err)
+				// var expectedChannels map[string]string
+				// err = json.Unmarshal(data, &expectedChannels)
+				// suite.Require().NoError(err)
+
+				expectedChannels := ch.PrimaryChannel
 
 				// test for existing channels
 				for counterParty, channel_name := range expectedChannels {
 					// arrange
-					counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.Name, counterParty)
+					counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.ChainName, counterParty)
 					// act
 					resp, err := suite.Client.Get(counterPartyURL)
 					suite.Require().NoError(err)
 
-					suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, counterParty, resp.StatusCode))
+					suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.ChainName, counterParty, resp.StatusCode))
 
 					defer resp.Body.Close()
 
@@ -66,14 +67,14 @@ func (suite *testCtx) TestPrimaryChannelCounterparty() {
 
 				// test for non-existing channels
 				for _, otherChains := range suite.Chains {
-					if _, ok := expectedChannels[otherChains.Name]; !ok && otherChains.Name != ch.Name {
+					if _, ok := expectedChannels[otherChains.ChainName]; !ok && otherChains.ChainName != ch.ChainName {
 						// arrange
-						counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.Name, otherChains.Name)
+						counterPartyURL := suite.Client.BuildUrl(channelCounterparty, ch.ChainName, otherChains.ChainName)
 						// act
 						resp, err := suite.Client.Get(counterPartyURL)
 						suite.Require().NoError(err)
 
-						suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.Name, otherChains.Name, resp.StatusCode))
+						suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s Channel %s HTTP code %d", ch.ChainName, otherChains.ChainName, resp.StatusCode))
 					}
 				}
 			}

@@ -3,6 +3,7 @@ package test_utils
 import (
 	"os"
 
+	"github.com/allinbits/demeris-backend-models/cns"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -10,7 +11,7 @@ type BaseTestSuite struct {
 	suite.Suite
 	Env       string
 	EmIngress EmerisIngress
-	Chains    []EnvChain
+	Chains    []cns.Chain
 	Client    *HttpClient
 }
 

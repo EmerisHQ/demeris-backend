@@ -28,20 +28,20 @@ func (suite *testCtx) TestChainsData() {
 	expValues := make(map[string][]map[string]interface{}, 0)
 	for _, ch := range suite.Chains {
 		if ch.Enabled {
-			chainUrl := suite.Client.BuildUrl("chain/%s", ch.Name)
+			chainUrl := suite.Client.BuildUrl("chain/%s", ch.ChainName)
 			chainResp, err := suite.Client.Get(chainUrl)
 			suite.Require().NoError(err)
 
-			suite.Require().Equal(http.StatusOK, chainResp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, chainResp.StatusCode))
+			suite.Require().Equal(http.StatusOK, chainResp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, chainResp.StatusCode))
 
-			var payload map[string]interface{}
-			err = json.Unmarshal(ch.Payload, &payload)
-			suite.Require().NoError(err)
+			// var payload map[string]interface{}
+			// err = json.Unmarshal(ch.Payload, &payload)
+			// suite.Require().NoError(err)
 
 			expValues["chains"] = append(expValues["chains"], map[string]interface{}{
-				"chain_name":   ch.Name,
-				"display_name": payload["display_name"],
-				"logo":         payload["logo"],
+				"chain_name":   ch.ChainName,
+				"display_name": ch.DisplayName,
+				"logo":         ch.Logo,
 			})
 		}
 	}

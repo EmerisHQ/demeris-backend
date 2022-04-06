@@ -23,7 +23,7 @@ type EnvChain struct {
 	Payload []byte
 }
 
-func LoadChainsInfo(env string) ([]EnvChain, error) {
+func LoadChainsInfo(env string) ([]cns.Chain, error) {
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
 	}
@@ -34,7 +34,7 @@ func LoadChainsInfo(env string) ([]EnvChain, error) {
 		return nil, err
 	}
 
-	var chains []EnvChain
+	var chains []cns.Chain
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), jsonSuffix) {
 			jFile, err := ioutil.ReadFile(d + f.Name())
@@ -42,17 +42,20 @@ func LoadChainsInfo(env string) ([]EnvChain, error) {
 				return nil, err
 			}
 
-			temp := map[string]interface{}{}
-			err = json.Unmarshal(jFile, &temp)
-			if err != nil {
-				return nil, err
-			}
+			// temp := map[string]interface{}{}
+			// err = json.Unmarshal(jFile, &temp)
+			// if err != nil {
+			// 	return nil, err
+			// }
 
-			ch := EnvChain{}
-			ch.Payload = jFile
-			ch.Enabled = temp[enabledKey].(bool)
-			ch.Name = temp[nameKey].(string)
-			chains = append(chains, ch)
+			var chain cns.Chain
+			// ch.Payload = jFile
+			// ch.Enabled = temp[enabledKey].(bool)
+			// ch.Name = temp[nameKey].(string)
+			// chains = append(chains, ch)
+
+			err = json.Unmarshal(jFile, &chain)
+			chains = append(chains, chain)
 		}
 	}
 

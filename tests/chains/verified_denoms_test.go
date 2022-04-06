@@ -2,9 +2,9 @@ package tests
 
 import (
 	"encoding/json"
+	"io/ioutil"
 
 	"github.com/allinbits/demeris-backend-models/cns"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 )
 
 const (
@@ -15,16 +15,18 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	var chainsDenoms cns.DenomList
 	for _, ch := range suite.Chains {
 		if ch.Enabled {
-			var payload map[string]interface{}
-			err := json.Unmarshal(ch.Payload, &payload)
-			suite.Require().NoError(err)
+			// var payload map[string]interface{}
+			// err := json.Unmarshal(ch.Payload, &payload)
+			// suite.Require().NoError(err)
 
-			data, err := json.Marshal(payload["denoms"])
-			suite.Require().NoError(err)
+			// data, err := json.Marshal(payload["denoms"])
+			// suite.Require().NoError(err)
 
-			var expectedDenoms cns.DenomList
-			err = json.Unmarshal(data, &expectedDenoms)
-			suite.Require().NoError(err)
+			// var expectedDenoms cns.DenomList
+			// err = json.Unmarshal(data, &expectedDenoms)
+			// suite.Require().NoError(err)
+
+			expectedDenoms := ch.Denoms
 
 			for _, denom := range expectedDenoms {
 				if denom.Verified {
@@ -40,12 +42,15 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	resp, err := suite.Client.Get(url)
 	suite.Require().NoError(err)
 
-	var respValues map[string]interface{}
-	utils.RespBodyToMap(resp.Body, &respValues, suite.T())
+	// var respValues map[string]interface{}
+	// utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 	defer resp.Body.Close()
 
-	data, err := json.Marshal(respValues["verified_denoms"])
+	// data, err := json.Marshal(respValues["verified_denoms"])
+	// suite.Require().NoError(err)
+
+	data, err := ioutil.ReadAll(resp.Body)
 	suite.Require().NoError(err)
 
 	var denoms cns.DenomList
