@@ -34,10 +34,6 @@ func (suite *testCtx) TestChainsData() {
 
 			suite.Require().Equal(http.StatusOK, chainResp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, chainResp.StatusCode))
 
-			// var payload map[string]interface{}
-			// err = json.Unmarshal(ch.Payload, &payload)
-			// suite.Require().NoError(err)
-
 			expValues["chains"] = append(expValues["chains"], map[string]interface{}{
 				"chain_name":   ch.ChainName,
 				"display_name": ch.DisplayName,

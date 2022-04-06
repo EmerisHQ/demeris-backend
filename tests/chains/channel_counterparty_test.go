@@ -30,17 +30,6 @@ func (suite *testCtx) TestPrimaryChannelCounterparty() {
 					}
 				}
 			} else {
-				// var payload map[string]interface{}
-				// err := json.Unmarshal(ch.Payload, &payload)
-				// suite.Require().NoError(err)
-
-				// data, err := json.Marshal(payload[primaryChannelkey])
-				// suite.Require().NoError(err)
-
-				// var expectedChannels map[string]string
-				// err = json.Unmarshal(data, &expectedChannels)
-				// suite.Require().NoError(err)
-
 				expectedChannels := ch.PrimaryChannel
 
 				// test for existing channels

@@ -35,6 +35,7 @@ func (suite *testCtx) TestEpochProvisions() {
 
 			var provisions json.RawMessage
 			suite.Require().NoError(json.Unmarshal(data, &provisions))
+
 			//expect a non empty data
 			suite.Require().NotEmpty(provisions)
 		})

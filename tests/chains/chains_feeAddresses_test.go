@@ -27,10 +27,6 @@ func (suite *testCtx) TestChainsFeeAddresses() {
 	expValues := make(map[string][]map[string]interface{}, 0)
 	for _, ch := range suite.Chains {
 		if ch.Enabled {
-			// var payload map[string]interface{}
-			// err := json.Unmarshal(ch.Payload, &payload)
-			// suite.Require().NoError(err)
-
 			expValues["fee_addresses"] = append(expValues["fee_addresses"], map[string]interface{}{
 				"chain_name":  ch.ChainName,
 				"fee_address": ch.DemerisAddresses,

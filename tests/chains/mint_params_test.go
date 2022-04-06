@@ -14,7 +14,6 @@ const (
 )
 
 func (suite *testCtx) TestMintParams() {
-
 	for _, ch := range suite.Chains {
 		suite.T().Run(ch.ChainName, func(t *testing.T) {
 
