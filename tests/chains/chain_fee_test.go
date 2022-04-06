@@ -35,10 +35,6 @@ func (suite *testCtx) TestChainFee() {
 				suite.Require().NoError(err)
 				suite.Require().NotEmpty(denoms)
 
-				// var expectedDenoms cns.Chain
-				// err = json.Unmarshal(ch.Payload, &expectedDenoms)
-				// suite.Require().NoError(err)
-
 				suite.Require().Equal(ch.Denoms, denoms.Denoms)
 			}
 		})

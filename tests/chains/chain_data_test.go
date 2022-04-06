@@ -43,11 +43,6 @@ func (suite *testCtx) TestChainData() {
 				suite.Require().NoError(err)
 				suite.Require().NotNil(chain)
 
-				// var expectedChain cns.Chain
-				// err = json.Unmarshal(ch.Payload, &expectedChain)
-				// suite.Require().NoError(err)
-				// suite.Require().NotNil(expectedChain)
-
 				suite.Require().Equal(ch, chain.Chain)
 			}
 		})

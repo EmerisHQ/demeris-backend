@@ -39,10 +39,6 @@ func (suite *testCtx) TestChainBech32() {
 
 				suite.Require().NotEmpty(bech32)
 
-				// var expectedNodeInfo cns.Chain
-				// err = json.Unmarshal(ch.Payload, &expectedNodeInfo)
-				// suite.Require().NoError(err)
-
 				suite.Require().Equal(ch.NodeInfo.Bech32Config, bech32.Bech32Config)
 			}
 		})
