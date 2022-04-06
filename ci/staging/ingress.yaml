@@ -660,3 +660,352 @@ spec:
   - hosts:
     - staging.demeris.io
     secretName: emeris-cert
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emeris-nodes-grpc
+  namespace: emeris
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/backend-protocol: GRPC
+spec:
+  rules:
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/cosmos-hub/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: cosmos-hub
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/akash/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: akash
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/band/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: band
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/bitcanna/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: bitcanna
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/bitsong/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: bitsong
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/cheqd/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: cheqd
+            port:
+              number: 9090
+ 
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/chihuahua/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: chihuahua
+            port:
+              number: 9090
+              
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/comdex/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: comdex
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/crypto-org/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: crypto-org
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/desmos/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: desmos
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/emoney/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: emoney
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/iris/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: iris
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/ixo/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: ixo
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/juno/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: juno
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/ki/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: ki
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/likecoin/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: likecoin
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/lum/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: lum
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/microtick/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: microtick
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/oraichain/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: oraichain
+            port:
+              number: 9090
+
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/osmosis/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: osmosis
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/persistence/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: persistence
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/regen/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: regen
+            port:
+              number: 9090
+
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/rizon/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: rizon
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/secret/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: secret
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/sentinel/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: sentinel
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/sifchain/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: sifchain
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/sommelier/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: sommelier
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/stargaze/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: stargaze
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/starname/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: starname
+            port:
+              number: 9090
+
+  - host: staging.demeris.io
+    http:
+      paths:
+      - path: /v1/chain/terra/grpc(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: terra
+            port:
+              number: 9090
+
+  tls:
+  - hosts:
+    - staging.demeris.io
+    secretName: emeris-cert
