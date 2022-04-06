@@ -105,3 +105,8 @@ spec:
       requests:
         cpu: "1"
         memory: 2Gi
+  expose:
+    domain: sentinel.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

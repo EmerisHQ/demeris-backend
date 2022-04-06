@@ -100,3 +100,8 @@ spec:
       requests:
         cpu: "2"
         memory: 2Gi
+  expose:
+    domain: desmos.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

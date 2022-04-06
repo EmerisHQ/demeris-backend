@@ -153,3 +153,8 @@ spec:
       requests:
         cpu: "2"
         memory: 4Gi
+  expose:
+    domain: cosmos-hub.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

@@ -109,3 +109,8 @@ spec:
       requests:
         cpu: "2"
         memory: 4Gi
+  expose:
+    domain: chihuahua.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true
