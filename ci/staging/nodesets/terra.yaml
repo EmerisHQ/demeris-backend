@@ -112,4 +112,8 @@ spec:
       requests:
         cpu: "2"
         memory: 16Gi
-
+  expose:
+    domain: terra.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true
