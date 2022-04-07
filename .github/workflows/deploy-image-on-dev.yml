@@ -29,6 +29,7 @@ env:
   image_sha: ${{ github.event.client_payload.image_sha }}
   version: ${{ github.event.client_payload.version }}
   image_tag: ${{ github.event.client_payload.version || github.event.client_payload.image_sha }}
+  deploy_type: ${{ github.event.client_payload.deploy_type }}
 
 jobs:
   deploy-service:
