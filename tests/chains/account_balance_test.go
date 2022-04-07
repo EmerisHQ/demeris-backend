@@ -27,6 +27,7 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			suite.Require().NotNil(cli)
 
 			accAddr, err := sdktypes.AccAddressFromBech32(cc.Address)
+			suite.Require().NoError(err)
 
 			if accAddr.Empty() {
 				accAddr, err = cli.GetAccAddress(cc.Key)

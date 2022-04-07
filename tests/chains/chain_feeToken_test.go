@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"testing"
 
-	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
@@ -37,25 +36,12 @@ func (suite *testCtx) TestChainFeeToken() {
 				data, err := json.Marshal(respValues["fee_tokens"])
 				suite.Require().NoError(err)
 
-				var denoms []chainModels.FeeResponse
+				var denoms cns.DenomList
 				err = json.Unmarshal(data, &denoms)
 				suite.Require().NoError(err)
-
 				suite.Require().NotEmpty(denoms)
 
-				// var payload map[string]interface{}
-				// err = json.Unmarshal(ch.Payload, &payload)
-				// suite.Require().NoError(err)
-
-				// data, err = json.Marshal(payload["denoms"])
-				// suite.Require().NoError(err)
-
-				// var expectedDenoms cns.DenomList
-				// err = json.Unmarshal(data, &expectedDenoms)
-				// suite.Require().NoError(err)
-
 				expectedDenoms := ch.Denoms
-
 				var expectedFeeDenoms cns.DenomList
 				for _, denom := range expectedDenoms {
 					if denom.FeeToken {
@@ -64,7 +50,7 @@ func (suite *testCtx) TestChainFeeToken() {
 				}
 
 				suite.Require().Equal(len(expectedFeeDenoms), len(denoms))
-				suite.Require().ElementsMatch(expectedFeeDenoms, denoms)
+				suite.Require().Equal(expectedFeeDenoms, denoms)
 			}
 		})
 	}
