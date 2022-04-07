@@ -42,21 +42,10 @@ func (suite *testCtx) TestPrimaryChannels() {
 				err = json.Unmarshal(data, &channels)
 				suite.Require().NoError(err)
 
-				formattedChannels := make(map[string]string, len(channels))
+				formattedChannels := make(cns.DbStringMap, len(channels))
 				for _, channel := range channels {
 					formattedChannels[channel["counterparty"]] = channel["channel_name"]
 				}
-
-				// var payload map[string]interface{}
-				// err = json.Unmarshal(ch.Payload, &payload)
-				// suite.Require().NoError(err)
-
-				// data, err = json.Marshal(payload["primary_channel"])
-				// suite.Require().NoError(err)
-
-				// var expectedChannels map[string]string
-				// err = json.Unmarshal(data, &expectedChannels)
-				// suite.Require().NoError(err)
 
 				suite.Require().Equal(ch.PrimaryChannel, formattedChannels)
 			}
