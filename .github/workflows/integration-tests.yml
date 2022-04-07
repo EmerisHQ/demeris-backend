@@ -37,4 +37,9 @@ jobs:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
           repository: allinbits/demeris-backend
           event-type: test-pass
-          client-payload: '{"env":"${{ github.event.client_payload.env }}","service_name":"${{ github.event.client_payload.service_name }}","image_sha":"${{ github.event.client_payload.image_sha }}"}'
+          client-payload: |
+            {
+              "env": "${{ github.event.client_payload.env }}",
+              "service_name": "${{ github.event.client_payload.service_name }}",
+              "image_tag": "${{ github.event.client_payload.image_tag }}"
+            }

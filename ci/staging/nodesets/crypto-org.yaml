@@ -60,7 +60,7 @@ spec:
             value: crypto-org
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:1.2.0
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -90,7 +90,7 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 1000Gi
+    size: 1052Gi
     autoResize:
       enabled: true
   replicas: 2
