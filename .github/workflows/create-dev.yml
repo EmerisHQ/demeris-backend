@@ -1,4 +1,4 @@
-name: Recreate Emeris Dev Environment
+name: Test recreate Emeris Dev Environment
 
 on: 
   workflow_dispatch:
@@ -278,7 +278,6 @@ jobs:
               "deploy_type":"sdk-service-v44"
             }
 
-
   nodesets:
     runs-on: self-hosted
     steps:
@@ -291,8 +290,75 @@ jobs:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: apply --namespace emeris -f ./ci/dev/nodesets
 
+  nodeset-verification:
+    strategy:
+      matrix:
+        nodeset:
+        - akash
+        - cosmos-hub
+        - terra
+    runs-on: self-hosted
+    needs: [ nodesets ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Wait for chains to boot
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: |
+            wait nodeset \
+            ${{ matrix.nodeset }} \
+            --namespace emeris \
+            --for jsonpath={.status.phase}=Running \
+            --timeout=180s
+
+      - name: Delete nodesets
+        if: ${{ failure() }}
+        id: delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: delete --namespace emeris -f ./ci/dev/nodesets/${{ matrix.nodeset }}.yaml
+
+      - name: Wait for chains to be deleted
+        if: ${{ steps.delete.outcome == 'success' }}
+        id: wait-delete
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: |
+            wait nodeset \
+            ${{ matrix.nodeset }} \
+            --namespace emeris \
+            --for="delete" \
+            --timeout=180s
+
+      - name: Reinstall nodesets
+        if: ${{ steps.wait-delete.outcome == 'success' }}
+        id: reinstall
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: apply --namespace emeris -f ./ci/dev/nodesets/${{ matrix.nodeset }}.yaml
+
+      - name: Wait for chains to boot
+        if: ${{ steps.reinstall.outcome == 'success' }}
+        uses: steebchen/kubectl@v2.0.0
+        with:
+          config: ${{ secrets.KUBECONFIG_B64 }}
+          command: |
+            wait nodeset \
+            ${{ matrix.nodeset }} \
+            --namespace emeris \
+            --for jsonpath={.status.phase}=Running \
+            --timeout=180s
+
   relayers:
     runs-on: self-hosted
+    needs: [ nodesets ]
+    if: ${{ needs.nodeset-verification.result == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -304,17 +370,6 @@ jobs:
         with:
           time: '1m'
 
-      - name: Wait for chains to boot
-        uses: steebchen/kubectl@v2.0.0
-        with:
-          config: ${{ secrets.KUBECONFIG_B64 }}
-          command: |
-            wait pod \
-            --namespace emeris \
-            --for="condition=ready" \
-            --selector="nodeset in (akash, terra, cosmos-hub)" \
-            --timeout=180s
-
       - name: Install relayers
         uses: steebchen/kubectl@v2.0.0
         with:
@@ -322,8 +377,11 @@ jobs:
           command: apply --namespace emeris -f ./ci/dev/relayers
 
   cns-chains:
-    needs: cns-server
+    needs: 
+    - cns-server
+    - relayers
     runs-on: self-hosted
+    if: ${{ needs.relayers.result == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
