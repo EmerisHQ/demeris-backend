@@ -1,4 +1,4 @@
-name: Test recreate Emeris Dev Environment
+name: Recreate Emeris Dev Environment
 
 on: 
   workflow_dispatch:
