@@ -357,7 +357,7 @@ jobs:
 
   relayers:
     runs-on: self-hosted
-    needs: [ nodesets ]
+    needs: [ nodeset-verification ]
     if: ${{ needs.nodeset-verification.result == 'success' }}
     steps:
       - name: Checkout
