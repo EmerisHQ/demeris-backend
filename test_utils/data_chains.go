@@ -42,19 +42,11 @@ func LoadChainsInfo(env string) ([]cns.Chain, error) {
 				return nil, err
 			}
 
-			// temp := map[string]interface{}{}
-			// err = json.Unmarshal(jFile, &temp)
-			// if err != nil {
-			// 	return nil, err
-			// }
-
 			var chain cns.Chain
-			// ch.Payload = jFile
-			// ch.Enabled = temp[enabledKey].(bool)
-			// ch.Name = temp[nameKey].(string)
-			// chains = append(chains, ch)
-
 			err = json.Unmarshal(jFile, &chain)
+			if err != nil {
+				return nil, err
+			}
 			chains = append(chains, chain)
 		}
 	}
