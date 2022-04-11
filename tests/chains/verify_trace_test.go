@@ -46,12 +46,14 @@ func (suite *testCtx) TestVerifyTrace() {
 	// create clients and accounts for above picked chains
 	var ccA, ccB chainClient.ChainClient
 	for _, ch := range suite.clientChains {
-		if ch.Name == chainA.ChainName {
-			err := json.Unmarshal(ch.Payload, &ccA)
-			suite.Require().NoError(err)
-		} else if ch.Name == chainB.ChainName {
-			err := json.Unmarshal(ch.Payload, &ccB)
-			suite.Require().NoError(err)
+		if ch.ChainName == chainA.ChainName {
+			// err := json.Unmarshal(ch.Payload, &ccA)
+			// suite.Require().NoError(err)
+			ccA = ch
+		} else if ch.ChainName == chainB.ChainName {
+			// err := json.Unmarshal(ch.Payload, &ccB)
+			// suite.Require().NoError(err)
+			ccB = ch
 		}
 	}
 	cliB, err := chainClient.GetClient(suite.Env, chainB.ChainName, ccB, suite.T().TempDir())
