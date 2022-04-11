@@ -18,19 +18,16 @@ const (
 
 func (suite *testCtx) TestBlockHeight() {
 	for _, ch := range suite.clientChains {
-		if ch.Name == "cosmos-hub" {
-			suite.Run(ch.Name, func() {
-				var cc chainClient.ChainClient
-				err := json.Unmarshal(ch.Payload, &cc)
-				suite.Require().NoError(err)
-				cli, _ := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+		if ch.ChainName == "cosmos-hub" {
+			suite.Run(ch.ChainName, func() {
+				cli, _ := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 				suite.Require().NotNil(cli)
 				if !cli.Enabled {
 					return
 				}
 
 				//get block results from the cosmos node
-				cRes, err := suite.Client.Get(cc.RPC + "/block_results")
+				cRes, err := suite.Client.Get(ch.RPC + "/block_results")
 				suite.Require().NoError(err)
 				data, err := ioutil.ReadAll(cRes.Body)
 				suite.Require().NoError(err)
@@ -52,7 +49,7 @@ func (suite *testCtx) TestBlockHeight() {
 				resp, err := suite.Client.Get(actualUrl)
 				suite.Require().NoError(err)
 
-				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				blockData, err := ioutil.ReadAll(resp.Body)
 				suite.Require().NoError(err)

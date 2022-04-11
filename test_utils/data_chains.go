@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/allinbits/demeris-backend-models/cns"
+	chainClient "github.com/allinbits/demeris-backend/chain_client"
 )
 
 const (
@@ -54,7 +55,7 @@ func LoadChainsInfo(env string) ([]cns.Chain, error) {
 	return chains, nil
 }
 
-func LoadClientChainsInfo(env string) ([]EnvChain, error) {
+func LoadClientChainsInfo(env string) ([]chainClient.ChainClient, error) {
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
 	}
@@ -65,7 +66,7 @@ func LoadClientChainsInfo(env string) ([]EnvChain, error) {
 		return nil, err
 	}
 
-	var chains []EnvChain
+	var chains []chainClient.ChainClient
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), jsonSuffix) {
 			jFile, err := ioutil.ReadFile(d + f.Name())
@@ -73,36 +74,14 @@ func LoadClientChainsInfo(env string) ([]EnvChain, error) {
 				return nil, err
 			}
 
-			temp := map[string]interface{}{}
-			err = json.Unmarshal(jFile, &temp)
+			var ch chainClient.ChainClient
+			err = json.Unmarshal(jFile, &ch)
 			if err != nil {
 				return nil, err
 			}
-
-			ch := EnvChain{}
-			ch.Payload = jFile
-			ch.Name = temp[nameKey].(string)
 			chains = append(chains, ch)
 		}
 	}
 
 	return chains, nil
-}
-
-func LoadSingleChainInfo(env string, chainName string) (cns.Chain, error) {
-	d := fmt.Sprintf(chainsFolderPath, env)
-	fileName := fmt.Sprintf("%s%s", chainName, jsonSuffix)
-
-	var chain cns.Chain
-	jFile, err := ioutil.ReadFile(d + fileName)
-	if err != nil {
-		return chain, err
-	}
-
-	err = json.Unmarshal(jFile, &chain)
-	if err != nil {
-		return chain, err
-	}
-
-	return chain, nil
 }

@@ -19,12 +19,8 @@ const (
 
 func (suite *testCtx) TestTxSimulateEndpoint() {
 	for _, ch := range suite.clientChains {
-		suite.Run(ch.Name, func() {
-			var cc chainClient.ChainClient
-			err := json.Unmarshal(ch.Payload, &cc)
-			suite.Require().NoError(err)
-
-			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+		suite.Run(ch.ChainName, func() {
+			cli, err := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.NoError(err)
 
 			// assert
@@ -33,7 +29,7 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			}
 
 			// create valid tx bytes
-			fromAddr, err := cli.GetAccAddress(cc.Key)
+			fromAddr, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
 
 			toAddr, err := cli.GetAccAddress("key2")
@@ -42,7 +38,7 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			// perform bank send tx
 			msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(10))))
 
-			txBytes, err := cli.SignTx(cc.Key, cli.GetContext(), msg)
+			txBytes, err := cli.SignTx(ch.Key, cli.GetContext(), msg)
 			suite.Require().NoError(err)
 
 			reqBytes, err := json.Marshal(txModels.TxFeeEstimateReq{
@@ -50,12 +46,12 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			})
 			suite.Require().NoError(err)
 
-			url := suite.Client.BuildUrl(simulateTxEndpoint, ch.Name)
+			url := suite.Client.BuildUrl(simulateTxEndpoint, ch.ChainName)
 
 			resp, err := suite.Client.Post(url, "application/json", bytes.NewBuffer(reqBytes))
 			suite.Require().NoError(err)
 
-			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
 			suite.Require().NoError(err)
@@ -67,7 +63,7 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			suite.Require().NotEmpty(feesRes)
 			suite.Require().Greater(feesRes.GasUsed, uint64(0))
 
-			if ch.Name == "terra" {
+			if ch.ChainName == "terra" {
 				suite.Require().NotEmpty(feesRes.Fees)
 			}
 

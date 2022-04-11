@@ -23,12 +23,8 @@ const (
 
 func (suite *testCtx) TestTxPostEndpoint() {
 	for _, ch := range suite.clientChains {
-		suite.Run(ch.Name, func() {
-			var cc chainClient.ChainClient
-			err := json.Unmarshal(ch.Payload, &cc)
-			suite.Require().NoError(err)
-
-			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+		suite.Run(ch.ChainName, func() {
+			cli, err := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 
 			// assert
@@ -37,7 +33,7 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			}
 
 			// create valid tx bytes
-			account, err := cli.AccountGet(cc.Key)
+			account, err := cli.AccountGet(ch.Key)
 			suite.Require().NoError(err)
 
 			fromAddr, err := sdk.AccAddressFromBech32(account.Address)
@@ -57,7 +53,7 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			// perform bank send tx
 			msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(10))))
 
-			txBytes, err := cli.SignTx(cc.Key, cli.GetContext(), msg)
+			txBytes, err := cli.SignTx(ch.Key, cli.GetContext(), msg)
 			suite.Require().NoError(err)
 
 			postBytes, err := json.Marshal(txModels.TxRequest{
@@ -66,12 +62,12 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			})
 			suite.Require().NoError(err)
 
-			url := suite.Client.BuildUrl(postTxEndpoint, ch.Name)
+			url := suite.Client.BuildUrl(postTxEndpoint, ch.ChainName)
 
 			resp, err := suite.Client.Post(url, "application/json", bytes.NewBuffer(postBytes))
 			suite.Require().NoError(err)
 
-			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
 			suite.Require().NoError(err)
