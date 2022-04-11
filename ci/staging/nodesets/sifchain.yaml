@@ -30,13 +30,13 @@ spec:
               string: 0.25rowan
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
           - group: api
             key: enabled-unsafe-cors
             value:
@@ -117,3 +117,8 @@ spec:
       requests:
         cpu: "2"
         memory: 2Gi
+  expose:
+    domain: sifchain.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

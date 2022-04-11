@@ -30,13 +30,13 @@ spec:
               string: 0.018uakt
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
           - group: api
             key: enabled-unsafe-cors
             value:
@@ -120,3 +120,8 @@ spec:
       requests:
         cpu: "1"
         memory: 2Gi
+  expose:
+    domain: akash.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true
