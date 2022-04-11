@@ -13,8 +13,6 @@ import (
 const (
 	chainsFolderPath       = "./ci/%s/chains/"
 	jsonSuffix             = ".json"
-	enabledKey             = "enabled"
-	nameKey                = "chain_name"
 	clientChainsFolderPath = "./test_data/client/%s/"
 )
 
