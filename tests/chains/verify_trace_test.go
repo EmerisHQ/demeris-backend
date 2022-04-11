@@ -10,8 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/emerishq/demeris-backend-models/cns"
-	chainClient "github.com/emerishq/demeris-backend/chain_client"
+	"github.com/allinbits/demeris-backend-models/cns"
+	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
+	ibcclienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
 )
 
 const (
@@ -47,12 +50,8 @@ func (suite *testCtx) TestVerifyTrace() {
 	var ccA, ccB chainClient.ChainClient
 	for _, ch := range suite.clientChains {
 		if ch.ChainName == chainA.ChainName {
-			// err := json.Unmarshal(ch.Payload, &ccA)
-			// suite.Require().NoError(err)
 			ccA = ch
 		} else if ch.ChainName == chainB.ChainName {
-			// err := json.Unmarshal(ch.Payload, &ccB)
-			// suite.Require().NoError(err)
 			ccB = ch
 		}
 	}
