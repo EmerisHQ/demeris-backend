@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/allinbits/demeris-backend-models/cns"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -19,7 +18,7 @@ const (
 // GetClient is to create client and imports mnemonic and returns created chain client
 func GetClient(env string, chainName string, cc ChainClient, dir string) (c *ChainClient, err error) {
 	// get chain info
-	info, err := utils.LoadSingleChainInfo(env, chainName)
+	info, err := LoadSingleChainInfo(env, chainName)
 	if err != nil {
 		return nil, err
 	}
