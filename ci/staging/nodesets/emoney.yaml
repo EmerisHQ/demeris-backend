@@ -115,6 +115,15 @@ spec:
       - id: d12ac664ff9766e0535c836173111e3eed462e79
         address: 185.144.83.157
         port: 26656
+      - id: 708e559271d4d75d7ea2c3842e87d2e71a465684
+        address: seed-1.emoney.validator.network
+        port: 28656
+      - id: 336cdb655ea16413a8337e730683ddc0a24af9de
+        address: seed-2.emoney.validator.network
+        port: 28656
+      - id: c2766f7f6dfe95f2eb33e99a538acf3d6ec608b1
+        address: 162.55.132.230
+        port: 2140
   moniker: emeris
   persistence:
     size: 100Gi
