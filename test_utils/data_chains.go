@@ -16,12 +16,6 @@ const (
 	clientChainsFolderPath = "./test_data/client/%s/"
 )
 
-type EnvChain struct {
-	Name    string
-	Enabled bool
-	Payload []byte
-}
-
 func LoadChainsInfo(env string) ([]cns.Chain, error) {
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
