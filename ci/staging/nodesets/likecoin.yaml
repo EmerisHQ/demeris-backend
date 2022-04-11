@@ -30,13 +30,13 @@ spec:
               string: 0.5nanolike
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
           - group: api
             key: enabled-unsafe-cors
             value:
