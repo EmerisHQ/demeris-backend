@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -18,7 +18,7 @@ const (
 func (suite *testCtx) TestStakingParams() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
-			cli, err := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 
 			// arrange

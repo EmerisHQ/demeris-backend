@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/allinbits/demeris-backend-models/cns"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 )
 
 const (
@@ -47,7 +47,7 @@ func LoadChainsInfo(env string) ([]cns.Chain, error) {
 	return chains, nil
 }
 
-func LoadClientChainsInfo(env string) ([]chainClient.ChainClient, error) {
+func LoadClientChainsInfo(env string) ([]chainclient.ChainClient, error) {
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
 	}
@@ -58,7 +58,7 @@ func LoadClientChainsInfo(env string) ([]chainClient.ChainClient, error) {
 		return nil, err
 	}
 
-	var chains []chainClient.ChainClient
+	var chains []chainclient.ChainClient
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), jsonSuffix) {
 			jFile, err := ioutil.ReadFile(d + f.Name())
@@ -66,7 +66,7 @@ func LoadClientChainsInfo(env string) ([]chainClient.ChainClient, error) {
 				return nil, err
 			}
 
-			var ch chainClient.ChainClient
+			var ch chainclient.ChainClient
 			err = json.Unmarshal(jFile, &ch)
 			if err != nil {
 				return nil, err

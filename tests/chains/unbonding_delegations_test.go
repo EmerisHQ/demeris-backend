@@ -9,7 +9,7 @@ import (
 	"time"
 
 	api "github.com/allinbits/demeris-api-server/api/account"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -21,7 +21,7 @@ const (
 func (suite *testCtx) TestUnbondingDelegations() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
-			cli, err := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 			if !cli.Enabled {
 				return

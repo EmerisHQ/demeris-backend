@@ -10,7 +10,7 @@ import (
 	"time"
 
 	txModels "github.com/allinbits/demeris-api-server/api/tx"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
@@ -24,7 +24,7 @@ const (
 func (suite *testCtx) TestTxPostEndpoint() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
-			cli, err := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 
 			// assert

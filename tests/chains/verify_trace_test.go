@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/allinbits/demeris-backend-models/cns"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	ibcclienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
@@ -47,7 +47,7 @@ func (suite *testCtx) TestVerifyTrace() {
 	}
 
 	// create clients and accounts for above picked chains
-	var ccA, ccB chainClient.ChainClient
+	var ccA, ccB chainclient.ChainClient
 	for _, ch := range suite.clientChains {
 		if ch.ChainName == chainA.ChainName {
 			ccA = ch
@@ -55,13 +55,13 @@ func (suite *testCtx) TestVerifyTrace() {
 			ccB = ch
 		}
 	}
-	cliB, err := chainClient.GetClient(suite.Env, chainB.ChainName, ccB, suite.T().TempDir())
+	cliB, err := chainclient.GetClient(suite.Env, chainB.ChainName, ccB, suite.T().TempDir())
 	suite.NoError(err)
 	suite.Require().NotNil(cliB)
 	recAccount, err := cliB.AccountGet(ccB.Key)
 	suite.Require().NoError(err)
 
-	cliA, err := chainClient.GetClient(suite.Env, chainA.ChainName, ccA, suite.T().TempDir())
+	cliA, err := chainclient.GetClient(suite.Env, chainA.ChainName, ccA, suite.T().TempDir())
 	suite.NoError(err)
 
 	suite.Require().NotNil(cliA)

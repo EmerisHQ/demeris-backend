@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	txModels "github.com/allinbits/demeris-api-server/api/tx"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
@@ -20,7 +20,7 @@ const (
 func (suite *testCtx) TestTxSimulateEndpoint() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
-			cli, err := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.NoError(err)
 
 			// assert

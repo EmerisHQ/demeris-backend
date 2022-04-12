@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	models "github.com/allinbits/demeris-api-server/api/account"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 func (suite *testCtx) TestGetAccountNumbers() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
-			cli, err := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 

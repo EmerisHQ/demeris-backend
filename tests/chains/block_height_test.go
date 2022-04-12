@@ -8,7 +8,7 @@ import (
 	"net/url"
 
 	blockModels "github.com/allinbits/demeris-api-server/api/block"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chain_client"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -20,7 +20,7 @@ func (suite *testCtx) TestBlockHeight() {
 	for _, ch := range suite.clientChains {
 		if ch.ChainName == "cosmos-hub" {
 			suite.Run(ch.ChainName, func() {
-				cli, _ := chainClient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
+				cli, _ := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 				suite.Require().NotNil(cli)
 				if !cli.Enabled {
 					return
