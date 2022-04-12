@@ -72,7 +72,7 @@ spec:
     reconcilePeriod: 4m
   image:
     name: gcr.io/tendermint-dev/gaia
-    version: v6.0.0
+    version: v7.0.0
     build:
       repository: https://github.com/cosmos/gaia
   join:

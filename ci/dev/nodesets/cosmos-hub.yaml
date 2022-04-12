@@ -39,7 +39,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/gaia
-    version: v6.0.3
+    version: v7.0.0
   init:
     assets:
       - 10000000000000000000000uatom
