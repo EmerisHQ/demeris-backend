@@ -156,6 +156,6 @@ spec:
         memory: 32Gi
       requests:
         cpu: "4"
-        memory: 16Gi
+        memory: 24Gi
     validator: {}
   sdkVersion: stargate
