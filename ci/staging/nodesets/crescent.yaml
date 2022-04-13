@@ -1,0 +1,161 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: crescent
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: crescent
+  app:
+    cliName: crescentd
+    daemonName: crescentd
+    name: crescent
+  config:
+    additionalEgressRules:
+    - ports:
+      - port: 26257
+        protocol: TCP
+    nodes:
+      blockThreshold: 20s
+      configOverride:
+        app:
+        - key: minimum-gas-prices
+          value:
+            string: 0ucre
+        - key: pruning
+          value:
+            string: default
+        - key: pruning-keep-recent
+          value:
+            string: "0"
+        - key: pruning-interval
+          value:
+            string: "0"
+        - group: api
+          key: enabled-unsafe-cors
+          value:
+            bool: true
+        config:
+        - group: rpc
+          key: cors_allowed_origins
+          value:
+            stringList:
+            - '*'
+      crisisSkipAssertInvariants: false
+      startupTimeout: 30m
+      traceStoreContainer:
+        env:
+        - name: TRACELISTENER_FIFOPATH
+          value: /trace-store/kvstore.fifo
+        - name: TRACELISTENER_DATABASECONNECTIONURL
+          value: postgres://root@cockroachdb-public:26257?sslmode=disable
+        - name: TRACELISTENER_TYPE
+          value: gaia
+        - name: TRACELISTENER_CHAINNAME
+          value: crescent
+        - name: TRACELISTENER_DEBUG
+          value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+    resetDataOnGenesisChanges: false
+    resetDataOnImageUpgrade: false
+  expose:
+    domain: crescent.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true
+  image:
+    build:
+      repository: https://github.com/crescent-network/crescent
+    name: gcr.io/tendermint-dev/crescent
+    version: v1.0.0
+  join:
+    genesis:
+      url: https://storage.googleapis.com/tmp-genesis/mainnet_genesis.json
+    persistentPeers:
+    - address: 52.194.172.170
+      id: 0ed5ed53ec3542202d02d0d47ac04a2823188fc2
+      port: 26656
+    - address: 34.146.27.13
+      id: 04016e800a079c8ee5bdb9361c81c026b6177856
+      port: 26656
+    - address: 52.197.140.210
+      id: 24be64cd648958d9f685f95516cb3b248537c386
+      port: 26656
+    - address: 3.39.144.72
+      id: 83b3ba06b43fda52c048934498c6ee2bd4987d2d
+      port: 26656
+    - address: 3.115.85.120
+      id: 7e59c83196fdc61dcf9d36c42776c0616bc0fc8c
+      port: 26656
+    - address: 172.104.108.21
+      id: 06415494b86316c55245d162da065c3c0fee83fc
+      port: 20406
+    - address: 45.76.97.48
+      id: 4293ce6b47ee2603236437ab44dc499519c71e62
+      port: 20406
+    - address: 167.179.75.240
+      id: 4113f7496857d3f161921c7af8d62022551a7e6b
+      port: 30535
+    - address: 198.13.62.7
+      id: 2271e3739ea477bce0df39dd9e95f8b952a2106e
+      port: 26656
+    - address: crescent-mainnet-01.01node.com
+      id: b34115ba926eb12059ca0ade4d1013cac2f8d289
+      port: 26656
+    - address: 34.88.102.246
+      id: d7556e41ba2f333379f6d87b1af3cce2ca545f79
+      port: 26656
+    - address: 34.84.227.139
+      id: 26011ac36240fb49852cc7196f71a1884434b8c4
+      port: 26656
+    - address: 52.199.91.143
+      id: b840926fb6a2bd04fc70e501002f9286655c9179
+      port: 30732
+    - address: 46.101.153.158
+      id: 86030850dd635cab1f136979568087407a025491
+      port: 26656
+    - address: 128.0.51.5
+      id: 3bcffbcb11e96edc84c04a5628639f5ed94b9db2
+      port: 26656
+    - address: 50.21.167.131
+      id: 3b468af82b8ffa049b3e1f67dc4615a31ec8f01e
+      port: 26656
+    - address: 54.250.202.17
+      id: 68787e8412ab97d99af7595c46514b9ab4b3df45
+      port: 26656
+    seeds:
+    - address: 18.180.232.184
+      id: 929f22a7b04ff438da9edcfebd8089908239de44
+      port: 26656
+  moniker: emeris
+  persistence:
+    autoResize:
+      enabled: false
+    size: 150Gi
+  replicas: 2
+  resources:
+    restServer: {}
+    sentry:
+      limits:
+        cpu: "8"
+        memory: 32Gi
+      requests:
+        cpu: "4"
+        memory: 16Gi
+    validator: {}
+  sdkVersion: stargate
