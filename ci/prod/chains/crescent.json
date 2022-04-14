@@ -1,0 +1,50 @@
+{
+  "chain_name": "crescent",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F2299351957-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FmEYtCuIUIqObZPWrSUQb%252Ficon%252FCv26i0d4sHliNOg5DlLt%252FProfile%2520Logo%2520Image%2520.png%3Falt%3Dmedia%26token%3D76b124da-6df3-46af-a55a-2fce8ad97e75",
+  "enabled": true,
+  "valid_block_thresh": "200s",
+  "display_name": "Crescent",
+  "cosmos_sdk_version": "v0.44.3",
+  "demeris_addresses": ["feeaddress"],
+  "primary_channel": {
+      "cosmos-hub": "channel-1",
+      "terra":"channel-0"
+    },
+  "denoms": [
+    {
+      "display_name": "Crescent",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": false,
+      "price_id": "crescent-token",
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 0,
+      "gas_price_levels": { "low": 0, "average": 0, "high": 0.001},
+      "name": "ucre",
+      "logo": "https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F2299351957-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FmEYtCuIUIqObZPWrSUQb%252Ficon%252FCv26i0d4sHliNOg5DlLt%252FProfile%2520Logo%2520Image%2520.png%3Falt%3Dmedia%26token%3D76b124da-6df3-46af-a55a-2fce8ad97e75",
+      "verified": true,
+      "precision": 6,
+      "ticker": "CRE"
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "crescent",
+    "chain_id": "crescent-1",
+    "bech32_config": {
+      "main_prefix": "cre",
+      "prefix_account": "cre",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "public_node_endpoints": {
+      "tendermint_rpc": ["https://mainnet.crescent.network:26657"],
+      "cosmos_api": ["https://mainnet.crescent.network:1317"]
+    },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/crescent"
+}
