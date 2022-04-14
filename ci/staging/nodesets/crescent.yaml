@@ -63,13 +63,6 @@ spec:
           value: "true"
         image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
         imagePullPolicy: Always
-        resources:
-          limits:
-            cpu: "1"
-            memory: 2Gi
-          requests:
-            cpu: 100m
-            memory: 1Gi
     reconcilePeriod: 5m
     resetDataOnGenesisChanges: false
     resetDataOnImageUpgrade: false
