@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/allinbits/demeris-backend-models/cns"
-	chainclient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 )
 
 const (

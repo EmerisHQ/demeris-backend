@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/allinbits/demeris-backend-models/cns"
-	chainclient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	ibcclienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"

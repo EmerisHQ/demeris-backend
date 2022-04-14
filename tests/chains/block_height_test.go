@@ -8,7 +8,7 @@ import (
 	"net/url"
 
 	blockModels "github.com/allinbits/demeris-api-server/api/block"
-	chainclient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 

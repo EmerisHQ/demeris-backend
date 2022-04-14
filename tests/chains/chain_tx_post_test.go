@@ -10,7 +10,7 @@ import (
 	"time"
 
 	txModels "github.com/allinbits/demeris-api-server/api/tx"
-	chainclient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"

@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	chainModels "github.com/allinbits/demeris-api-server/api/chains"
-	chainclient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 )
 
 const (

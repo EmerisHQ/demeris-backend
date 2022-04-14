@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainclient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
