@@ -30,13 +30,13 @@ spec:
               string: 0.005uatom
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
           - group: api
             key: enabled-unsafe-cors
             value:
@@ -72,7 +72,7 @@ spec:
     reconcilePeriod: 4m
   image:
     name: gcr.io/tendermint-dev/gaia
-    version: v6.0.0
+    version: v7.0.0
     build:
       repository: https://github.com/cosmos/gaia
   join:
@@ -141,7 +141,7 @@ spec:
         id: 0393c19b176d1cf8bc560c5a8fa990301deb1a7e
   moniker: emeris
   persistence:
-    size: 1500Gi
+    size: 300Gi
     autoResize:
       enabled: true
   replicas: 3
