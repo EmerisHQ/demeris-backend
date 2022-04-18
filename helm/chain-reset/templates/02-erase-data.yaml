@@ -24,7 +24,7 @@ spec:
         command: ["kubectl", "wait", "pod", "--selector", "nodeset={{- include "targetChain" . }}", "--for=delete", "-n", "emeris"]
       containers:
       - name: resetchain
-        image: "gcr.io/tendermint-dev/emeris-tracelistener-resetchain:main"
+        image: "gcr.io/tendermint-dev/emeris-tracelistener-resetchain:{{ .Values.traceListenerVersion }}"
         args:
         - -chain
         - "{{- include "targetChain" . }}"

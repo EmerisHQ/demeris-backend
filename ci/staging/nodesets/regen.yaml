@@ -30,13 +30,23 @@ spec:
               string: 0.015uregen
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -50,7 +60,7 @@ spec:
             value: regen
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -62,7 +72,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/regen
-    version: v2.1.0
+    version: v3.0.0
   join:
     genesis:
       url: https://github.com/regen-network/mainnet/raw/main/regen-1/genesis.json
@@ -82,7 +92,7 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 600Gi
+    size: 125Gi
     autoResize:
       enabled: true
   replicas: 2
@@ -94,3 +104,8 @@ spec:
       requests:
         cpu: "2"
         memory: 2Gi
+  expose:
+    domain: regen.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

@@ -4,18 +4,9 @@
     "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
     "display_name": "IRISNet",
     "primary_channel": {
-      "akash": "channel-11",
       "cosmos-hub": "channel-12",
-      "crypto-org": "channel-13",
-      "emoney": "channel-25",
-      "ixo": "channel-24",
-      "microtick": "channel-22",
       "osmosis": "channel-3",
-      "persistence": "channel-15",
-      "regen": "channel-16",
-      "sentinel": "channel-17",
-      "sifchain": "channel-19",
-      "starname": "channel-21"
+      "sifchain": "channel-19"
     },
     "denoms": [
       {

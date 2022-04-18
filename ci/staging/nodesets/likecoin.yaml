@@ -30,13 +30,23 @@ spec:
               string: 0.5nanolike
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -50,7 +60,7 @@ spec:
             value: likecoin
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:v1.3.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -89,3 +99,8 @@ spec:
       requests:
         cpu: 500m
         memory: 2Gi
+  expose:
+    domain: likecoin.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

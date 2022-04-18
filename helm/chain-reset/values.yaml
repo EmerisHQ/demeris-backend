@@ -1,8 +1,9 @@
-traceListener42Image: gcr.io/tendermint-dev/emeris-tracelistener-v42:main
-traceListener44Image: gcr.io/tendermint-dev/emeris-tracelistener-v44:main
+traceListener42Image: gcr.io/tendermint-dev/emeris-tracelistener-v42
+traceListener44Image: gcr.io/tendermint-dev/emeris-tracelistener-v44
 imagePullPolicy: Always
 
 sdkVersion: "0.44"
+traceListenerVersion: "NO_VERSION_SPECIFIED"
 
 nodesetFile: /tmp/foo
 enableChain: true

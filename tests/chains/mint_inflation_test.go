@@ -1,11 +1,13 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 )
 
 const (
@@ -21,22 +23,25 @@ func (suite *testCtx) TestMintInflation() {
 			url := suite.Client.BuildUrl(mintInflationEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			defer resp.Body.Close()
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				data, err := ioutil.ReadAll(resp.Body)
+				suite.Require().NoError(err)
 
-				//expect a numeric value
-				inflation := respValues[inflationKey]
-				suite.NotZero(inflation)
+				err = resp.Body.Close()
+				suite.Require().NoError(err)
+
+				var inflation chainModels.InflationResponse
+				err = json.Unmarshal(data, &inflation)
+				suite.Require().NoError(err)
 			}
 		})
 	}
