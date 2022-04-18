@@ -30,13 +30,23 @@ spec:
               string: 0.01uluna
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -50,12 +60,12 @@ spec:
             value: terra
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
         imagePullPolicy: Always
         resources:
           limits:
             cpu: "1"
-            memory: 2Gi
+            memory: 4Gi
           requests:
             cpu: 100m
             memory: 1Gi
@@ -90,16 +100,20 @@ spec:
         address: seed.terra-mainnet.everstake.one
   moniker: emeris
   persistence:
-    size: 1200Gi
+    size: 250Gi
     autoResize:
       enabled: true
   replicas: 2
   resources:
     sentry:
       limits:
-        cpu: "2"
+        cpu: "4"
         memory: 32Gi
       requests:
-        cpu: "1"
-        memory: 32Gi
-
+        cpu: "2"
+        memory: 16Gi
+  expose:
+    domain: terra.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

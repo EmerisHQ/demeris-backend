@@ -4,18 +4,9 @@
     "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
     "display_name": "IRISNet",
     "primary_channel": {
-      "akash": "channel-11",
       "cosmos-hub": "channel-12",
-      "crypto-org": "channel-13",
-      "emoney": "channel-25",
-      "ixo": "channel-24",
-      "microtick": "channel-22",
       "osmosis": "channel-3",
-      "persistence": "channel-15",
-      "regen": "channel-16",
-      "sentinel": "channel-17",
-      "sifchain": "channel-19",
-      "starname": "channel-21"
+      "sifchain": "channel-19"
     },
     "denoms": [
       {
@@ -62,7 +53,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc-iris.keplr.app:443"],
+        "cosmos_api": ["https://lcd-iris.keplr.app:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/iris",
     "cosmos_sdk_version": "v0.44.5"
   }

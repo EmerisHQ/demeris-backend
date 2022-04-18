@@ -4,18 +4,9 @@
     "logo": "https://storage.googleapis.com/emeris/logos/sentinel.svg",
     "display_name": "Sentinel",
     "primary_channel": {
-      "akash": "channel-10",
       "cosmos-hub": "channel-12",
-      "crypto-org": "channel-13",
-      "emoney": "channel-43",
-      "iris": "channel-9",
-      "ixo": "channel-42",
-      "microtick": "channel-41",
       "osmosis": "channel-0",
-      "persistence": "channel-15",
-      "regen": "channel-11",
-      "sifchain": "channel-36",
-      "starname": "channel-40"
+      "sifchain": "channel-36"
     },
     "denoms": [
       {
@@ -62,11 +53,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
     "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
+        "tendermint_rpc": ["https://rpc-sentinel.keplr.app:443"],
+        "cosmos_api": ["https://lcd-sentinel.keplr.app:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/sentinel",
     "cosmos_sdk_version": "v0.42.5"
   }

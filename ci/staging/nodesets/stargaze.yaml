@@ -30,13 +30,23 @@ spec:
               string: 0.1ustars
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -50,7 +60,7 @@ spec:
             value: stargaze
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -62,9 +72,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/stargaze
-    version: v2.0.0
-    build:
-      repository: https://github.com/public-awesome/stargaze
+    version: v3.0.0
   join:
     genesis:
       url: https://storage.googleapis.com/emeris/genesis/stargaze-1.json
@@ -83,15 +91,20 @@ spec:
         port: 16656
   moniker: emeris
   persistence:
-    size: 650Gi
+    size: 150Gi
     autoResize:
       enabled: true
   replicas: 2
   resources:
     sentry:
       limits:
-        cpu: "2"
+        cpu: "4"
         memory: 8Gi
       requests:
-        cpu: "1"
+        cpu: "2"
         memory: 4Gi
+  expose:
+    domain: stargaze.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

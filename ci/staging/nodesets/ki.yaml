@@ -30,13 +30,23 @@ spec:
               string: 0.025uxki
           - key: pruning
             value:
-              string: custom
+              string: default
           - key: pruning-keep-recent
             value:
-              string: "362880"
+              string: "0"
           - key: pruning-interval
             value:
-              string: "100"
+              string: "0"
+          - group: api
+            key: enabled-unsafe-cors
+            value:
+              bool: true
+        config:
+          - group: rpc
+            key: cors_allowed_origins
+            value:
+              stringList:
+              - '*' 
       startupTimeout: 1h
       traceStoreContainer:
         env:
@@ -50,7 +60,7 @@ spec:
             value: ki
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:v1.3.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -93,7 +103,7 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 160Gi
+    size: 200Gi
     autoResize:
       enabled: true
   replicas: 2
@@ -101,7 +111,12 @@ spec:
     sentry:
       limits:
         cpu: "4"
-        memory: 4Gi
+        memory: 8Gi
       requests:
         cpu: "2"
         memory: 2Gi
+  expose:
+    domain: ki.chain.staging.demeris.io
+    grpc: true
+    rpc: true
+    api: true

@@ -4,18 +4,9 @@
     "logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
     "display_name": "Crypto.org",
     "primary_channel": {
-      "akash": "channel-24",
       "cosmos-hub": "channel-27",
-      "emoney": "channel-42",
-      "iris": "channel-23",
-      "ixo": "channel-41",
-      "microtick": "channel-40",
       "osmosis": "channel-10",
-      "persistence": "channel-29",
-      "regen": "channel-25",
-      "sentinel": "channel-26",
-      "sifchain": "channel-33",
-      "starname": "channel-39"
+      "sifchain": "channel-33"
     },
     "denoms": [
       {
@@ -51,10 +42,10 @@
         "prefix_validator": "cncl",
         "prefix_consensus": "cons",
         "prefix_public": "pub",
-        "prefix_operator": "oper",
+        "prefix_operator": "​",
         "acc_addr": "cro",
         "acc_pub": "cropub",
-        "val_addr": "crocncloper",
+        "val_addr": "crocncl",
         "val_pub": "crocncloperpub",
         "cons_addr": "crocnclcons",
         "cons_pub": "crocnclconspub"
@@ -62,12 +53,12 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/394'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
     "public_node_endpoints": {
-      "tendermint_rpc": "",
-      "cosmos_api": ""
-    },
+        "tendermint_rpc": ["https://rpc-crypto-org.keplr.app:443"],
+        "cosmos_api": ["https://lcd-crypto-org.keplr.app:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/crypto-org",
     "cosmos_sdk_version": "v0.44.5"
   
 }

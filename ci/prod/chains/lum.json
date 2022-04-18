@@ -1,0 +1,61 @@
+{
+    "enabled": true,
+    "chain_name": "lum",
+    "logo": "https://storage.googleapis.com/emeris/logos/lum.svg",
+    "display_name": "lum",
+    "primary_channel": {
+      "osmosis": "channel-3"
+    },
+    "denoms": [
+      {
+        "name": "ulum",
+        "display_name": "LUM",
+        "logo": "https://storage.googleapis.com/emeris/logos/lum.svg",
+        "precision": 6,
+        "verified": true,
+        "stakable": true,
+        "ticker": "LUM",
+        "price_id": "lum-network",
+        "fee_token": true,
+        "gas_price_levels": {
+          "low": 0.03,
+          "average": 0.075,
+          "high": 0.12
+        },
+        "fetch_price": true,
+        "relayer_denom": true,
+        "minimum_thresh_relayer_balance": 50000000
+      }
+    ],
+    "demeris_addresses": [
+      "feeaddress"
+    ],
+    "genesis_hash": "genesis_hash",
+    "node_info": {
+      "endpoint": "lum",
+      "chain_id": "lum-network-1",
+      "bech32_config": {
+        "main_prefix": "lum",
+        "prefix_account": "lum",
+        "prefix_validator": "val",
+        "prefix_consensus": "cons",
+        "prefix_public": "pub",
+        "prefix_operator": "oper",
+        "acc_addr": "lum",
+        "acc_pub": "lumpub",
+        "val_addr": "lumvaloper",
+        "val_pub": "lumvaloperpub",
+        "cons_addr": "lumvalcons",
+        "cons_pub": "lumvalconspub"
+      }
+    },
+    "valid_block_thresh": "30s",
+    "derivation_path": "m/44'/880'/0'/0/0",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://node0.mainnet.lum.network:443/rpc"],
+        "cosmos_api": ["https://node0.mainnet.lum.network:443/rest"]
+      },
+    "block_explorer": "https://www.mintscan.io/lum",
+    "cosmos_sdk_version": "v0.44.5"
+  }

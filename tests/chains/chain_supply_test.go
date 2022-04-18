@@ -3,11 +3,11 @@ package tests
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 )
 
 const (
@@ -23,28 +23,28 @@ func (suite *testCtx) TestChainSupply() {
 			url := suite.Client.BuildUrl(chainSupplyEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			defer resp.Body.Close()
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				data, err := ioutil.ReadAll(resp.Body)
+				suite.Require().NoError(err)
 
-				data, err := json.Marshal(respValues[supplyKey])
-				suite.NoError(err)
+				err = resp.Body.Close()
+				suite.Require().NoError(err)
 
-				var coins sdk.Coins
+				var coins chainModels.SupplyResponse
 				err = json.Unmarshal(data, &coins)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				//check if the repsonse is empty
-				suite.NotEmpty(coins)
+				suite.Require().NotEmpty(coins)
 			}
 		})
 	}

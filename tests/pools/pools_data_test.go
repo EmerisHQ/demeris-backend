@@ -16,18 +16,18 @@ func (suite *testCtx) TestPoolsData() {
 	url := suite.Client.BuildUrl(poolsEndpoint)
 
 	resp, err := suite.Client.Get(url)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
-	suite.Equal(http.StatusOK, resp.StatusCode)
+	suite.Require().Equal(http.StatusOK, resp.StatusCode)
 
 	var respValues map[string]interface{}
 	utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 	err = resp.Body.Close()
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
-	suite.NotNil(respValues)
+	suite.Require().NotNil(respValues)
 
-	pools, _ := respValues["pools"]
-	suite.NotEmpty(pools)
+	pools := respValues["pools"]
+	suite.Require().NotEmpty(pools)
 }

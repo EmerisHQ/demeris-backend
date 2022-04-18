@@ -25,12 +25,12 @@ func (suite *testCtx) TestLiquidityStatus() {
 
 				// act
 				resp, err := suite.Client.Get(url)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				defer resp.Body.Close()
 
 				// assert
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var values map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &values, t)
@@ -47,7 +47,7 @@ func (suite *testCtx) TestLiquidityStatus() {
 
 				expectedName := fv["chain_id"]
 
-				suite.Equal(expectedName, networkName)
+				suite.Require().Equal(expectedName, networkName)
 			})
 		}
 	}

@@ -23,7 +23,8 @@
       "bitcanna":"channel-232",
       "chihuahua":"channel-229",
       "bitsong":"channel-229",
-      "cheqd":"channel-239"
+      "cheqd":"channel-239",
+      "crescent":"channel-326"
     },
     "denoms": [
       {
@@ -280,7 +281,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc-cosmoshub.blockapsis.com:443"],
+        "cosmos_api": ["https://lcd-cosmoshub.blockapsis.com:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/cosmos",
     "cosmos_sdk_version": "v0.44.5"
   }

@@ -28,7 +28,7 @@ spec:
             value: terra
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener44:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:1.3.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -66,18 +66,18 @@ spec:
   resources:
     validator:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
     sentry:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
   expose:
     domain: terra-emeris.app.alpha.starport.cloud
     grpc: true

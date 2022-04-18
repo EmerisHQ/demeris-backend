@@ -5,7 +5,9 @@
   "display_name": "Cosmos Hub Emeris",
   "primary_channel": {
     "akash": "channel-0",
-    "terra": "channel-1"
+    "terra": "channel-1",
+    "crypto-org": "channel-2",
+    "iris": "channel-3"
   },
   "denoms": [
     {
@@ -47,7 +49,7 @@
   "genesis_hash": "genesis_hash",
   "node_info": {
     "endpoint": "cosmos-hub",
-    "chain_id": "cosmos-hub-testnet",
+    "chain_id": "cosmoshub-testnet",
     "bech32_config": {
       "main_prefix": "cosmos",
       "prefix_account": "cosmos",

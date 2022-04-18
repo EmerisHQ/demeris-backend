@@ -18,13 +18,14 @@ const (
 func (suite *testCtx) TestGetAccountNumbers() {
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.Name, func() {
-			var cc chainClient.Client
+			var cc chainClient.ChainClient
 			err := json.Unmarshal(ch.Payload, &cc)
 			suite.Require().NoError(err)
-			cli := chainClient.GetClient(suite.T(), suite.Env, ch.Name, cc)
+			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			hexAddress, err := cli.GetHexAddress(cc.Key)
+			hexAddress, err := cli.GetAccAddress(cc.Key)
 			suite.Require().NoError(err)
 
 			url := suite.Client.BuildUrl(accountNumbersEndpoint, hex.EncodeToString(hexAddress))
@@ -50,6 +51,22 @@ func (suite *testCtx) TestGetAccountNumbers() {
 
 			suite.Require().NotEmpty(numbers.Numbers)
 
+			// get account information
+			account, err := cli.AccountGet(cc.Key)
+			suite.Require().NoError(err)
+
+			// query account numbers from cli
+			accNum, err := cli.GetAccountInfo(account.Address)
+			suite.Require().NoError(err)
+
+			// comapre account and sequence numbers
+			for _, v := range numbers.Numbers {
+				if v.ChainName == ch.Name {
+					suite.Require().Equal(accNum.GetAccountNumber(), v.AccountNumber)
+					suite.Require().Equal(accNum.GetSequence(), v.SequenceNumber)
+					return
+				}
+			}
 		})
 	}
 }

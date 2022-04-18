@@ -12,18 +12,35 @@ spec:
       gasPrice:
         price: "0.001"
       accountPrefix: cosmos
+      hdPath: m/44'/118'/0'/0/0
 
     - nodeset: akash
       faucet: akash-faucet
       gasPrice:
         price: "0.001"
       accountPrefix: akash
+      hdPath: m/44'/118'/0'/0/0
 
     - nodeset: terra
       faucet: terra-faucet
       gasPrice:
         price: "0.01"
       accountPrefix: terra
+      hdPath: m/44'/330'/0'/0/0
+
+    - nodeset: crypto-org
+      faucet: crypto-org-faucet
+      gasPrice:
+        price: "0.025"
+      accountPrefix: cro
+      hdPath: m/44'/394'/0'/0/0
+
+    - nodeset: iris
+      faucet: iris-faucet
+      gasPrice:
+        price: "0.2"
+      accountPrefix: iaa
+      hdPath: m/44'/118'/0'/0/0
 
   paths:
     - sideA: cosmos-hub
@@ -34,3 +51,24 @@ spec:
 
     - sideA: terra
       sideB: akash
+
+    - sideA: cosmos-hub
+      sideB: crypto-org
+
+    - sideA: akash
+      sideB: crypto-org
+
+    - sideA: terra
+      sideB: crypto-org
+
+    - sideA: cosmos-hub
+      sideB: iris
+
+    - sideA: akash
+      sideB: iris
+
+    - sideA: terra
+      sideB: iris
+
+    - sideA: crypto-org
+      sideB: iris

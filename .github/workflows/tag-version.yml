@@ -11,7 +11,7 @@ env:
   CHECKOUT_REF: ${{ github.event.client_payload.tag || 'master' }}
   ENV: ${{ github.event.client_payload.env }}
   SERVICE_NAME: ${{ github.event.client_payload.service_name }}
-  IMAGE_SHA: ${{ github.event.client_payload.image_sha }}
+  IMAGE_TAG: ${{ github.event.client_payload.image_tag }}
 
 jobs:
   bump-tag:
@@ -40,7 +40,7 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         file_pattern: envs/*.json
-        commit_message: "chore(${{ env.ENV }}): bump ${{ env.SERVICE_NAME }}:${{ env.IMAGE_SHA }}"
+        commit_message: "chore(${{ env.ENV }}): bump ${{ env.SERVICE_NAME }}:${{ env.IMAGE_TAG }}"
 
     - name: Create and push tag
       uses: anothrNick/github-tag-action@master

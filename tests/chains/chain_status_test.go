@@ -1,11 +1,13 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 )
 
 const (
@@ -20,18 +22,25 @@ func (suite *testCtx) TestChainStatus() {
 			url := suite.Client.BuildUrl(statusEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
-				var values map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &values, t)
+				data, err := ioutil.ReadAll(resp.Body)
+				suite.Require().NoError(err)
 
-				suite.Equal(true, values[onlineKey].(bool), fmt.Sprintf("Chain %s Online %t", ch.Name, values[onlineKey].(bool)))
+				err = resp.Body.Close()
+				suite.Require().NoError(err)
+
+				var status chainModels.StatusResponse
+				err = json.Unmarshal(data, &status)
+				suite.Require().NoError(err)
+
+				suite.Require().Equal(true, status.Online)
 			}
 		})
 	}

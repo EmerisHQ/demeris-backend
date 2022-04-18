@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
@@ -19,39 +20,39 @@ func (suite *testCtx) TestChainFeeToken() {
 			url := suite.Client.BuildUrl(chainFeeTokenEndpoint, ch.Name)
 			// act
 			resp, err := suite.Client.Get(url)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			// assert
 			if !ch.Enabled {
-				suite.Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 			} else {
-				suite.Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
 
 				err = resp.Body.Close()
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				data, err := json.Marshal(respValues["fee_tokens"])
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				var denoms cns.DenomList
+				var denoms []chainModels.FeeResponse
 				err = json.Unmarshal(data, &denoms)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
-				suite.NotEmpty(denoms)
+				suite.Require().NotEmpty(denoms)
 
 				var payload map[string]interface{}
 				err = json.Unmarshal(ch.Payload, &payload)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				data, err = json.Marshal(payload["denoms"])
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				var expectedDenoms cns.DenomList
 				err = json.Unmarshal(data, &expectedDenoms)
-				suite.NoError(err)
+				suite.Require().NoError(err)
 
 				var expectedFeeDenoms cns.DenomList
 				for _, denom := range expectedDenoms {
@@ -59,8 +60,9 @@ func (suite *testCtx) TestChainFeeToken() {
 						expectedFeeDenoms = append(expectedFeeDenoms, denom)
 					}
 				}
-				suite.Equal(len(expectedFeeDenoms), len(denoms))
-				suite.ElementsMatch(expectedFeeDenoms, denoms)
+
+				suite.Require().Equal(len(expectedFeeDenoms), len(denoms))
+				suite.Require().ElementsMatch(expectedFeeDenoms, denoms)
 			}
 		})
 	}

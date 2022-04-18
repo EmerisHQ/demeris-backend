@@ -27,7 +27,7 @@ spec:
             value: akash
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:1.3.0
         imagePullPolicy: Always
         resources:
           limits:
@@ -67,18 +67,18 @@ spec:
   resources:
     validator:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
     sentry:
       requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
         cpu: 100m
         memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
 
   expose:
     domain: akash-emeris.app.alpha.starport.cloud

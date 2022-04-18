@@ -1,0 +1,62 @@
+{
+  "chain_name": "crescent",
+  "derivation_path": "m/44'/118'/0'/0/0",
+  "logo": "https://storage.googleapis.com/emeris/logos/cre.svg",
+  "enabled": true,
+  "valid_block_thresh": "200s",
+  "display_name": "Crescent",
+  "cosmos_sdk_version": "v0.44.3",
+  "demeris_addresses": ["feeaddress"],
+  "primary_channel": {
+      "cosmos-hub": "channel-1",
+      "terra":"channel-0"
+    },
+  "denoms": [
+    {
+      "display_name": "Crescent",
+      "stakable": true,
+      "fee_token": true,
+      "fetch_price": false,
+      "price_id": "crescent-token",
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 0,
+      "gas_price_levels": { "low": 0, "average": 0, "high": 0.001},
+      "name": "ucre",
+      "logo": "https://storage.googleapis.com/emeris/logos/cre.svg",
+      "verified": true,
+      "precision": 6,
+      "ticker": "CRE"
+    },
+    {
+      "name": "ubcre",
+      "display_name": "bCRE",
+      "logo": "https://static-resources.crescent.network/bCRE.png",
+      "precision": 6,
+      "verified": true,
+      "ticker": "bCRE",
+      "price_id": "bCRE",
+      "fee_token": false,
+      "fetch_price": false,
+      "relayer_denom": false
+    }
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "crescent",
+    "chain_id": "crescent-1",
+    "bech32_config": {
+      "main_prefix": "cre",
+      "prefix_account": "cre",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper"
+    }
+  },
+  "public_node_endpoints": {
+      "tendermint_rpc": ["https://mainnet.crescent.network:26657"],
+      "cosmos_api": ["https://mainnet.crescent.network:1317"]
+    },
+  "supported_wallets": ["keplr"],
+  "block_explorer": "https://www.mintscan.io/crescent"
+}

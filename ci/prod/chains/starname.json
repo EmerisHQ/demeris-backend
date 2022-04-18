@@ -4,16 +4,8 @@
     "logo": "https://storage.googleapis.com/emeris/logos/starname.svg",
     "display_name": "Starname",
     "primary_channel": {
-      "akash": "channel-7",
       "cosmos-hub": "channel-0",
-      "crypto-org": "channel-9",
-      "iris": "channel-11",
-      "ixo": "channel-17",
-      "microtick": "channel-16",
-      "osmosis": "channel-12",
-      "persistence": "channel-13",
-      "regen": "channel-14",
-      "sentinel": "channel-15"
+      "osmosis": "channel-2"
     },
     "denoms": [
       {
@@ -60,7 +52,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/234'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc-iov.keplr.app:443"],
+        "cosmos_api": ["https://lcd-iov.keplr.app:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/starname",
     "cosmos_sdk_version": "v0.44.5"
   }

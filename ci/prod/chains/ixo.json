@@ -4,16 +4,8 @@
     "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
     "display_name": "IXO",
     "primary_channel": {
-      "akash": "channel-0",
       "cosmos-hub": "channel-1",
-      "crypto-org": "channel-2",
-      "iris": "channel-3",
-      "microtick": "channel-9",
-      "osmosis": "channel-4",
-      "persistence": "channel-5",
-      "regen": "channel-6",
-      "sentinel": "channel-7",
-      "starname": "channel-8"
+      "osmosis": "channel-4"
     },
     "denoms": [
       {
@@ -60,7 +52,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://impacthub.ixo.world:443/rpc"],
+        "cosmos_api": ["https://impacthub.ixo.world:443/rest"]
+      },
+    "block_explorer": "https://blockscan.ixo.world",
     "cosmos_sdk_version": "v0.42.9"
   }

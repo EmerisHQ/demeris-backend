@@ -1,5 +1,5 @@
 {
-    "enabled": true,
+    "enabled": false,
     "chain_name": "stargaze",
     "logo": "https://storage.googleapis.com/emeris/logos/stars.svg",
     "display_name": "Stargaze",
@@ -52,7 +52,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
-    "cosmos_sdk_version": "v0.45.0"
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc.stargaze-apis.com:443"],
+        "cosmos_api": ["https://rest.stargaze-apis.com:443"]
+      },
+    "block_explorer": "https://www.mintscan.io/stargaze",
+    "cosmos_sdk_version": "v0.44.0"
   }

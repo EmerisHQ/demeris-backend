@@ -1,0 +1,87 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: crypto-org
+  namespace: emeris
+spec:
+  app:
+    cliName: chain-maind
+    daemonName: chain-maind
+    name: crypto-org
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      crisisSkipAssertInvariants: false
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: crypto-org
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:1.3.0
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/crypto-com
+    version: v3.3.3
+  init:
+    assets:
+      - 1000000000000000000000basecro
+    bondDenom: basecro
+    chainID: cryptoorg-testnet
+    faucet:
+      creditAmount: 10000000
+      denoms:
+        - basecro
+      domain: faucet.crypto-org-emeris.app.alpha.starport.cloud
+      funds: 1000000000000000000000basecro
+      legacySend: false
+      maxCredit: 100000000
+      replicas: 1
+    stakeAmount: 1000000basecro
+  moniker: emeris
+  persistence:
+    autoResize:
+      enabled: true
+      increment: 5G
+      threshold: 80
+    size: 15G
+  replicas: 1
+  resources:
+    validator:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+    sentry:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+  expose:
+    domain: crypto-org-emeris.app.alpha.starport.cloud
+    grpc: true
+    rpc: true
+    api: true
+    p2p: true

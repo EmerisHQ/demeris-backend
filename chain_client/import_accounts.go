@@ -3,12 +3,10 @@ package client
 import (
 	"encoding/json"
 	"os"
-	"testing"
 
 	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -20,30 +18,30 @@ const (
 )
 
 // GetClient is to create client and imports mnemonic and returns created chain client
-func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client) {
+func GetClient(env string, chainName string, cc ChainClient, dir string) (c *ChainClient, err error) {
 	chainInfo, err := utils.LoadSingleChainInfo(env, chainName)
-	require.NoError(t, err)
+	if err != nil {
+		return nil, err
+	}
 
 	var info cns.Chain
 	err = json.Unmarshal(chainInfo.Payload, &info)
-	require.NoError(t, err)
-
-	addressPrefix := info.NodeInfo.Bech32Config.PrefixAccount
-	chainID := info.NodeInfo.ChainID
+	if err != nil {
+		return nil, err
+	}
 
 	initSDKConfig(info.NodeInfo.Bech32Config)
-
-	c, err = CreateChainClient(cc.RPC, cc.KeyringServiceName, chainID, t.TempDir())
-	require.NoError(t, err)
-	require.NotNil(t, c)
+	c, err = CreateChainClient(cc.RPC, cc.KeyringServiceName, info.NodeInfo.ChainID, dir)
+	if err != nil {
+		return nil, err
+	}
 
 	mnemonic := cc.Mnemonic
 	if env == StagingEnvKey {
 		mnemonic = GetMnemonic(chainName)
-
 	}
 
-	c.AddressPrefix = addressPrefix
+	c.AddressPrefix = info.NodeInfo.Bech32Config.PrefixAccount
 	c.HDPath = info.DerivationPath
 	c.Enabled = info.Enabled
 	c.ChainName = info.ChainName
@@ -53,11 +51,12 @@ func GetClient(t *testing.T, env string, chainName string, cc Client) (c *Client
 		c.Denom = info.Denoms[0].Name
 	}
 
-	a, err := c.ImportMnemonic(cc.Key, c.Mnemonic, c.HDPath)
-	require.NoError(t, err)
-	require.NotNil(t, a)
+	_, err = c.ImportMnemonic(cc.Key, c.Mnemonic, c.HDPath)
+	if err != nil {
+		return nil, err
+	}
 
-	return c
+	return c, nil
 }
 
 func initSDKConfig(config cns.Bech32Config) {

@@ -19,23 +19,20 @@ spec:
         args:
         - "job"
         - "{{ .Release.Name }}-scale-down"
+      - name: wait-pods-down
+        image: bitnami/kubectl
+        command: ["kubectl", "wait", "pod", "--selector", "nodeset={{- include "targetChain" . }}", "--for=delete", "-n", "emeris"]
       containers:
-      - name: cockroach-client
-        image: "cockroachdb/cockroach:v21.2.5"
+      - name: resetchain
+        image: "gcr.io/tendermint-dev/emeris-tracelistener-resetchain:{{ .Values.traceListenerVersion }}"
         args:
-        - sql
-        - --insecure
-        - --host=cockroachdb-public
-        - --database=tracelistener
-        - -e
-        - DELETE FROM tracelistener.balances WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.connections WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.delegations WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.unbonding_delegations WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.denom_traces WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.channels WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.auth WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.clients WHERE chain_name='{{- include "targetChain" . }}';
-          DELETE FROM tracelistener.validators WHERE chain_name='{{- include "targetChain" . }}';
+        - -chain
+        - "{{- include "targetChain" . }}"
+        - -db
+        - postgresql://root@cockroachdb-public:26257/tracelistener?sslmode=disable
+        {{- if .Values.eraseTables }}
+        - -tables
+        - {{ .Values.eraseTables }}
+        {{ end }}
       restartPolicy: Never
   backoffLimit: 0

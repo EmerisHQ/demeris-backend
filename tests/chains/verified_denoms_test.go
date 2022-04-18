@@ -17,14 +17,14 @@ func (suite *testCtx) TestVerifiedDenoms() {
 		if ch.Enabled {
 			var payload map[string]interface{}
 			err := json.Unmarshal(ch.Payload, &payload)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			data, err := json.Marshal(payload["denoms"])
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			var expectedDenoms cns.DenomList
 			err = json.Unmarshal(data, &expectedDenoms)
-			suite.NoError(err)
+			suite.Require().NoError(err)
 
 			for _, denom := range expectedDenoms {
 				if denom.Verified {
@@ -38,7 +38,7 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	url := suite.Client.BuildUrl(verifiedDenomsEndpoint)
 	// act
 	resp, err := suite.Client.Get(url)
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	var respValues map[string]interface{}
 	utils.RespBodyToMap(resp.Body, &respValues, suite.T())
@@ -46,14 +46,14 @@ func (suite *testCtx) TestVerifiedDenoms() {
 	defer resp.Body.Close()
 
 	data, err := json.Marshal(respValues["verified_denoms"])
-	suite.NoError(err)
+	suite.Require().NoError(err)
 
 	var denoms cns.DenomList
 	err = json.Unmarshal(data, &denoms)
-	suite.NoError(err)
-	suite.NotNil(denoms)
+	suite.Require().NoError(err)
+	suite.Require().NotNil(denoms)
 
-	suite.Equal(len(chainsDenoms), len(denoms))
+	suite.Require().Equal(len(chainsDenoms), len(denoms))
 
-	suite.ElementsMatch(chainsDenoms, denoms)
+	suite.Require().ElementsMatch(chainsDenoms, denoms)
 }

@@ -1,7 +1,7 @@
 {
     "enabled": true,
     "chain_name": "sommelier",
-    "logo": "https://app.osmosis.zone/public/assets/tokens/somm.png",
+    "logo": "https://storage.googleapis.com/emeris/logos/somm.svg",
     "display_name": "sommelier",
     "primary_channel": {
       "osmosis": "channel-0"
@@ -10,7 +10,7 @@
       {
         "name": "usomm",
         "display_name": "SOMM",
-        "logo": "https://app.osmosis.zone/public/assets/tokens/somm.png",
+        "logo": "https://storage.googleapis.com/emeris/logos/somm.svg",
         "precision": 6,
         "verified": true,
         "stakable": true,
@@ -51,7 +51,11 @@
     },
     "valid_block_thresh": "30s",
     "derivation_path": "m/44'/118'/0'/0/0",
-    "supported_wallets": [],
-    "block_explorer": "\"\"",
+    "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["https://rpc-sommelier.keplr.app:443"],
+        "cosmos_api": ["https://lcd-sommelier.keplr.app:443"]
+      },
+    "block_explorer": "https://sommscan.io",
     "cosmos_sdk_version": "v0.44.5"
   }
