@@ -1,0 +1,103 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: crescent
+  namespace: emeris
+spec:
+  app:
+    cliName: crescentd
+    daemonName: crescentd
+    name: crescent
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      startupTimeout: 30m
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: crescent
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: gcr.io/tendermint-dev/crescent
+    version: v1.0.0-rc4
+    build:
+      repository: https://github.com/crescent-network/crescent
+  join:
+    genesis:
+      url: https://storage.googleapis.com/tmp-genesis/genesis_collect-gentxs.json
+    seeds:
+      - address: 54.169.204.99
+        id: 1fe40daaf2643fd3857e30f86ff30ea82bf1c03b
+        port: 26656
+    persistentPeers:
+      - id: 2d8e31ad11b840c5ce7f1900b4da3a3bcf0985ef
+        address: 139.59.151.125
+        port: 26656
+      - id: 09e76cfbe89357d6bb3b16c4d013f420721b6664
+        address: 50.18.111.23
+        port: 26656
+      - id: 3802abfdf8a1c0a60041e684b08b6bec92d0a325
+        address: 178.62.19.161
+        port: 26656
+      - id: 2821cee54928a0fe1db97376ae7c48c4f0a9528a
+        address: 137.184.127.205
+        port: 26656
+      - id: b2d2685e01641264fff25f5b3be23eacbdf9b08d
+        address: 3.35.211.36
+        port: 26656
+      - id: 29b006edeb2e0ee9bbe05060ebc6550549dc656e
+        address: 218.53.140.56
+        port: 20406
+      - id: e2f735b5ecb6f909d09f4e3ebce6a90c63d18fbe
+        address: 59.13.223.197
+        port: 30535
+      - id: b91b8ab43d8fc161587f09a09ccbb7fda7c41beb
+        address: 37.120.245.39
+        port: 26656
+      - id: 841f1cfa0174017813e2291cfa845001391a2cee
+        address: crescent-testnet.01no.de
+        port: 26656
+      - id: bdce75b9a471de6d131571b0c40ce6070d7da878
+        address: 80.64.208.109
+        port: 26656
+
+  moniker: emeris
+  persistence:
+    size: 150Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi
+  expose:
+    domain: crescent-emeris.app.alpha.starport.cloud
+    grpc: true
+    rpc: true
+    api: true
+    p2p: true
