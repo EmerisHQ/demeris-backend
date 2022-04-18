@@ -1,17 +1,13 @@
 name: golangci-lint
 on:
+  workflow_dispatch:
   pull_request:
-  push:
-    branches:
-      - master
-      - develop
-      - sahith/update-dev
 permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
   # pull-requests: read
 env:
-  GOPRIVATE: "github.com/allinbits/*"
+  GOPRIVATE: "github.com/emerishq,github.com/allinbits"
 
 jobs:
   golangci:

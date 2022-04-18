@@ -5,7 +5,7 @@ on:
     types: [integration-test]
 
 env:
-  GOPRIVATE: "github.com/allinbits/*"
+  GOPRIVATE: "github.com/emerishq,github.com/allinbits"
 
 jobs:
   tests:
