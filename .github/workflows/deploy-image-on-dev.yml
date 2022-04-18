@@ -53,7 +53,7 @@ jobs:
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               --set image=gcr.io/tendermint-dev/"${{ env.image_name }}":"${{ env.image_tag }}" \
               --set daggregationPublicBaseUrl=https://dev.demeris.io/v1/daggregation \
-              --set redirectURL=https://develop--emeris-admin.netlify.app/login \
+              --set redirectURL=https://develop.emeris-admin.pages.dev/login \
               --set test=true \
               ./helm
   
