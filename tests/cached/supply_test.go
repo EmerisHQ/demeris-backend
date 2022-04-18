@@ -11,8 +11,6 @@ const (
 )
 
 func (suite testCtx) TestCachedSupply() {
-	suite.T().Parallel()
-
 	// get cached supply
 	var cachedValues map[string]interface{}
 	err := suite.Client.GetJson(&cachedValues, cachedSupplyEndPoint)
