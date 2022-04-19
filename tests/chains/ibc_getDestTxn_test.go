@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -23,11 +22,17 @@ const (
 	getDestTxnEndpoint = "tx/%s/%s/%s"
 )
 
+var chainsFilter = map[string]bool{
+	"akash":      true,
+	"cosmos-hub": true,
+	"terra":      false,
+}
+
 func (suite *testCtx) TestGetDestTxn() {
 	// filter enabled chains
 	var enabledChains []test_utils.EnvChain
 	for _, chain := range suite.Chains {
-		if chain.Enabled {
+		if chain.Enabled && chainsFilter[chain.Name] {
 			enabledChains = append(enabledChains, chain)
 		}
 	}
@@ -46,7 +51,7 @@ func (suite *testCtx) TestGetDestTxn() {
 	}
 
 	// create clients and accounts for above picked chains
-	var ccA, ccB chainClient.Client
+	var ccA, ccB chainClient.ChainClient
 	for _, ch := range suite.clientChains {
 		if ch.Name == chainA.Name {
 			err := json.Unmarshal(ch.Payload, &ccA)
@@ -56,16 +61,16 @@ func (suite *testCtx) TestGetDestTxn() {
 			suite.Require().NoError(err)
 		}
 	}
-	cliB := chainClient.GetClient(suite.T(), suite.Env, chainB.Name, ccB)
-	suite.Require().NotNil(cliB)
+	cliB, err := chainClient.GetClient(suite.Env, chainB.Name, ccB, suite.T().TempDir())
+	suite.Require().NoError(err)
 	rec_account, err := cliB.AccountGet(ccB.Key)
 	suite.Require().NoError(err)
 
-	cliA := chainClient.GetClient(suite.T(), suite.Env, chainA.Name, ccA)
-	suite.Require().NotNil(cliA)
+	cliA, err := chainClient.GetClient(suite.Env, chainA.Name, ccA, suite.T().TempDir())
+	suite.Require().NoError(err)
 	send_account, err := cliA.AccountGet(ccA.Key)
 	suite.Require().NoError(err)
-	fromAddr, err := sdk.AccAddressFromBech32(send_account.Address)
+	fromAddr, err := cliA.GetAccAddress(ccA.Key)
 	suite.Require().NoError(err)
 
 	// get respective channel for chainB from chainA payload
@@ -77,19 +82,16 @@ func (suite *testCtx) TestGetDestTxn() {
 	var primary_channels map[string]string
 	suite.Require().NoError(json.Unmarshal(channelBytes, &primary_channels))
 
-	// get chainA denom
-	denomBytes, err := json.Marshal(chainAData["denoms"])
-	suite.Require().NoError(err)
-	var denoms []map[string]interface{}
-	suite.Require().NoError(json.Unmarshal(denomBytes, &denoms))
+	// // get chainA denom
+	denom := chainAData["denoms"].([]interface{})[0].(map[string]interface{})["name"].(string)
 
 	// check balance for account A
-	accABalance, err := cliA.GetAccountBalances(send_account.Address, denoms[0]["name"].(string))
+	accABalance, err := cliA.GetAccountBalances(send_account.Address, denom)
 	suite.Require().NoError(err)
 	suite.Require().Greater(accABalance.Amount.BigInt().Uint64(), uint64(100), "Not enough balance to make an IBC transaction")
 
 	token := sdk.Coin{
-		Denom:  denoms[0]["name"].(string),
+		Denom:  denom,
 		Amount: sdk.NewInt(100),
 	}
 
@@ -109,11 +111,11 @@ func (suite *testCtx) TestGetDestTxn() {
 
 	timeoutHeight := ibcclienttypes.Height{
 		RevisionNumber: 0,
-		RevisionHeight: uint64(height + 100),
+		RevisionHeight: uint64(height + 100000),
 	}
 
 	// build IBC denom hash
-	ibcDenom := strings.ToUpper(fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("transfer/%s/%s", primary_channels[ccB.ChainName], denoms[0]["name"].(string))))))
+	ibcDenom := strings.ToUpper(fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("transfer/%s/%s", primary_channels[ccB.ChainName], denom)))))
 
 	// get account B balance before IBC transaction
 	prevBalance, err := cliB.GetAccountBalances(rec_account.Address, fmt.Sprintf("ibc/%s", ibcDenom))
@@ -122,7 +124,7 @@ func (suite *testCtx) TestGetDestTxn() {
 	// build and broadcast ibc transfer message
 	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName], token, fromAddr, rec_account.Address, timeoutHeight, 0)
 
-	txRes, err := cliA.Broadcast(ccA.Key, context.Background(), cliA.GetContext(), msg)
+	txRes, err := cliA.Broadcast(ccA.Key, fromAddr, cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
 	time.Sleep(time.Second * 8)
