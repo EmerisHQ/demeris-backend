@@ -101,6 +101,7 @@ func (suite *testCtx) TestGetDestTxn() {
 
 	bz, err := ioutil.ReadAll(resp.Body)
 	suite.Require().NoError(err)
+	defer suite.Require().NoError(resp.Body.Close())
 
 	var blockData map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(bz, &blockData))
@@ -136,7 +137,6 @@ func (suite *testCtx) TestGetDestTxn() {
 	// check updated balance
 	suite.Require().Equal(uint64(100), postBalance.Amount.BigInt().Uint64()-prevBalance.Amount.BigInt().Uint64())
 
-	fmt.Println(txRes.TxHash)
 	url := suite.Client.BuildUrl(getDestTxnEndpoint, chainA.Name, chainB.Name, txRes.TxHash)
 	// act
 	respDestTx, err := suite.Client.Get(url)
@@ -145,10 +145,10 @@ func (suite *testCtx) TestGetDestTxn() {
 
 	destTxnBody, err := ioutil.ReadAll(respDestTx.Body)
 	suite.Require().NoError(err)
+	defer suite.Require().NoError(respDestTx.Body.Close())
+
 	var resultDestTx map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(destTxnBody, &resultDestTx))
-
-	fmt.Println(resultDestTx)
 
 	url = suite.Client.BuildUrl(chainTxsEndpoint, chainA.Name, txRes.TxHash)
 	// act
@@ -158,7 +158,8 @@ func (suite *testCtx) TestGetDestTxn() {
 
 	txnBody, err := ioutil.ReadAll(respTxn.Body)
 	suite.Require().NoError(err)
+	defer suite.Require().NoError(respTxn.Body.Close())
+
 	var resultTxn map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(txnBody, &resultTxn))
-	fmt.Println(resultTxn)
 }
