@@ -100,6 +100,7 @@ func (suite *testCtx) TestVerifyTrace() {
 
 	bz, err := ioutil.ReadAll(resp.Body)
 	suite.Require().NoError(err)
+	defer suite.Require().NoError(resp.Body.Close())
 
 	var blockData map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(bz, &blockData))
@@ -143,18 +144,18 @@ func (suite *testCtx) TestVerifyTrace() {
 
 	body, err := ioutil.ReadAll(respTrace.Body)
 	suite.Require().NoError(err)
+	defer suite.Require().NoError(respTrace.Body.Close())
+
 	var result map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(body, &result))
 
 	var chainBData map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(chainB.Payload, &chainBData))
 	primary_channels = chainBData["primary_channel"].(map[string]interface{})
-	fmt.Println(result)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["base_denom"].(string), denoms[0]["name"].(string))
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["path"].(string), fmt.Sprintf("transfer/%s", primary_channels[chainA.Name].(string)))
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["verified"].(bool), denoms[0]["verified"].(bool))
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["chain_name"].(string), chainB.Name)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["counterparty_name"].(string), chainA.Name)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["channel"].(string), primary_channels[chainA.Name].(string))
-
 }

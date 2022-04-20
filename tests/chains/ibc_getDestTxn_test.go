@@ -137,8 +137,8 @@ func (suite *testCtx) TestGetDestTxn() {
 	// check updated balance
 	suite.Require().Equal(uint64(100), postBalance.Amount.BigInt().Uint64()-prevBalance.Amount.BigInt().Uint64())
 
+	// get dest tx ID
 	url := suite.Client.BuildUrl(getDestTxnEndpoint, chainA.Name, chainB.Name, txRes.TxHash)
-	// act
 	respDestTx, err := suite.Client.Get(url)
 	suite.Require().NoError(err)
 	suite.Require().Equal(http.StatusOK, respDestTx.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
@@ -150,16 +150,17 @@ func (suite *testCtx) TestGetDestTxn() {
 	var resultDestTx map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(destTxnBody, &resultDestTx))
 
-	url = suite.Client.BuildUrl(chainTxsEndpoint, chainA.Name, txRes.TxHash)
-	// act
-	respTxn, err := suite.Client.Get(url)
+	// get txBody chainB
+	url = suite.Client.BuildUrl(chainTxsEndpoint, chainB.Name, resultDestTx["tx_hash"].(string))
+	respTxnChainB, err := suite.Client.Get(url)
 	suite.Require().NoError(err)
-	suite.Require().Equal(http.StatusOK, respTxn.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
+	suite.Require().Equal(http.StatusOK, respTxnChainB.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
 
-	txnBody, err := ioutil.ReadAll(respTxn.Body)
+	txnBodyChainB, err := ioutil.ReadAll(respTxnChainB.Body)
 	suite.Require().NoError(err)
-	defer suite.Require().NoError(respTxn.Body.Close())
+	defer suite.Require().NoError(respTxnChainB.Body.Close())
 
-	var resultTxn map[string]interface{}
-	suite.Require().NoError(json.Unmarshal(txnBody, &resultTxn))
+	var resultTxnChainB map[string]interface{}
+	suite.Require().NoError(json.Unmarshal(txnBodyChainB, &resultTxnChainB))
+	suite.Require().NotNil(resultTxnChainB["tx"])
 }
