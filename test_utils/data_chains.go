@@ -36,10 +36,10 @@ func LoadChainsInfo(env string) ([]cns.Chain, error) {
 			}
 
 			var chain cns.Chain
-			err = json.Unmarshal(jFile, &chain)
-			if err != nil {
+			if err = json.Unmarshal(jFile, &chain); err != nil {
 				return nil, err
 			}
+
 			chains = append(chains, chain)
 		}
 	}
@@ -67,10 +67,10 @@ func LoadClientChainsInfo(env string) ([]chainclient.ChainClient, error) {
 			}
 
 			var ch chainclient.ChainClient
-			err = json.Unmarshal(jFile, &ch)
-			if err != nil {
+			if err = json.Unmarshal(jFile, &ch); err != nil {
 				return nil, err
 			}
+
 			chains = append(chains, ch)
 		}
 	}
