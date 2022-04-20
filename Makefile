@@ -15,5 +15,29 @@ generate-swagger:
 	go generate ${BASEPKG}/docs
 	@rm docs/docs.go
 
+dev-int-tests:
+	go test -v ./tests/...
+
+staging-int-tests: telepresence
+	$(TELEPRESENCE) connect \
+		--kubeconfig $(KUBECONFIG)
+		--namespace emeris \
+		-- go test -v ./tests/... \
+
+# find or download telepresence
+.PHONY: telepresence
+telepresence: TELEPRESENCE_VERSION?=2.3.7
+telepresence:
+ifeq (, $(wildcard $(CURRENT_DIR)/bin/telepresence))
+	@{ \
+	set -e ;\
+	echo "Installing telepresence to $(CURRENT_DIR)/bin" ;\
+	mkdir -p $(CURRENT_DIR)/bin ;\
+	curl -sfL https://app.getambassador.io/download/tel2/$(UNAME)/amd64/$(TELEPRESENCE_VERSION)/telepresence -o $(CURRENT_DIR)/bin/telepresence ;\
+	chmod a+x $(CURRENT_DIR)/bin/telepresence ;\
+	}
+endif
+TELEPRESENCE=$(CURRENT_DIR)/bin/telepresence
+
 $(OBJS):
 	go build -o build/$@ -ldflags='-X main.Version=${BRANCH}-${COMMIT}' ${EXTRAFLAGS} ${BASEPKG}/cmd/$@
