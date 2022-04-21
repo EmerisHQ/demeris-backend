@@ -27,7 +27,7 @@ spec:
         app:
           - key: minimum-gas-prices
             value:
-              string: 0.5ujuno
+              string: 0ujuno
           - key: pruning
             value:
               string: default
@@ -72,7 +72,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: ghcr.io/cosmoscontracts/juno
-    version: v2.1.0
+    version: v3.1.0
   join:
     genesis:
       url: https://raw.githubusercontent.com/CosmosContracts/mainnet/main/juno-1/genesis.json
@@ -91,12 +91,13 @@ spec:
     sentry:
       limits:
         cpu: "4"
-        memory: 8Gi
+        memory: 12Gi
       requests:
         cpu: "2"
-        memory: 4Gi
+        memory: 8Gi
   expose:
     domain: juno.chain.staging.demeris.io
     grpc: true
     rpc: true
     api: true
+ 
