@@ -67,7 +67,7 @@ spec:
     resetDataOnGenesisChanges: false
     resetDataOnImageUpgrade: false
   expose:
-    domain: crescent.chain.staging.demeris.io
+    domain: crescent.chain.staging.emeris.com
     grpc: true
     rpc: true
     api: true

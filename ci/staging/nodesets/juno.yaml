@@ -96,7 +96,7 @@ spec:
         cpu: "2"
         memory: 8Gi
   expose:
-    domain: juno.chain.staging.demeris.io
+    domain: juno.chain.staging.emeris.com
     grpc: true
     rpc: true
     api: true

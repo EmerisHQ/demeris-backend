@@ -104,7 +104,7 @@ spec:
         cpu: "2"
         memory: 4Gi
   expose:
-    domain: stargaze.chain.staging.demeris.io
+    domain: stargaze.chain.staging.emeris.com
     grpc: true
     rpc: true
     api: true
