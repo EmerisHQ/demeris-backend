@@ -23,8 +23,7 @@ func LoadSingleChainInfo(env string, chainName string) (cns.Chain, error) {
 		return chain, err
 	}
 
-	err = json.Unmarshal(jFile, &chain)
-	if err != nil {
+	if err := json.Unmarshal(jFile, &chain); err != nil {
 		return chain, err
 	}
 
