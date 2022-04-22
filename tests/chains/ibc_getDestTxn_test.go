@@ -71,8 +71,7 @@ func (suite *testCtx) TestGetDestTxn() {
 	fromAddr, err := cliA.GetAccAddress(ccA.Key)
 	suite.Require().NoError(err)
 
-	chainAData := chainA
-	primary_channels := chainAData.PrimaryChannel
+	primary_channels := chainA.PrimaryChannel
 
 	// // get chainA denom
 	denom := chainA.Denoms[0].DisplayName
