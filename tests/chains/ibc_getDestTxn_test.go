@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
-	"github.com/allinbits/demeris-backend/test_utils"
+	"github.com/allinbits/demeris-backend-models/cns"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctransfertypes "github.com/cosmos/cosmos-sdk/x/ibc/applications/transfer/types"
 	ibcclienttypes "github.com/cosmos/cosmos-sdk/x/ibc/core/02-client/types"
@@ -30,16 +30,16 @@ var chainsFilter = map[string]bool{
 
 func (suite *testCtx) TestGetDestTxn() {
 	// filter enabled chains
-	var enabledChains []test_utils.EnvChain
+	var enabledChains []cns.Chain
 	for _, chain := range suite.Chains {
-		if chain.Enabled && chainsFilter[chain.Name] {
+		if chain.Enabled && chainsFilter[chain.ChainName] {
 			enabledChains = append(enabledChains, chain)
 		}
 	}
 	suite.Require().Greater(len(enabledChains), 1, "Need atleast 2 enabled chains to perform IBC transaction")
 
 	// pick 2 random chains
-	var chainA, chainB test_utils.EnvChain
+	var chainA, chainB cns.Chain
 	for {
 		a := rand.Intn(len(enabledChains))
 		b := rand.Intn(len(enabledChains))
@@ -51,39 +51,31 @@ func (suite *testCtx) TestGetDestTxn() {
 	}
 
 	// create clients and accounts for above picked chains
-	var ccA, ccB chainClient.ChainClient
+	var ccA, ccB chainclient.ChainClient
 	for _, ch := range suite.clientChains {
-		if ch.Name == chainA.Name {
-			err := json.Unmarshal(ch.Payload, &ccA)
-			suite.Require().NoError(err)
-		} else if ch.Name == chainB.Name {
-			err := json.Unmarshal(ch.Payload, &ccB)
-			suite.Require().NoError(err)
+		if ch.ChainName == chainA.ChainName {
+			ccA = ch
+		} else if ch.ChainName == chainB.ChainName {
+			ccB = ch
 		}
 	}
-	cliB, err := chainClient.GetClient(suite.Env, chainB.Name, ccB, suite.T().TempDir())
+	cliB, err := chainclient.GetClient(suite.Env, chainB.ChainName, ccB, suite.T().TempDir())
 	suite.Require().NoError(err)
 	rec_account, err := cliB.AccountGet(ccB.Key)
 	suite.Require().NoError(err)
 
-	cliA, err := chainClient.GetClient(suite.Env, chainA.Name, ccA, suite.T().TempDir())
+	cliA, err := chainclient.GetClient(suite.Env, chainA.ChainName, ccA, suite.T().TempDir())
 	suite.Require().NoError(err)
 	send_account, err := cliA.AccountGet(ccA.Key)
 	suite.Require().NoError(err)
 	fromAddr, err := cliA.GetAccAddress(ccA.Key)
 	suite.Require().NoError(err)
 
-	// get respective channel for chainB from chainA payload
-	var chainAData map[string]interface{}
-	suite.Require().NoError(json.Unmarshal(chainA.Payload, &chainAData))
-
-	channelBytes, err := json.Marshal(chainAData["primary_channel"])
-	suite.Require().NoError(err)
-	var primary_channels map[string]string
-	suite.Require().NoError(json.Unmarshal(channelBytes, &primary_channels))
+	chainAData := chainA
+	primary_channels := chainAData.PrimaryChannel
 
 	// // get chainA denom
-	denom := chainAData["denoms"].([]interface{})[0].(map[string]interface{})["name"].(string)
+	denom := chainA.Denoms[0].DisplayName
 
 	// check balance for account A
 	accABalance, err := cliA.GetAccountBalances(send_account.Address, denom)
@@ -138,10 +130,10 @@ func (suite *testCtx) TestGetDestTxn() {
 	suite.Require().Equal(uint64(100), postBalance.Amount.BigInt().Uint64()-prevBalance.Amount.BigInt().Uint64())
 
 	// get dest tx ID
-	url := suite.Client.BuildUrl(getDestTxnEndpoint, chainA.Name, chainB.Name, txRes.TxHash)
+	url := suite.Client.BuildUrl(getDestTxnEndpoint, chainA.ChainName, chainB.ChainName, txRes.TxHash)
 	respDestTx, err := suite.Client.Get(url)
 	suite.Require().NoError(err)
-	suite.Require().Equal(http.StatusOK, respDestTx.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
+	suite.Require().Equal(http.StatusOK, respDestTx.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.ChainName, resp.StatusCode))
 
 	destTxnBody, err := ioutil.ReadAll(respDestTx.Body)
 	suite.Require().NoError(err)
@@ -151,10 +143,10 @@ func (suite *testCtx) TestGetDestTxn() {
 	suite.Require().NoError(json.Unmarshal(destTxnBody, &resultDestTx))
 
 	// get txBody chainB
-	url = suite.Client.BuildUrl(chainTxsEndpoint, chainB.Name, resultDestTx["tx_hash"].(string))
+	url = suite.Client.BuildUrl(chainTxsEndpoint, chainB.ChainName, resultDestTx["tx_hash"].(string))
 	respTxnChainB, err := suite.Client.Get(url)
 	suite.Require().NoError(err)
-	suite.Require().Equal(http.StatusOK, respTxnChainB.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.Name, resp.StatusCode))
+	suite.Require().Equal(http.StatusOK, respTxnChainB.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", chainB.ChainName, resp.StatusCode))
 
 	txnBodyChainB, err := ioutil.ReadAll(respTxnChainB.Body)
 	suite.Require().NoError(err)
