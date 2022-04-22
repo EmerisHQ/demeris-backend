@@ -1,4 +1,4 @@
-name: Deploy on Emeris Staging Environment
+name: Check chain release versions on Emeris Staging Cluster
 
 on:
   schedule:
@@ -6,13 +6,16 @@ on:
     - cron: '0 */12 * * *'
 
 jobs:
-  check-version:
+  check-version: 
     runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: .github/workflows/scripts
     steps:
     - uses: actions/checkout@v2
     - name: Run script file
       run: |
          export KUBECONFIG='${{ secrets.KUBECONFIG_STAGING }}'
-         chmod +x ./scripts/check_latest_version.sh
-         ./scripts/check_latest_version.sh
+         chmod +x ./check_latest_version.sh
+         ./check_latest_version.sh
       shell: bash
