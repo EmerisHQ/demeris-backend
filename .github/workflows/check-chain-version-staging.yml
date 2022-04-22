@@ -1,0 +1,18 @@
+name: Deploy on Emeris Staging Environment
+
+on:
+  schedule:
+    # Runs "At minute 0 past every 12th hour." (see https://crontab.guru)
+    - cron: '0 */12 * * *'
+
+jobs:
+  check-version:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run script file
+      run: |
+         export KUBECONFIG='${{ secrets.KUBECONFIG_STAGING }}'
+         chmod +x ./scripts/check_latest_version.sh
+         ./scripts/check_latest_version.sh
+      shell: bash

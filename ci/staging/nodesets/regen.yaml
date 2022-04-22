@@ -105,7 +105,7 @@ spec:
         cpu: "2"
         memory: 2Gi
   expose:
-    domain: regen.chain.staging.demeris.io
+    domain: regen.chain.staging.emeris.com
     grpc: true
     rpc: true
     api: true

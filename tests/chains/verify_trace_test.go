@@ -88,6 +88,7 @@ func (suite *testCtx) TestVerifyTrace() {
 
 	bz, err := ioutil.ReadAll(resp.Body)
 	suite.Require().NoError(err)
+	defer suite.Require().NoError(resp.Body.Close())
 
 	var blockData map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(bz, &blockData))
@@ -111,7 +112,7 @@ func (suite *testCtx) TestVerifyTrace() {
 	// build and broadcast ibc transfer message
 	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName], token, fromAddr, recAccount.Address, timeoutHeight, 0)
 
-	_, err = cliA.Broadcast(ccA.Key, cliA.GetContext(), msg)
+	_, err = cliA.Broadcast(ccA.Key, fromAddr, cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
 	time.Sleep(time.Second * 10)
@@ -131,16 +132,19 @@ func (suite *testCtx) TestVerifyTrace() {
 
 	body, err := ioutil.ReadAll(respTrace.Body)
 	suite.Require().NoError(err)
+	defer suite.Require().NoError(respTrace.Body.Close())
+
 	var result map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(body, &result))
 
+	// var chainBData map[string]interface{}
+	// suite.Require().NoError(json.Unmarshal(chainB.Payload, &chainBData))
+	// primary_channels = chainBData["primary_channel"].(map[string]interface{})
 	primary_channels = chainB.PrimaryChannel
-	fmt.Println(result)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["base_denom"].(string), chainA.Denoms[0].DisplayName)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["path"].(string), fmt.Sprintf("transfer/%s", primary_channels[chainA.ChainName]))
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["verified"].(bool), chainA.Denoms[0].Verified)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["chain_name"].(string), chainB.ChainName)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["counterparty_name"].(string), chainA.ChainName)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["trace"].(map[string]interface{})["channel"].(string), primary_channels[chainA.ChainName])
-
 }

@@ -100,7 +100,7 @@ spec:
         cpu: 500m
         memory: 2Gi
   expose:
-    domain: likecoin.chain.staging.demeris.io
+    domain: likecoin.chain.staging.emeris.com
     grpc: true
     rpc: true
     api: true

@@ -5,7 +5,7 @@ on:
     types: [integration-test]
 
 env:
-  GOPRIVATE: "github.com/allinbits/*"
+  GOPRIVATE: "github.com/emerishq,github.com/allinbits"
 
 jobs:
   tests:
@@ -26,9 +26,8 @@ jobs:
         run: git config --global url."https://git:${GIT_TOKEN}@github.com".insteadOf "https://github.com"
 
       - name: Run tests
-        run: go test -v ./tests/...
+        run: make ${{ github.event.client_payload.env }}-int-tests
         env:
-          ENV: ${{ github.event.client_payload.env }}
           TESTS_WORKDIR: ${{ github.workspace }}
 
       - name: Emit test-pass event on demeris-backend

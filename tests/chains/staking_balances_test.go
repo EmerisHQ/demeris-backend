@@ -52,7 +52,7 @@ func (suite *testCtx) TestStakingBalance() {
 
 				// perform unbonding transaction
 				msg := stakingtypes.NewMsgDelegate(address, valAddr, sdk.NewCoin(cli.Denom, sdk.NewInt(100)))
-				_, err = cli.Broadcast(ch.Key, cli.GetContext(), msg)
+				_, err = cli.Broadcast(ch.Key, address, cli.GetContext(), msg)
 				suite.Require().NoError(err)
 
 				// wait few sec to confirm

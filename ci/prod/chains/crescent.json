@@ -1,7 +1,7 @@
 {
   "chain_name": "crescent",
   "derivation_path": "m/44'/118'/0'/0/0",
-  "logo": "https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F2299351957-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FmEYtCuIUIqObZPWrSUQb%252Ficon%252FCv26i0d4sHliNOg5DlLt%252FProfile%2520Logo%2520Image%2520.png%3Falt%3Dmedia%26token%3D76b124da-6df3-46af-a55a-2fce8ad97e75",
+  "logo": "https://storage.googleapis.com/emeris/logos/cre.svg",
   "enabled": true,
   "valid_block_thresh": "200s",
   "display_name": "Crescent",
@@ -22,10 +22,22 @@
       "minimum_thresh_relayer_balance": 0,
       "gas_price_levels": { "low": 0, "average": 0, "high": 0.001},
       "name": "ucre",
-      "logo": "https://www.gitbook.com/cdn-cgi/image/width=40,height=40,fit=contain,dpr=2,format=auto/https%3A%2F%2F2299351957-files.gitbook.io%2F~%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FmEYtCuIUIqObZPWrSUQb%252Ficon%252FCv26i0d4sHliNOg5DlLt%252FProfile%2520Logo%2520Image%2520.png%3Falt%3Dmedia%26token%3D76b124da-6df3-46af-a55a-2fce8ad97e75",
+      "logo": "https://storage.googleapis.com/emeris/logos/cre.svg",
       "verified": true,
       "precision": 6,
       "ticker": "CRE"
+    },
+    {
+      "name": "ubcre",
+      "display_name": "bCRE",
+      "logo": "https://static-resources.crescent.network/bCRE.png",
+      "precision": 6,
+      "verified": true,
+      "ticker": "bCRE",
+      "price_id": "bCRE",
+      "fee_token": false,
+      "fetch_price": false,
+      "relayer_denom": false
     }
   ],
   "genesis_hash": "genesis_hash",

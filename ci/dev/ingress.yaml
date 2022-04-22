@@ -11,7 +11,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
-  - host: dev.demeris.io
+  - host: api.dev.emeris.com
     http:
       paths:
       - backend:
@@ -65,5 +65,5 @@ spec:
         pathType: ImplementationSpecific
   tls:
   - hosts:
-    - dev.demeris.io
+    - api.dev.emeris.com
     secretName: emeris-cert

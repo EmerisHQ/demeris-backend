@@ -131,7 +131,7 @@ spec:
         cpu: "1"
         memory: 2Gi
   expose:
-    domain: persistence.chain.staging.demeris.io
+    domain: persistence.chain.staging.emeris.com
     grpc: true
     rpc: true
     api: true

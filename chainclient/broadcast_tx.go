@@ -24,8 +24,8 @@ func (c *ChainClient) PrepareBroadcast(msgs ...types.Msg) error {
 }
 
 // SignTx signs tx and return tx bytes
-func (c *ChainClient) SignTx(fromName string, clientCtx client.Context, msgs ...types.Msg) ([]byte, error) {
-	clientCtx, err := c.BuildClientCtx(fromName)
+func (c *ChainClient) SignTx(fromName string, fromAddr types.AccAddress, clientCtx client.Context, msgs ...types.Msg) ([]byte, error) {
+	clientCtx, err := c.BuildClientCtx(fromName, fromAddr)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -47,8 +47,8 @@ func (c *ChainClient) SignTx(fromName string, clientCtx client.Context, msgs ...
 }
 
 // Broadcast directly broadcasts the messages
-func (c *ChainClient) Broadcast(fromName string, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
-	clientCtx, err := c.BuildClientCtx(fromName)
+func (c *ChainClient) Broadcast(fromName string, fromAddr types.AccAddress, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
+	clientCtx, err := c.BuildClientCtx(fromName, fromAddr)
 	if err != nil {
 		return &types.TxResponse{}, err
 	}
@@ -78,7 +78,8 @@ func (c *ChainClient) handleBroadcastResult() (*types.TxResponse, error) {
 }
 
 // BuildClientCtx builds the context for the client
-func (c *ChainClient) BuildClientCtx(accountName string) (client.Context, error) {
+func (c *ChainClient) BuildClientCtx(accountName string, accountAddress types.AccAddress) (client.Context, error) {
 	return c.clientCtx.
-		WithFromName(accountName), nil
+		WithFromName(accountName).
+		WithFromAddress(accountAddress), nil
 }

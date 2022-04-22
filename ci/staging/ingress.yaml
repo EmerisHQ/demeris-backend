@@ -19,7 +19,7 @@ metadata:
       gzip_min_length 128;
 spec:
   rules:
-  - host: staging.demeris.io
+  - host: api.staging.emeris.com
     http:
       paths:
       - path: /v1/liquidity(/|$)(.*)
@@ -72,5 +72,5 @@ spec:
 
   tls:
   - hosts:
-    - staging.demeris.io
+    - api.staging.emeris.com
     secretName: emeris-cert

@@ -53,7 +53,7 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			// perform bank send tx
 			msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(10))))
 
-			txBytes, err := cli.SignTx(ch.Key, cli.GetContext(), msg)
+			txBytes, err := cli.SignTx(ch.Key, fromAddr, cli.GetContext(), msg)
 			suite.Require().NoError(err)
 
 			postBytes, err := json.Marshal(txModels.TxRequest{

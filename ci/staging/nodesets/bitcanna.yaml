@@ -100,7 +100,7 @@ spec:
         cpu: "1"
         memory: 2Gi
   expose:
-    domain: bitcanna.chain.staging.demeris.io
+    domain: bitcanna.chain.staging.emeris.com
     grpc: true
     rpc: true
     api: true
