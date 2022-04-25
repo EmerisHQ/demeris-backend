@@ -2,14 +2,14 @@
     "enabled": true,
     "chain_name": "desmos",
     "logo": "https://storage.googleapis.com/emeris/logos/dsm.svg",
-    "display_name": "desmos",
+    "display_name": "Desmos Network",
     "primary_channel": {
       "osmosis": "channel-2"
     },
     "denoms": [
       {
         "name": "udsm",
-        "display_name": "DSM",
+        "display_name": "Desmos",
         "logo": "https://storage.googleapis.com/emeris/logos/dsm.svg",
         "precision": 6,
         "verified": true,
@@ -18,8 +18,8 @@
         "price_id": "desmos",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.03,
-          "average": 0.075,
+          "low": 0.001,
+          "average": 0.02,
           "high": 0.12
         },
         "fetch_price": true,

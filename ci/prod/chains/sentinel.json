@@ -20,8 +20,8 @@
         "price_id": "sentinel",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.1,
-          "average": 0.12,
+          "low": 0.05,
+          "average": 0.1,
           "high": 0.2
         },
         "fetch_price": true,

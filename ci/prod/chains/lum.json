@@ -2,14 +2,14 @@
     "enabled": true,
     "chain_name": "lum",
     "logo": "https://storage.googleapis.com/emeris/logos/lum.svg",
-    "display_name": "lum",
+    "display_name": "Lum Network",
     "primary_channel": {
       "osmosis": "channel-3"
     },
     "denoms": [
       {
         "name": "ulum",
-        "display_name": "LUM",
+        "display_name": "Lum",
         "logo": "https://storage.googleapis.com/emeris/logos/lum.svg",
         "precision": 6,
         "verified": true,
@@ -18,7 +18,7 @@
         "price_id": "lum-network",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.03,
+          "low": 0.001,
           "average": 0.075,
           "high": 0.12
         },

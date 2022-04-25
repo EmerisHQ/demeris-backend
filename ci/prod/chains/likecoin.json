@@ -10,7 +10,7 @@
     "denoms": [
       {
         "name": "nanolike",
-        "display_name": "LIKE",
+        "display_name": "LikeCoin",
         "logo": "https://storage.googleapis.com/emeris/logos/likecoin.svg",
         "precision": 9,
         "verified": true,
@@ -19,7 +19,7 @@
         "ticker": "LIKE",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 4,
+          "low": 0.5,
           "average": 4,
           "high": 10
         },

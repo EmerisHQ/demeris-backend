@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "cheqd",
     "logo": "https://storage.googleapis.com/emeris/logos/cheq.svg",
-    "display_name": "cheqd",
+    "display_name": "cheqd Network",
     "cosmos_sdk_version": "v0.44.5",
     "primary_channel": {
       "cosmos-hub": "channel-1",
@@ -10,7 +10,7 @@
     },
     "denoms": [
       {
-        "display_name": "CHEQ",
+        "display_name": "cheqd",
         "stakable": true,
         "fee_token": true,
         "fetch_price": true,

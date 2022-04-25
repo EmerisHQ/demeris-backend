@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "persistence",
     "logo": "https://storage.googleapis.com/emeris/logos/persistence.svg",
-    "display_name": "Persistence",
+    "display_name": "Persistence Network",
     "primary_channel": {
       "cosmos-hub": "channel-24",
       "osmosis": "channel-6",
@@ -20,8 +20,8 @@
         "price_id": "persistence",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.015,
-          "average": 0.0375,
+          "low": 0.0075,
+          "average": 0.015,
           "high": 0.06
         },
         "fetch_price": true,

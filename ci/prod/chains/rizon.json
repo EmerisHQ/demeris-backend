@@ -11,10 +11,10 @@
     },
   "denoms": [
     {
-      "display_name": "ATOLO",
+      "display_name": "Atolo",
       "stakable": true,
       "fee_token": true,
-      "gas_price_levels": { "low": 0.00025, "average": 0.0003, "high": 0.0005},
+      "gas_price_levels": { "low": 0.00025, "average": 0.015, "high": 0.0005},
       "fetch_price": true,
       "price_id": "rizon",
       "relayer_denom": true,

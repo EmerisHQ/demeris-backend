@@ -11,7 +11,7 @@
     "denoms": [
       {
         "name": "ubcna",
-        "display_name": "BCNA",
+        "display_name": "BitCanna",
         "logo": "https://storage.googleapis.com/emeris/logos/bitcanna.svg",
         "precision": 6,
         "verified": true,

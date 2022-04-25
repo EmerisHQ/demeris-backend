@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "juno",
     "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
-    "display_name": "juno",
+    "display_name": "Juno Network",
     "primary_channel": {
       "cosmos-hub": "channel-1",
       "osmosis": "channel-0",
@@ -14,7 +14,7 @@
     "denoms": [
       {
         "name": "ujuno",
-        "display_name": "JUNO",
+        "display_name": "Juno",
         "logo": "https://storage.googleapis.com/emeris/logos/juno.svg",
         "precision": 6,
         "verified": true,
@@ -24,7 +24,7 @@
         "fee_token": true,
         "gas_price_levels": {
           "low": 0.005,
-          "average": 0.01,
+          "average": 0.005,
           "high": 0.025
         },
         "fetch_price": true,

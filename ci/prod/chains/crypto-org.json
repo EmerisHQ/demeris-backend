@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "crypto-org",
     "logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
-    "display_name": "Crypto.org",
+    "display_name": "Crypto.org Chain",
     "primary_channel": {
       "cosmos-hub": "channel-27",
       "osmosis": "channel-10",
@@ -11,7 +11,7 @@
     "denoms": [
       {
         "name": "basecro",
-        "display_name": "CRO",
+        "display_name": "Cronos",
         "logo": "https://storage.googleapis.com/emeris/logos/crypto-com.svg",
         "precision": 8,
         "verified": true,
@@ -20,7 +20,7 @@
         "price_id": "crypto-com-chain",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.025,
+          "low": 0.0125,
           "average": 0.03,
           "high": 0.04
         },

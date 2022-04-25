@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "regen",
     "logo": "https://storage.googleapis.com/emeris/logos/regen.svg",
-    "display_name": "Regen",
+    "display_name": "Regen Network",
     "primary_channel": {
       "cosmos-hub": "channel-11",
       "osmosis": "channel-1",
@@ -11,7 +11,7 @@
     "denoms": [
       {
         "name": "uregen",
-        "display_name": "REGEN",
+        "display_name": "Regen",
         "logo": "https://storage.googleapis.com/emeris/logos/regen.svg",
         "precision": 6,
         "verified": true,
@@ -20,8 +20,8 @@
         "price_id": "regen",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.03,
-          "average": 0.075,
+          "low": 0.015,
+          "average": 0.03,
           "high": 0.12
         },
         "fetch_price": true,

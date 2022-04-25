@@ -15,7 +15,7 @@
       "display_name": "Comdex",
       "stakable": true,
       "fee_token": true,
-      "gas_price_levels": { "low": 0.25, "average": 0.3, "high": 0.5},
+      "gas_price_levels": { "low": 0.005, "average": 0.025, "high": 0.5},
       "fetch_price": true,
       "price_id": "comdex",
       "relayer_denom": true,

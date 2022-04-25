@@ -2,7 +2,7 @@
   "enabled": true,
   "chain_name": "ki",
   "logo": "https://storage.googleapis.com/emeris/logos/ki.svg",
-  "display_name": "Ki",
+  "display_name": "Ki Chain",
   "cosmos_sdk_version": "v0.42.10",
   "primary_channel": {
       "osmosis": "channel-0",
@@ -10,7 +10,7 @@
     },
   "denoms": [
     {
-      "display_name": "XKI",
+      "display_name": "Ki",
       "stakable": true,
       "fee_token": true,
       "fetch_price": true,

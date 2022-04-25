@@ -2,14 +2,14 @@
     "enabled": true,
     "chain_name": "sommelier",
     "logo": "https://storage.googleapis.com/emeris/logos/somm.svg",
-    "display_name": "sommelier",
+    "display_name": "Sommelier",
     "primary_channel": {
       "osmosis": "channel-0"
     },
     "denoms": [
       {
         "name": "usomm",
-        "display_name": "SOMM",
+        "display_name": "Sommelier",
         "logo": "https://storage.googleapis.com/emeris/logos/somm.svg",
         "precision": 6,
         "verified": true,

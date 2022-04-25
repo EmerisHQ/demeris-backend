@@ -18,7 +18,7 @@
     "denoms": [
       {
         "name": "rowan",
-        "display_name": "ROWAN",
+        "display_name": "Rowan",
         "logo": "https://storage.googleapis.com/emeris/logos/rowan.svg",
         "precision": 18,
         "verified": true,

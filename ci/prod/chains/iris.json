@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "iris",
     "logo": "https://storage.googleapis.com/emeris/logos/iris.svg",
-    "display_name": "IRISNet",
+    "display_name": "IRISnet",
     "primary_channel": {
       "cosmos-hub": "channel-12",
       "osmosis": "channel-3",
@@ -20,8 +20,8 @@
         "price_id": "iris-network",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.2,
-          "average": 0.3,
+          "low": 0.1,
+          "average": 0.2,
           "high": 0.4
         },
         "fetch_price": true,

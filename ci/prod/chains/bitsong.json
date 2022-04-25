@@ -14,14 +14,14 @@
     },
   "denoms": [
     {
-      "display_name": "BTSG",
+      "display_name": "BitSong",
       "stakable": true,
       "fee_token": true,
       "fetch_price": true,
       "price_id": "bitsong",
       "relayer_denom": true,
       "minimum_thresh_relayer_balance": 42,
-      "gas_price_levels": { "low": 0.01, "average": 0.025, "high": 0.03},
+      "gas_price_levels": { "low": 0.005, "average": 0.01, "high": 0.03},
       "name": "ubtsg",
       "logo": "https://storage.googleapis.com/emeris/logos/bitsong.svg",
       "verified": true,

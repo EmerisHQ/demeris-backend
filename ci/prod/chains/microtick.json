@@ -19,7 +19,7 @@
         "price_id": "microtick",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.0005,
+          "low": 0.00025,
           "average": 0.001,
           "high": 0.0015
         },

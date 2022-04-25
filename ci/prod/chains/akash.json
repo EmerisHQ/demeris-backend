@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "akash",
     "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
-    "display_name": "Akash",
+    "display_name": "Akash Network",
     "primary_channel": {
       "cosmos-hub": "channel-17",
       "osmosis": "channel-9",
@@ -11,7 +11,7 @@
     "denoms": [
       {
         "name": "uakt",
-        "display_name": "AKT",
+        "display_name": "Akash Token",
         "logo": "https://storage.googleapis.com/emeris/logos/akash.svg",
         "precision": 6,
         "verified": true,
@@ -20,9 +20,9 @@
         "price_id": "akash-network",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.036,
-          "average": 0.09,
-          "high": 0.108
+          "low": 0.01,
+          "average": 0.02,
+          "high": 0.03
         },
         "fetch_price": true,
         "relayer_denom": true,

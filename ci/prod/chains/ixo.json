@@ -2,7 +2,7 @@
     "enabled": true,
     "chain_name": "ixo",
     "logo": "https://storage.googleapis.com/emeris/logos/ixo.svg",
-    "display_name": "IXO",
+    "display_name": "Impact Hub",
     "primary_channel": {
       "cosmos-hub": "channel-1",
       "osmosis": "channel-4"
@@ -19,8 +19,8 @@
         "price_id": "ixo",
         "fee_token": true,
         "gas_price_levels": {
-          "low": 0.01,
-          "average": 0.025,
+          "low": 0.005,
+          "average": 0.01,
           "high": 0.04
         },
         "fetch_price": true,
