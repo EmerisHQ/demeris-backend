@@ -73,11 +73,27 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: deploy-service
-    steps:
-      - uses: craftech-io/slack-action@v1
-        with:
-          slack_webhook_url: https://hooks.slack.com/services/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
-        if: always()
+     steps:
+    - name: Send GitHub trigger payload to Slack Workflow Builder
+      id: slack
+      uses: slackapi/slack-github-action@v1.16.0
+      with:
+        payload: |
+          {
+            "text": "[DEV] new image deployed",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "[DEV] api-server upgraded to ${{ env.image_tag }}"
+                }
+              }  
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL:  https://hooks.slack.com/services/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
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
   emit-integration-test:
     if: ${{ github.event.client_payload.deploy_type == 'deploy_dev' }}
