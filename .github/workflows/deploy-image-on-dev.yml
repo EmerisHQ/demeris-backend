@@ -70,6 +70,14 @@ jobs:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: apply -n emeris -f ci/dev/ingress.yaml
 
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: craftech-io/slack-action@v1
+        with:
+          slack_webhook_url: https://hooks.slack.com/services/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
+        if: always()
+
   emit-integration-test:
     if: ${{ github.event.client_payload.deploy_type == 'deploy_dev' }}
     runs-on: self-hosted
