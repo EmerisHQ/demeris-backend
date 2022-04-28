@@ -92,7 +92,7 @@ jobs:
             ]
           }
       env:
-        SLACK_WEBHOOK_URL:  https://hooks.slack.com/services/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
+        SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_BACKEND_GHN }}
         SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
   emit-integration-test:
