@@ -70,6 +70,31 @@ jobs:
           config: ${{ secrets.KUBECONFIG_B64 }}
           command: apply -n emeris -f ci/dev/ingress.yaml
 
+  deploy:
+    runs-on: self-hosted
+    needs: deploy-service
+     steps:
+    - name: Send GitHub trigger payload to Slack Workflow Builder
+      id: slack
+      uses: slackapi/slack-github-action@v1.16.0
+      with:
+        payload: |
+          {
+            "text": "[DEV] new image deployed",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "[DEV] api-server upgraded to ${{ env.image_tag }}"
+                }
+              }  
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_BACKEND_GHN }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
   emit-integration-test:
     if: ${{ github.event.client_payload.deploy_type == 'deploy_dev' }}
     runs-on: self-hosted
