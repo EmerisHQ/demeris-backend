@@ -44,43 +44,28 @@ This in turn triggers an automatic deployment to the DEV env.
 
 ## Local Kubernetes environment
 
-### Requirements
-
-* kubectl
-* docker (docker desktop will probably install kubectl)
-* helm
-* kind
-
-### Usage
-
-Run the script to check how to use it.
-
-```shell
-$ ./local-env.sh
-Manage demeris local environment
-
-Usage:
-  ./local-env.sh [command]
-
-Available Commands:
-  up 		 Setup the development environment
-  down 		 Tear down the development environment
-  connect-sql 	 Connect to database using cockroach built-in SQL Client
-
-Flags:
-  -p, --port 	 The local port at which the api will be served
-  -n, --cluster-name 	 Kind cluster name
-  -b, --build 		 Whether to (re)build docker images
-  -h, --help 		 Show this menu
-  -m, --monitoring   Setup monitoring infrastructure
-```
+We use [Tilt](https://tilt.dev/) to manage our local development   
 
 For more instructions see [this page](https://www.notion.so/allinbits/Emeris-back-end-Dev-environment-setup-2b8a05f940274b45b0b3ba775f1fd6f8#ef44b157a985426d9d9743b5d017e86c).
 
-### Grafana credentials
+### Local Grafana credentials
 
 When monitoring is enabled, Grafana is installed with default credentials and will ask for a password change on first setup. Find below the default credentials
 
 Username: admin
-
 Password: admin
+
+## Github secrets
+
+The Github actions of this repo are using the following secrets
+
+| Secret                | Notes                                             | Source                                                |
+|-----                  |-----                                              |-----                                                  |
+| SLACK_PROD_ALERTS     | Webhook to the `#emeris-alerts` channel           | [Alerts-PROD](https://api.slack.com/apps/A02TZBN7HAN) |
+| SLACK_STAGING_ALERTS  | Webhook to the `#emeris-alerts-staging` channel   | [Alerts-Staging](https://api.slack.com/apps/A02TJQD99K9) |
+| SLACK_BACKEND_GHN     | Webhook to the `#emeris-backend-ghn` channel      | [Backend-GHN](https://api.slack.com/apps/A03CBCNQ0AW) |
+| KUBECONFIG            | DEV K8s cluster configuration                     | - |
+| KUBECONFIG_B64        | Dev K8s cluster configuration                     | - |
+| KUBECONFIG_STAGING    | Staging K8s cluster configuration                 | - |
+| KUBECONFIG_STAGING_B64 | Staging K8s cluster configuration                | - |
+| FIXER_KEY             | API key for token fiat prices                     | [CoinLayer API](https://apilayer.com/marketplace) |
