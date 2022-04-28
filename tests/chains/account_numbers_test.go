@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	models "github.com/allinbits/demeris-api-server/api/account"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 )
 
 const (
@@ -17,15 +17,12 @@ const (
 
 func (suite *testCtx) TestGetAccountNumbers() {
 	for _, ch := range suite.clientChains {
-		suite.Run(ch.Name, func() {
-			var cc chainClient.ChainClient
-			err := json.Unmarshal(ch.Payload, &cc)
-			suite.Require().NoError(err)
-			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+		suite.Run(ch.ChainName, func() {
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			hexAddress, err := cli.GetAccAddress(cc.Key)
+			hexAddress, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
 
 			url := suite.Client.BuildUrl(accountNumbersEndpoint, hex.EncodeToString(hexAddress))
@@ -33,7 +30,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 
-			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
 			suite.Require().NoError(err)
@@ -52,7 +49,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 			suite.Require().NotEmpty(numbers.Numbers)
 
 			// get account information
-			account, err := cli.AccountGet(cc.Key)
+			account, err := cli.AccountGet(ch.Key)
 			suite.Require().NoError(err)
 
 			// query account numbers from cli
@@ -61,7 +58,7 @@ func (suite *testCtx) TestGetAccountNumbers() {
 
 			// comapre account and sequence numbers
 			for _, v := range numbers.Numbers {
-				if v.ChainName == ch.Name {
+				if v.ChainName == ch.ChainName {
 					suite.Require().Equal(accNum.GetAccountNumber(), v.AccountNumber)
 					suite.Require().Equal(accNum.GetSequence(), v.SequenceNumber)
 					return

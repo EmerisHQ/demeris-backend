@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	api "github.com/allinbits/demeris-api-server/api/account"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 )
 
 const (
@@ -17,27 +17,23 @@ const (
 
 func (suite *testCtx) TestDelegatorRewards() {
 	for _, ch := range suite.clientChains {
-		suite.Run(ch.Name, func() {
-			var cc chainClient.ChainClient
-			err := json.Unmarshal(ch.Payload, &cc)
+		suite.Run(ch.ChainName, func() {
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
-
-			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
-			suite.Require().NoError(err)
-			address, err := cli.GetAccAddress(cc.Key)
+			address, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
 
 			// arrange
-			url := suite.Client.BuildUrl(delegatorRewardsEndpoint, hex.EncodeToString(address), ch.Name)
+			url := suite.Client.BuildUrl(delegatorRewardsEndpoint, hex.EncodeToString(address), ch.ChainName)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 			// assert
 			if !cli.Enabled {
-				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 			} else {
-				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				data, err := ioutil.ReadAll(resp.Body)
 				suite.Require().NoError(err)

@@ -5,23 +5,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+
+	"github.com/allinbits/demeris-backend-models/cns"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 )
 
 const (
 	chainsFolderPath       = "./ci/%s/chains/"
 	jsonSuffix             = ".json"
-	enabledKey             = "enabled"
-	nameKey                = "chain_name"
 	clientChainsFolderPath = "./test_data/client/%s/"
 )
 
-type EnvChain struct {
-	Name    string
-	Enabled bool
-	Payload []byte
-}
-
-func LoadChainsInfo(env string) ([]EnvChain, error) {
+func LoadChainsInfo(env string) ([]cns.Chain, error) {
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
 	}
@@ -32,7 +27,7 @@ func LoadChainsInfo(env string) ([]EnvChain, error) {
 		return nil, err
 	}
 
-	var chains []EnvChain
+	var chains []cns.Chain
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), jsonSuffix) {
 			jFile, err := ioutil.ReadFile(d + f.Name())
@@ -40,24 +35,19 @@ func LoadChainsInfo(env string) ([]EnvChain, error) {
 				return nil, err
 			}
 
-			temp := map[string]interface{}{}
-			err = json.Unmarshal(jFile, &temp)
-			if err != nil {
+			var chain cns.Chain
+			if err = json.Unmarshal(jFile, &chain); err != nil {
 				return nil, err
 			}
 
-			ch := EnvChain{}
-			ch.Payload = jFile
-			ch.Enabled = temp[enabledKey].(bool)
-			ch.Name = temp[nameKey].(string)
-			chains = append(chains, ch)
+			chains = append(chains, chain)
 		}
 	}
 
 	return chains, nil
 }
 
-func LoadClientChainsInfo(env string) ([]EnvChain, error) {
+func LoadClientChainsInfo(env string) ([]chainclient.ChainClient, error) {
 	if env == "" {
 		return nil, fmt.Errorf("got nil ENV env")
 	}
@@ -68,7 +58,7 @@ func LoadClientChainsInfo(env string) ([]EnvChain, error) {
 		return nil, err
 	}
 
-	var chains []EnvChain
+	var chains []chainclient.ChainClient
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), jsonSuffix) {
 			jFile, err := ioutil.ReadFile(d + f.Name())
@@ -76,43 +66,14 @@ func LoadClientChainsInfo(env string) ([]EnvChain, error) {
 				return nil, err
 			}
 
-			temp := map[string]interface{}{}
-			err = json.Unmarshal(jFile, &temp)
-			if err != nil {
+			var ch chainclient.ChainClient
+			if err = json.Unmarshal(jFile, &ch); err != nil {
 				return nil, err
 			}
 
-			ch := EnvChain{}
-			ch.Payload = jFile
-			ch.Name = temp[nameKey].(string)
 			chains = append(chains, ch)
 		}
 	}
 
 	return chains, nil
-}
-
-func LoadSingleChainInfo(env string, chainName string) (EnvChain, error) {
-	d := fmt.Sprintf(chainsFolderPath, env)
-	fileName := fmt.Sprintf("%s%s", chainName, jsonSuffix)
-
-	var chain EnvChain
-	jFile, err := ioutil.ReadFile(d + fileName)
-	if err != nil {
-		return EnvChain{}, err
-	}
-
-	temp := map[string]interface{}{}
-	err = json.Unmarshal(jFile, &temp)
-	if err != nil {
-		return EnvChain{}, err
-	}
-
-	ch := EnvChain{}
-	ch.Payload = jFile
-	ch.Enabled = temp[enabledKey].(bool)
-	ch.Name = temp[nameKey].(string)
-	chain = ch
-
-	return chain, nil
 }

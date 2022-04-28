@@ -10,7 +10,7 @@ import (
 	"time"
 
 	api "github.com/allinbits/demeris-api-server/api/account"
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -21,18 +21,15 @@ const (
 
 func (suite *testCtx) TestStakingBalance() {
 	for _, ch := range suite.clientChains {
-		suite.Run(ch.Name, func() {
-			var cc chainClient.ChainClient
-			err := json.Unmarshal(ch.Payload, &cc)
-			suite.Require().NoError(err)
-			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+		suite.Run(ch.ChainName, func() {
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 
 			if !cli.Enabled {
 				return
 			}
 
-			address, err := cli.GetAccAddress(cc.Key)
+			address, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
 
 			expectedDelegations, err := cli.GetDelegations(address.String())
@@ -55,7 +52,7 @@ func (suite *testCtx) TestStakingBalance() {
 
 				// perform unbonding transaction
 				msg := stakingtypes.NewMsgDelegate(address, valAddr, sdk.NewCoin(cli.Denom, sdk.NewInt(100)))
-				_, err = cli.Broadcast(cc.Key, address, cli.GetContext(), msg)
+				_, err = cli.Broadcast(ch.Key, address, cli.GetContext(), msg)
 				suite.Require().NoError(err)
 
 				// wait few sec to confirm
@@ -70,7 +67,7 @@ func (suite *testCtx) TestStakingBalance() {
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
-			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
 			suite.Require().NoError(err)
@@ -85,7 +82,7 @@ func (suite *testCtx) TestStakingBalance() {
 			// assert
 			for _, delegation := range delegations.StakingBalances {
 				// check for same chain name
-				if delegation.ChainName == ch.Name {
+				if delegation.ChainName == ch.ChainName {
 					validatorFound := false
 					for _, expected := range expectedDelegations {
 						// get hex validator address

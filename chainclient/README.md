@@ -14,7 +14,7 @@ This chain client will be used for integration testing for multiple chains. Ther
 #### When we have to upgrade our chain client
 ```bash
 - If demeris backend upgrades to v0.44+ version of cosmos sdk, we can updrade our chain client to use latest version of starport. With that most of the duplicated code can be removed and we can directly use starport client methods.
-- This an [example](https://github.com/allinbits/demeris-backend/blob/prathyusha/chain_client_v44/chain_client/create_client.go) to upgrade our chain client to use latest version of starport client i.e., v0.19.1.
+- This is an [example](https://github.com/allinbits/demeris-backend/blob/prathyusha/chain_client_v44/chain_client/create_client.go) to upgrade our chain client to use latest version of starport client i.e., v0.19.1.
 ```
 
 #### How to use chain client
@@ -29,7 +29,7 @@ This chain client will be used for integration testing for multiple chains. Ther
     "keyring_service_name":"akash" ### keyring service name
 }
 
-- After configuring chains you can call the method [GetClient](https://github.com/allinbits/demeris-backend/blob/prathyusha/chain_client/chain_client/import_accounts.go#L24) by passing required params. This method will returns a chainclient for that particular chain details you passed to it. This method also imports the mnemonic in keyring and returns the context of it, which you can use to get information about account.
-- After getting client you can query the account balances and account information by providing required params.You can find the methods [here](https://github.com/allinbits/demeris-backend/blob/prathyusha/chain_client/chain_client/create_client.go).
-- To make a transaction you can call the [broadCastTx](https://github.com/allinbits/demeris-backend/blob/prathyusha/chain_client/chain_client/broadcast_tx.go) method passing params to it.
+- After configuring chains you can call the method [GetClient](https://github.com/allinbits/demeris-backend/blob/prathyusha/chainclient/chainclient/import_accounts.go#L24) by passing required params. This method will return a chainclient for that particular chain details you passed to it. This method also imports mnemonic in the keyring and returns the context of it, which you can use to get information about account.
+- After getting client you can query the account balances and account information by providing required params.You can find the methods [here](https://github.com/allinbits/demeris-backend/blob/prathyusha/chainclient/chainclient/create_client.go).
+- To make a transaction you can call the [broadCastTx](https://github.com/allinbits/demeris-backend/blob/prathyusha/chainclient/chainclient/broadcast_tx.go) method passing params to it.
 ```

@@ -3,6 +3,7 @@ package tests
 import (
 	"testing"
 
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	utils "github.com/allinbits/demeris-backend/test_utils"
 	"github.com/stretchr/testify/suite"
 )
@@ -10,7 +11,7 @@ import (
 type testCtx struct {
 	utils.BaseTestSuite
 
-	clientChains []utils.EnvChain
+	clientChains []chainclient.ChainClient
 }
 
 func (suite *testCtx) SetupTest() {
