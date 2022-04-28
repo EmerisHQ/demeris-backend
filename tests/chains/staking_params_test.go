@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -17,24 +17,20 @@ const (
 
 func (suite *testCtx) TestStakingParams() {
 	for _, ch := range suite.clientChains {
-		suite.Run(ch.Name, func() {
-			var cc chainClient.ChainClient
-			err := json.Unmarshal(ch.Payload, &cc)
-			suite.Require().NoError(err)
-
-			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+		suite.Run(ch.ChainName, func() {
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 
 			// arrange
-			url := suite.Client.BuildUrl(stakingParamsEndpoint, ch.Name)
+			url := suite.Client.BuildUrl(stakingParamsEndpoint, ch.ChainName)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 			// assert
 			if !cli.Enabled {
-				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 			} else {
-				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				data, err := ioutil.ReadAll(resp.Body)
 				suite.Require().NoError(err)

@@ -17,8 +17,8 @@ func (suite *testCtx) TestLiquidityStatus() {
 	suite.T().Parallel()
 
 	for _, ch := range suite.Chains {
-		if ch.Name == chainName {
-			suite.T().Run(ch.Name, func(t *testing.T) {
+		if ch.ChainName == chainName {
+			suite.T().Run(ch.ChainName, func(t *testing.T) {
 
 				// arrange
 				url := suite.Client.BuildUrl(liquidityNodeEndpoint)
@@ -30,22 +30,22 @@ func (suite *testCtx) TestLiquidityStatus() {
 				defer resp.Body.Close()
 
 				// assert
-				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var values map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &values, t)
 
-				v, ok := values["node_info"].(map[string]interface{})
-				suite.True(ok)
-				networkName := v["network"]
+				// v, ok := values["node_info"].(map[string]interface{})
+				// suite.True(ok)
+				networkName := ch.NodeInfo
 
-				var fileResp map[string]interface{}
-				utils.StringToMap(ch.Payload, &fileResp, t)
+				// var fileResp map[string]interface{}
+				// utils.StringToMap(ch.Payload, &fileResp, t)
 
-				fv, ok := fileResp["node_info"].(map[string]interface{})
-				suite.True(ok)
+				// fv, ok := fileResp["node_info"].(map[string]interface{})
+				// suite.True(ok)
 
-				expectedName := fv["chain_id"]
+				expectedName := ch.NodeInfo.ChainID
 
 				suite.Require().Equal(expectedName, networkName)
 			})

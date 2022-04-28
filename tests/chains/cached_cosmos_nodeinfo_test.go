@@ -2,12 +2,11 @@ package tests
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
-	chainClient "github.com/allinbits/demeris-backend/chain_client"
+	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 )
@@ -18,14 +17,11 @@ const (
 
 func (suite *testCtx) TestCachedCosmosNodeinfo() {
 	for _, ch := range suite.clientChains {
-		if ch.Name != "cosmos-hub" {
+		if ch.ChainName != "cosmos-hub" {
 			continue
 		}
-		suite.Run(ch.Name, func() {
-			var cc chainClient.ChainClient
-			err := json.Unmarshal(ch.Payload, &cc)
-			suite.Require().NoError(err)
-			cli, err := chainClient.GetClient(suite.Env, ch.Name, cc, suite.T().TempDir())
+		suite.Run(ch.ChainName, func() {
+			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
@@ -34,7 +30,7 @@ func (suite *testCtx) TestCachedCosmosNodeinfo() {
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
 
-			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
 			suite.Require().NoError(err)

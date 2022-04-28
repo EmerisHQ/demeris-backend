@@ -14,13 +14,13 @@ const (
 
 func (suite *testCtx) TestEpochProvisions() {
 	for _, ch := range suite.Chains {
-		if ch.Name != "osmosis" {
+		if ch.ChainName != "osmosis" {
 			continue
 		}
-		suite.T().Run(ch.Name, func(t *testing.T) {
+		suite.T().Run(ch.ChainName, func(t *testing.T) {
 
 			// arrange
-			url := suite.Client.BuildUrl(mintEpochProvisionsEndpoint, ch.Name)
+			url := suite.Client.BuildUrl(mintEpochProvisionsEndpoint, ch.ChainName)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
@@ -28,13 +28,14 @@ func (suite *testCtx) TestEpochProvisions() {
 			defer resp.Body.Close()
 
 			// assert
-			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+			suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 			data, err := ioutil.ReadAll(resp.Body)
 			suite.Require().NoError(err)
 
 			var provisions json.RawMessage
 			suite.Require().NoError(json.Unmarshal(data, &provisions))
+
 			//expect a non empty data
 			suite.Require().NotEmpty(provisions)
 		})

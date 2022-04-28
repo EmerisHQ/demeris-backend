@@ -17,9 +17,9 @@ const (
 
 func (suite *testCtx) TestPrimaryChannels() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.Name, func(t *testing.T) {
+		suite.T().Run(ch.ChainName, func(t *testing.T) {
 			// arrange
-			url := suite.Client.BuildUrl(primaryChannelsEndpoint, ch.Name)
+			url := suite.Client.BuildUrl(primaryChannelsEndpoint, ch.ChainName)
 			// act
 			resp, err := suite.Client.Get(url)
 			suite.Require().NoError(err)
@@ -28,9 +28,9 @@ func (suite *testCtx) TestPrimaryChannels() {
 
 			// assert
 			if !ch.Enabled {
-				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusBadRequest, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 			} else {
-				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.Name, resp.StatusCode))
+				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var respValues map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &respValues, t)
@@ -42,23 +42,12 @@ func (suite *testCtx) TestPrimaryChannels() {
 				err = json.Unmarshal(data, &channels)
 				suite.Require().NoError(err)
 
-				formattedChannels := make(map[string]string, len(channels))
+				formattedChannels := make(cns.DbStringMap, len(channels))
 				for _, channel := range channels {
 					formattedChannels[channel["counterparty"]] = channel["channel_name"]
 				}
 
-				var payload map[string]interface{}
-				err = json.Unmarshal(ch.Payload, &payload)
-				suite.Require().NoError(err)
-
-				data, err = json.Marshal(payload["primary_channel"])
-				suite.Require().NoError(err)
-
-				var expectedChannels map[string]string
-				err = json.Unmarshal(data, &expectedChannels)
-				suite.Require().NoError(err)
-
-				suite.Require().Equal(expectedChannels, formattedChannels)
+				suite.Require().Equal(ch.PrimaryChannel, formattedChannels)
 			}
 		})
 	}
