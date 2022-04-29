@@ -53,6 +53,7 @@ jobs:
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               --set image=gcr.io/tendermint-dev/"${{ env.image_name }}":"${{ env.image_tag }}" \
               --set daggregationPublicBaseUrl=https://dev.demeris.io/v1/daggregation \
+              --set dexInfoSwapsUrl=https://api.dev.emeris.com/v1/dexinfo/swaps \
               --set redirectURL=https://develop.emeris-admin.pages.dev/login \
               --set test=true \
               ./helm
