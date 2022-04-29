@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: "allinbits/${{ env.repo_name }}"
+          repository: "EmerisHQ/${{ env.repo_name }}"
           ref: ${{ env.branch_name }}
 
       - name: Deploy
