@@ -408,6 +408,6 @@ jobs:
         run: |
           for f in "./ci/dev/chains/"*
           do
-            curl -X POST -d @$f https://dev.demeris.io/v1/cns/add
+            curl -X POST -d @$f https://api.dev.emeris.com/v1/cns/add
           done
 
