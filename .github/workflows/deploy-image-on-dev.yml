@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: "allinbits/${{ env.repo_name }}"
+          repository: "EmerisHQ/${{ env.repo_name }}"
           ref: ${{ env.branch_name }}
 
       - name: Deploy
@@ -73,7 +73,7 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: deploy-service
-     steps:
+    steps:
     - name: Send GitHub trigger payload to Slack Workflow Builder
       id: slack
       uses: slackapi/slack-github-action@v1.16.0
