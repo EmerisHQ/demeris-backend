@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"net/http"
-	"testing"
 
 	utils "github.com/allinbits/demeris-backend/test_utils"
 )
@@ -15,7 +14,7 @@ const (
 
 func (suite *testCtx) TestMintParams() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 
 			// arrange
 			url := suite.Client.BuildUrl(mintParamsEndpoint, ch.ChainName)
@@ -32,7 +31,7 @@ func (suite *testCtx) TestMintParams() {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 				//expect a non empty data
 				params := respValues[paramsKey]

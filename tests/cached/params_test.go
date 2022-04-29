@@ -10,8 +10,6 @@ const (
 )
 
 func (suite *testCtx) TestCachedParams() {
-	suite.T().Parallel()
-
 	// get cached params
 	var cachedValues liquiditytypes.QueryParamsResponse
 	err := suite.Client.GetJson(&cachedValues, cachedParamsEndPoint)

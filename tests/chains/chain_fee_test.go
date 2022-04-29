@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
 
 	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 )
@@ -14,7 +13,7 @@ const chainFeeEndpoint = "chain/%s/fee"
 
 func (suite *testCtx) TestChainFee() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			// arrange
 			url := suite.Client.BuildUrl(chainFeeEndpoint, ch.ChainName)
 			// act

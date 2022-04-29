@@ -13,8 +13,6 @@ const (
 )
 
 func (suite *testCtx) TestCachedPools() {
-	suite.T().Parallel()
-
 	// get cached pools
 	url := suite.Client.BuildUrl(cachedPoolsEndPoint)
 	cachedResp, err := suite.Client.Get(url)

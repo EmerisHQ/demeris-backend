@@ -22,7 +22,6 @@ const (
 )
 
 func (suite *testCtx) TestVerifyTrace() {
-	suite.T().Parallel()
 	// filter enabled chains
 	var enabledChains []cns.Chain
 	for _, chain := range suite.Chains {
