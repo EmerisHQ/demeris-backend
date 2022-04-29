@@ -73,7 +73,7 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: deploy-service
-     steps:
+    steps:
     - name: Send GitHub trigger payload to Slack Workflow Builder
       id: slack
       uses: slackapi/slack-github-action@v1.16.0
