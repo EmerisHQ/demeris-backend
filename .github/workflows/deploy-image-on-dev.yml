@@ -86,7 +86,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "[DEV] api-server upgraded to ${{ env.image_tag }}"
+                  "text": "[DEV] ${{ env.service_name }} upgraded to ${{ env.image_tag }}"
                 }
               }  
             ]
