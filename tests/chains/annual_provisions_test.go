@@ -14,12 +14,11 @@ const (
 
 func (suite *testCtx) TestAnnualProvisions() {
 	for _, ch := range suite.Chains {
-		if ch.ChainName == "osmosis" || ch.ChainName == "crypto-org" {
-			// skip: failing on osmosis and crypto-org
-			continue
-		}
-
 		suite.Run(ch.ChainName, func() {
+			if ch.ChainName == "osmosis" || ch.ChainName == "crypto-org" {
+				suite.T().Skipf("skip(%s): api-server failing", ch.ChainName)
+			}
+
 			// arrange
 			url := suite.Client.BuildUrl(mintAnnualProvisionsEndpoint, ch.ChainName)
 			// act
