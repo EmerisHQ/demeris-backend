@@ -11,6 +11,8 @@ const (
 )
 
 func (suite *testCtx) TestPoolsData() {
+	suite.T().Skip("skip: we don't expose cosmos-hub this way anymore (see dexaggregation feature and new LCD endpoints)")
+
 	url := suite.Client.BuildUrl(poolsEndpoint)
 
 	resp, err := suite.Client.Get(url)

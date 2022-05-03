@@ -13,6 +13,8 @@ const (
 )
 
 func (suite *testCtx) TestCachedPools() {
+	suite.T().Skip("skip: we don't expose cosmos-hub this way anymore (see dexaggregation feature and new LCD endpoints)")
+
 	// get cached pools
 	url := suite.Client.BuildUrl(cachedPoolsEndPoint)
 	cachedResp, err := suite.Client.Get(url)

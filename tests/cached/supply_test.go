@@ -11,6 +11,8 @@ const (
 )
 
 func (suite testCtx) TestCachedSupply() {
+	suite.T().Skip("skip: we don't expose cosmos-hub this way anymore (see dexaggregation feature and new LCD endpoints)")
+
 	// get cached supply
 	var cachedValues map[string]interface{}
 	err := suite.Client.GetJson(&cachedValues, cachedSupplyEndPoint)
