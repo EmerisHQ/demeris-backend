@@ -1,0 +1,118 @@
+name: Deploy image
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Env to deploy to (dev/staging/prod)'
+        required: true
+        default: 'dev'
+        options:
+          - dev
+          - staging
+          - prod
+      service_name:
+        description: 'Name of the helm chart (e.g. api-server)'
+        required: true
+      image_tag:
+        description: 'Tag of the docker image to be deployed'
+        required: true
+      repo_name:
+        description: 'Name of the github repo (e.g. demeris-api-server, defaults to service_name)'
+        required: false
+      branch_name:
+        description: 'Name of the github branch to checkout from the repo (e.g. main, defaults to main)'
+        required: true
+        default: main
+      image_name:
+        description: 'Name of the image to deploy (e.g. emeris-api-server, defaults to emeris-$service_name)'
+        required: false
+      captcha:
+        description: 'If you are updating prod, double check what you are doing and type "YES" (uppercase) here'
+        required: false
+
+env:
+  env: ${{ github.event.inputs.env }}
+  service_name: ${{ github.event.inputs.service_name }}
+  repo_name: ${{ github.event.inputs.repo_name || github.event.inputs.service_name }}
+  branch_name: ${{ github.event.inputs.branch_name }}
+  image_name: ${{ github.event.inputs.image_name || format('{0}-{1}', 'emeris', github.event.inputs.service_name) }}
+  image_tag: ${{ github.event.inputs.image_tag }}
+  captcha: ${{ github.event.inputs.captcha }}
+
+jobs:
+  deploy-service:
+    runs-on: self-hosted
+    steps:
+      - name: Check captcha
+        if: env.env == 'prod'
+        run: |
+          if [[ $captcha == 'YES' ]]; then
+              echo "captcha filled in correctly"
+          else
+              echo "wrong captcha"
+              exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: "EmerisHQ/${{ env.repo_name }}"
+          ref: ${{ env.branch_name }}
+
+      - name: Use dev kubectl
+        if: env.env == 'dev'
+        run: |
+          echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG }}"
+          echo "::set-env name=DEBUG::true"
+
+      - name: Use staging kubectl
+        if: env.env == 'staging'
+        run: |
+          echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG_STAGING }}"
+          echo "::set-env name=DEBUG::true"
+
+      - name: Use prod kubectl
+        if: env.env == 'prod'
+        run: |
+          echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG_PROD }}"
+          echo "::set-env name=DEBUG::false"
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v2
+        with:
+          kubeconfig: "${{ env.KUBECONFIG }}"
+          exec: |
+            helm upgrade "${{ env.service_name }}"  \
+              --install \
+              --namespace emeris \
+              --set debug=${{ env.DEBUG }} \
+              --set fixerKey=${{ secrets.FIXER_KEY }} \
+              --set image=gcr.io/tendermint-dev/"${{ env.image_name }}":"${{ env.image_tag }}" \
+              --set daggregationPublicBaseUrl=https://api.dev.emeris.com/v1/daggregation \
+              --set dexInfoSwapsUrl=https://api.dev.emeris.com/v1/dexinfo/swaps \
+              --set redirectURL=https://develop.emeris-admin.pages.dev/login \
+              --set test=true \
+              ./helm
+
+      - name: Send slack message
+        id: slack
+        uses: slackapi/slack-github-action@v1.16.0
+        with:
+          payload: |
+            {
+              "text": "[${{ env.env }}] new image deployed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "[${{ env.env }}] ${{ env.service_name }} upgraded to ${{ env.image_tag }}"
+                  }
+                }  
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_BACKEND_GHN }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
