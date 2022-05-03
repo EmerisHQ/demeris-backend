@@ -26,7 +26,7 @@ local_resource('nginx_patch',
 k8s_yaml('local-env/ingress.yaml')
 
 helm_repo('cockroachdb-repo', 'https://charts.cockroachdb.com/')
-helm_resource('cockroachdb', 'cockroachdb/cockroachdb', namespace='emeris', flags=[
+helm_resource('cockroachdb', 'cockroachdb-repo/cockroachdb', namespace='emeris', flags=[
     "--version", "7.0.0",
     "--set", "tls.enabled=false",
     "--set", "config.single-node=true",
@@ -60,6 +60,8 @@ k8s_yaml(helm(
 ))
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+if not GITHUB_TOKEN:
+    fail("⚠️  you should export GITHUB_TOKEN with a valid GitHub token (with at least repository access) to build images.")
 
 k8s_kind('NodeSet', image_json_path='{.spec.config.nodes.traceStoreContainer.image}')
 k8s_kind('Relayer')
@@ -186,14 +188,14 @@ else:
 # SDK-SERVICE-v42
 docker_build(
     'emeris/sdk-service-42',
-    '../sdk-service-v42',
+    '../sdk-service',
     build_args={
         'GIT_TOKEN': GITHUB_TOKEN,
         'SDK_TARGET': 'v42',
     },
 )
 k8s_yaml(helm(
-    '../sdk-service-v42/helm',
+    '../sdk-service/helm',
     name='sdk-service-v42',
     namespace='emeris',
     set=[
@@ -206,14 +208,14 @@ k8s_yaml(helm(
 # SDK-SERVICE-v44
 docker_build(
     'emeris/sdk-service-44',
-    '../sdk-service-v44',
+    '../sdk-service',
     build_args={
         'GIT_TOKEN': GITHUB_TOKEN,
         'SDK_TARGET': 'v44',
     },
 )
 k8s_yaml(helm(
-    '../sdk-service-v44/helm',
+    '../sdk-service/helm',
     name='sdk-service-v44',
     namespace='emeris',
     set=[
@@ -225,21 +227,29 @@ k8s_yaml(helm(
 
 # FRONTEND
 # TODO: move Dockerfile and k8s pod yaml to separate files
-docker_build(
+# NOTE(tb): we can't use docker_build tilt instruction for the front because
+# it implicitely discards the .git folder from the docker context, and vite
+# needs it for the front build. The workaround is to replace docker_build with
+# custom_build, but first we need to create the front Dockerfile.
+local("""echo 'FROM node:16
+WORKDIR /app
+COPY . /app
+RUN --mount=type=cache,target=/root/.npm npm ci
+CMD ["npm", "run", "dev", "--", "--host", "localhost"]' > /tmp/Dockerfile.front
+"""
+)
+custom_build(
     'emeris/frontend',
-    context='../demeris',
-    dockerfile_contents="""
-    FROM node:16
-    WORKDIR /app
-    COPY package.json package-lock.json /app
-    RUN --mount=type=cache,target=/root/.npm npm ci
-    COPY . .
-    CMD ["npm", "run", "serve", "--", "--host", "localhost"]
-    """,
+    # TODO(tb) A bug in Docker Buildkit forbids us to use `-f /tmp/Dockerfile.front`
+    # so we use an alternative.
+    # See https://github.com/docker/cli/issues/2249
+    'docker build -t $EXPECTED_REF -f - ../demeris < /tmp/Dockerfile.front',
+    ['../demeris'],
     live_update=[
-        sync('../demeris/src/', '/app/src/'),
+      sync('../demeris/src/', '/app/src/'),
     ]
 )
+
 k8s_yaml(blob("""
 apiVersion: v1
 kind: Pod
