@@ -16,10 +16,10 @@ generate-swagger:
 	@rm docs/docs.go
 
 dev-int-tests:
-	go test -v ./tests/...
+	ENV=dev go test -v ./tests/...
 
 staging-int-tests: telepresence
-	$(TELEPRESENCE) connect \
+	ENV=staging $(TELEPRESENCE) connect \
 		--kubeconfig $(KUBECONFIG)
 		--namespace emeris \
 		-- go test -v ./tests/... \

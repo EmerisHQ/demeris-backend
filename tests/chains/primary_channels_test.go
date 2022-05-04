@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"testing"
 
 	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
@@ -17,7 +16,7 @@ const (
 
 func (suite *testCtx) TestPrimaryChannels() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			// arrange
 			url := suite.Client.BuildUrl(primaryChannelsEndpoint, ch.ChainName)
 			// act
@@ -33,7 +32,7 @@ func (suite *testCtx) TestPrimaryChannels() {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 				data, err := json.Marshal(respValues[primaryChannelskey])
 				suite.Require().NoError(err)

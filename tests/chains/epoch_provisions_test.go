@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
 )
 
 const (
@@ -17,7 +16,7 @@ func (suite *testCtx) TestEpochProvisions() {
 		if ch.ChainName != "osmosis" {
 			continue
 		}
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 
 			// arrange
 			url := suite.Client.BuildUrl(mintEpochProvisionsEndpoint, ch.ChainName)
