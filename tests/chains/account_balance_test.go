@@ -9,7 +9,6 @@ import (
 
 	models "github.com/allinbits/demeris-api-server/api/account"
 	chainclient "github.com/allinbits/demeris-backend/chainclient"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -23,13 +22,8 @@ func (suite *testCtx) TestGetBalanceOfAnyAccount() {
 			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			accAddr, err := sdktypes.AccAddressFromBech32(ch.Address)
+			accAddr, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
-
-			if accAddr.Empty() {
-				accAddr, err = cli.GetAccAddress(ch.Key)
-				suite.Require().NoError(err)
-			}
 
 			url := suite.Client.BuildUrl(getBalanceEndpoint, hex.EncodeToString(accAddr))
 			// act
