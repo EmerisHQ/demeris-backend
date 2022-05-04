@@ -108,7 +108,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "[${{ env.env }}] ${{ env.service_name }} upgraded to ${{ env.image_tag }}"
+                    "text": "[${{ env.env }}] Deployed ${{ env.service_name }} version ${{ env.image_tag }}"
                   }
                 }  
               ]
