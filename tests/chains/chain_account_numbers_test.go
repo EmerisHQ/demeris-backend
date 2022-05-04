@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainModels "github.com/allinbits/demeris-api-server/api/chains"
 	chainclient "github.com/allinbits/demeris-backend/chainclient"
+	chainModels "github.com/emerishq/demeris-api-server/api/chains"
 )
 
 const (

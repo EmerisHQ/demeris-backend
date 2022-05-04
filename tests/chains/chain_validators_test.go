@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/allinbits/demeris-backend-models/tracelistener"
 	utils "github.com/allinbits/demeris-backend/test_utils"
+	"github.com/emerishq/demeris-backend-models/tracelistener"
 )
 
 const chainValidatorsEndpoint = "chain/%s/validators"

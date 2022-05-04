@@ -3,8 +3,8 @@ package tests
 import (
 	"encoding/json"
 
-	"github.com/allinbits/demeris-backend-models/cns"
 	utils "github.com/allinbits/demeris-backend/test_utils"
+	"github.com/emerishq/demeris-backend-models/cns"
 )
 
 const (

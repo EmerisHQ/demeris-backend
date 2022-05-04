@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	api "github.com/allinbits/demeris-api-server/api/account"
 	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	api "github.com/emerishq/demeris-api-server/api/account"
 )
 
 const (
