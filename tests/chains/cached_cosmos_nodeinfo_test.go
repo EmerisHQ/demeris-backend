@@ -16,6 +16,8 @@ const (
 )
 
 func (suite *testCtx) TestCachedCosmosNodeinfo() {
+	suite.T().Skip("skip: cached endpoints are no longer working/used")
+
 	for _, ch := range suite.clientChains {
 		if ch.ChainName != "cosmos-hub" {
 			continue
