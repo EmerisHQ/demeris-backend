@@ -16,12 +16,10 @@ const (
 
 func (suite *testCtx) TestChainSupply() {
 	for _, ch := range suite.Chains {
-		if ch.ChainName == "crypto-org" {
-			// failing on crypto-org, sdk-service replies with Status:Unavailable
-			continue
-		}
-
 		suite.Run(ch.ChainName, func() {
+			if ch.ChainName == "crypto-org" {
+				suite.T().Skip("skip: crypto-org, sdk-service replies with Status:Unavailable")
+			}
 
 			// arrange
 			url := suite.Client.BuildUrl(chainSupplyEndpoint, ch.ChainName)
