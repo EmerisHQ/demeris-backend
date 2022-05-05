@@ -166,8 +166,8 @@ github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a/go.mod h1:SGn
 github.com/alicebob/miniredis/v2 v2.18.0 h1:EPUGD69ou4Uw4c81t9NLh0+dSou46k4tFEvf498FJ0g=
 github.com/alicebob/miniredis/v2 v2.18.0/go.mod h1:gquAfGbzn92jvtrSC69+6zZnwSODVXVpYDRaGhWaL6I=
 github.com/allegro/bigcache v1.2.1-0.20190218064605-e24eb225f156/go.mod h1:Cb/ax3seSYIx7SuZdm2G2xzfwmv3TPSk2ucNfQESPXM=
-github.com/allinbits/emeris-utils v1.1.1 h1:x9oEPATvNvRkMVVoewLXlo+5rULpiEygvjH7MBwCv2c=
-github.com/allinbits/emeris-utils v1.1.1/go.mod h1:tMkUvBItgKYJZJUx8zpE9QWm+lqUb4MvT3fKohYOoHI=
+github.com/emerishq/emeris-utils v1.1.1 h1:x9oEPATvNvRkMVVoewLXlo+5rULpiEygvjH7MBwCv2c=
+github.com/emerishq/emeris-utils v1.1.1/go.mod h1:tMkUvBItgKYJZJUx8zpE9QWm+lqUb4MvT3fKohYOoHI=
 github.com/allinbits/starport-operator v0.0.1-alpha.45 h1:peplm7s6mXPhi9bd7qxC3CLgu1m1wRNRcrsYQZMiqAQ=
 github.com/allinbits/starport-operator v0.0.1-alpha.45/go.mod h1:8KNM5J00CtUCwjlnvMY/YpTbXBqHj04ER+SXi8PAWRI=
 github.com/andrew-d/go-termutil v0.0.0-20150726205930-009166a695a2/go.mod h1:jnzFpU88PccN/tPPhCpnNU8mZphvKxYM9lLNkd8e+os=

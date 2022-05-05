@@ -1,7 +1,7 @@
 OBJS = $(shell find cmd -mindepth 1 -type d -execdir printf '%s\n' {} +)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT := $(shell git log -1 --format='%H')
-BASEPKG = github.com/allinbits/demeris-backend
+BASEPKG = github.com/emerishq/demeris-backend
 EXTRAFLAGS :=
 
 .PHONY: $(OBJS) clean generate-swagger
@@ -16,10 +16,10 @@ generate-swagger:
 	@rm docs/docs.go
 
 dev-int-tests:
-	go test -v ./tests/...
+	ENV=dev go test -v ./tests/...
 
 staging-int-tests: telepresence
-	$(TELEPRESENCE) connect \
+	ENV=staging $(TELEPRESENCE) connect \
 		--kubeconfig $(KUBECONFIG)
 		--namespace emeris \
 		-- go test -v ./tests/... \

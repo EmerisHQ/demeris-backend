@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
 	"github.com/emerishq/demeris-backend-models/tracelistener"
+	utils "github.com/emerishq/demeris-backend/test_utils"
 )
 
 const chainValidatorsEndpoint = "chain/%s/validators"
 
 func (suite *testCtx) TestChainValidators() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			// arrange
 			url := suite.Client.BuildUrl(chainValidatorsEndpoint, ch.ChainName)
 			// act
@@ -28,7 +27,7 @@ func (suite *testCtx) TestChainValidators() {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
 
 	chainModels "github.com/emerishq/demeris-api-server/api/chains"
 )
@@ -14,7 +13,7 @@ const chainFeeAddressEndpoint = "chain/%s/fee/address"
 
 func (suite *testCtx) TestChainFeeAddress() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			// arrange
 			url := suite.Client.BuildUrl(chainFeeAddressEndpoint, ch.ChainName)
 			// act
@@ -37,7 +36,7 @@ func (suite *testCtx) TestChainFeeAddress() {
 				err = json.Unmarshal(data, &feeAddresss)
 				suite.Require().NoError(err)
 
-				suite.Require().Equal(ch.DemerisAddresses, feeAddresss.FeeAddress)
+				suite.Require().EqualValues(ch.DemerisAddresses, feeAddresss.FeeAddress)
 			}
 		})
 	}

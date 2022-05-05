@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
 
 	chainModels "github.com/emerishq/demeris-api-server/api/chains"
 )
@@ -17,7 +16,7 @@ const (
 
 func (suite *testCtx) TestChainStatus() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			// arrange
 			url := suite.Client.BuildUrl(statusEndpoint, ch.ChainName)
 			// act

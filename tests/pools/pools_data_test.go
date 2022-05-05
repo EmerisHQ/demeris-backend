@@ -3,7 +3,7 @@ package tests
 import (
 	"net/http"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
+	utils "github.com/emerishq/demeris-backend/test_utils"
 )
 
 const (
@@ -11,7 +11,7 @@ const (
 )
 
 func (suite *testCtx) TestPoolsData() {
-	suite.T().Parallel()
+	suite.T().Skip("skip: we don't expose cosmos-hub this way anymore (see dexaggregation feature and new LCD endpoints)")
 
 	url := suite.Client.BuildUrl(poolsEndpoint)
 

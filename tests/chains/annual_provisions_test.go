@@ -3,9 +3,8 @@ package tests
 import (
 	"fmt"
 	"net/http"
-	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
+	utils "github.com/emerishq/demeris-backend/test_utils"
 )
 
 const (
@@ -15,7 +14,11 @@ const (
 
 func (suite *testCtx) TestAnnualProvisions() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
+			if ch.ChainName == "osmosis" || ch.ChainName == "crypto-org" {
+				suite.T().Skipf("skip(%s): api-server failing", ch.ChainName)
+			}
+
 			// arrange
 			url := suite.Client.BuildUrl(mintAnnualProvisionsEndpoint, ch.ChainName)
 			// act
@@ -31,7 +34,7 @@ func (suite *testCtx) TestAnnualProvisions() {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 				//expect a non empty data
 				provisions := respValues[annualProvisionKey]

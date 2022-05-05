@@ -1,4 +1,4 @@
-[![Build docker images](https://github.com/allinbits/demeris-backend/actions/workflows/docker-build.yml/badge.svg)](https://github.com/allinbits/demeris-backend/actions/workflows/docker-build.yml)
+[![Build docker images](https://github.com/emerishq/demeris-backend/actions/workflows/docker-build.yml/badge.svg)](https://github.com/emerishq/demeris-backend/actions/workflows/docker-build.yml)
 
 # Emeris Backend
 
@@ -20,14 +20,14 @@ The Emeris backend can be summarised as *a multi-blockchain indexer*.
 
 ## Components
 
-* [api-server](https://github.com/allinbits/demeris-api-server)
-* [cns-server](https://github.com/allinbits/emeris-cns-server)
-* [price-oracle](https://github.com/allinbits/emeris-price-oracle)
-* [rpc-watcher](https://github.com/allinbits/emeris-rpcwatcher)
-* [trace-listener](https://github.com/allinbits/tracelistener/)
-* [ticket-watcher](https://github.com/allinbits/emeris-ticket-watcher)
-* [sdk-service](https://github.com/allinbits/sdk-service-meta)
-* [models](https://github.com/allinbits/demeris-backend-models) (shared library)
+* [api-server](https://github.com/emerishq/demeris-api-server)
+* [cns-server](https://github.com/emerishq/emeris-cns-server)
+* [price-oracle](https://github.com/emerishq/emeris-price-oracle)
+* [rpc-watcher](https://github.com/emerishq/emeris-rpcwatcher)
+* [trace-listener](https://github.com/emerishq/tracelistener/)
+* [ticket-watcher](https://github.com/emerishq/emeris-ticket-watcher)
+* [sdk-service](https://github.com/emerishq/sdk-service-meta)
+* [models](https://github.com/emerishq/demeris-backend-models) (shared library)
 * [utils](./utils) (shared library)
 
 ## CI/CD 
@@ -65,7 +65,9 @@ The Github actions of this repo are using the following secrets
 | SLACK_STAGING_ALERTS  | Webhook to the `#emeris-alerts-staging` channel   | [Alerts-Staging](https://api.slack.com/apps/A02TJQD99K9) |
 | SLACK_BACKEND_GHN     | Webhook to the `#emeris-backend-ghn` channel      | [Backend-GHN](https://api.slack.com/apps/A03CBCNQ0AW) |
 | KUBECONFIG            | DEV K8s cluster configuration                     | - |
-| KUBECONFIG_B64        | Dev K8s cluster configuration                     | - |
+| KUBECONFIG_B64        | Dev K8s cluster configuration (Base64)            | - |
 | KUBECONFIG_STAGING    | Staging K8s cluster configuration                 | - |
-| KUBECONFIG_STAGING_B64 | Staging K8s cluster configuration                | - |
+| KUBECONFIG_STAGING_B64 | Staging K8s cluster configuration (Base64)       | - |
+| KUBECONFIG_PROD       | PROD K8s cluster configuration                    | - |
+| KUBECONFIG_PROD_B64   | PROD K8s cluster configuration (Base64)           | - |
 | FIXER_KEY             | API key for token fiat prices                     | [CoinLayer API](https://apilayer.com/marketplace) |

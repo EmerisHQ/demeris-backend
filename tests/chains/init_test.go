@@ -3,8 +3,8 @@ package tests
 import (
 	"testing"
 
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
-	utils "github.com/allinbits/demeris-backend/test_utils"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
+	utils "github.com/emerishq/demeris-backend/test_utils"
 	"github.com/stretchr/testify/suite"
 )
 

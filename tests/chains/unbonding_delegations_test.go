@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	api "github.com/emerishq/demeris-api-server/api/account"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
 )
 
 const (
@@ -19,6 +19,8 @@ const (
 )
 
 func (suite *testCtx) TestUnbondingDelegations() {
+	suite.T().Skip("skip: we cannot unbond stake from validator itself, we need a different delegator")
+
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
 			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())

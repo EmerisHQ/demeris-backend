@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"testing"
 
 	chainModels "github.com/emerishq/demeris-api-server/api/chains"
 )
@@ -14,7 +13,7 @@ const chainBech32Endpoint = "chain/%s/bech32"
 
 func (suite *testCtx) TestChainBech32() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			// arrange
 			url := suite.Client.BuildUrl(chainBech32Endpoint, ch.ChainName)
 			// act

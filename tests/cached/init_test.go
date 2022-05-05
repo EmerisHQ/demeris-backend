@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	utils "github.com/allinbits/demeris-backend/test_utils"
+	utils "github.com/emerishq/demeris-backend/test_utils"
 	"github.com/stretchr/testify/suite"
 )
 

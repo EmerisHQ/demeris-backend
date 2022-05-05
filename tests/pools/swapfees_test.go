@@ -16,6 +16,8 @@ const (
 )
 
 func (suite *testCtx) TestPoolSwapFees() {
+	suite.T().Skip("skip: pool endpoints are no longer used since the dexaggregation feature")
+
 	url := suite.Client.BuildUrl(poolsEndpoint)
 
 	resp, err := suite.Client.Get(url)

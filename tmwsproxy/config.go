@@ -1,8 +1,8 @@
 package tmwsproxy
 
 import (
-	"github.com/allinbits/emeris-utils/configuration"
-	"github.com/allinbits/emeris-utils/validation"
+	"github.com/emerishq/emeris-utils/configuration"
+	"github.com/emerishq/emeris-utils/validation"
 	"github.com/go-playground/validator/v10"
 )
 

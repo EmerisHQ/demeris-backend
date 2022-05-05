@@ -66,7 +66,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-cns-server
           client-payload: |
             {
@@ -91,7 +91,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-api-server
           client-payload: |
             {
@@ -116,7 +116,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-emeris-rpcwatcher
           client-payload: |
             {
@@ -141,7 +141,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-price-oracle-server
           client-payload: |
             {
@@ -166,7 +166,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-ticket-watcher
           client-payload: |
             {
@@ -191,7 +191,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-daggregation
           client-payload: |
             {
@@ -216,7 +216,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-dexinfo
           client-payload: |
             {
@@ -241,7 +241,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-sdk-service-v42
           client-payload: |
             {
@@ -266,7 +266,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: allinbits/demeris-backend
+          repository: emerishq/demeris-backend
           event-type: dev-push-sdk-service-v44
           client-payload: |
             {
