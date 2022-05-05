@@ -64,7 +64,9 @@ jobs:
       - name: Setup variables [dev]
         if: env.env == 'dev'
         run: |
-          echo "KUBECONFIG=${{ secrets.KUBECONFIG }}" >> $GITHUB_ENV
+          echo "KUBECONFIG<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.KUBECONFIG }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           echo "DEBUG=true" >> $GITHUB_ENV
           echo "API_BASE_URL=https://api.dev.emeris.com" >> $GITHUB_ENV
           echo "CNS_OAUTH_URL=https://admin.dev.emeris.com/login" >> $GITHUB_ENV
@@ -72,7 +74,9 @@ jobs:
       - name: Setup variables [staging]
         if: env.env == 'staging'
         run: |
-          echo "KUBECONFIG=${{ secrets.KUBECONFIG_STAGING }}" >> $GITHUB_ENV
+          echo "KUBECONFIG<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.KUBECONFIG_STAGING }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           echo "DEBUG=true" >> $GITHUB_ENV
           echo "API_BASE_URL=https://api.staging.emeris.com" >> $GITHUB_ENV
           echo "CNS_OAUTH_URL=https://admin.staging.emeris.com/login" >> $GITHUB_ENV
@@ -80,7 +84,9 @@ jobs:
       - name: Setup variables [prod]
         if: env.env == 'prod'
         run: |
-          echo "KUBECONFIG=${{ secrets.KUBECONFIG_PROD }}" >> $GITHUB_ENV
+          echo "KUBECONFIG<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.KUBECONFIG_PROD }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
           echo "DEBUG=false" >> $GITHUB_ENV
           echo "API_BASE_URL=https://api.emeris.com" >> $GITHUB_ENV
           echo "CNS_OAUTH_URL=https://admin.emeris.com/login" >> $GITHUB_ENV
