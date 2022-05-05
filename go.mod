@@ -1,4 +1,4 @@
-module github.com/allinbits/demeris-backend
+module github.com/emerishq/demeris-backend
 
 go 1.18
 
@@ -25,9 +25,9 @@ require (
 )
 
 require (
-	github.com/allinbits/emeris-utils v1.1.1
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/emerishq/demeris-backend-models v1.5.0
+	github.com/emerishq/emeris-utils v1.5.0
 	github.com/tendermint/starport v0.16.1
 )
 
@@ -71,7 +71,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac // indirect
 	github.com/dvsekhvalnov/jose2go v0.0.0-20200901110807-248326c1351b // indirect
 	github.com/emerishq/emeris-cns-server v0.0.0-20220309095629-a492f8569484 // indirect
-	github.com/emerishq/emeris-utils v1.5.0 // indirect
 	github.com/emerishq/sdk-service-meta v0.0.0-20220331063503-f6dcfa168e93 // indirect
 	github.com/enigmampc/btcutil v1.0.3-0.20200723161021-e2fb6adb2a25 // indirect
 	github.com/ethereum/go-ethereum v1.10.17 // indirect

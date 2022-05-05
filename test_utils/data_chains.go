@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	"github.com/emerishq/demeris-backend-models/cns"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
 )
 
 const (

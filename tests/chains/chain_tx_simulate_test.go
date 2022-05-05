@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	txModels "github.com/emerishq/demeris-api-server/api/tx"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
 )
 
 const (

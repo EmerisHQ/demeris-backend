@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"github.com/allinbits/emeris-utils/exported/sdktypes"
+	"github.com/emerishq/emeris-utils/exported/sdktypes"
 )
 
 const (

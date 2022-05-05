@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	models "github.com/emerishq/demeris-api-server/api/account"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
 )
 
 const (
