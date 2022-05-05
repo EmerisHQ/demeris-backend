@@ -64,7 +64,7 @@ jobs:
       - name: Setup variables [dev]
         if: env.env == 'dev'
         run: |
-          echo "KUBECONFIG<<EOF" >> $GITHUB_ENV
+          echo "KUBECONFIG_CONTENT<<EOF" >> $GITHUB_ENV
           echo "${{ secrets.KUBECONFIG }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           echo "DEBUG=true" >> $GITHUB_ENV
@@ -74,7 +74,7 @@ jobs:
       - name: Setup variables [staging]
         if: env.env == 'staging'
         run: |
-          echo "KUBECONFIG<<EOF" >> $GITHUB_ENV
+          echo "KUBECONFIG_CONTENT<<EOF" >> $GITHUB_ENV
           echo "${{ secrets.KUBECONFIG_STAGING }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           echo "DEBUG=true" >> $GITHUB_ENV
@@ -84,7 +84,7 @@ jobs:
       - name: Setup variables [prod]
         if: env.env == 'prod'
         run: |
-          echo "KUBECONFIG<<EOF" >> $GITHUB_ENV
+          echo "KUBECONFIG_CONTENT<<EOF" >> $GITHUB_ENV
           echo "${{ secrets.KUBECONFIG_PROD }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           echo "DEBUG=false" >> $GITHUB_ENV
@@ -94,7 +94,7 @@ jobs:
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
         with:
-          kubeconfig: "${{ env.KUBECONFIG }}"
+          kubeconfig: "${{ env.KUBECONFIG_CONTENT }}"
           exec: |
             helm upgrade "${{ env.service_name }}"  \
               --install \
