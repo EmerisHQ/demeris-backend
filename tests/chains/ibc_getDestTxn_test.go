@@ -29,6 +29,8 @@ var chainsFilter = map[string]bool{
 }
 
 func (suite *testCtx) TestGetDestTxn() {
+	suite.T().Skip("skip: error: 'Not enough balance to make an IBC transaction'")
+
 	// filter enabled chains
 	var enabledChains []cns.Chain
 	for _, chain := range suite.Chains {

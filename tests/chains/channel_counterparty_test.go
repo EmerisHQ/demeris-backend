@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"net/http"
-	"testing"
 
 	utils "github.com/emerishq/demeris-backend/test_utils"
 )
@@ -15,7 +14,7 @@ const (
 
 func (suite *testCtx) TestPrimaryChannelCounterparty() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			if !ch.Enabled {
 				// checking /chain/XXX/primary_channel/ZZZ returns 400 if chain disabled
 				for _, otherChains := range suite.Chains {
@@ -45,7 +44,7 @@ func (suite *testCtx) TestPrimaryChannelCounterparty() {
 					defer resp.Body.Close()
 
 					var respValues map[string]interface{}
-					utils.RespBodyToMap(resp.Body, &respValues, t)
+					utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 					expectedChannelsFormatted := map[string]interface{}{
 						"counterparty": counterParty,

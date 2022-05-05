@@ -19,6 +19,8 @@ const (
 )
 
 func (suite *testCtx) TestUnbondingDelegations() {
+	suite.T().Skip("skip: we cannot unbond stake from validator itself, we need a different delegator")
+
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
 			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())

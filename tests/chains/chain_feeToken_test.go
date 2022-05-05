@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"testing"
 
 	"github.com/emerishq/demeris-backend-models/cns"
 	utils "github.com/emerishq/demeris-backend/test_utils"
@@ -14,7 +13,7 @@ const chainFeeTokenEndpoint = "chain/%s/fee/token"
 
 func (suite *testCtx) TestChainFeeToken() {
 	for _, ch := range suite.Chains {
-		suite.T().Run(ch.ChainName, func(t *testing.T) {
+		suite.Run(ch.ChainName, func() {
 			// arrange
 			url := suite.Client.BuildUrl(chainFeeTokenEndpoint, ch.ChainName)
 			// act
@@ -28,7 +27,7 @@ func (suite *testCtx) TestChainFeeToken() {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var respValues map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &respValues, t)
+				utils.RespBodyToMap(resp.Body, &respValues, suite.T())
 
 				err = resp.Body.Close()
 				suite.Require().NoError(err)

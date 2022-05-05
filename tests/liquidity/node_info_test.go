@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"net/http"
-	"testing"
 
 	utils "github.com/emerishq/demeris-backend/test_utils"
 )
@@ -14,11 +13,11 @@ const (
 )
 
 func (suite *testCtx) TestLiquidityStatus() {
-	suite.T().Parallel()
+	suite.T().Skip("skip: this test is comparing ch.NodeInfo against its own field ch.NodeInfo.ChainID, not sure what the test should be doing instead")
 
 	for _, ch := range suite.Chains {
 		if ch.ChainName == chainName {
-			suite.T().Run(ch.ChainName, func(t *testing.T) {
+			suite.Run(ch.ChainName, func() {
 
 				// arrange
 				url := suite.Client.BuildUrl(liquidityNodeEndpoint)
@@ -33,7 +32,7 @@ func (suite *testCtx) TestLiquidityStatus() {
 				suite.Require().Equal(http.StatusOK, resp.StatusCode, fmt.Sprintf("Chain %s HTTP code %d", ch.ChainName, resp.StatusCode))
 
 				var values map[string]interface{}
-				utils.RespBodyToMap(resp.Body, &values, t)
+				utils.RespBodyToMap(resp.Body, &values, suite.T())
 
 				// v, ok := values["node_info"].(map[string]interface{})
 				// suite.True(ok)

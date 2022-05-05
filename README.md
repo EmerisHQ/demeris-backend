@@ -65,7 +65,9 @@ The Github actions of this repo are using the following secrets
 | SLACK_STAGING_ALERTS  | Webhook to the `#emeris-alerts-staging` channel   | [Alerts-Staging](https://api.slack.com/apps/A02TJQD99K9) |
 | SLACK_BACKEND_GHN     | Webhook to the `#emeris-backend-ghn` channel      | [Backend-GHN](https://api.slack.com/apps/A03CBCNQ0AW) |
 | KUBECONFIG            | DEV K8s cluster configuration                     | - |
-| KUBECONFIG_B64        | Dev K8s cluster configuration                     | - |
+| KUBECONFIG_B64        | Dev K8s cluster configuration (Base64)            | - |
 | KUBECONFIG_STAGING    | Staging K8s cluster configuration                 | - |
-| KUBECONFIG_STAGING_B64 | Staging K8s cluster configuration                | - |
+| KUBECONFIG_STAGING_B64 | Staging K8s cluster configuration (Base64)       | - |
+| KUBECONFIG_PROD       | PROD K8s cluster configuration                    | - |
+| KUBECONFIG_PROD_B64   | PROD K8s cluster configuration (Base64)           | - |
 | FIXER_KEY             | API key for token fiat prices                     | [CoinLayer API](https://apilayer.com/marketplace) |
