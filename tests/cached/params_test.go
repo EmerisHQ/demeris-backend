@@ -10,7 +10,7 @@ const (
 )
 
 func (suite *testCtx) TestCachedParams() {
-	suite.T().Parallel()
+	suite.T().Skip("skip: we don't expose cosmos-hub this way anymore (see dexaggregation feature and new LCD endpoints)")
 
 	// get cached params
 	var cachedValues liquiditytypes.QueryParamsResponse
