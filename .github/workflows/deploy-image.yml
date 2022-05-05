@@ -61,23 +61,29 @@ jobs:
           repository: "EmerisHQ/${{ env.repo_name }}"
           ref: ${{ env.branch_name }}
 
-      - name: Use dev kubectl
+      - name: Setup variables [dev]
         if: env.env == 'dev'
         run: |
           echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG }}"
           echo "::set-env name=DEBUG::true"
+          echo "::set-env name=API_BASE_URL::https://api.dev.emeris.com"
+          echo "::set-env name=CNS_OAUTH_URL::https://admin.dev.emeris.com/login"
 
-      - name: Use staging kubectl
+      - name: Setup variables [staging]
         if: env.env == 'staging'
         run: |
           echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG_STAGING }}"
           echo "::set-env name=DEBUG::true"
+          echo "::set-env name=API_BASE_URL::https://api.staging.emeris.com"
+          echo "::set-env name=CNS_OAUTH_URL::https://admin.staging.emeris.com/login"
 
-      - name: Use prod kubectl
+      - name: Setup variables [prod]
         if: env.env == 'prod'
         run: |
           echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG_PROD }}"
           echo "::set-env name=DEBUG::false"
+          echo "::set-env name=API_BASE_URL::https://api.emeris.com"
+          echo "::set-env name=CNS_OAUTH_URL::https://admin.emeris.com/login"
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
@@ -90,9 +96,9 @@ jobs:
               --set debug=${{ env.DEBUG }} \
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               --set image=gcr.io/tendermint-dev/"${{ env.image_name }}":"${{ env.image_tag }}" \
-              --set daggregationPublicBaseUrl=https://api.dev.emeris.com/v1/daggregation \
-              --set dexInfoSwapsUrl=https://api.dev.emeris.com/v1/dexinfo/swaps \
-              --set redirectURL=https://develop.emeris-admin.pages.dev/login \
+              --set daggregationPublicBaseUrl=${{ env.API_BASE_URL }}/v1/daggregation \
+              --set dexInfoSwapsUrl=${{ env.API_BASE_URL }}/v1/dexinfo/swaps \
+              --set redirectURL=${{ env.CNS_OAUTH_URL }} \
               --set test=true \
               ./helm
 
