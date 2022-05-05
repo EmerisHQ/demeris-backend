@@ -104,6 +104,8 @@ jobs:
               --set image=gcr.io/tendermint-dev/"${{ env.image_name }}":"${{ env.image_tag }}" \
               --set daggregationPublicBaseUrl=${{ env.API_BASE_URL }}/v1/daggregation \
               --set dexInfoSwapsUrl=${{ env.API_BASE_URL }}/v1/dexinfo/swaps \
+              --set apiServerSentryDSN=${{ secrets.API_SERVER_SENTRY_DSN }} \
+              --set priceOracleSentryDSN=${{ secrets.PRICE_ORACLE_SENTRY_DSN }} \
               --set redirectURL=${{ env.CNS_OAUTH_URL }} \
               --set test=true \
               ./helm

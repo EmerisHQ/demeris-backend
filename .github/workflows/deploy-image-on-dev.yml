@@ -54,6 +54,8 @@ jobs:
               --set image=gcr.io/tendermint-dev/"${{ env.image_name }}":"${{ env.image_tag }}" \
               --set daggregationPublicBaseUrl=https://api.dev.emeris.com/v1/daggregation \
               --set dexInfoSwapsUrl=https://api.dev.emeris.com/v1/dexinfo/swaps \
+              --set apiServerSentryDSN=${{ secrets.API_SERVER_SENTRY_DSN }} \
+              --set priceOracleSentryDSN=${{ secrets.PRICE_ORACLE_SENTRY_DSN }} \
               --set redirectURL=https://develop.emeris-admin.pages.dev/login \
               --set test=true \
               ./helm
