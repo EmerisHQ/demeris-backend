@@ -1,6 +1,6 @@
 {
     "chain_name": "akash",
-    "rpc": "http://akash.emeris:26657",
+    "rpc": "http://localhost:10001",
     "address": "akash14kn0kk33szpwus9nh8n87fjel8djx0y0kqafwm",
     "key":"akash_test",
     "mnemonic":"crucial able shoot suffer cradle art melt lake crane outside organ mask champion force dilemma rough merit color portion hammer mimic portion mix spin",
