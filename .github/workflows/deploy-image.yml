@@ -12,20 +12,20 @@ on:
           - staging
           - prod
       service_name:
-        description: 'Name of the helm chart (e.g. api-server)'
+        description: 'Service name (e.g. api-server)'
         required: true
       image_tag:
-        description: 'Tag of the docker image to be deployed'
+        description: 'Docker image tag'
         required: true
       repo_name:
-        description: 'Name of the github repo (e.g. demeris-api-server, defaults to service_name)'
+        description: 'Github repo name (e.g. demeris-api-server, defaults to $service_name)'
         required: false
       branch_name:
-        description: 'Name of the github branch to checkout from the repo (e.g. main, defaults to main)'
+        description: 'Github branch to checkout (e.g. main)'
         required: true
         default: main
       image_name:
-        description: 'Name of the image to deploy (e.g. emeris-api-server, defaults to emeris-$service_name)'
+        description: 'Docker image name (e.g. emeris-api-server, defaults to emeris-$service_name)'
         required: false
       captcha:
         description: 'If you are updating prod, double check what you are doing and type "YES" (uppercase) here'
