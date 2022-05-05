@@ -64,31 +64,37 @@ jobs:
       - name: Setup variables [dev]
         if: env.env == 'dev'
         run: |
-          echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG }}"
-          echo "::set-env name=DEBUG::true"
-          echo "::set-env name=API_BASE_URL::https://api.dev.emeris.com"
-          echo "::set-env name=CNS_OAUTH_URL::https://admin.dev.emeris.com/login"
+          echo "KUBECONFIG_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.KUBECONFIG }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "DEBUG=true" >> $GITHUB_ENV
+          echo "API_BASE_URL=https://api.dev.emeris.com" >> $GITHUB_ENV
+          echo "CNS_OAUTH_URL=https://admin.dev.emeris.com/login" >> $GITHUB_ENV
 
       - name: Setup variables [staging]
         if: env.env == 'staging'
         run: |
-          echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG_STAGING }}"
-          echo "::set-env name=DEBUG::true"
-          echo "::set-env name=API_BASE_URL::https://api.staging.emeris.com"
-          echo "::set-env name=CNS_OAUTH_URL::https://admin.staging.emeris.com/login"
+          echo "KUBECONFIG_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.KUBECONFIG_STAGING }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "DEBUG=true" >> $GITHUB_ENV
+          echo "API_BASE_URL=https://api.staging.emeris.com" >> $GITHUB_ENV
+          echo "CNS_OAUTH_URL=https://admin.staging.emeris.com/login" >> $GITHUB_ENV
 
       - name: Setup variables [prod]
         if: env.env == 'prod'
         run: |
-          echo "::set-env name=KUBECONFIG::${{ secrets.KUBECONFIG_PROD }}"
-          echo "::set-env name=DEBUG::false"
-          echo "::set-env name=API_BASE_URL::https://api.emeris.com"
-          echo "::set-env name=CNS_OAUTH_URL::https://admin.emeris.com/login"
+          echo "KUBECONFIG_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.KUBECONFIG_PROD }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "DEBUG=false" >> $GITHUB_ENV
+          echo "API_BASE_URL=https://api.emeris.com" >> $GITHUB_ENV
+          echo "CNS_OAUTH_URL=https://admin.emeris.com/login" >> $GITHUB_ENV
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
         with:
-          kubeconfig: "${{ env.KUBECONFIG }}"
+          kubeconfig: "${{ env.KUBECONFIG_CONTENT }}"
           exec: |
             helm upgrade "${{ env.service_name }}"  \
               --install \
