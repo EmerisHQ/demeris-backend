@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	api "github.com/allinbits/demeris-api-server/api/liquidity"
+	api "github.com/emerishq/demeris-api-server/api/liquidity"
 	liquiditytypes "github.com/gravity-devs/liquidity/x/liquidity/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 )

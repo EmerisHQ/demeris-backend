@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 )
 

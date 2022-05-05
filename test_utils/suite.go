@@ -3,7 +3,7 @@ package test_utils
 import (
 	"os"
 
-	"github.com/allinbits/demeris-backend-models/cns"
+	"github.com/emerishq/demeris-backend-models/cns"
 	"github.com/stretchr/testify/suite"
 )
 

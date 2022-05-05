@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
+	utils "github.com/emerishq/demeris-backend/test_utils"
 )
 
 const (

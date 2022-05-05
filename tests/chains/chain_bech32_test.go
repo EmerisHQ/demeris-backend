@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	chainModels "github.com/allinbits/demeris-api-server/api/chains"
+	chainModels "github.com/emerishq/demeris-api-server/api/chains"
 )
 
 const chainBech32Endpoint = "chain/%s/bech32"

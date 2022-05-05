@@ -7,14 +7,14 @@ MONITORING=false
 ENABLE_FRONTEND=false
 STARPORT_OPERATOR_REPO=git@github.com:allinbits/starport-operator.git
 STARPORT_OPERATOR_VERSION=v0.0.1-alpha.45
-TRACELISTENER_REPO=git@github.com:allinbits/tracelistener.git
-PRICE_ORACLE_REPO=git@github.com:allinbits/emeris-price-oracle.git
-CNS_SERVER_REPO=git@github.com:allinbits/emeris-cns-server.git
-SDK_SERVICE_REPO=git@github.com:allinbits/sdk-service.git
-TICKET_WATCHER_REPO=git@github.com:allinbits/emeris-ticket-watcher.git
-RPC_WATCHER_REPO=git@github.com:allinbits/emeris-rpcwatcher.git
-API_SERVER_REPO=git@github.com:allinbits/demeris-api-server.git
-FRONTEND_REPO=git@github.com:allinbits/demeris.git
+TRACELISTENER_REPO=git@github.com:emerishq/tracelistener.git
+PRICE_ORACLE_REPO=git@github.com:emerishq/emeris-price-oracle.git
+CNS_SERVER_REPO=git@github.com:emerishq/emeris-cns-server.git
+SDK_SERVICE_REPO=git@github.com:emerishq/sdk-service.git
+TICKET_WATCHER_REPO=git@github.com:emerishq/emeris-ticket-watcher.git
+RPC_WATCHER_REPO=git@github.com:emerishq/emeris-rpcwatcher.git
+API_SERVER_REPO=git@github.com:emerishq/demeris-api-server.git
+FRONTEND_REPO=git@github.com:emerishq/demeris.git
 KIND_CONFIG=""
 
 usage()

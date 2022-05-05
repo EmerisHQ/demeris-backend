@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"time"
 
-	txModels "github.com/allinbits/demeris-api-server/api/tx"
-	chainclient "github.com/allinbits/demeris-backend/chainclient"
-	utils "github.com/allinbits/demeris-backend/test_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktx "github.com/cosmos/cosmos-sdk/types/tx"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	txModels "github.com/emerishq/demeris-api-server/api/tx"
+	chainclient "github.com/emerishq/demeris-backend/chainclient"
+	utils "github.com/emerishq/demeris-backend/test_utils"
 )
 
 const (
