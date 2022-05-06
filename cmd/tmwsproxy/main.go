@@ -6,12 +6,12 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/allinbits/emeris-utils/database"
+	"github.com/emerishq/emeris-utils/database"
 
-	"github.com/allinbits/demeris-backend/tmwsproxy"
+	"github.com/emerishq/demeris-backend/tmwsproxy"
 
-	"github.com/allinbits/emeris-utils/logging"
 	"github.com/cssivision/reverseproxy"
+	"github.com/emerishq/emeris-utils/logging"
 	"github.com/gorilla/mux"
 )
 
