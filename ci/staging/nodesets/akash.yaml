@@ -60,7 +60,9 @@ spec:
             value: akash
           - name: TRACELISTENER_DEBUG
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:v1.3.0
+          - name: TRACELISTENER_USESQLGEN
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:v1.6.0
         imagePullPolicy: Always
         resources:
           limits:
