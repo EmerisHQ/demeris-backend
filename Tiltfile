@@ -263,6 +263,14 @@ spec:
     env:
       - name: VUE_APP_GIT_VERSION
         value: development
+      - name: VITE_FEATURE_USE_DEV
+        value: "true"
+      - name: VITE_EMERIS_DEV_ENDPOINT
+        value: http://localhost:8000/v1
+      - name: VITE_EMERIS_DEV_LIQUIDITY_ENDPOINT
+        value: http://localhost:8000/v1/liquidity
+      - name: VITE_EMERIS_DEV_WEBSOCKET_ENDPOINT
+        value: ws://localhost:8000/v1
 """))
 k8s_resource('frontend', port_forwards=[8080])
 
