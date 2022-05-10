@@ -74,7 +74,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: gcr.io/tendermint-dev/sifchain
-    version: v0.12.1
+    version: v0.13.2
     build:
       repository: https://github.com/Sifchain/sifnode
   join:
@@ -107,7 +107,7 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 100Gi
+    size: 200Gi
     autoResize:
       enabled: true
   replicas: 2
