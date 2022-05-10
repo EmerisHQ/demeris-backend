@@ -75,11 +75,14 @@ spec:
     build:
       repository: https://github.com/crescent-network/crescent
     name: gcr.io/tendermint-dev/crescent
-    version: v1.0.0
+    version: v1.1.0
   join:
     genesis:
       url: https://storage.googleapis.com/tmp-genesis/mainnet_genesis.json
     persistentPeers:
+    - address: 65.108.146.218
+      id: 9e6e0305d14aedad20ce4e4d5e9b097076b57443
+      port: 26656
     - address: 52.194.172.170
       id: 0ed5ed53ec3542202d02d0d47ac04a2823188fc2
       port: 26656
@@ -144,11 +147,8 @@ spec:
   resources:
     restServer: {}
     sentry:
-      limits:
-        cpu: "8"
-        memory: 32Gi
       requests:
-        cpu: "4"
-        memory: 24Gi
+        cpu: "2"
+        memory: 8Gi
     validator: {}
   sdkVersion: stargate
