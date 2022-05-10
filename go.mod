@@ -26,7 +26,7 @@ require (
 
 require (
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/emerishq/demeris-backend-models v1.5.0
+	github.com/emerishq/demeris-backend-models v1.6.0
 	github.com/emerishq/emeris-utils v1.5.0
 	github.com/tendermint/starport v0.16.1
 )
@@ -135,7 +135,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/keybase/go-keychain v0.0.0-20190712205309-48d3d31d256d // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/lib/pq v1.10.4 // indirect
+	github.com/lib/pq v1.10.5 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
