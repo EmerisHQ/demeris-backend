@@ -62,7 +62,7 @@ spec:
             value: "true"
           - name: TRACELISTENER_USESQLGEN
             value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:v1.6.0
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v42:v1.8.1
         imagePullPolicy: Always
         resources:
           limits:
