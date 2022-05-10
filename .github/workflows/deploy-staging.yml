@@ -29,7 +29,7 @@ jobs:
               --namespace emeris \
               --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.cns-version }} \
               --set updateInterval=10s \
-              --set redirectURL=https://staging.emeris-admin.pages.dev/login \
+              --set redirectURL=https://admin.staging.emeris.com/login \
               ./helm/emeris-cns-server
 
   api-server:

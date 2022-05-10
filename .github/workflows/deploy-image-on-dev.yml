@@ -58,7 +58,7 @@ jobs:
               --set apiServer.sentryDSN=${{ secrets.API_SERVER_SENTRY_DSN }} \
               --set priceOracle.sentryEnvironment=${{ env.env }} \
               --set priceOracle.sentryDSN=${{ secrets.PRICE_ORACLE_SENTRY_DSN }} \
-              --set redirectURL=https://develop.emeris-admin.pages.dev/login \
+              --set redirectURL=https://admin.dev.emeris.com/login \
               --set test=true \
               ./helm
   
