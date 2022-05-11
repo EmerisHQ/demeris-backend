@@ -61,7 +61,7 @@ spec:
           value: crescent
         - name: TRACELISTENER_DEBUG
           value: "true"
-        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.3.0
+        image: gcr.io/tendermint-dev/emeris-tracelistener-v44:v1.8.3
         imagePullPolicy: Always
     reconcilePeriod: 5m
     resetDataOnGenesisChanges: false
