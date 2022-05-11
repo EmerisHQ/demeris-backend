@@ -22,7 +22,6 @@ const (
 )
 
 func (suite *testCtx) TestTxPostEndpoint() {
-	suite.T().Skip("skip: api-server failing with 'transaction relaying error: code 32, account sequence mismatch, expected 9, got 0: incorrect account sequence'")
 
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {

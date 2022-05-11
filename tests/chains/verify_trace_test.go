@@ -22,7 +22,6 @@ const (
 )
 
 func (suite *testCtx) TestVerifyTrace() {
-	suite.T().Skip("skip: often fails due to non sufficient balance")
 
 	// filter enabled chains
 	var enabledChains []cns.Chain
@@ -36,8 +35,6 @@ func (suite *testCtx) TestVerifyTrace() {
 	// pick 2 random chains
 	var chainA, chainB cns.Chain
 	for {
-		// a := rand.Intn(len(enabledChains))
-		// b := rand.Intn(len(enabledChains))
 		a := 0
 		b := 1
 		if a != b {
@@ -138,9 +135,6 @@ func (suite *testCtx) TestVerifyTrace() {
 	var result map[string]interface{}
 	suite.Require().NoError(json.Unmarshal(body, &result))
 
-	// var chainBData map[string]interface{}
-	// suite.Require().NoError(json.Unmarshal(chainB.Payload, &chainBData))
-	// primary_channels = chainBData["primary_channel"].(map[string]interface{})
 	primary_channels = chainB.PrimaryChannel
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["base_denom"].(string), chainA.Denoms[0].DisplayName)
 	suite.Require().Equal(result["verify_trace"].(map[string]interface{})["path"].(string), fmt.Sprintf("transfer/%s", primary_channels[chainA.ChainName]))
