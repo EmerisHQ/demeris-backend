@@ -1,0 +1,64 @@
+{
+  "enabled": true,
+  "chain_name": "terra",
+  "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
+  "display_name": "Terra",
+  "primary_channel": {
+    "cosmos-hub": "channel-41",
+    "juno": "channel-3",
+    "osmosis": "channel-1",
+    "crescent": "channel-49"
+  },
+  "denoms": [
+    {
+      "name": "uluna",
+      "display_name": "LUNA",
+      "logo": "https://storage.googleapis.com/emeris/logos/luna.svg",
+      "precision": 6,
+      "verified": true,
+      "stakable": true,
+      "ticker": "LUNA",
+      "price_id": "terra-luna",
+      "fee_token": true,
+      "gas_price_levels": {
+        "low": 0.013199,
+        "average": 0.015,
+        "high": 0.025
+      },
+      "fetch_price": true,
+      "relayer_denom": true,
+      "minimum_thresh_relayer_balance": 42
+    }
+  ],
+  "demeris_addresses": [
+    "feeaddress"
+  ],
+  "genesis_hash": "genesis_hash",
+  "node_info": {
+    "endpoint": "terra",
+    "chain_id": "columbus-5",
+    "bech32_config": {
+      "main_prefix": "terra",
+      "prefix_account": "terra",
+      "prefix_validator": "val",
+      "prefix_consensus": "cons",
+      "prefix_public": "pub",
+      "prefix_operator": "oper",
+      "acc_addr": "terra",
+      "acc_pub": "terrapub",
+      "val_addr": "terravaloper",
+      "val_pub": "terravaloperpub",
+      "cons_addr": "terravalcons",
+      "cons_pub": "terravalconspub"
+    }
+  },
+  "valid_block_thresh": "200s",
+  "derivation_path": "m/44'/330'/0'/0/0",
+  "supported_wallets": ["keplr"],
+    "public_node_endpoints": {
+        "tendermint_rpc": ["http://public-node.terra.dev:26657"],
+        "cosmos_api": ["https://terra.mainnet.lcd.blockngine.io:443"]
+      },
+    "block_explorer": "https://ping.pub/terra-luna",
+    "cosmos_sdk_version": "v0.44.5"
+}
