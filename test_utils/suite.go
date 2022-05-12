@@ -15,22 +15,24 @@ type BaseTestSuite struct {
 	Client    *HttpClient
 }
 
+var allowedEnvs = []string{"dev", "staging", "prod"}
+
 func (suite *BaseTestSuite) SetupTest() {
 	suite.Env = os.Getenv("ENV")
-	suite.Assert().NotEmpty(suite.Env, "Got nil value for env:", suite.Env)
+	suite.Require().Contains(allowedEnvs, suite.Env, "ENV must be set to one of %v", allowedEnvs)
 
 	emIngress, _, err := LoadIngressInfo(suite.Env)
-	suite.Assert().NoError(err, "err value:", err)
+	suite.Require().NoError(err)
 
 	suite.EmIngress = emIngress
 
 	chains, err := LoadChainsInfo(suite.Env)
-	suite.Assert().NoError(err, "err value:", err)
+	suite.Require().NoError(err)
 
 	suite.Chains = chains
 
 	client, err := NewHttpClient(suite.Env, suite.EmIngress.Protocol, suite.EmIngress.Host, suite.EmIngress.APIServerPath)
-	suite.Assert().NoError(err, "err value:", err)
+	suite.Require().NoError(err)
 
 	suite.Client = client
 }
