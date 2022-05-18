@@ -7,10 +7,7 @@ on:
       - "*"
 
 env:
-  # The name of the file describing the environment that should be deployed in
-  # staging. We deploy dev.json and then run the integration tests, if they
-  # succeed dev.json is copied to staging.json.
-  ENV_FILE: dev.json
+  DEPLOY_FROM_FILE: envs/dev.json
   API_BASE_URL: https://api.staging.emeris.com
 
 jobs:
@@ -46,7 +43,7 @@ jobs:
         with:
           kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
           exec: |
-            VERSION=$(jq -r '.["${{ matrix.service_name }}"]' $FILE)
+            VERSION=$(jq -r '.["${{ matrix.service_name }}"]' $DEPLOY_FROM_FILE)
             echo VERSION=$VERSION >> $GITHUB_ENV
 
             helm upgrade "${{ matrix.service_name }}"  \
