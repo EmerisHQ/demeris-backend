@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: "EmerisHQ/${{ env.repo_name }}"
+          repository: "EmerisHQ/${{ matrix.repo_name }}"
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
