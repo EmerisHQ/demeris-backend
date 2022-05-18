@@ -54,7 +54,7 @@ jobs:
             helm upgrade "${{ matrix.service_name }}"  \
               --install \
               --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-"${{ matrix.service_name }}":"$VERSION" \
+              --set image=gcr.io/tendermint-dev/emeris-"${{ matrix.service_name }}":"${{ env.VERSION }}" \
               --set debug=true \
               --set fixerKey=${{ secrets.FIXER_KEY }} \
               --set daggregationPublicBaseUrl=${{ env.API_BASE_URL }}/v1/daggregation \
@@ -81,7 +81,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "[staging] Deployed ${{ matrix.service_name }} version $VERSION"
+                    "text": "[staging] Deployed ${{ matrix.service_name }} version ${{ env.VERSION }}"
                   }
                 }  
               ]
