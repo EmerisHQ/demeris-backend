@@ -74,7 +74,7 @@ spec:
     reconcilePeriod: 5m
   image:
     name: ghcr.io/cosmoscontracts/juno
-    version: v3.1.0
+    version: v5.0.1
   join:
     genesis:
       url: https://raw.githubusercontent.com/CosmosContracts/mainnet/main/juno-1/genesis.json
