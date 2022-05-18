@@ -2,107 +2,93 @@ name: Deploy on Emeris Staging Environment
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: demeris-backend branch, tag or commit to deploy
-        required: true
-        default: master
-      cns-version:
-        description: cns-server and admin-ui branch, tag or commit to deploy
-        required: true
-        default: master
+  push:
+    tags:
+      - "*"
+
+env:
+  DEPLOY_FROM_FILE: envs/dev.json
+  API_BASE_URL: https://api.staging.emeris.com
 
 jobs:
-  cns-server:
+  deploy-service:
     runs-on: self-hosted
+    strategy:
+      matrix:
+        include:
+          - repo_name: demeris-api-server
+            service_name: api-server
+          - repo_name: emeris-cns-server
+            service_name: cns-server
+          - repo_name: daggregation
+            service_name: daggregation
+          - repo_name: emeris-dexinfo
+            service_name: dexinfo
+          - repo_name: emeris-price-oracle
+            service_name: price-oracle
+          - repo_name: sdk-service
+            service_name: sdk-service-v44
+          - repo_name: sdk-service
+            service_name: sdk-service-v42
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Get version to deploy
+        run: |
+          VERSION=$(jq -r '.["${{ matrix.service_name }}"]' $DEPLOY_FROM_FILE)
+          echo VERSION=$VERSION >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: "EmerisHQ/${{ matrix.repo_name }}"
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
         with:
           kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
           exec: |
-            helm upgrade cns-server \
+            helm upgrade "${{ matrix.service_name }}"  \
               --install \
               --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-cns-server:${{ github.event.inputs.cns-version }} \
-              --set updateInterval=10s \
-              --set redirectURL=https://staging.emeris-admin.pages.dev/login \
-              ./helm/emeris-cns-server
-
-  api-server:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Deploy
-        uses: WyriHaximus/github-action-helm3@v2
-        with:
-          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
-          exec: |
-            helm upgrade api-server \
-              --install \
-              --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-api-server:${{ github.event.inputs.version }} \
-              --set replicas=3 \
-              ./helm/emeris-api-server
-
-  rpcwatcher:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Deploy
-        uses: WyriHaximus/github-action-helm3@v2
-        with:
-          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
-          exec: |
-            helm upgrade rpcwatcher \
-              --install \
-              --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-rpcwatcher:${{ github.event.inputs.version }} \
-              ./helm/emeris-rpcwatcher
-
-  price-oracle:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Deploy
-        uses: WyriHaximus/github-action-helm3@v2
-        with:
-          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
-          exec: |
-            helm upgrade price-oracle \
-              --install \
-              --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-price-oracle:${{ github.event.inputs.cns-version }} \
-              --set fixerKey=${{ secrets.FIXER_KEY }} \
-              --set replicas=3 \
-              ./helm/emeris-price-oracle-server
-
-  ticket-watcher:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Deploy
-        uses: WyriHaximus/github-action-helm3@v2
-        with:
-          kubeconfig: '${{ secrets.KUBECONFIG_STAGING }}'
-          exec: |
-            helm upgrade ticket-watcher \
-              --install \
-              --namespace emeris \
-              --set image=gcr.io/tendermint-dev/emeris-ticket-watcher:${{ github.event.inputs.version }} \
+              --set image=gcr.io/tendermint-dev/emeris-"${{ matrix.service_name }}":"${{ env.VERSION }}" \
               --set debug=true \
-              ./helm/emeris-ticket-watcher
+              --set fixerKey=${{ secrets.FIXER_KEY }} \
+              --set daggregationPublicBaseUrl=${{ env.API_BASE_URL }}/v1/daggregation \
+              --set dexInfoSwapsUrl=${{ env.API_BASE_URL }}/v1/dexinfo/swaps \
+              --set apiServer.sentryEnvironment=staging \
+              --set apiServer.sentryDSN=${{ secrets.API_SERVER_SENTRY_DSN }} \
+              --set apiServer.sentryTracesSampleRate=1 \
+              --set priceOracle.sentryEnvironment=staging \
+              --set priceOracle.sentryDSN=${{ secrets.PRICE_ORACLE_SENTRY_DSN }} \
+              --set priceOracle.sentryTracesSampleRate=0.03 \
+              --set redirectURL=https://admin.staging.emeris.com/login \
+              --set test=true \
+              ./helm
+
+      - name: Send slack message
+        id: slack
+        uses: slackapi/slack-github-action@v1.16.0
+        with:
+          payload: |
+            {
+              "text": "[staging] new image deployed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "[staging] Deployed ${{ matrix.service_name }} version ${{ env.VERSION }}"
+                  }
+                }  
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_BACKEND_GHN }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
   ingress:
     runs-on: self-hosted
@@ -115,3 +101,18 @@ jobs:
         with:
           config: ${{ secrets.KUBECONFIG_STAGING_B64 }}
           command: apply -n emeris -f ci/staging/ingress.yaml
+
+  emit-integration-test:
+    runs-on: self-hosted
+    needs: deploy-service
+    steps:
+      - name: Emit integration-test event on demeris-backend
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: emerishq/demeris-backend
+          event-type: integration-test
+          client-payload: |
+            {
+              "env": "staging"
+            }

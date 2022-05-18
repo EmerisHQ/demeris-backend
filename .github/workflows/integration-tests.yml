@@ -9,7 +9,7 @@ env:
 
 jobs:
   tests:
-    name: integration-tests
+    name: Integration tests (${{ github.event.client_payload.env }})
     runs-on: self-hosted
     timeout-minutes: 10
     steps:

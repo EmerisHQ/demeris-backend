@@ -41,6 +41,7 @@ jobs:
       with:
         file_pattern: envs/*.json
         commit_message: "chore(${{ env.ENV }}): bump ${{ env.SERVICE_NAME }}:${{ env.IMAGE_TAG }}"
+        push_options: '--force'
 
     - name: Create and push tag
       uses: anothrNick/github-tag-action@master
