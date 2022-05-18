@@ -34,14 +34,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
-          repository: "EmerisHQ/${{ matrix.repo_name }}"
 
       - name: Get version to deploy
         run: |
           VERSION=$(jq -r '.["${{ matrix.service_name }}"]' $DEPLOY_FROM_FILE)
           echo VERSION=$VERSION >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TENDERBOT_GIT_TOKEN }}
+          repository: "EmerisHQ/${{ matrix.repo_name }}"
 
       - name: Deploy
         uses: WyriHaximus/github-action-helm3@v2
