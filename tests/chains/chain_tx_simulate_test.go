@@ -33,7 +33,10 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			fromAddr, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
 
-			toAddr, err := cli.GetAccAddress("key2")
+			account2, err := cli.AccountCreate("key2", "", cli.HDPath)
+			suite.Require().NoError(err)
+
+			toAddr, err := sdk.AccAddressFromBech32(account2.Address)
 			suite.Require().NoError(err)
 
 			// perform bank send tx
