@@ -117,7 +117,7 @@ func (suite *testCtx) TestGetDestTxn() {
 	// build and broadcast ibc transfer message
 	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName], token, fromAddr, rec_account.Address, timeoutHeight, 0)
 
-	txRes, err := cliA.Broadcast(ccA.Key, fromAddr, cliA.GetContext(), msg)
+	txRes, err := cliA.Broadcast(ccA.Key, cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
 	time.Sleep(time.Second * 8)

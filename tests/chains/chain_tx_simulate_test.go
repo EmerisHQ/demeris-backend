@@ -42,7 +42,7 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			// perform bank send tx
 			msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(10))))
 
-			txBytes, err := cli.SignTx(ch.Key, fromAddr, cli.GetContext(), msg)
+			txBytes, err := cli.SignTx(ch.Key, cli.GetContext(), msg)
 			suite.Require().NoError(err)
 
 			reqBytes, err := json.Marshal(txModels.TxFeeEstimateReq{

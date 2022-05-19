@@ -110,7 +110,7 @@ func (suite *testCtx) TestVerifyTrace() {
 	// build and broadcast ibc transfer message
 	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName], token, fromAddr, recAccount.Address, timeoutHeight, 0)
 
-	_, err = cliA.Broadcast(ccA.Key, fromAddr, cliA.GetContext(), msg)
+	_, err = cliA.Broadcast(ccA.Key, cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
 	time.Sleep(time.Second * 10)

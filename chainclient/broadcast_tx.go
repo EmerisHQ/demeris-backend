@@ -24,8 +24,8 @@ func (c *ChainClient) PrepareBroadcast(msgs ...types.Msg) error {
 }
 
 // SignTx signs tx and return tx bytes
-func (c *ChainClient) SignTx(fromName string, fromAddr types.AccAddress, clientCtx client.Context, msgs ...types.Msg) ([]byte, error) {
-	clientCtx, err := c.BuildClientCtx(fromName, fromAddr)
+func (c *ChainClient) SignTx(fromName string, clientCtx client.Context, msgs ...types.Msg) ([]byte, error) {
+	clientCtx, err := c.BuildClientCtx(fromName)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -34,12 +34,17 @@ func (c *ChainClient) SignTx(fromName string, fromAddr types.AccAddress, clientC
 		return []byte{}, err
 	}
 
-	unsignedTx, err := tx.BuildUnsignedTx(c.factory, msgs...)
+	txf, err := tx.PrepareFactory(clientCtx, c.factory)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	err = tx.Sign(c.factory, clientCtx.GetFromName(), unsignedTx, true)
+	unsignedTx, err := tx.BuildUnsignedTx(txf, msgs...)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	err = tx.Sign(txf, clientCtx.GetFromName(), unsignedTx, true)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -47,8 +52,8 @@ func (c *ChainClient) SignTx(fromName string, fromAddr types.AccAddress, clientC
 }
 
 // Broadcast directly broadcasts the messages
-func (c *ChainClient) Broadcast(fromName string, fromAddr types.AccAddress, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
-	clientCtx, err := c.BuildClientCtx(fromName, fromAddr)
+func (c *ChainClient) Broadcast(fromName string, clientCtx client.Context, msgs ...types.Msg) (*types.TxResponse, error) {
+	clientCtx, err := c.BuildClientCtx(fromName)
 	if err != nil {
 		return &types.TxResponse{}, err
 	}
@@ -65,21 +70,25 @@ func (c *ChainClient) Broadcast(fromName string, fromAddr types.AccAddress, clie
 	return c.handleBroadcastResult()
 }
 
-// handleBroadcastResult handles the result of broadcast messages result and checks if an error occurred
+// HandleBroadcastResult handles the result of broadcast messages result and checks if an error occurred
 func (c *ChainClient) handleBroadcastResult() (*types.TxResponse, error) {
 	var out types.TxResponse
 	if err := tmjson.Unmarshal(c.out.Bytes(), &out); err != nil {
 		return &out, err
 	}
 	if out.Code > 0 {
-		return &out, fmt.Errorf("tx error with code '%d' log: %s", out.Code, out.RawLog)
+		return &out, fmt.Errorf("tx error with code '%d' code: %s", out.Code, out.RawLog)
 	}
 	return &out, nil
 }
 
 // BuildClientCtx builds the context for the client
-func (c *ChainClient) BuildClientCtx(accountName string, accountAddress types.AccAddress) (client.Context, error) {
+func (c *ChainClient) BuildClientCtx(accountName string) (client.Context, error) {
+	info, err := c.clientCtx.Keyring.Key(accountName)
+	if err != nil {
+		return client.Context{}, err
+	}
 	return c.clientCtx.
 		WithFromName(accountName).
-		WithFromAddress(accountAddress), nil
+		WithFromAddress(info.GetAddress()), nil
 }
