@@ -27,20 +27,6 @@
       "fetch_price": true,
       "relayer_denom": true,
       "minimum_thresh_relayer_balance": 42
-    },
-    {
-      "name": "poolCDE5DC97ED362F71427E8270E8C073A7C27F4CDF161EE1CB90DD429DDE297DC9",
-      "display_name": "Gravity 1",
-      "precision": 6,
-      "verified": true,
-      "ticker": "G1",
-      "gas_price_levels": {
-        "low": 0,
-        "average": 0,
-        "high": 0
-      },
-      "fetch_price": false,
-      "relayer_denom": false
     }
   ],
   "demeris_addresses": [
