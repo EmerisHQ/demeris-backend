@@ -25,22 +25,6 @@
       "fetch_price": true,
       "relayer_denom": true,
       "minimum_thresh_relayer_balance": 60000000
-    },
-    {
-      "name": "uion",
-      "display_name": "ION",
-      "logo": "https://storage.googleapis.com/emeris/logos/ion.svg",
-      "precision": 6,
-      "verified": true,
-      "ticker": "ION",
-      "price_id": "ion",
-      "gas_price_levels": {
-        "low": 0,
-        "average": 0,
-        "high": 0
-      },
-      "fetch_price": true,
-      "relayer_denom": false
     }
   ],
   "demeris_addresses": [
