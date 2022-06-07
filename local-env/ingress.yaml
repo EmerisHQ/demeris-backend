@@ -44,6 +44,14 @@ spec:
             port:
               number: 8000
 
+      - path: /v1/daggregation(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: daggregation
+            port:
+              number: 8080
+
       - path: /v1(/|$)(.*)
         pathType: ImplementationSpecific
         backend:
