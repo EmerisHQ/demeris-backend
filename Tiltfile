@@ -147,6 +147,39 @@ k8s_yaml(helm(
     ]
 ))
 
+# DEXINFO
+docker_build(
+  'emeris/dexinfo',
+  '../emeris-dexinfo',
+)
+k8s_yaml(helm(
+    '../emeris-dexinfo/helm',
+    name='dexinfo',
+    namespace='emeris',
+    set=[
+        'image=emeris/dexinfo:latest',
+        'imagePullPolicy=Never',
+        'resources=null',
+    ]
+))
+
+# DAGGREGATION
+docker_build(
+  'emeris/daggregation',
+  '../daggregation',
+)
+k8s_yaml(helm(
+    '../daggregation/helm',
+    name='daggregation',
+    namespace='emeris',
+    set=[
+        'imagePullPolicy=Never',
+        'resources=null',
+        'dexInfoSwapsUrl=http://dexinfo:8080/swaps',
+        'dexInfoVerifiedDenoms=http://api-server:8000/verified_denoms',
+    ]
+))
+
 # TICKET WATCHER
 docker_build(
     'emeris/ticket-watcher',
