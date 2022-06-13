@@ -85,8 +85,8 @@ spec:
             memory: 1Gi
     reconcilePeriod: 5m
   image:
-    name: gcr.io/tendermint-dev/osmosis
-    version: v7.0.4
+    name: osmolabs/osmosis
+    version: 10.0.0
   join:
     genesis:
       url: https://storage.googleapis.com/emeris/genesis/osmosis-1.json
@@ -187,7 +187,7 @@ spec:
         port: 26656
   moniker: emeris
   persistence:
-    size: 400Gi
+    size: 1Ti
     autoResize:
       enabled: true
   replicas: 4
