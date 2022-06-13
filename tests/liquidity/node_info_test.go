@@ -13,7 +13,6 @@ const (
 )
 
 func (suite *testCtx) TestLiquidityStatus() {
-	suite.T().Skip("skip: this test is comparing ch.NodeInfo against its own field ch.NodeInfo.ChainID, not sure what the test should be doing instead")
 
 	for _, ch := range suite.Chains {
 		if ch.ChainName == chainName {
@@ -21,7 +20,6 @@ func (suite *testCtx) TestLiquidityStatus() {
 
 				// arrange
 				url := suite.Client.BuildUrl(liquidityNodeEndpoint)
-
 				// act
 				resp, err := suite.Client.Get(url)
 				suite.Require().NoError(err)
@@ -33,19 +31,12 @@ func (suite *testCtx) TestLiquidityStatus() {
 
 				var values map[string]interface{}
 				utils.RespBodyToMap(resp.Body, &values, suite.T())
+				v, ok := values["node_info"].(map[string]interface{})
+				suite.Require().True(ok)
 
-				// v, ok := values["node_info"].(map[string]interface{})
-				// suite.True(ok)
-				networkName := ch.NodeInfo
-
-				// var fileResp map[string]interface{}
-				// utils.StringToMap(ch.Payload, &fileResp, t)
-
-				// fv, ok := fileResp["node_info"].(map[string]interface{})
-				// suite.True(ok)
+				networkName := v["network"]
 
 				expectedName := ch.NodeInfo.ChainID
-
 				suite.Require().Equal(expectedName, networkName)
 			})
 		}

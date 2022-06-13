@@ -22,7 +22,6 @@ const (
 )
 
 func (suite *testCtx) TestTxPostEndpoint() {
-	suite.T().Skip("skip: api-server failing with 'transaction relaying error: code 32, account sequence mismatch, expected 9, got 0: incorrect account sequence'")
 
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
@@ -55,7 +54,7 @@ func (suite *testCtx) TestTxPostEndpoint() {
 			// perform bank send tx
 			msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(10))))
 
-			txBytes, err := cli.SignTx(ch.Key, fromAddr, cli.GetContext(), msg)
+			txBytes, err := cli.SignTx(ch.Key, cli.GetContext(), msg)
 			suite.Require().NoError(err)
 
 			postBytes, err := json.Marshal(txModels.TxRequest{

@@ -8,10 +8,12 @@ import (
 )
 
 const (
-	verifiedDenomsEndpoint = "/verified_denoms"
+	verifiedDenomsEndpoint = "verified_denoms"
 )
 
 func (suite *testCtx) TestVerifiedDenoms() {
+	// have removed gravity-1 and ion for cosmos and osmosis from chains json files. but getting chains denoms count as 6 and tests is failing.
+	// we have removed those denoms bcz got error while testing chain fee.
 	var chainsDenoms cns.DenomList
 	for _, ch := range suite.Chains {
 		if ch.Enabled {

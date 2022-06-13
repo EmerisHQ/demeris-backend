@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	models "github.com/emerishq/demeris-api-server/api/account"
 	chainclient "github.com/emerishq/demeris-backend/chainclient"
 )
@@ -17,21 +16,14 @@ const (
 )
 
 func (suite *testCtx) TestGetBalanceOfAnyAccount() {
-	suite.T().Skip("skip: error: 'empty address string is not allowed' on sdktypes.AccAddressFromBech32(...)")
-
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
 			cli, err := chainclient.GetClient(suite.Env, ch.ChainName, ch, suite.T().TempDir())
 			suite.Require().NoError(err)
 			suite.Require().NotNil(cli)
 
-			accAddr, err := sdktypes.AccAddressFromBech32(ch.Address)
+			accAddr, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
-
-			if accAddr.Empty() {
-				accAddr, err = cli.GetAccAddress(ch.Key)
-				suite.Require().NoError(err)
-			}
 
 			url := suite.Client.BuildUrl(getBalanceEndpoint, hex.EncodeToString(accAddr))
 			// act

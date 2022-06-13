@@ -18,7 +18,6 @@ const (
 )
 
 func (suite *testCtx) TestTxSimulateEndpoint() {
-	suite.T().Skip("skip: not working: 'the specified item cannot be found in the keyring'")
 
 	for _, ch := range suite.clientChains {
 		suite.Run(ch.ChainName, func() {
@@ -34,13 +33,16 @@ func (suite *testCtx) TestTxSimulateEndpoint() {
 			fromAddr, err := cli.GetAccAddress(ch.Key)
 			suite.Require().NoError(err)
 
-			toAddr, err := cli.GetAccAddress("key2")
+			account2, err := cli.AccountCreate("key2", "", cli.HDPath)
+			suite.Require().NoError(err)
+
+			toAddr, err := sdk.AccAddressFromBech32(account2.Address)
 			suite.Require().NoError(err)
 
 			// perform bank send tx
 			msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(10))))
 
-			txBytes, err := cli.SignTx(ch.Key, fromAddr, cli.GetContext(), msg)
+			txBytes, err := cli.SignTx(ch.Key, cli.GetContext(), msg)
 			suite.Require().NoError(err)
 
 			reqBytes, err := json.Marshal(txModels.TxFeeEstimateReq{

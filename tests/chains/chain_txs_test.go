@@ -53,7 +53,7 @@ func (suite *testCtx) TestTxsEndpoint() {
 
 				// perform bank send tx
 				msg := banktypes.NewMsgSend(fromAddr, toAddr, sdk.NewCoins(sdk.NewCoin(cli.Denom, sdk.NewInt(100))))
-				txRes, err := cli.Broadcast(ch.Key, fromAddr, cli.GetContext(), msg)
+				txRes, err := cli.Broadcast(ch.Key, cli.GetContext(), msg)
 				suite.Require().NoError(err)
 
 				hash := txRes.TxHash
