@@ -1,0 +1,48 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations:
+    meta.helm.sh/release-name: monitoring-stack
+    meta.helm.sh/release-namespace: monitoring
+    prometheus-operator-validated: "true"
+  labels:
+    app: kube-prometheus-stack
+    app.kubernetes.io/instance: monitoring-stack
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: kube-prometheus-stack
+    app.kubernetes.io/version: 18.0.3
+    chart: kube-prometheus-stack-18.0.3
+    heritage: Helm
+    release: monitoring-stack
+  name: monitoring-stack-kube-prom-emeris-node.rules
+  namespace: monitoring
+spec:
+  groups:
+  - name:  emeris-node.rules
+    rules:
+    - expr: |-
+        rate(demeris_api_request_duration_seconds_sum[5m])/ rate(demeris_api_request_duration_seconds_count[5m])
+      record: 'APIServerlatencySkyrocketing'
+    # - expr: |-
+    #     sum by (chain_name) (count_over_time({job="emeris/rpcwatcher"} | json | M="new block"[30s])) != bool 0
+    #   record: 'BlockProductionAlert'
+    # - expr: |-
+    #     sum by (nodeset) (count_over_time({container="app",namespace="emeris"} |~ "CONSENSUS FAILURE"[30s]))
+    #   record: 'BlockProductionMonitoringAlert'
+    # - expr: |-
+    #     sum by (chain) (
+    #       count_over_time(
+    #         {job="starport-system/starport-operator"} 
+    #           | logfmt 
+    #           | level="warning" 
+    #           | msg="rpc endpoint not ready yet" 
+    #           | nodeset=~"emeris/\\w+"
+    #           | regexp `.+?nodeset=emeris\/(?P<chain>[a-z|\-]+)`
+    #         [5m]
+    #       )
+    #     )
+    #   record: 'BlockProductionMonitoringAlert'
+    # - expr: |-
+    #     sum by (chain) (count_over_time({job="kube-system/ingress-nginx-controller"} |= "does not have any active Endpoint" |= "emeris" | regexp `.+?\"emeris\/(?P<chain>[a-z|\-]+)\".+` [5m]))
+    #   record: 'UnresponsiveChainRPCAlert'
+
