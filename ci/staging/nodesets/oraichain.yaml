@@ -1,0 +1,80 @@
+apiVersion: apps.starport.cloud/v1
+kind: NodeSet
+metadata:
+  name: oraichain
+  namespace: emeris
+spec:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              nodeset: oraichain
+  app:
+    cliName: oraid
+    daemonName: oraid
+    name: oraichain
+  config:
+    additionalEgressRules:
+      - ports:
+          - port: 26257
+            protocol: TCP
+    nodes:
+      blockThreshold: 15s
+      startupTimeout: 1h
+      traceStoreContainer:
+        env:
+          - name: TRACELISTENER_FIFOPATH
+            value: /trace-store/kvstore.fifo
+          - name: TRACELISTENER_DATABASECONNECTIONURL
+            value: postgres://root@cockroachdb-public:26257?sslmode=disable
+          - name: TRACELISTENER_TYPE
+            value: gaia
+          - name: TRACELISTENER_CHAINNAME
+            value: oraichain
+          - name: TRACELISTENER_DEBUG
+            value: "true"
+        image: gcr.io/tendermint-dev/emeris-tracelistener:stable
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 1Gi
+    reconcilePeriod: 5m
+  image:
+    name: orai/orai
+    version: 0.40.3-alpine
+    imagePullPolicy: IfNotPresent
+  join:
+    genesis:
+      url: https://raw.githubusercontent.com/oraichain/oraichain-static-files/master/mainnet-static-files/genesis.json
+    seeds:
+      - address: 18.223.242.70
+        id: 0baa806b3a4dd17be6e06369d899f140c3897d6e
+        port: 26656
+      - address: 18.116.209.76
+        id: 9749da4a81526266d7b8fe9a03d260cd3db241ad
+        port: 26656
+      - address: 35.204.123.166
+        id: bbe40e44ec02ff284c79de945e0567cfc0a76d5a
+        port: 26656
+  moniker: emeris
+  persistence:
+    size: 150Gi
+    autoResize:
+      enabled: true
+  replicas: 2
+  resources:
+    sentry:
+      limits:
+        cpu: "4"
+        memory: 8Gi
+      requests:
+        cpu: "2"
+        memory: 4Gi
+
