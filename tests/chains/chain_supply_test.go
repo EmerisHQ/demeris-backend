@@ -17,6 +17,8 @@ const (
 func (suite *testCtx) TestChainSupply() {
 	for _, ch := range suite.Chains {
 		suite.Run(ch.ChainName, func() {
+
+			// for crypto-org getting error "cause":"cannot retrieve supply from sdk-service" https://api.dev.emeris.com/v1/chain/crypto-org/supply
 			if ch.ChainName == "crypto-org" {
 				suite.T().Skip("skip: crypto-org, sdk-service replies with Status:Unavailable")
 			}

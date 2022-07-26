@@ -29,7 +29,6 @@ var chainsFilter = map[string]bool{
 }
 
 func (suite *testCtx) TestGetDestTxn() {
-	suite.T().Skip("skip: error: 'Not enough balance to make an IBC transaction'")
 
 	// filter enabled chains
 	var enabledChains []cns.Chain
@@ -118,7 +117,7 @@ func (suite *testCtx) TestGetDestTxn() {
 	// build and broadcast ibc transfer message
 	msg := ibctransfertypes.NewMsgTransfer("transfer", primary_channels[ccB.ChainName], token, fromAddr, rec_account.Address, timeoutHeight, 0)
 
-	txRes, err := cliA.Broadcast(ccA.Key, fromAddr, cliA.GetContext(), msg)
+	txRes, err := cliA.Broadcast(ccA.Key, cliA.GetContext(), msg)
 	suite.Require().NoError(err)
 
 	time.Sleep(time.Second * 8)
